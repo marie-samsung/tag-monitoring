@@ -1,0 +1,56 @@
+CRITICAL - 2026-02-14 09:58:08 --> ErrorException: Attempt to read property "name" on array
+[Method: GET, Route: tags]
+in APPPATH\Views\tags\list.php on line 4.
+ 1 APPPATH\Views\tags\list.php(4): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Attempt to read property "name" on array', 'C:\\xampp\\htdocs\\ci4\\app\\Views\\tags\\list.php', 4)
+ 2 SYSTEMPATH\View\View.php(238): include('C:\\xampp\\htdocs\\ci4\\app\\Views\\tags\\list.php')
+ 3 SYSTEMPATH\View\View.php(241): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1250): CodeIgniter\View\View->render('tags/list', [], true)
+ 5 APPPATH\Controllers\TagsController.php(14): view('tags/list', [...])
+ 6 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\TagsController->index()
+ 7 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\TagsController))
+ 8 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-02-14 09:59:29 --> ErrorException: Attempt to read property "name" on array
+[Method: GET, Route: tags]
+in APPPATH\Views\tags\list.php on line 4.
+ 1 APPPATH\Views\tags\list.php(4): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Attempt to read property "name" on array', 'C:\\xampp\\htdocs\\ci4\\app\\Views\\tags\\list.php', 4)
+ 2 SYSTEMPATH\View\View.php(238): include('C:\\xampp\\htdocs\\ci4\\app\\Views\\tags\\list.php')
+ 3 SYSTEMPATH\View\View.php(241): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1250): CodeIgniter\View\View->render('tags/list', [], true)
+ 5 APPPATH\Controllers\TagsController.php(14): view('tags/list', [...])
+ 6 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\TagsController->index()
+ 7 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\TagsController))
+ 8 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-02-14 09:59:30 --> ErrorException: Attempt to read property "name" on array
+[Method: GET, Route: tags]
+in APPPATH\Views\tags\list.php on line 4.
+ 1 APPPATH\Views\tags\list.php(4): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Attempt to read property "name" on array', 'C:\\xampp\\htdocs\\ci4\\app\\Views\\tags\\list.php', 4)
+ 2 SYSTEMPATH\View\View.php(238): include('C:\\xampp\\htdocs\\ci4\\app\\Views\\tags\\list.php')
+ 3 SYSTEMPATH\View\View.php(241): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1250): CodeIgniter\View\View->render('tags/list', [], true)
+ 5 APPPATH\Controllers\TagsController.php(14): view('tags/list', [...])
+ 6 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\TagsController->index()
+ 7 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\TagsController))
+ 8 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-02-14 10:08:27 --> CodeIgniter\Exceptions\RuntimeException: View themes, no current section.
+[Method: GET, Route: tags]
+in SYSTEMPATH\View\View.php on line 442.
+ 1 APPPATH\Views\tags\list.php(54): CodeIgniter\View\View->endSection()
+ 2 SYSTEMPATH\View\View.php(238): include('C:\\xampp\\htdocs\\ci4\\app\\Views\\tags\\list.php')
+ 3 SYSTEMPATH\View\View.php(241): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1250): CodeIgniter\View\View->render('tags/list', [], true)
+ 5 APPPATH\Controllers\TagsController.php(14): view('tags/list', [...])
+ 6 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\TagsController->index()
+ 7 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\TagsController))
+ 8 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
