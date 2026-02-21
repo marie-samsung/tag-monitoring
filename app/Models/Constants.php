@@ -1,0 +1,42 @@
+<?php
+
+namespace App\Models;
+
+class Constants
+{
+    public const STATUS = [
+        0 => 'Disabled',
+        1 => 'Enabled',
+        2 => 'Expired',
+    ];
+
+    public const ACC_TYPE = [
+        0 => 'System',
+        1 => 'Admin',
+        2 => 'User',
+    ];
+
+    public const IS_EPP = [
+        0 => 'No',
+        1 => 'Yes',
+    ];
+
+    public const IS_ACTIVE = [
+        0 => 'Inactive',
+        1 => 'Active',
+    ];
+
+    public const CONDITIONS = [
+        '(.*)',
+        '(.*orderConfirmation)',
+        '(.*unpacked)',
+    ];
+
+    public const DATE_DISPLAY_FORMATS = [
+        'Y-m-d'       => 'YYYY‑MM‑DD',
+        'd/m/Y'       => 'DD/MM/YYYY',
+        'm-d-Y'       => 'MM‑DD‑YYYY',
+        'Y-m-d H:i'   => 'YYYY‑MM‑DD HH:MM (24h)',
+        'd M Y'       => 'DD Mon YYYY',
+    ];
+}

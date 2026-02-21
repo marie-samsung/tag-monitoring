@@ -4,7 +4,7 @@
 
 <h2 class="mb-3">Tags</h2>
 
-<form method="get" class="row g-3 mb-4">
+<!-- <form method="get" class="row g-3 mb-4">
 
     <div class="col-md-3">
         <input 
@@ -56,35 +56,48 @@
         <button class="btn btn-primary w-100">Filter</button>
     </div>
 
-</form>
+</form> -->
 
+<?php
+    use App\Models\PropertiesModel;
+    helper('custom_functions');
 
-<!-- Table -->
+    $propertiesModel = new PropertiesModel();
+    $properties = $propertiesModel->Options();
+?>
+
 <div class="table-responsive">
-    <table class="table table-bordered table-striped" id="tagsTable">
+    <table class="table table-striped table-bordered" id="tagsTable">
         <thead class="table-dark">
             <tr>
                 <th>Name</th>
-                <th>Property ID</th>
+                <th>Property</th>
                 <th>Status</th>
                 <th>End Date</th>
+                <th>Updated</th>
+                <th>Updated By</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody class="table-striped">
             <?php foreach ($tags as $tag): ?>
                 <tr>
-                    <td><?= esc($tag['name']) ?></td>
-                    <td><?= esc($tag['property_id']) ?></td>
-                    <td><?= esc($tag['status']) ?></td>
+                    <td class="col-4"><?= esc($tag['name']) ?></td>
+                    <td><?= $properties[$tag['property_id']] ?></td>
+                    <td>
+                        <span class="badge <?= status_class($tag['status']) ?>">
+                            <?= esc(status_label($tag['status'])) ?>
+                        </span>
+                    </td>
                     <td><?= esc($tag['al_end_date']) ?></td>
+                    <td><?= esc($tag['updated_at']) ?></td>
+                    <td><?= esc($tag['updated_by']) ?></td>
                 </tr>
             <?php endforeach; ?>
         </tbody>
     </table>
 </div>
 
-<!-- Simple JS Filter -->
-<script>
+<!-- <script>
 document.getElementById('searchInput').addEventListener('keyup', function () {
     let filter = this.value.toLowerCase();
     let rows = document.querySelectorAll('#tagsTable tbody tr');
@@ -94,6 +107,6 @@ document.getElementById('searchInput').addEventListener('keyup', function () {
         row.style.display = text.includes(filter) ? '' : 'none';
     });
 });
-</script>
+</script> -->
 
 <?= $this->endSection() ?>

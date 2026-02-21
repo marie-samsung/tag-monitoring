@@ -10,17 +10,56 @@ class TagsController extends BaseController
     {
         $tagModel = new TagsModel();
 
-        $filters = [
-            'keyword'     => $this->request->getGet('keyword'),
-            'status'      => $this->request->getGet('status'),
-            'property_id' => $this->request->getGet('property_id'),
-            'date_from'   => $this->request->getGet('date_from'),
-            'date_to'     => $this->request->getGet('date_to'),
-        ];
+        // $filters = [
+        //     'keyword'     => $this->request->getGet('keyword'),
+        //     'status'      => $this->request->getGet('status'),
+        //     'property_id' => $this->request->getGet('property_id'),
+        //     'date_from'   => $this->request->getGet('date_from'),
+        //     'date_to'     => $this->request->getGet('date_to'),
+        // ];
 
-        $data['tags'] = $tagModel->filter($filters);
+        // $data['tags'] = $tagModel->filter($filters);
+
+        $data['tags'] = $tagModel->findAll();
 
         return view('tags/list', $data);
+    }
 
+    public function create()
+    {
+        $model = new TagsModel();
+
+        if ($this->request->getMethod() === 'GET') {
+            return view('tags/create', []);
+        }
+
+        $post = $this->request->getPost();
+
+        $insertData = [
+            'property_id' => (int)$post['property_id'],
+            'name'       => $post['name'],
+            'conditions' => $post['conditions'],
+            'status' => $post['status'],
+            'al_end_date'   => $post['al_end_date'],
+            'ref_link' => $post['ref_link'],
+        ];
+
+        $model->insert($insertData);
+
+        return redirect()
+            ->to('/tags')
+            ->with('success', 'Tag created successfully.');
+    }
+
+    public function view($id)
+    {
+        $model = new TagsModel();
+        $tag = $model->find($id);
+
+        if (!$tag) {
+            throw new \CodeIgniter\Exceptions\PageNotFoundException("Tag with ID $id not found.");
+        }
+
+        return view('tags/view', ['tag' => $tag]);
     }
 }
