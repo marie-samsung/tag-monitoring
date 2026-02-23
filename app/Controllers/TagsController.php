@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Models\JiraHistoryModel;
 use App\Models\TagsModel;
 
 class TagsController extends BaseController
@@ -53,13 +54,15 @@ class TagsController extends BaseController
 
     public function view($id)
     {
-        $model = new TagsModel();
-        $tag = $model->find($id);
+        $tagModel = new TagsModel();
+        $tag = $tagModel->find($id);
+
+        $jiraModel = new JiraHistoryModel();
 
         if (!$tag) {
             throw new \CodeIgniter\Exceptions\PageNotFoundException("Tag with ID $id not found.");
         }
 
-        return view('tags/view', ['tag' => $tag]);
+        return view('tags/view', ['tag' => $tag, 'jiraTickets' => $jiraModel->getRelatedTags($id)]);
     }
 }
