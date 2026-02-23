@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 20, 2026 at 01:13 PM
+-- Generation Time: Feb 23, 2026 at 12:48 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -74,9 +74,19 @@ CREATE TABLE `jira_history` (
   `ticket_id` varchar(150) NOT NULL,
   `tag_id` int(11) NOT NULL COMMENT 'Reference to ''tags'' table',
   `is_active` int(11) NOT NULL DEFAULT 1,
+  `lp_path` varchar(200) NOT NULL,
   `created_by` tinyint(4) NOT NULL DEFAULT 0,
   `created_at` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `jira_history`
+--
+
+INSERT INTO `jira_history` (`id`, `ticket_id`, `tag_id`, `is_active`, `lp_path`, `created_by`, `created_at`) VALUES
+(1, 'GTA-33374', 2, 1, '/test', 0, '2026-02-23 12:42:26'),
+(2, 'GTA-30930', 1, 1, '/test', 0, '2026-02-23 12:42:39'),
+(3, 'GTA-302333', 3, 1, '/test', 0, '2026-02-23 12:42:53');
 
 -- --------------------------------------------------------
 
@@ -120,6 +130,7 @@ CREATE TABLE `properties` (
   `subsidiary_id` int(11) NOT NULL COMMENT 'Refers to the subsidiaries table',
   `country_id` int(11) NOT NULL,
   `language_id` tinyint(4) NOT NULL DEFAULT 1,
+  `website` varchar(200) NOT NULL,
   `ref_link` varchar(500) NOT NULL COMMENT 'Links to AL',
   `updated_by` tinyint(4) NOT NULL DEFAULT 0 COMMENT 'Account ID of PIC',
   `updated_at` datetime DEFAULT NULL,
@@ -133,10 +144,10 @@ CREATE TABLE `properties` (
 -- Dumping data for table `properties`
 --
 
-INSERT INTO `properties` (`id`, `name`, `is_active`, `is_epp`, `subsidiary_id`, `country_id`, `language_id`, `ref_link`, `updated_by`, `updated_at`, `created_by`, `created_at`, `deleted_by`, `deleted_at`) VALUES
-(1, 'ZP6_AE_AR-UAE(SGE) WebSDK', 1, 0, 1, 1, 2, 'https://experience.adobe.com/?lens_env=prod&reactor-lens_version=prod20250220203018#/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PR5657bad4cc9a4d8da75b5a2fca2c1574/overviewhttps://experience.adobe.com/?lens_env=prod&reactor-lens_version=prod20250220203018#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PR5657bad4cc9a4d8da75b5a2fca2c1574/overview', 0, NULL, 0, NULL, 0, NULL),
-(2, 'ZP6_AE-UAE(SGE) WebSDK', 1, 0, 1, 1, 1, 'https://experience.adobe.com/?lens_env=prod&reactor-lens_version=prod20250220203018#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PRa7cdc4dd00c24675812c3d05053e3cf3/overview', 0, NULL, 0, NULL, 0, NULL),
-(3, 'zP6zEPP_AE-UAE(AA) WebSDK', 1, 1, 1, 1, 1, '', 0, NULL, 0, NULL, 0, NULL);
+INSERT INTO `properties` (`id`, `name`, `is_active`, `is_epp`, `subsidiary_id`, `country_id`, `language_id`, `website`, `ref_link`, `updated_by`, `updated_at`, `created_by`, `created_at`, `deleted_by`, `deleted_at`) VALUES
+(1, 'ZP6_AE_AR-UAE(SGE) WebSDK', 1, 0, 1, 1, 2, 'https://www.samsung.com/ae_ar', 'https://experience.adobe.com/?lens_env=prod&reactor-lens_version=prod20250220203018#/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PR5657bad4cc9a4d8da75b5a2fca2c1574/overviewhttps://experience.adobe.com/?lens_env=prod&reactor-lens_version=prod20250220203018#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PR5657bad4cc9a4d8da75b5a2fca2c1574/overview', 0, NULL, 0, NULL, 0, NULL),
+(2, 'ZP6_AE-UAE(SGE) WebSDK', 1, 0, 1, 1, 1, 'https://www.samsung.com/ae', 'https://experience.adobe.com/?lens_env=prod&reactor-lens_version=prod20250220203018#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PRa7cdc4dd00c24675812c3d05053e3cf3/overview', 0, NULL, 0, NULL, 0, NULL),
+(3, 'zP6zEPP_AE-UAE(AA) WebSDK', 1, 1, 1, 1, 1, 'https://www.samsung.com/ae/multistore/samsung_employee/', '', 0, NULL, 0, NULL, 0, NULL);
 
 -- --------------------------------------------------------
 
@@ -204,7 +215,8 @@ INSERT INTO `tags` (`id`, `name`, `property_id`, `vendor_id`, `conditions`, `sta
 (2, 'LC-AEM-AD(Appsflyer)-CM-WL-PXFLW_smartscript', 1, 0, '', 1, 1, NULL, 'https://experience.adobe.com/?lens_env=prod&reactor-lens_version=prod20250220203018#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PR5657bad4cc9a4d8da75b5a2fca2c1574/rules/RL196621ca70cd4e1faf4a0275b9a8418e', 0, NULL, 0, NULL, 0, NULL),
 (3, 'LC-AEM-AD(Amazon)-CM-WL-PXFLW_ef2eeeab-6b7e-4867-b8fd-c47091cd2ff2', 2, 0, '', 1, 1, NULL, 'https://experience.adobe.com/?lens_env=prod&reactor-lens_version=prod20250220203018#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PRa7cdc4dd00c24675812c3d05053e3cf3/rules/RLdff128b12190436eab8d806d3bdd3391', 0, NULL, 0, NULL, 0, NULL),
 (4, 'LC-B2C-AD(Appsflyer)-CM-WL-PXFLW_smartscript', 2, 0, '', 1, 1, NULL, 'https://experience.adobe.com/?lens_env=prod&reactor-lens_version=prod20250220203018#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PRa7cdc4dd00c24675812c3d05053e3cf3/rules/RL94a08b1c00c9402289c37f4b79f3c200', 0, NULL, 0, NULL, 0, NULL),
-(5, 'LC-AEM-AD(Insider)-CM-WL-PXFLW_10009534', 3, 0, '', 1, 1, NULL, 'https://experience.adobe.com/?lens_env=prod&reactor-lens_version=prod20250220203018#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PR66456bebda424fb3af85ef35ee171c71/rules/RLd30dc4f7a2ab4fc8bca5529ebe6ccea1', 0, NULL, 0, NULL, 0, NULL);
+(5, 'LC-AEM-AD(Insider)-CM-WL-PXFLW_10009534', 3, 0, '', 1, 1, NULL, 'https://experience.adobe.com/?lens_env=prod&reactor-lens_version=prod20250220203018#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PR66456bebda424fb3af85ef35ee171c71/rules/RLd30dc4f7a2ab4fc8bca5529ebe6ccea1', 0, NULL, 0, NULL, 0, NULL),
+(6, 'LC-TEST', 1, 0, '(.*)', 1, 1, '2026-04-08 00:00:00', 'https://www.samsung.com/en', 0, '2026-02-20 12:30:09', 0, '2026-02-20 12:30:09', 0, NULL);
 
 -- --------------------------------------------------------
 
@@ -308,7 +320,7 @@ ALTER TABLE `countries`
 -- AUTO_INCREMENT for table `jira_history`
 --
 ALTER TABLE `jira_history`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `languages`
@@ -332,7 +344,7 @@ ALTER TABLE `subsidiaries`
 -- AUTO_INCREMENT for table `tags`
 --
 ALTER TABLE `tags`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `users`
