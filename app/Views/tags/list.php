@@ -2,7 +2,10 @@
 
 <?= $this->section('content') ?>
 
-<h2 class="mb-3">Tags</h2>
+<div class="d-flex align-items-center mb-3">
+    <h2>Tags</h2>
+    <a href="<?= site_url('tags/create') ?>" target="_blank" title="Add a new tag" class="btn btn-success btn-sm ms-auto px-2">Create New</a>
+</div>
 
 <!-- <form method="get" class="row g-3 mb-4">
 
@@ -66,35 +69,43 @@
     $properties = $propertiesModel->Options();
 ?>
 
-<div class="table-responsive">
-    <table class="table table-striped table-bordered" id="tagsTable">
-        <thead class="table-dark">
-            <tr>
-                <th>Name</th>
-                <th>Property</th>
-                <th>Status</th>
-                <th>End Date</th>
-                <th>Updated</th>
-                <th>Updated By</th>
-            </tr>
-        </thead>
-        <tbody class="table-striped">
-            <?php foreach ($tags as $tag): ?>
+<div class="container">
+    <div class="table-responsive">
+        <table class="table table-hover" id="tagsTable">
+            <thead>
                 <tr>
-                    <td class="col-4"><?= esc($tag['name']) ?></td>
-                    <td><?= $properties[$tag['property_id']] ?></td>
-                    <td>
-                        <span class="badge <?= status_class($tag['status']) ?>">
-                            <?= esc(status_label($tag['status'])) ?>
-                        </span>
-                    </td>
-                    <td><?= esc($tag['al_end_date']) ?></td>
-                    <td><?= esc($tag['updated_at']) ?></td>
-                    <td><?= esc($tag['updated_by']) ?></td>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Property</th>
+                    <th>Status</th>
+                    <th>End Date</th>
+                    <th>Updated</th>
+                    <!-- <th>Updated By</th> -->
+                    <th></th>
                 </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                <?php foreach ($tags as $tag): ?>
+                    <tr>
+                        <td><?= $tag['id'] ?></td>
+                        <td class="col-4"><?= esc($tag['name']) ?></td>
+                        <td><?= $properties[$tag['property_id']] ?></td>
+                        <td>
+                            <span class="badge <?= status_class($tag['status']) ?>">
+                                <?= esc(status_label($tag['status'])) ?>
+                            </span>
+                        </td>
+                        <td><?= esc($tag['al_end_date']) ?></td>
+                        <td><?= esc($tag['updated_at']) ?></td>
+                        <!-- <td><?= esc($tag['updated_by']) ?></td> -->
+                        <td>
+                            <a href="<?= site_url('tags/view/'.$tag['id']) ?>" target="_blank" title="View tag details" class="btn btn-dark">View</a>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
 </div>
 
 <!-- <script>
