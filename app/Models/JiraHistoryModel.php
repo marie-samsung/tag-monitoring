@@ -16,4 +16,12 @@ class JiraHistoryModel extends Model
     ];
 
     protected $useTimestamps = true;
+
+    public function getRelatedTags(int $id)
+    {
+        return $this->select()
+            ->where('tag_id', $id)
+            ->orderBy('created_at', 'DESC')
+            ->findAll();
+    }
 }
