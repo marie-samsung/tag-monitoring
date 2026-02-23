@@ -2,7 +2,7 @@
 
 <?= $this->section('content') ?>
 
-<h2>View Tag</h2>
+<h3><?= $tag['name'] ?></h3>
 
 <?php 
     use App\Models\Constants;
@@ -13,63 +13,89 @@
     $properties = $propertiesModel->Options();
 ?>
 
-<div class="row mb-3">
-    <div class="col">
-        <label class="form-label-sm">Property</label>
-        <div class="form-control-plaintext fw-semibold">
-            <?= esc($properties[$tag['property_id']] ?? '—') ?>
+<div class="container d-flex m-4 gap-3">
+    <!-- #region | TAG DETAILS -->
+    <div class="w-25 p-4 card">
+        <div class="mb-2">
+            <label class="form-label-xs">Property</label>
+            <div class="form-control-plaintext fw-semibold p-0 ms-2">
+                <?= esc($properties[$tag['property_id']] ?? '—') ?>
+            </div>
         </div>
-    </div>
 
-    <div class="col">
-        <label class="form-label-sm">Tag Name</label>
-        <div class="form-control-plaintext fw-semibold">
-            <?= esc($tag['name']) ?>
-        </div>
-    </div>
-</div>
-
-<div class="row mb-3">
-    <div class="col">
-        <label class="form-label-sm">Conditions</label>
-        <div class="form-control-plaintext">
-            <?= esc($tag['conditions']) ?>
-        </div>
-    </div>
-
-    <div class="col">
-        <label class="form-label-sm">Status</label>
-        <div class="form-control-plaintext">
-            <span class="badge <?= status_class($tag['status']) ?>">
-                <?= esc(Constants::IS_ACTIVE[$tag['status']] ?? 'Unknown') ?>
+        <div class="mb-2">
+            <label class="form-label-xs">Tag Name</label>
+            <span class="form-control-plaintext fw-semibold p-0 ms-2">
+                <?= esc($tag['name']) ?>
             </span>
         </div>
-    </div>
-</div>
 
-<div class="row mb-4">
-    <div class="col">
-        <label class="form-label-sm">AL End Date</label>
-        <div class="form-control-plaintext">
-            <?= esc($tag['al_end_date'] ?: '—') ?>
+        <div class="mb-2">
+            <label class="form-label-xs">Conditions</label>
+            <div class="form-control-plaintext fw-semibold p-0 ms-2">
+                <?= esc($tag['conditions'] ?: '—') ?>
+            </div>
         </div>
-    </div>
 
-    <div class="col">
-        <label class="form-label-sm">AL Link</label>
-        <div class="form-control-plaintext">
+        <div class="mb-2">
+            <label class="form-label-xs">Status</label>
+            <div class="form-control-plaintext fw-semibold p-0 ms-2">
+                <span class="badge <?= status_class($tag['status']) ?>">
+                    <?= esc(Constants::IS_ACTIVE[$tag['status']] ?? 'Unknown') ?>
+                </span>
+            </div>
+        </div>
+
+        <div class="mb-2">
+            <label class="form-label-xs">Adobe Launch End Date</label>
+            <div class="form-control-plaintext fw-semibold p-0 ms-2">
+                <?= esc($tag['al_end_date'] ?: '—') ?>
+            </div>
+        </div>
+        
+        <hr>
+
+        <div class="d-flex justify-content-center gap-1">
+            <a href="<?= site_url('tags') ?>" class="btn btn-secondary btn-sm">Back</a>
+            <a href="<?= site_url('tags/edit/' . $tag['id']) ?>" class="btn btn-primary btn-sm">Edit</a>
+
             <?php if (!empty($tag['ref_link'])): ?>
-                <a href="<?= esc($tag['ref_link']) ?>" target="_blank">
-                    <?= esc($tag['ref_link']) ?>
+                <a href="<?= esc($tag['ref_link']) ?>" target="_blank" class="btn btn-danger btn-sm">
+                    Adobe Launch
                 </a>
-            <?php else: ?>
-                —
             <?php endif; ?>
         </div>
     </div>
-</div>
+    <!-- #endregion -->
 
-<a href="<?= site_url('tags') ?>" class="btn btn-secondary">Back</a>
-<a href="<?= site_url('tags/edit/' . $tag['id']) ?>" class="btn btn-primary">Edit</a>
+    <!-- #region | JIRA HISTORY DETAILS -->
+    <div class="w-75">
+        <h5>JIRA History</h5>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Ticket ID</th>
+                        <th>Launch Publishing File</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <?php foreach ($jiraTickets as $jira): ?>
+                        <tr>
+                            <td><?= $jira['id'] ?: '-' ?></td>
+                            <td class="col-3">
+                                <?= $jira['ticket_id'] ?: '-' ?>
+                            </td>
+                            <td class="col-7"><?= $jira['lp_path'] ?: '-' ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <!-- #endregion -->
+</div>
 
 <?= $this->endSection() ?>
