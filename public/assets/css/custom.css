@@ -9,3 +9,8 @@ body {
 h1, h2, h3, h4, h5, h6 {
     font-family: 'Poppins', serif;
 }
+
+.form-label-xs {
+    font-size: 0.65rem;
+    font-weight: 400;
+}
