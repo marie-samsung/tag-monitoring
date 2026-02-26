@@ -10,6 +10,13 @@
 </head>
 <body>
     <div class="container mt-4">
+        <?php if (session()->getFlashdata('success')) : ?>
+            <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+                <?= esc(session()->getFlashdata('success')) ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        <?php endif; ?>
+
         <?= $this->renderSection('content') ?>
     </div>
     <script src=<?= base_url('assets/bootstrap/js/bootstrap.bundle.min.js') ?>></script>
