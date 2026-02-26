@@ -41,7 +41,7 @@
             <label class="form-label-xs">Status</label>
             <div class="form-control-plaintext fw-semibold p-0 ms-2">
                 <span class="badge <?= status_class($tag['status']) ?>">
-                    <?= esc(Constants::IS_ACTIVE[$tag['status']] ?? 'Unknown') ?>
+                    <?= esc(Constants::STATUS[$tag['status']] ?? 'Unknown') ?>
                 </span>
             </div>
         </div>
@@ -55,9 +55,9 @@
         
         <hr>
 
-        <div class="d-flex justify-content-center gap-1">
-            <a href="<?= site_url('tags') ?>" class="btn btn-secondary btn-sm">Back</a>
-            <a href="<?= site_url('tags/edit/' . $tag['id']) ?>" class="btn btn-primary btn-sm">Edit</a>
+        <div class="d-flex align-items-center gap-1">
+            <a href="<?= site_url('tags') ?>" class="btn btn-secondary btn-sm px-2">Back</a>
+            <a href="<?= site_url('tags/update/' . $tag['id']) ?>" class="btn btn-primary btn-sm">Edit</a>
 
             <?php if (!empty($tag['ref_link'])): ?>
                 <a href="<?= esc($tag['ref_link']) ?>" target="_blank" class="btn btn-danger btn-sm">
