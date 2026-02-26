@@ -7,6 +7,8 @@
     <a href="<?= site_url('tags/create') ?>" target="_blank" title="Add a new tag" class="btn btn-success btn-sm ms-auto px-2">Create New</a>
 </div>
 
+<?= csrf_field() ?>
+
 <!-- <form method="get" class="row g-3 mb-4">
 
     <div class="col-md-3">
@@ -98,8 +100,9 @@
                         <td><?= esc($tag['al_end_date']) ?></td>
                         <td><?= esc($tag['updated_at']) ?></td>
                         <!-- <td><?= esc($tag['updated_by']) ?></td> -->
-                        <td>
-                            <a href="<?= site_url('tags/view/'.$tag['id']) ?>" target="_blank" title="View tag details" class="btn btn-dark">View</a>
+                        <td class="gap-2">
+                            <a href="<?= site_url('tags/view/'.$tag['id']) ?>" target="_blank" title="View tag details" class="btn btn-secondary btn-sm">View</a>
+                            <a href="<?= site_url('tags/update/'.$tag['id']) ?>" target="_blank" title="View tag details" class="btn btn-primary btn-sm">Update</a>
                         </td>
                     </tr>
                 <?php endforeach; ?>
