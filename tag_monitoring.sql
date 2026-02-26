@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 23, 2026 at 12:48 PM
+-- Generation Time: Feb 26, 2026 at 11:22 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -196,7 +196,7 @@ CREATE TABLE `tags` (
   `conditions` varchar(200) NOT NULL COMMENT '(.*)',
   `status` tinyint(4) NOT NULL DEFAULT 0 COMMENT 'Refer to ''Constants'' model for values',
   `is_active` tinyint(4) NOT NULL DEFAULT 1,
-  `al_end_date` datetime DEFAULT NULL,
+  `al_end_date` date DEFAULT NULL,
   `ref_link` varchar(500) NOT NULL COMMENT 'Links to AL',
   `updated_by` tinyint(4) NOT NULL DEFAULT 0 COMMENT 'Account ID of PIC',
   `updated_at` datetime DEFAULT NULL,
@@ -216,7 +216,8 @@ INSERT INTO `tags` (`id`, `name`, `property_id`, `vendor_id`, `conditions`, `sta
 (3, 'LC-AEM-AD(Amazon)-CM-WL-PXFLW_ef2eeeab-6b7e-4867-b8fd-c47091cd2ff2', 2, 0, '', 1, 1, NULL, 'https://experience.adobe.com/?lens_env=prod&reactor-lens_version=prod20250220203018#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PRa7cdc4dd00c24675812c3d05053e3cf3/rules/RLdff128b12190436eab8d806d3bdd3391', 0, NULL, 0, NULL, 0, NULL),
 (4, 'LC-B2C-AD(Appsflyer)-CM-WL-PXFLW_smartscript', 2, 0, '', 1, 1, NULL, 'https://experience.adobe.com/?lens_env=prod&reactor-lens_version=prod20250220203018#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PRa7cdc4dd00c24675812c3d05053e3cf3/rules/RL94a08b1c00c9402289c37f4b79f3c200', 0, NULL, 0, NULL, 0, NULL),
 (5, 'LC-AEM-AD(Insider)-CM-WL-PXFLW_10009534', 3, 0, '', 1, 1, NULL, 'https://experience.adobe.com/?lens_env=prod&reactor-lens_version=prod20250220203018#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PR66456bebda424fb3af85ef35ee171c71/rules/RLd30dc4f7a2ab4fc8bca5529ebe6ccea1', 0, NULL, 0, NULL, 0, NULL),
-(6, 'LC-TEST', 1, 0, '(.*)', 1, 1, '2026-04-08 00:00:00', 'https://www.samsung.com/en', 0, '2026-02-20 12:30:09', 0, '2026-02-20 12:30:09', 0, NULL);
+(6, 'LC-TEST', 1, 0, '(.*)', 1, 1, '2026-04-08', 'https://www.samsung.com/en', 0, '2026-02-20 12:30:09', 0, '2026-02-20 12:30:09', 0, NULL),
+(7, 'LC-TEST', 2, 0, 'asdasd', 1, 1, '2026-02-27', 'https://www.samsung.com/en', 0, '2026-02-25 10:26:00', 0, '2026-02-25 10:26:00', 0, NULL);
 
 -- --------------------------------------------------------
 
@@ -244,7 +245,7 @@ CREATE TABLE `users` (
 
 CREATE TABLE `vendors` (
   `id` int(11) NOT NULL,
-  `name` varchar(10) NOT NULL,
+  `name` varchar(150) NOT NULL,
   `is_active` tinyint(4) NOT NULL DEFAULT 1,
   `updated_by` tinyint(4) NOT NULL DEFAULT 0 COMMENT 'Account ID of PIC',
   `updated_at` datetime DEFAULT NULL,
@@ -344,7 +345,7 @@ ALTER TABLE `subsidiaries`
 -- AUTO_INCREMENT for table `tags`
 --
 ALTER TABLE `tags`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `users`
