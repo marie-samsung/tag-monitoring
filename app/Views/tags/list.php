@@ -2,9 +2,12 @@
 
 <?= $this->section('content') ?>
 
-<div class="d-flex align-items-center mb-3">
+<div class="d-flex justify-content-between mb-3">
     <h2>Tags</h2>
-    <a href="<?= site_url('tags/create') ?>" target="_blank" title="Add a new tag" class="btn btn-success btn-sm ms-auto px-2">Create New</a>
+    <div>
+        <a href="<?= site_url('tags/create') ?>" target="_blank" title="Renew selected tags" class="btn btn-primary btn-sm ms-auto px-2" id="btnRenew" style="display:none;">Renew</a>
+        <a href="<?= site_url('tags/create') ?>" target="_blank" title="Add a new tag" class="btn btn-success btn-sm ms-auto px-2">Create New</a>
+    </div>
 </div>
 
 <?= csrf_field() ?>
@@ -73,10 +76,11 @@
 
 <div class="container">
     <div class="table-responsive">
-        <table class="table table-hover" id="tagsTable">
+        <table class="table table-hover" id="tblTags">
             <thead>
                 <tr>
                     <th>#</th>
+                    <th></th>
                     <th>Name</th>
                     <th>Property</th>
                     <th>Status</th>
@@ -90,6 +94,11 @@
                 <?php foreach ($tags as $tag): ?>
                     <tr>
                         <td><?= $tag['id'] ?></td>
+                        <td>
+                            <input type="checkbox"
+                                name="tag_ids[]"
+                                value="<?= htmlspecialchars($tag['id']) ?>">
+                        </td>
                         <td class="col-4"><?= esc($tag['name']) ?></td>
                         <td><?= $properties[$tag['property_id']] ?></td>
                         <td>
@@ -111,8 +120,8 @@
     </div>
 </div>
 
-<!-- <script>
-document.getElementById('searchInput').addEventListener('keyup', function () {
+<script>
+/** document.getElementById('searchInput').addEventListener('keyup', function () {
     let filter = this.value.toLowerCase();
     let rows = document.querySelectorAll('#tagsTable tbody tr');
 
@@ -120,7 +129,25 @@ document.getElementById('searchInput').addEventListener('keyup', function () {
         let text = row.textContent.toLowerCase();
         row.style.display = text.includes(filter) ? '' : 'none';
     });
+}); **/
+
+document.addEventListener('DOMContentLoaded', function () {
+    const btnRenew = document.getElementById('btnRenew');
+    const table = document.getElementById('tblTags');
+
+    const toggleButton = () => {
+        const anyChecked = table.querySelectorAll('input[type="checkbox"]:checked').length > 0;
+        btnRenew.style.display = anyChecked ? 'inline-block' : 'none';
+    };
+
+    table.addEventListener('change', function (e) {
+        if (e.target && e.target.type === 'checkbox') {
+            toggleButton();
+        }
+    });
+
+    toggleButton();
 });
-</script> -->
+</script>
 
 <?= $this->endSection() ?>
