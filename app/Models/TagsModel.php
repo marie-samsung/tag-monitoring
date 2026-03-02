@@ -25,47 +25,22 @@ class TagsModel extends Model
     protected $useTimestamps = true;
     protected $useSoftDeletes = true;
 
-    // public function search($keyword)
-    // {
-    //     $fields = $this->allowedFields;
-    //     $builder = $this->builder();
+    public function filterTags($filters = [])
+    {
+        $builder = $this->builder();
 
-    //     foreach ($fields as $field) {
-    //         $builder->orLike($field, $keyword);
-    //     }
+        if (!empty($filters['keyword'])) {
+            $builder->like('name', $filters['keyword']);
+        }
 
-    //     return $builder->get()->getResultArray();
-    // }
+        if ($filters['status'] !== '' && $filters['status'] !== null) {
+            $builder->where('status', $filters['status']);
+        }
 
-    // public function filter(array $filters = [])
-    // {
-    //     $builder = $this->builder();
+        if (!empty($filters['property_id'])) {
+            $builder->where('property_id', $filters['property_id']);
+        }
 
-    //     if (!empty($filters['keyword'])) {
-    //         $builder->groupStart()
-    //                 ->like('name', $filters['keyword'])
-    //                 ->orLike('property_id', $filters['keyword'])
-    //                 ->orLike('status', $filters['keyword'])
-    //                 ->orLike('al_end_date', $filters['keyword'])
-    //                 ->groupEnd();
-    //     }
-
-    //     if (!empty($filters['status'])) {
-    //         $builder->where('status', $filters['status']);
-    //     }
-
-    //     if (!empty($filters['property_id'])) {
-    //         $builder->where('property_id', $filters['property_id']);
-    //     }
-
-    //     if (!empty($filters['date_from'])) {
-    //         $builder->where('al_end_date >=', $filters['date_from']);
-    //     }
-
-    //     if (!empty($filters['date_to'])) {
-    //         $builder->where('al_end_date <=', $filters['date_to']);
-    //     }
-
-    //     return $builder->get()->getResultArray();
-    // }
+        return $builder->orderBy('al_end_date', 'DESC')->get()->getResultArray();
+    }
 }

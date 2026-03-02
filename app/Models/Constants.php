@@ -5,9 +5,10 @@ namespace App\Models;
 class Constants
 {
     public const STATUS = [
-        0 => 'Disabled',
         1 => 'Enabled',
-        2 => 'Expired',
+        2 => 'Disabled',
+        3 => 'Expired',
+        4 => 'Pending Verification',
     ];
 
     public const ACC_TYPE = [

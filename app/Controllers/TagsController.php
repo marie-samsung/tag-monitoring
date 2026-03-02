@@ -11,17 +11,15 @@ class TagsController extends BaseController
     {
         $tagModel = new TagsModel();
 
-        // $filters = [
-        //     'keyword'     => $this->request->getGet('keyword'),
-        //     'status'      => $this->request->getGet('status'),
-        //     'property_id' => $this->request->getGet('property_id'),
-        //     'date_from'   => $this->request->getGet('date_from'),
-        //     'date_to'     => $this->request->getGet('date_to'),
-        // ];
+        $filters = [
+            'keyword'     => $this->request->getGet('keyword'),
+            'status'      => $this->request->getGet('status'),
+            'property_id' => $this->request->getGet('property_id'),
+        ];
+        $data['tags'] = $tagModel->filterTags($filters);
+        $data['filters'] = $filters;
 
-        // $data['tags'] = $tagModel->filter($filters);
-
-        $data['tags'] = $tagModel->findAll();
+        // $data['tags'] = $tagModel->findAll();
 
         return view('tags/list', $data);
     }

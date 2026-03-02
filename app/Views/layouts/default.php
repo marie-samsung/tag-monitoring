@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
 
     <link href="<?= base_url('assets/css/custom.css') ?>" rel="stylesheet">
+    <link href="<?= base_url('assets/select2/css/select2.min.css') ?>" rel="stylesheet">
 </head>
 <body>
     <div class="container mt-4">
@@ -20,6 +21,8 @@
         <?= $this->renderSection('content') ?>
     </div>
     <script src=<?= base_url('assets/bootstrap/js/bootstrap.bundle.min.js') ?>></script>
+    <script src="<?= base_url('assets/jquery/js/jquery.min.js') ?>"></script>
+    <script src=<?= base_url('assets/select2/js/select2.min.js') ?>></script>
 </body>
 </html>
  
