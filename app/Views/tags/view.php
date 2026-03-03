@@ -70,13 +70,19 @@
 
     <!-- #region | JIRA HISTORY DETAILS -->
     <div class="w-75">
-        <h5>JIRA History</h5>
+        <div class="d-flex justify-content-between mb-3">
+            <h5>JIRA References</h5>
+            <div>
+                <a href="<?= site_url('jira/create?tag_id='.$tag['id']) ?>" target="_blank" title="Add a new JIRA ticket" class="btn btn-success btn-sm ms-auto px-2">Add Entry</a>
+            </div>
+        </div>
         <div class="table-responsive">
             <table class="table table-hover">
                 <thead>
                     <tr>
                         <th>#</th>
                         <th>Ticket ID</th>
+                        <th>Type</th>
                         <th>Launch Publishing File</th>
                     </tr>
                 </thead>
@@ -88,6 +94,7 @@
                             <td class="col-3">
                                 <?= $jira['ticket_id'] ?: '-' ?>
                             </td>
+                            <td><?= $jira['type'] ?: '-' ?></td>
                             <td class="col-7"><?= $jira['lp_path'] ?: '-' ?></td>
                         </tr>
                     <?php endforeach; ?>
