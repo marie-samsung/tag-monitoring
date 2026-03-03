@@ -8,7 +8,7 @@
 </div>
 
 <?php 
-     use App\Models\Constants;
+    use App\Models\Constants;
     use App\Models\PropertiesModel;
     use App\Models\VendorsModel;
 
