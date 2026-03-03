@@ -12,7 +12,7 @@
 ?>
 
 <div class="d-flex justify-content-between mb-3">
-    <h2>Tags</h2>
+    <h2>Tag Inventory</h2>
     <div>
         <a href="<?= site_url('tags/create') ?>" target="_blank" title="Renew selected tags" class="btn btn-primary btn-sm ms-auto px-2" id="btnRenew" style="display:none;">Renew</a>
         <a href="<?= site_url('tags/create') ?>" target="_blank" title="Add a new tag" class="btn btn-success btn-sm ms-auto px-2">Create New</a>
@@ -31,7 +31,7 @@
                     type="text" 
                     name="keyword" 
                     class="form-control" 
-                    placeholder="Search keyword..."
+                    placeholder="Search..."
                     value="<?= esc($_GET['keyword'] ?? '') ?>"
                 >
             </div>
