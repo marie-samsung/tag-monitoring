@@ -13,7 +13,11 @@ $routes->group('tags', function ($routes) {
     $routes->get('/', 'TagsController::index');
     $routes->match(['get', 'post'], 'create', 'TagsController::create');
 
-    // $routes->get('edit/(:num)', 'TagsController::edit/$1');
+    $routes->get('update/(:num)', 'TagsController::update/$1');
     $routes->get('view/(:num)', 'TagsController::view/$1');
     // $routes->post('delete/(:num)', 'TagsController::delete/$1');
+});
+
+$routes->group('jira', function ($routes) {
+    $routes->match(['get', 'post'], 'create', 'JiraController::create');
 });
