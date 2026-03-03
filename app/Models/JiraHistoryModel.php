@@ -10,6 +10,7 @@ class JiraHistoryModel extends Model
     
     protected $allowedFields = [
         'ticket_id', // GTA-XXXXX
+        'type',
         'tag_id', // Refer to 'Tags' table
         'is_active', // bool
         'created_by', // Refer to 'Users' table
