@@ -29,9 +29,9 @@
 
     <div class="container card p-3">
         <div class="row mb-2">
-            <div class="col">
+            <div class="col mb-2">
                 <label class="form-label-xs">Property</label>
-                <select name="property_id" class="form-select" required>
+                <select name="property_id" class="form-select searchable-select" required>
                     <?php foreach ($properties as $value => $label): ?>
                         <option value="<?= esc($value) ?>"
                             <?= old('property_id', $tag['property_id'] ?? '') == $value ? 'selected' : '' ?>>
@@ -43,7 +43,7 @@
 
             <div class="col">
                 <label class="form-label-xs">Vendor</label>
-                <select name="vendor_id" class="form-select" required>
+                <select name="vendor_id" class="form-select searchable-select" required>
                     <?php foreach ($vendors as $value => $label): ?>
                         <option value="<?= esc($value) ?>"
                             <?= old('vendor_id', $tag['vendor_id'] ?? '') == $value ? 'selected' : '' ?>>
@@ -121,5 +121,13 @@
         </div>
     </div>
 </form>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        $('.searchable-select').select2({
+            width: '100%',
+        });
+    });
+</script>
 
 <?= $this->endSection() ?>
