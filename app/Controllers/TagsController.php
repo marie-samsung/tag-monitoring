@@ -63,4 +63,31 @@ class TagsController extends BaseController
 
         return view('tags/view', ['tag' => $tag, 'jiraTickets' => $jiraModel->getRelatedTags($id)]);
     }
+
+    public function update($id)
+    {
+        $model = new TagsModel();
+        $tag = $model->find($id);
+
+        if ($this->request->getMethod() === 'GET') {
+            return view('tags/create', []);
+        }
+
+        $post = $this->request->getPost();
+
+        $insertData = [
+            'property_id' => (int)$post['property_id'],
+            'name'       => $post['name'],
+            'conditions' => $post['conditions'],
+            'status' => $post['status'],
+            'al_end_date'   => $post['al_end_date'],
+            'ref_link' => $post['ref_link'],
+        ];
+
+        $model->insert($insertData);
+
+        return redirect()
+            ->to('/tags')
+            ->with('success', 'Tag created successfully.');
+    }
 }
