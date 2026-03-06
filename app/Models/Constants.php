@@ -4,6 +4,14 @@ namespace App\Models;
 
 class Constants
 {
+    public const JIRA_TICKET_TYPES = [
+        1 => 'Date Extension Rule',
+        2 => 'New Tag',
+        3 => 'New Rule',
+        4 => 'Master Approval',
+        5 => 'Other',
+    ];
+
     public const STATUS = [
         1 => 'Enabled',
         2 => 'Disabled',

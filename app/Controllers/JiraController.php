@@ -25,9 +25,18 @@ class JiraController extends BaseController
         }
 
         $post = $this->request->getPost();
+        $file = $this->request->getFile('lp_path');
+
+        var_dump($post);
+        var_dump($file);
+        die();
 
         $insertData = [
-
+            'ticket_id' => $post['ticket_id'],
+            'type' => $post['type'],
+            'tag_id' => $post['tag_id'],
+            'lp_path' => $this->request->getFile('lp_path')->getName(),
+            'created_by' => 0, // @TODO: Replace with actual user ID from session
         ];
 
         $model->insert($insertData);

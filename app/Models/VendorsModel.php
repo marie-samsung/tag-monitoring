@@ -10,6 +10,7 @@ class VendorsModel extends Model
     
     protected $allowedFields = [
         'name',
+        'purpose',
         'updated_by', // Refer to 'Users' table
         'created_by',
         'deleted_by',

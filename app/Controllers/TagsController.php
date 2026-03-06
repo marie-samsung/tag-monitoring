@@ -36,6 +36,7 @@ class TagsController extends BaseController
 
         $insertData = [
             'property_id' => (int)$post['property_id'],
+            'vendor_id' => (int)$post['vendor_id'],
             'name'       => $post['name'],
             'conditions' => $post['conditions'],
             'status' => $post['status'],
@@ -69,25 +70,34 @@ class TagsController extends BaseController
         $model = new TagsModel();
         $tag = $model->find($id);
 
+        if (!$tag) {
+            return redirect()
+                ->to('/tags')
+                ->with('error', 'Tag not found.');
+        }
+
         if ($this->request->getMethod() === 'GET') {
-            return view('tags/create', []);
+            return view('tags/update', [
+                'tag' => $tag
+            ]);
         }
 
         $post = $this->request->getPost();
 
-        $insertData = [
+        $updateData = [
             'property_id' => (int)$post['property_id'],
-            'name'       => $post['name'],
-            'conditions' => $post['conditions'],
-            'status' => $post['status'],
-            'al_end_date'   => $post['al_end_date'],
-            'ref_link' => $post['ref_link'],
+            'vendor_id' => (int)$post['vendor_id'],
+            'name'        => $post['name'],
+            'conditions'  => $post['conditions'],
+            'status'      => $post['status'],
+            'al_end_date' => $post['al_end_date'],
+            'ref_link'    => $post['ref_link'],
         ];
 
-        $model->insert($insertData);
+        $model->update($id, $updateData);
 
         return redirect()
             ->to('/tags')
-            ->with('success', 'Tag created successfully.');
+            ->with('success', 'Tag updated successfully.');
     }
 }

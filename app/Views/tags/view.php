@@ -7,10 +7,14 @@
 <?php 
     use App\Models\Constants;
     use App\Models\PropertiesModel;
+    use App\Models\VendorsModel;
     helper('custom_functions');
 
     $propertiesModel = new PropertiesModel();
     $properties = $propertiesModel->Options();
+
+    $vendorsModel = new VendorsModel();
+    $vendors = $vendorsModel->Options();
 ?>
 
 <div class="container d-flex m-4 gap-3">
@@ -20,6 +24,13 @@
             <label class="form-label-xs">Property</label>
             <div class="form-control-plaintext fw-semibold p-0 ms-2">
                 <?= esc($properties[$tag['property_id']] ?? '—') ?>
+            </div>
+        </div>
+
+        <div class="mb-2">
+            <label class="form-label-xs">Vendor</label>
+            <div class="form-control-plaintext fw-semibold p-0 ms-2">
+                <?= esc($vendors[$tag['vendor_id']] ?? '—') ?>
             </div>
         </div>
 
