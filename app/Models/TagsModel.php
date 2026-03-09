@@ -43,4 +43,22 @@ class TagsModel extends Model
 
         return $builder->orderBy('al_end_date', 'DESC')->get()->getResultArray();
     }
+
+    /**
+     * Create the folder structure and file when uploading the Launch Publishing file on JIRA History
+     * @param int $id
+     * @return never
+     */
+    public function uploadLPFolderPath($id)
+    {
+        $tag = $this->find($id);
+        $propertiesModel = new PropertiesModel();
+        $property = $propertiesModel->find($tag['property_id']);
+
+        // $path = Constants::LP_PATH . $property['name'] . 
+
+        
+        var_dump($tag);
+        die();
+    }
 }
