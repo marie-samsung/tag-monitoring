@@ -94,6 +94,7 @@
                         <th>#</th>
                         <th>Ticket ID</th>
                         <th>Type</th>
+                        <th>Comments</th>
                         <th>Launch Publishing File</th>
                     </tr>
                 </thead>
@@ -102,11 +103,12 @@
                     <?php foreach ($jiraTickets as $jira): ?>
                         <tr>
                             <td><?= $jira['id'] ?: '-' ?></td>
-                            <td class="col-3">
+                            <td>
                                 <?= $jira['ticket_id'] ?: '-' ?>
                             </td>
-                            <td><?= $jira['type'] ?: '-' ?></td>
-                            <td class="col-7"><?= $jira['lp_path'] ?: '-' ?></td>
+                            <td class="col-3"><?= Constants::JIRA_TICKET_TYPES[$jira['type']] ?: '-' ?></td>
+                            <td class="col-4"><?= $jira['comments'] ?></td>
+                            <td class="col-3"><?= $jira['lp_path'] ?: '-' ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
