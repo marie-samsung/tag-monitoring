@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 26, 2026 at 11:22 AM
+-- Generation Time: Mar 09, 2026 at 05:37 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -72,21 +72,27 @@ INSERT INTO `countries` (`id`, `name`, `code`, `updated_by`, `updated_at`, `crea
 CREATE TABLE `jira_history` (
   `id` int(11) NOT NULL,
   `ticket_id` varchar(150) NOT NULL,
+  `type` varchar(150) NOT NULL,
+  `comments` varchar(500) DEFAULT NULL,
   `tag_id` int(11) NOT NULL COMMENT 'Reference to ''tags'' table',
   `is_active` int(11) NOT NULL DEFAULT 1,
   `lp_path` varchar(200) NOT NULL,
   `created_by` tinyint(4) NOT NULL DEFAULT 0,
-  `created_at` datetime NOT NULL
+  `created_at` datetime NOT NULL,
+  `updated_by` int(11) NOT NULL DEFAULT 0,
+  `updated_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `jira_history`
 --
 
-INSERT INTO `jira_history` (`id`, `ticket_id`, `tag_id`, `is_active`, `lp_path`, `created_by`, `created_at`) VALUES
-(1, 'GTA-33374', 2, 1, '/test', 0, '2026-02-23 12:42:26'),
-(2, 'GTA-30930', 1, 1, '/test', 0, '2026-02-23 12:42:39'),
-(3, 'GTA-302333', 3, 1, '/test', 0, '2026-02-23 12:42:53');
+INSERT INTO `jira_history` (`id`, `ticket_id`, `type`, `comments`, `tag_id`, `is_active`, `lp_path`, `created_by`, `created_at`, `updated_by`, `updated_at`) VALUES
+(1, 'GTA-33374', '', NULL, 2, 1, '/test', 0, '2026-02-23 12:42:26', 0, NULL),
+(2, 'GTA-30930', '', NULL, 1, 1, '/test', 0, '2026-02-23 12:42:39', 0, NULL),
+(3, 'GTA-302333', '', NULL, 3, 1, '/test', 0, '2026-02-23 12:42:53', 0, NULL),
+(4, 'GTA-33898', '1', 'Try lang', 8, 1, '1773050039_2e856046d07ea1c5fcae.bin', 0, '2026-03-09 09:53:59', 0, '2026-03-09 09:53:59'),
+(5, 'GTA-33898', '1', 'testing only', 8, 1, 'Launch Publishing Request Document_v2.0_AE_060226_2.xlsx', 0, '2026-03-09 10:05:36', 0, '2026-03-09 10:05:36');
 
 -- --------------------------------------------------------
 
@@ -192,7 +198,7 @@ CREATE TABLE `tags` (
   `id` int(11) NOT NULL,
   `name` varchar(500) NOT NULL,
   `property_id` int(11) NOT NULL COMMENT 'Refers to the properties table',
-  `vendor_id` int(11) NOT NULL,
+  `vendor_id` int(11) NOT NULL DEFAULT 0,
   `conditions` varchar(200) NOT NULL COMMENT '(.*)',
   `status` tinyint(4) NOT NULL DEFAULT 0 COMMENT 'Refer to ''Constants'' model for values',
   `is_active` tinyint(4) NOT NULL DEFAULT 1,
@@ -216,8 +222,9 @@ INSERT INTO `tags` (`id`, `name`, `property_id`, `vendor_id`, `conditions`, `sta
 (3, 'LC-AEM-AD(Amazon)-CM-WL-PXFLW_ef2eeeab-6b7e-4867-b8fd-c47091cd2ff2', 2, 0, '', 1, 1, NULL, 'https://experience.adobe.com/?lens_env=prod&reactor-lens_version=prod20250220203018#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PRa7cdc4dd00c24675812c3d05053e3cf3/rules/RLdff128b12190436eab8d806d3bdd3391', 0, NULL, 0, NULL, 0, NULL),
 (4, 'LC-B2C-AD(Appsflyer)-CM-WL-PXFLW_smartscript', 2, 0, '', 1, 1, NULL, 'https://experience.adobe.com/?lens_env=prod&reactor-lens_version=prod20250220203018#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PRa7cdc4dd00c24675812c3d05053e3cf3/rules/RL94a08b1c00c9402289c37f4b79f3c200', 0, NULL, 0, NULL, 0, NULL),
 (5, 'LC-AEM-AD(Insider)-CM-WL-PXFLW_10009534', 3, 0, '', 1, 1, NULL, 'https://experience.adobe.com/?lens_env=prod&reactor-lens_version=prod20250220203018#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PR66456bebda424fb3af85ef35ee171c71/rules/RLd30dc4f7a2ab4fc8bca5529ebe6ccea1', 0, NULL, 0, NULL, 0, NULL),
-(6, 'LC-TEST', 1, 0, '(.*)', 1, 1, '2026-04-08', 'https://www.samsung.com/en', 0, '2026-02-20 12:30:09', 0, '2026-02-20 12:30:09', 0, NULL),
-(7, 'LC-TEST', 2, 0, 'asdasd', 1, 1, '2026-02-27', 'https://www.samsung.com/en', 0, '2026-02-25 10:26:00', 0, '2026-02-25 10:26:00', 0, NULL);
+(6, 'LC-TEST-UPDATE-2', 1, 0, '(.*)', 3, 1, '2026-01-08', 'https://www.samsung.com/lb', 0, '2026-03-09 08:59:43', 0, '2026-02-20 12:30:09', 0, NULL),
+(7, 'LC-TEST', 2, 0, 'asdasd', 1, 1, '2026-02-27', 'https://www.samsung.com/en', 0, '2026-02-25 10:26:00', 0, '2026-02-25 10:26:00', 0, NULL),
+(8, 'LC-TEST-TRY-UPDATE', 3, 0, '(.*)', 1, 1, '2026-03-31', 'https://www.samsung.com/en', 0, '2026-03-09 08:47:39', 0, '2026-03-09 08:47:39', 0, NULL);
 
 -- --------------------------------------------------------
 
@@ -321,7 +328,7 @@ ALTER TABLE `countries`
 -- AUTO_INCREMENT for table `jira_history`
 --
 ALTER TABLE `jira_history`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `languages`
@@ -345,7 +352,7 @@ ALTER TABLE `subsidiaries`
 -- AUTO_INCREMENT for table `tags`
 --
 ALTER TABLE `tags`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `users`
