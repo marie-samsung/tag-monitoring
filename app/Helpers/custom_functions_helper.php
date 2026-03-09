@@ -3,9 +3,10 @@
 function status_label(int $code): string
 {
     $map = [
-        0 => 'Disabled',
+        2 => 'Disabled',
         1 => 'Enabled',
-        2 => 'Expired',
+        3 => 'Expired',
+        4 => 'Pending Verification',
     ];
     return $map[$code] ?? 'Unknown';
 }
@@ -14,7 +15,9 @@ function status_class(int $code): string
 {
     return match ($code) {
         1 => 'bg-success text-white',   // Enabled
-        0 => 'bg-danger text-white',    // Disabled
+        2 => 'bg-danger text-white',    // Disabled
+        3 => 'bg-secondary text-white', // Expired
+        4 => 'bg-warning text-white', // Pending Verification
         default => 'bg-secondary text-white',
     };
 }
