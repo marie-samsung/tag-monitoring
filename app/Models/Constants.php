@@ -4,6 +4,8 @@ namespace App\Models;
 
 class Constants
 {
+    public const LP_PATH = WRITEPATH . 'uploads/lp/';
+
     public const JIRA_TICKET_TYPES = [
         1 => 'Date Extension Rule',
         2 => 'New Tag',
