@@ -21,7 +21,7 @@
     </div>
 <?php endif; ?>
 
-<form action="<?= site_url('jira/create') ?>" method="post" enctype="multipart/form-data">
+<form action="<?= site_url('jira/create?tag_id='.$tag['id']) ?>" method="post" enctype="multipart/form-data">
     <?= csrf_field() ?>
 
     <div class="container card p-3">
@@ -38,6 +38,14 @@
             </div>
 
             <div class="col">
+                <label for="lp_path" class="form-label-xs">Launch Publishing File Path</label>
+                <br />
+                <input type="file" name="lp_path" accept=".xls,.xlsx">
+            </div>
+        </div>
+        
+        <div class="row mb-3">
+            <div class="col">
                 <label class="form-label-xs">Type</label>
                 <select name="type" class="form-select" required>
                     <?php foreach (Constants::JIRA_TICKET_TYPES as $value => $label): ?>
@@ -48,13 +56,16 @@
                     <?php endforeach; ?>
                 </select>
             </div>
-        </div>
-        
-        <div class="row mb-2">
+
             <div class="col">
-                <label for="lp_path" class="form-label-xs">Launch Publishing File Path</label>
-                <br />
-                <input type="file" name="lp_path" accept=".xls,.xlsx">
+                <label class="form-label-xs" for="comments">Notes</label>
+                <textarea
+                    name="comments"
+                    id="comments"
+                    class="form-control"
+                    rows="4"
+                    placeholder="Enter comments..."
+                ><?= esc(old('comments', $tag['comments'] ?? '')) ?></textarea>
             </div>
         </div>
 
