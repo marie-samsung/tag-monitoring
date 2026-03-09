@@ -36,7 +36,7 @@ class TagsController extends BaseController
 
         $insertData = [
             'property_id' => (int)$post['property_id'],
-            'vendor_id' => (int)$post['vendor_id'],
+            // 'vendor_id' => (int)$post['vendor_id'],
             'name'       => $post['name'],
             'conditions' => $post['conditions'],
             'status' => $post['status'],
@@ -48,7 +48,7 @@ class TagsController extends BaseController
 
         return redirect()
             ->to('/tags')
-            ->with('success', 'Tag created successfully.');
+            ->with('success', "Tag {$post['name']} created successfully.");
     }
 
     public function view($id)
@@ -86,7 +86,7 @@ class TagsController extends BaseController
 
         $updateData = [
             'property_id' => (int)$post['property_id'],
-            'vendor_id' => (int)$post['vendor_id'],
+            // 'vendor_id' => (int)$post['vendor_id'],
             'name'        => $post['name'],
             'conditions'  => $post['conditions'],
             'status'      => $post['status'],
@@ -98,6 +98,6 @@ class TagsController extends BaseController
 
         return redirect()
             ->to('/tags')
-            ->with('success', 'Tag updated successfully.');
+            ->with('success', "Tag {$post['name']} updated successfully.");
     }
 }
