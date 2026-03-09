@@ -25,7 +25,7 @@
     </div>
 <?php endif; ?>
 
-<form action="<?= site_url('tags/update') ?>" method="post">
+<form action="<?= site_url("tags/update/{$tag['id']}") ?>" method="post">
     <?= csrf_field() ?>
 
     <div class="container card p-3">
@@ -44,7 +44,7 @@
 
             <div class="col">
                 <label class="form-label-xs">Vendor</label>
-                <select name="vendor_id" class="form-select searchable-select" required>
+                <select name="vendor_id" class="form-select searchable-select">
                     <?php foreach ($vendors as $value => $label): ?>
                         <option value="<?= esc($value) ?>"
                             <?= ($tag['vendor_id'] == $value) ? 'selected' : '' ?>>
