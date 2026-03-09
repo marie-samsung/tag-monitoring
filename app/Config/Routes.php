@@ -13,7 +13,7 @@ $routes->group('tags', function ($routes) {
     $routes->get('/', 'TagsController::index');
     $routes->match(['get', 'post'], 'create', 'TagsController::create');
 
-    $routes->get('update/(:num)', 'TagsController::update/$1');
+    $routes->match(['get', 'post'], 'update/(:num)', 'TagsController::update/$1');
     $routes->get('view/(:num)', 'TagsController::view/$1');
     // $routes->post('delete/(:num)', 'TagsController::delete/$1');
 });
