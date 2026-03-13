@@ -108,7 +108,11 @@
                             </td>
                             <td class="col-3"><?= Constants::JIRA_TICKET_TYPES[$jira['type']] ?: '-' ?></td>
                             <td class="col-4"><?= $jira['comments'] ?></td>
-                            <td class="col-3"><?= $jira['lp_path'] ?: '-' ?></td>
+                            <td class="col-3">
+                                <a href="<?= site_url('jira/download?file_path=' . urlencode(Constants::LP_WRITE_PATH . $jira['lp_path'])) ?>">
+                                    <?= basename($jira['lp_path']) ?: '-' ?>
+                                </a>
+                            </td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>

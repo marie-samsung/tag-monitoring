@@ -1,0 +1,40 @@
+CRITICAL - 2026-03-13 04:44:00 --> CodeIgniter\Exceptions\BadMethodCallException: Call to undefined method App\Models\SubsidiariesModel::Options
+[Method: GET, Route: properties]
+in SYSTEMPATH\Model.php on line 758.
+ 1 APPPATH\Views\properties\list.php(10): CodeIgniter\Model->__call('Options', [])
+ 2 SYSTEMPATH\View\View.php(238): include('C:\\xampp\\htdocs\\tag-monitoring\\app\\Views\\properties\\list.php')
+ 3 SYSTEMPATH\View\View.php(241): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1250): CodeIgniter\View\View->render('properties/list', [], true)
+ 5 APPPATH\Controllers\PropertiesController.php(14): view('properties/list', [...])
+ 6 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\PropertiesController->index()
+ 7 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\PropertiesController))
+ 8 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-13 04:44:39 --> TypeError: Cannot access offset of type string on string
+[Method: GET, Route: properties]
+in APPPATH\Views\properties\list.php on line 43.
+ 1 SYSTEMPATH\View\View.php(238): include()
+ 2 SYSTEMPATH\View\View.php(241): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 3 SYSTEMPATH\Common.php(1250): CodeIgniter\View\View->render('properties/list', [], true)
+ 4 APPPATH\Controllers\PropertiesController.php(14): view('properties/list', [...])
+ 5 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\PropertiesController->index()
+ 6 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\PropertiesController))
+ 7 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-13 04:44:49 --> TypeError: Cannot access offset of type string on string
+[Method: GET, Route: properties]
+in APPPATH\Views\properties\list.php on line 43.
+ 1 SYSTEMPATH\View\View.php(238): include()
+ 2 SYSTEMPATH\View\View.php(241): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 3 SYSTEMPATH\Common.php(1250): CodeIgniter\View\View->render('properties/list', [], true)
+ 4 APPPATH\Controllers\PropertiesController.php(14): view('properties/list', [...])
+ 5 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\PropertiesController->index()
+ 6 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\PropertiesController))
+ 7 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))

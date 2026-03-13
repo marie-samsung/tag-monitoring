@@ -22,7 +22,15 @@ function status_class(int $code): string
     };
 }
 
-function is_epp(int $value): string
+function bool_label(int $value): string
 {
-    return $value ? 'Yes' : 'No';
+    return $value === 1 ? 'Yes' : 'No';
+}
+
+function bool_class(int $value): string
+{
+    return match ($value) {
+        1 => 'bg-success text-white',   // Yes
+        0 => 'bg-secondary text-white',    // No
+    };
 }

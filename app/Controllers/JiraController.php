@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\JiraHistoryModel;
 use App\Models\TagsModel;
+use App\Models\Constants;
 use CodeIgniter\Files\Exceptions\FileException;
 
 class JiraController extends BaseController
@@ -39,10 +40,11 @@ class JiraController extends BaseController
         try {
             if ($file && $file->isValid()) {
                 $tag = new TagsModel();
-                $tag->folderStructure($tag_id);
-                $uploadPath = WRITEPATH . 'uploads/lp';
-                $lpPathFileName = $file->getClientName();
-                $file->move($uploadPath, $lpPathFileName);
+                $upload_path = $tag->uploadLPFolderPath($tag_id);
+                // $uploadPath = WRITEPATH . 'uploads/lp';
+                $file_name = $file->getClientName();
+                $file->move(Constants::LP_WRITE_PATH . $upload_path, $file_name);
+                $lp_path = $upload_path . '/' . $file_name;
             }
         } catch(FileException $e) {
             var_dump($e);
@@ -53,7 +55,7 @@ class JiraController extends BaseController
             'type' => $post['type'],
             'comments' => $post['comments'],
             'tag_id' => $post['tag_id'],
-            'lp_path' => $lpPathFileName ?? null,
+            'lp_path' => $lp_path ?? null,
             'created_by' => 0, // @TODO: Replace with actual user ID from session
         ];
 
@@ -62,5 +64,19 @@ class JiraController extends BaseController
         return redirect()
             ->to('/tags/view/'.$post['tag_id'])
             ->with('success', 'JIRA entry created successfully.');
+    }
+
+    public function download()
+    {
+        $file_path = $this->request->getGet('file_path');
+        $file_path = urldecode($file_path);
+
+        if (!file_exists($file_path)) {
+            return redirect()
+                ->back()
+                ->with('errors', "{$file_path} not found.");
+        }
+
+        return $this->response->download($file_path, null)->setFileName(basename($file_path));
     }
 }

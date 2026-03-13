@@ -25,6 +25,11 @@ class TagsModel extends Model
     protected $useTimestamps = true;
     protected $useSoftDeletes = true;
 
+    /**
+     * Filtering of tags in list view
+     * @param mixed $filters
+     * @return array
+     */
     public function filterTags($filters = [])
     {
         $builder = $this->builder();
@@ -47,18 +52,16 @@ class TagsModel extends Model
     /**
      * Create the folder structure and file when uploading the Launch Publishing file on JIRA History
      * @param int $id
-     * @return never
+     * @return string The path where the LP file should be stored
      */
     public function uploadLPFolderPath($id)
     {
         $tag = $this->find($id);
         $propertiesModel = new PropertiesModel();
+        $subsidiaryModel = new SubsidiariesModel();
         $property = $propertiesModel->find($tag['property_id']);
-
-        // $path = Constants::LP_PATH . $property['name'] . 
-
-        
-        var_dump($tag);
-        die();
+        $subsidiary = $subsidiaryModel->find($property['subsidiary_id']);
+        // $today = date('d-m-Y');
+        return $subsidiary['name'] . '/' . $property['name'] . '/' . $tag['name'];
     }
 }

@@ -11,7 +11,7 @@
     $properties = $propertiesModel->Options();
 ?>
 
-<div class="d-flex justify-content-between mb-3">
+<div class="d-flex justify-content-between">
     <h2>Tag Inventory</h2>
     <div>
         <a href="<?= site_url('tags/create') ?>" target="_blank" title="Renew selected tags" class="btn btn-primary btn-sm ms-auto px-2" id="btnRenew" style="display:none;">Renew</a>
@@ -24,7 +24,7 @@
 <div class="container">
     <!-- #region | SEARCH FILTER -->
     <div class="row">
-        <form method="get" class="row g-3 mb-4">
+        <form method="get" class="row g-3 mb-3">
 
             <div class="col">
                 <input 
@@ -50,7 +50,7 @@
 
             <div class="col">
                 <select name="status" class="form-select">
-                    <option value="">All</option>
+                    <option value="">All Status</option>
                     <?php foreach (Constants::STATUS as $value => $label): ?>
                         <option value="<?= esc($value) ?>"
                             <?= old('status', $filters['status'] ?? null) == $value ? 'selected' : '' ?>>

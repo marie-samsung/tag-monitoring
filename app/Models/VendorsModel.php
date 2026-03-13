@@ -10,7 +10,9 @@ class VendorsModel extends Model
     
     protected $allowedFields = [
         'name',
-        'purpose',
+        'about', // RTE 
+        'tag_purpose', // RTE
+        'collected_data', // RTE
         'updated_by', // Refer to 'Users' table
         'created_by',
         'deleted_by',

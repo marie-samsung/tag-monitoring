@@ -18,6 +18,14 @@ $routes->group('tags', function ($routes) {
     // $routes->post('delete/(:num)', 'TagsController::delete/$1');
 });
 
+$routes->group('properties', function ($routes) {
+    $routes->get('/', 'PropertiesController::index');
+    $routes->match(['get', 'post'], 'create', 'PropertiesController::create');
+    // $routes->match(['get', 'post'], 'update/(:num)', 'PropertiesController::update/$1');
+    // $routes->post('delete/(:num)', 'PropertiesController::delete/$1');
+});
+
 $routes->group('jira', function ($routes) {
     $routes->match(['get', 'post'], 'create', 'JiraController::create');
+    $routes->get('download', 'JiraController::download');
 });
