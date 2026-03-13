@@ -116,16 +116,6 @@
 </div>
 
 <script>
-/** document.getElementById('searchInput').addEventListener('keyup', function () {
-    let filter = this.value.toLowerCase();
-    let rows = document.querySelectorAll('#tagsTable tbody tr');
-
-    rows.forEach(row => {
-        let text = row.textContent.toLowerCase();
-        row.style.display = text.includes(filter) ? '' : 'none';
-    });
-}); **/
-
 document.addEventListener('DOMContentLoaded', function () {
     $('.searchable-select').select2({
         width: '100%',
@@ -148,6 +138,19 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     toggleButton();
+
+    btnRenew.addEventListener('click', function (e) {
+        e.preventDefault();
+
+        const checked = [...document.querySelectorAll('input[name="tag_ids[]"]:checked')]
+            .map(cb => cb.value);
+
+        if (checked.length === 0) return;
+
+        const url = "<?= site_url('tags/renew') ?>?tags=" + checked.join(',');
+        window.open(url, "_blank");
+    });
+
 });
 
 </script>

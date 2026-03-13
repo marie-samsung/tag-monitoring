@@ -63,7 +63,7 @@
                 <tr>
                     <th>#</th>
                     <th>Subsidiary</th>
-                    <th>Name</th>
+                    <th>Property</th>
                     <th>Is EPP?</th>
                     <th>Is Shop?</th>
                     <th></th>

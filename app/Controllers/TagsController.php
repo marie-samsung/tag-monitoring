@@ -100,4 +100,31 @@ class TagsController extends BaseController
             ->to('/tags')
             ->with('success', "Tag {$post['name']} updated successfully.");
     }
+
+    public function renew()
+    {
+        $model = new TagsModel();
+
+        $post = $this->request->getPost();
+        $tagIds = $post['tag_ids'] ?? [];
+
+        if (empty($tagIds)) {
+            return redirect()
+                ->to('/tags')
+                ->with('error', 'No tags selected for renewal.');
+        }
+
+        foreach ($tagIds as $id) {
+            $tag = $model->find($id);
+            if ($tag) {
+                // Example renewal logic: extend end date by 1 year
+                $newEndDate = date('Y-m-d', strtotime('+1 year', strtotime($tag['al_end_date'])));
+                $model->update($id, ['al_end_date' => $newEndDate]);
+            }
+        }
+
+        return redirect()
+            ->to('/tags')
+            ->with('success', 'Selected tags renewed successfully.');
+    }
 }

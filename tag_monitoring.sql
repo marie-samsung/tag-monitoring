@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 09, 2026 at 05:37 PM
+-- Generation Time: Mar 13, 2026 at 07:12 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -88,11 +88,7 @@ CREATE TABLE `jira_history` (
 --
 
 INSERT INTO `jira_history` (`id`, `ticket_id`, `type`, `comments`, `tag_id`, `is_active`, `lp_path`, `created_by`, `created_at`, `updated_by`, `updated_at`) VALUES
-(1, 'GTA-33374', '', NULL, 2, 1, '/test', 0, '2026-02-23 12:42:26', 0, NULL),
-(2, 'GTA-30930', '', NULL, 1, 1, '/test', 0, '2026-02-23 12:42:39', 0, NULL),
-(3, 'GTA-302333', '', NULL, 3, 1, '/test', 0, '2026-02-23 12:42:53', 0, NULL),
-(4, 'GTA-33898', '1', 'Try lang', 8, 1, '1773050039_2e856046d07ea1c5fcae.bin', 0, '2026-03-09 09:53:59', 0, '2026-03-09 09:53:59'),
-(5, 'GTA-33898', '1', 'testing only', 8, 1, 'Launch Publishing Request Document_v2.0_AE_060226_2.xlsx', 0, '2026-03-09 10:05:36', 0, '2026-03-09 10:05:36');
+(1, 'GTA-32896', '1', 'testing', 8, 1, 'SGE/zP6zEPP_AE-UAE(AA) WebSDK/LC-TEST-TRY-UPDATE/Foam Concentrate Calculations.xlsx', 0, '2026-03-12 15:25:50', 0, '2026-03-12 15:25:50');
 
 -- --------------------------------------------------------
 
@@ -133,6 +129,7 @@ CREATE TABLE `properties` (
   `name` varchar(200) NOT NULL,
   `is_active` tinyint(4) NOT NULL DEFAULT 1,
   `is_epp` tinyint(4) NOT NULL DEFAULT 0,
+  `is_shop` tinyint(4) NOT NULL DEFAULT 0,
   `subsidiary_id` int(11) NOT NULL COMMENT 'Refers to the subsidiaries table',
   `country_id` int(11) NOT NULL,
   `language_id` tinyint(4) NOT NULL DEFAULT 1,
@@ -150,10 +147,10 @@ CREATE TABLE `properties` (
 -- Dumping data for table `properties`
 --
 
-INSERT INTO `properties` (`id`, `name`, `is_active`, `is_epp`, `subsidiary_id`, `country_id`, `language_id`, `website`, `ref_link`, `updated_by`, `updated_at`, `created_by`, `created_at`, `deleted_by`, `deleted_at`) VALUES
-(1, 'ZP6_AE_AR-UAE(SGE) WebSDK', 1, 0, 1, 1, 2, 'https://www.samsung.com/ae_ar', 'https://experience.adobe.com/?lens_env=prod&reactor-lens_version=prod20250220203018#/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PR5657bad4cc9a4d8da75b5a2fca2c1574/overviewhttps://experience.adobe.com/?lens_env=prod&reactor-lens_version=prod20250220203018#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PR5657bad4cc9a4d8da75b5a2fca2c1574/overview', 0, NULL, 0, NULL, 0, NULL),
-(2, 'ZP6_AE-UAE(SGE) WebSDK', 1, 0, 1, 1, 1, 'https://www.samsung.com/ae', 'https://experience.adobe.com/?lens_env=prod&reactor-lens_version=prod20250220203018#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PRa7cdc4dd00c24675812c3d05053e3cf3/overview', 0, NULL, 0, NULL, 0, NULL),
-(3, 'zP6zEPP_AE-UAE(AA) WebSDK', 1, 1, 1, 1, 1, 'https://www.samsung.com/ae/multistore/samsung_employee/', '', 0, NULL, 0, NULL, 0, NULL);
+INSERT INTO `properties` (`id`, `name`, `is_active`, `is_epp`, `is_shop`, `subsidiary_id`, `country_id`, `language_id`, `website`, `ref_link`, `updated_by`, `updated_at`, `created_by`, `created_at`, `deleted_by`, `deleted_at`) VALUES
+(1, 'ZP6_AE_AR-UAE(SGE) WebSDK', 1, 0, 0, 1, 1, 2, 'https://www.samsung.com/ae_ar', 'https://experience.adobe.com/?lens_env=prod&reactor-lens_version=prod20250220203018#/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PR5657bad4cc9a4d8da75b5a2fca2c1574/overviewhttps://experience.adobe.com/?lens_env=prod&reactor-lens_version=prod20250220203018#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PR5657bad4cc9a4d8da75b5a2fca2c1574/overview', 0, NULL, 0, NULL, 0, NULL),
+(2, 'ZP6_AE-UAE(SGE) WebSDK', 1, 0, 0, 1, 1, 1, 'https://www.samsung.com/ae', 'https://experience.adobe.com/?lens_env=prod&reactor-lens_version=prod20250220203018#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PRa7cdc4dd00c24675812c3d05053e3cf3/overview', 0, NULL, 0, NULL, 0, NULL),
+(3, 'zP6zEPP_AE-UAE(AA) WebSDK', 1, 1, 0, 1, 1, 1, 'https://www.samsung.com/ae/multistore/samsung_employee/', '', 0, NULL, 0, NULL, 0, NULL);
 
 -- --------------------------------------------------------
 
@@ -253,6 +250,9 @@ CREATE TABLE `users` (
 CREATE TABLE `vendors` (
   `id` int(11) NOT NULL,
   `name` varchar(150) NOT NULL,
+  `about` varchar(500) DEFAULT NULL,
+  `tag_purpose` varchar(500) DEFAULT NULL,
+  `collected_data` varchar(500) DEFAULT NULL,
   `is_active` tinyint(4) NOT NULL DEFAULT 1,
   `updated_by` tinyint(4) NOT NULL DEFAULT 0 COMMENT 'Account ID of PIC',
   `updated_at` datetime DEFAULT NULL,
@@ -328,7 +328,7 @@ ALTER TABLE `countries`
 -- AUTO_INCREMENT for table `jira_history`
 --
 ALTER TABLE `jira_history`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `languages`
