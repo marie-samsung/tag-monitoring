@@ -2,8 +2,6 @@
 
 <?= $this->section('content') ?>
 
-<h3><?= $tag['name'] ?></h3>
-
 <?php 
     use App\Models\Constants;
     use App\Models\PropertiesModel;
@@ -17,7 +15,9 @@
     $vendors = $vendorsModel->Options();
 ?>
 
-<div class="container d-flex m-4 gap-3">
+<h3><?= $tag['name'] ?></h3>
+
+<div class="container d-flex mt-3 gap-3">
     <!-- #region | TAG DETAILS -->
     <div class="w-25 p-4 card">
         <div class="mb-2">
@@ -50,10 +50,21 @@
 
         <div class="mb-2">
             <label class="form-label-xs">Status</label>
-            <div class="form-control-plaintext fw-semibold p-0 ms-2">
-                <span class="badge <?= status_class($tag['status']) ?>">
-                    <?= esc(Constants::STATUS[$tag['status']] ?? 'Unknown') ?>
-                </span>
+            <div class="d-flex gap-2">
+                <div class="col form-control-plaintext fw-semibold p-0 ms-2">
+                    <span class="badge <?= status_class($tag['status']) ?>">
+                        <?= esc(Constants::STATUS[$tag['status']] ?? 'Unknown') ?>
+                    </span>
+                </div>
+                <?php if ($tag['status'] == Constants::STATUS_PENDING_VERIFICATION): ?>
+                    <div class="col">
+                        <a href="<?= site_url('tags/verify/' . $tag['id']) ?>" 
+                            class="badge bg-primary text-decoration-none"
+                            onclick="return confirm('Have you verified the end date matches in AL?');">
+                            Verify
+                        </a>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
 

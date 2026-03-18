@@ -38,3 +38,27 @@ in APPPATH\Views\properties\list.php on line 43.
  8 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
  9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
 10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-13 09:39:03 --> CodeIgniter\Exceptions\BadMethodCallException: Call to undefined method App\Models\VendorsModel::filterVendors
+[Method: GET, Route: vendors]
+in SYSTEMPATH\Model.php on line 758.
+ 1 APPPATH\Controllers\VendorsController.php(18): CodeIgniter\Model->__call('filterVendors', [...])
+ 2 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\VendorsController->index()
+ 3 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\VendorsController))
+ 4 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 5 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 7 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-03-13 09:59:16 --> ErrorException: Undefined variable $jiraTickets
+[Method: GET, Route: tags/renew]
+in APPPATH\Views\tags\renew.php on line 22.
+ 1 APPPATH\Views\tags\renew.php(22): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined variable $jiraTickets', 'C:\\xampp\\htdocs\\tag-monitoring\\app\\Views\\tags\\renew.php', 22)
+ 2 SYSTEMPATH\View\View.php(238): include('C:\\xampp\\htdocs\\tag-monitoring\\app\\Views\\tags\\renew.php')
+ 3 SYSTEMPATH\View\View.php(241): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1250): CodeIgniter\View\View->render('tags/renew', [], true)
+ 5 APPPATH\Controllers\TagsController.php(127): view('tags/renew', [...])
+ 6 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\TagsController->renew()
+ 7 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\TagsController))
+ 8 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))

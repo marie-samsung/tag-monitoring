@@ -26,4 +26,24 @@ class VendorsModel extends Model
         $rows = $this->select('id, name')->findAll();
         return array_column($rows, 'name', 'id');
     }
+
+    /**
+     * Filtering of vendors in list view
+     * @param mixed $filters
+     * @return array
+     */
+    public function filterVendors($filters = [])
+    {
+        $builder = $this->builder();
+
+        if (!empty($filters['keyword'])) {
+            $builder->like('name', $filters['keyword']);
+        }
+
+        if (!empty($filters['id'])) {
+            $builder->where('id', $filters['id']);
+        }
+
+        return $builder->get()->getResultArray();
+    }
 }

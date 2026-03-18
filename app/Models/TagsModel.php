@@ -46,7 +46,19 @@ class TagsModel extends Model
             $builder->where('property_id', $filters['property_id']);
         }
 
-        return $builder->orderBy('al_end_date', 'DESC')->get()->getResultArray();
+        return $builder
+            // ->orderBy('status', 'DESC')
+            ->orderBy('(CASE 
+                    WHEN status = 4 THEN 1
+                    WHEN status = 1 THEN 2
+                    WHEN status = 2 THEN 3
+                    WHEN status = 3 THEN 4
+                    ELSE 5
+                END)', 'ASC')
+            // ->orderBy('(CASE WHEN al_end_date IS NULL OR al_end_date = "" THEN 1 ELSE 0 END)', 'ASC')
+            ->orderBy('al_end_date', 'ASC')
+            ->get()
+            ->getResultArray();
     }
 
     /**

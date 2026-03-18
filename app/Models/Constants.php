@@ -15,6 +15,11 @@ class Constants
         5 => 'Other',
     ];
 
+    public const STATUS_ENABLED = 1;
+    public const STATUS_DISABLED = 2;
+    public const STATUS_EXPIRED = 3;
+    public const STATUS_PENDING_VERIFICATION = 4;
+
     public const STATUS = [
         1 => 'Enabled',
         2 => 'Disabled',

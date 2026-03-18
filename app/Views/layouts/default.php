@@ -14,10 +14,11 @@
         <div class="row">
 
             <!-- LEFT SIDEBAR -->
-            <div class="col-3 col-md-2 bg-light border-end" style="min-height: 100vh;">
+            <div class="col-2 bg-light border-end" style="min-height: 100vh;">
                 <nav class="nav flex-column py-2">
                     <a class="nav-link" href="<?= site_url('/tags') ?>">Tags</a>
                     <a class="nav-link" href="<?= site_url('/properties') ?>">Properties</a>
+                    <a class="nav-link" href="<?= site_url('/vendors') ?>">Vendors</a>
                 </nav>
             </div>
 
