@@ -32,6 +32,20 @@ class PropertiesModel extends Model
         return array_column($rows, 'name', 'id');
     }
 
+    public function WebsiteLinks()
+    {
+        $rows = $this->select('id, name, website, ref_link')->findAll();
+        $links = [];
+        foreach ($rows as $row) {
+            $links[$row['id']] = [
+                'name' => $row['name'],
+                'website' => $row['website'],
+                'ref_link' => $row['ref_link'],
+            ];
+        }
+        return $links;
+    }
+
     /**
      * Filtering of properties in list view
      * @param mixed $filters

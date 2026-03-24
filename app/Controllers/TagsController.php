@@ -107,6 +107,7 @@ class TagsController extends BaseController
         $model = new TagsModel();
         $post = $this->request->getGet();
         $tag_ids = $post['tags'] ?? [];
+        $ticket_id = $post['ticket_id'] ?? null;
 
         if (empty($tag_ids)) {
             return redirect()
@@ -117,6 +118,7 @@ class TagsController extends BaseController
         $tag_ids = is_array($tag_ids) ? $tag_ids : explode(',', $tag_ids);
 
         $data['tags'] = [];
+        $data['ticket_id'] = $ticket_id;
 
         foreach ($tag_ids as $id) {
             $tag = $model->find($id);
