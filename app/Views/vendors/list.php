@@ -6,7 +6,6 @@
     use App\Models\VendorsModel;
 
     $vendorsModel = new VendorsModel();
-    $vendors = $vendorsModel->findAll();
     $vendorOptions = $vendorsModel->Options();
 
     helper('custom_functions');
