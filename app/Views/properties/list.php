@@ -6,7 +6,6 @@
     use App\Models\SubsidiariesModel;
 
     $subsidiariesModel = new SubsidiariesModel();
-    $subsidiaries = $subsidiariesModel->findAll();
     $subsidiaryOptions = $subsidiariesModel->Options();
 
     helper('custom_functions');
@@ -73,7 +72,7 @@
                 <?php foreach ($properties as $property): ?>
                     <tr>
                         <td><?= $property['id'] ?></td>
-                        <td><?= $subsidiaries[$property['subsidiary_id']]['name'] ?? 'Unknown' ?></td>
+                        <td><?= $subsidiaryOptions[$property['subsidiary_id']] ?? 'Unknown' ?></td>
                         <td><?= $property['name'] ?></td>
                         <td>
                             <span class="badge <?= bool_class($property['is_epp']) ?>">
