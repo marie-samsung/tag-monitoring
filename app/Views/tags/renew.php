@@ -80,7 +80,7 @@
         $libraryName = $ticket_id . '_' . $today;
 
         if ($tags) {
-            $expDate = date('d-m-Y', strtotime($tags[0]['end_date'] ?? ''));
+            $expDate = date('d-m-Y', strtotime($tags[0]['al_end_date'] ?? ''));
             $nextExpDate = date('d-m-Y', strtotime('+61 days', strtotime($expDate)));
         } else {
             return false;
@@ -159,6 +159,12 @@
                                 <input type="checkbox">
                             </td>
                             <td><?= esc($nextExpDate) ?></td>
+
+                            <input type="hidden" name="tags[<?= $tag['id'] ?>][id]" value="<?= $tag['id'] ?>">
+                            <input type="hidden" name="tags[<?= $tag['id'] ?>][library_name]" value="<?= $libraryName ?>">
+                            <input type="hidden" name="tags[<?= $tag['id'] ?>][property_id]" value="<?= $tag['property_id'] ?>">
+                            <input type="hidden" name="tags[<?= $tag['id'] ?>][vendor_id]" value="<?= $tag['vendor_id'] ?>">
+                            <input type="hidden" name="tags[<?= $tag['id'] ?>][next_end_date]" value="<?= $nextExpDate ?>">
                         </tr>
                     <?php endforeach; ?>
                 </tbody>

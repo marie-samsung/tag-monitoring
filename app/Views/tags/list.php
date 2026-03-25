@@ -100,8 +100,10 @@
                                 <?= esc(status_label($tag['status'])) ?>
                             </span>
                         </td>
-                        <td><?= esc($tag['al_end_date']) ?></td>
-                        <td><?= esc($tag['updated_at']) ?></td>
+                        <td class="<?= date_class($tag['al_end_date']) ?> fw-semibold">
+                            <?= esc($tag['al_end_date']) ?>
+                        </td>
+                        <td class="form-label-xs"><?= esc($tag['updated_at']) ?></td>
                         <!-- <td><?= esc($tag['updated_by']) ?></td> -->
                         <td class="gap-2">
                             <a href="<?= site_url('tags/view/'.$tag['id']) ?>" target="_blank" title="View tag details" class="btn btn-secondary btn-sm">View</a>

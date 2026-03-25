@@ -153,23 +153,23 @@ class TagsController extends BaseController
             );
 
             // THIS IS WHERE YOU LEFT OFF, CONTINUE THIS MODIFY THIS IF STATEMENT TO ALSO LOG TO RENEWALLOGS AND JIRAHISTORY
-             if ($updated) {
-                // Log to JiraHistory
-                $jiraHistoryModel = new JiraHistoryModel();
-                $jiraHistoryModel->insert([
-                    'tag_id' => $tag['id'],
-                    'ticket_id' => $info['ticket_id'] ?? null,
-                    'action' => 'renewed',
-                    'details' => json_encode([
-                        'library_name' => $tag['library_name'],
-                        'property_id' => $tag['property_id'],
-                        'vendor_id' => $tag['vendor_id'],
-                        'next_end_date' => $tag['next_end_date'],
-                    ]),
-                ]);
-            } else {
-                var_dump("Failed to update tag ID: {$tag['id']}");
-            }
+            //  if ($updated) {
+            //     // Log to JiraHistory
+            //     $jiraHistoryModel = new JiraHistoryModel();
+            //     $jiraHistoryModel->insert([
+            //         'tag_id' => $tag['id'],
+            //         'ticket_id' => $info['ticket_id'] ?? null,
+            //         'action' => 'renewed',
+            //         'details' => json_encode([
+            //             'library_name' => $tag['library_name'],
+            //             'property_id' => $tag['property_id'],
+            //             'vendor_id' => $tag['vendor_id'],
+            //             'next_end_date' => $tag['next_end_date'],
+            //         ]),
+            //     ]);
+            // } else {
+            //     var_dump("Failed to update tag ID: {$tag['id']}");
+            // }
         }
 
         $propertyIds = array_unique(array_column($tags, 'property_id'));

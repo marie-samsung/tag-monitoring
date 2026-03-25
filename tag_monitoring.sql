@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 13, 2026 at 07:12 AM
+-- Generation Time: Mar 25, 2026 at 08:34 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -155,6 +155,23 @@ INSERT INTO `properties` (`id`, `name`, `is_active`, `is_epp`, `is_shop`, `subsi
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `renewal_logs`
+--
+
+CREATE TABLE `renewal_logs` (
+  `id` int(11) NOT NULL,
+  `ticket_id` varchar(150) NOT NULL,
+  `property_id` tinyint(4) NOT NULL,
+  `library_name` varchar(150) NOT NULL,
+  `vendor` varchar(500) NOT NULL,
+  `end_date` datetime NOT NULL,
+  `user` tinyint(4) NOT NULL,
+  `created_at` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `subsidiaries`
 --
 
@@ -214,14 +231,14 @@ CREATE TABLE `tags` (
 --
 
 INSERT INTO `tags` (`id`, `name`, `property_id`, `vendor_id`, `conditions`, `status`, `is_active`, `al_end_date`, `ref_link`, `updated_by`, `updated_at`, `created_by`, `created_at`, `deleted_by`, `deleted_at`) VALUES
-(1, 'LC-AEM-AD(Amazon)-CM-WL-PXFLW_277a8f5e-2d7b-4799-91f8-a089308d8e1b', 1, 0, '', 1, 1, NULL, 'https://experience.adobe.com/?lens_env=prod&reactor-lens_version=prod20250220203018#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PR5657bad4cc9a4d8da75b5a2fca2c1574/rules/RLe876e1603137407a9502d9bfb0df924d', 0, NULL, 0, NULL, 0, NULL),
-(2, 'LC-AEM-AD(Appsflyer)-CM-WL-PXFLW_smartscript', 1, 0, '', 1, 1, NULL, 'https://experience.adobe.com/?lens_env=prod&reactor-lens_version=prod20250220203018#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PR5657bad4cc9a4d8da75b5a2fca2c1574/rules/RL196621ca70cd4e1faf4a0275b9a8418e', 0, NULL, 0, NULL, 0, NULL),
-(3, 'LC-AEM-AD(Amazon)-CM-WL-PXFLW_ef2eeeab-6b7e-4867-b8fd-c47091cd2ff2', 2, 0, '', 1, 1, NULL, 'https://experience.adobe.com/?lens_env=prod&reactor-lens_version=prod20250220203018#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PRa7cdc4dd00c24675812c3d05053e3cf3/rules/RLdff128b12190436eab8d806d3bdd3391', 0, NULL, 0, NULL, 0, NULL),
-(4, 'LC-B2C-AD(Appsflyer)-CM-WL-PXFLW_smartscript', 2, 0, '', 1, 1, NULL, 'https://experience.adobe.com/?lens_env=prod&reactor-lens_version=prod20250220203018#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PRa7cdc4dd00c24675812c3d05053e3cf3/rules/RL94a08b1c00c9402289c37f4b79f3c200', 0, NULL, 0, NULL, 0, NULL),
-(5, 'LC-AEM-AD(Insider)-CM-WL-PXFLW_10009534', 3, 0, '', 1, 1, NULL, 'https://experience.adobe.com/?lens_env=prod&reactor-lens_version=prod20250220203018#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PR66456bebda424fb3af85ef35ee171c71/rules/RLd30dc4f7a2ab4fc8bca5529ebe6ccea1', 0, NULL, 0, NULL, 0, NULL),
-(6, 'LC-TEST-UPDATE-2', 1, 0, '(.*)', 3, 1, '2026-01-08', 'https://www.samsung.com/lb', 0, '2026-03-09 08:59:43', 0, '2026-02-20 12:30:09', 0, NULL),
-(7, 'LC-TEST', 2, 0, 'asdasd', 1, 1, '2026-02-27', 'https://www.samsung.com/en', 0, '2026-02-25 10:26:00', 0, '2026-02-25 10:26:00', 0, NULL),
-(8, 'LC-TEST-TRY-UPDATE', 3, 0, '(.*)', 1, 1, '2026-03-31', 'https://www.samsung.com/en', 0, '2026-03-09 08:47:39', 0, '2026-03-09 08:47:39', 0, NULL);
+(1, 'LC-AEM-AD(Amazon)-CM-WL-PXFLW_277a8f5e-2d7b-4799-91f8-a089308d8e1b', 1, 0, '', 4, 1, '2026-05-18', 'https://experience.adobe.com/?lens_env=prod&reactor-lens_version=prod20250220203018#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PR5657bad4cc9a4d8da75b5a2fca2c1574/rules/RLe876e1603137407a9502d9bfb0df924d', 0, '2026-03-18 04:47:21', 0, NULL, 0, NULL),
+(2, 'LC-AEM-AD(Appsflyer)-CM-WL-PXFLW_smartscript', 1, 1, '(.*)', 1, 1, '2026-03-30', 'https://experience.adobe.com/?lens_env=prod&reactor-lens_version=prod20250220203018#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PR5657bad4cc9a4d8da75b5a2fca2c1574/rules/RL196621ca70cd4e1faf4a0275b9a8418e', 0, '2026-03-25 07:33:23', 0, NULL, 0, NULL),
+(3, 'LC-AEM-AD(Amazon)-CM-WL-PXFLW_ef2eeeab-6b7e-4867-b8fd-c47091cd2ff2', 2, 1, '(.*)', 1, 1, '2026-03-30', 'https://experience.adobe.com/?lens_env=prod&reactor-lens_version=prod20250220203018#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PRa7cdc4dd00c24675812c3d05053e3cf3/rules/RLdff128b12190436eab8d806d3bdd3391', 0, '2026-03-25 07:33:39', 0, NULL, 0, NULL),
+(4, 'LC-B2C-AD(Appsflyer)-CM-WL-PXFLW_smartscript', 2, 1, '(.*)', 2, 1, '2026-03-02', 'https://experience.adobe.com/?lens_env=prod&reactor-lens_version=prod20250220203018#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PRa7cdc4dd00c24675812c3d05053e3cf3/rules/RL94a08b1c00c9402289c37f4b79f3c200', 0, '2026-03-25 07:22:25', 0, NULL, 0, NULL),
+(5, 'LC-AEM-AD(Insider)-CM-WL-PXFLW_10009534', 3, 1, '(.*)', 2, 1, '2026-03-03', 'https://experience.adobe.com/?lens_env=prod&reactor-lens_version=prod20250220203018#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PR66456bebda424fb3af85ef35ee171c71/rules/RLd30dc4f7a2ab4fc8bca5529ebe6ccea1', 0, '2026-03-25 07:22:34', 0, NULL, 0, NULL),
+(6, 'LC-TEST-UPDATE-2', 1, 0, '(.*)', 4, 1, '2026-05-18', 'https://www.samsung.com/lb', 0, '2026-03-18 04:47:21', 0, '2026-02-20 12:30:09', 0, NULL),
+(7, 'LC-TEST', 2, 1, 'asdasd', 1, 1, '2026-03-30', 'https://www.samsung.com/en', 0, '2026-03-25 07:11:58', 0, '2026-02-25 10:26:00', 0, NULL),
+(8, 'LC-TEST-TRY-UPDATE', 3, 3, '(.*)', 1, 1, '2026-05-18', 'https://www.samsung.com/en', 0, '2026-03-18 05:29:48', 0, '2026-03-09 08:47:39', 0, NULL);
 
 -- --------------------------------------------------------
 
@@ -263,6 +280,16 @@ CREATE TABLE `vendors` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
+-- Dumping data for table `vendors`
+--
+
+INSERT INTO `vendors` (`id`, `name`, `about`, `tag_purpose`, `collected_data`, `is_active`, `updated_by`, `updated_at`, `created_by`, `created_at`, `deleted_by`, `deleted_at`) VALUES
+(1, 'Amazon', NULL, NULL, NULL, 1, 0, NULL, 0, NULL, 0, NULL),
+(2, 'Appsflyer', NULL, NULL, NULL, 1, 0, NULL, 0, NULL, 0, NULL),
+(3, 'Admitad', NULL, NULL, NULL, 1, 0, NULL, 0, NULL, 0, NULL),
+(4, 'Contentsquare', NULL, NULL, NULL, 1, 0, NULL, 0, NULL, 0, NULL);
+
+--
 -- Indexes for dumped tables
 --
 
@@ -288,6 +315,12 @@ ALTER TABLE `languages`
 -- Indexes for table `properties`
 --
 ALTER TABLE `properties`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `renewal_logs`
+--
+ALTER TABLE `renewal_logs`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -364,7 +397,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `vendors`
 --
 ALTER TABLE `vendors`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

@@ -16,7 +16,7 @@ function status_class(int $code): string
     return match ($code) {
         1 => 'bg-success text-white',   // Enabled
         2 => 'bg-danger text-white',    // Disabled
-        3 => 'bg-secondary text-dark', // Expired
+        3 => 'bg-secondary text-white', // Expired
         4 => 'bg-warning text-dark', // Pending Verification
         default => 'bg-secondary text-dark',
     };
@@ -33,4 +33,29 @@ function bool_class(int $value): string
         1 => 'bg-success text-white',   // Yes
         0 => 'bg-secondary text-white',    // No
     };
+}
+
+function date_class(string|null $date): string
+{
+    if (empty($date)) {
+        return ''; // No date provided
+    }
+
+    $timestamp = strtotime($date);
+
+    if ($timestamp === false) {
+        return 'bg-secondary text-white'; // Invalid date
+    }
+
+    $now = time();
+
+    if ($timestamp < $now) {
+        return 'text-muted'; // Past date
+    } elseif ($timestamp - $now <= 11 * 86400) {
+        return 'text-danger';
+    } elseif ($timestamp - $now <= 16 * 86400) {
+        return 'text-warning';
+    } else {
+        return 'text-success';
+    }
 }
