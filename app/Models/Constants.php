@@ -4,15 +4,21 @@ namespace App\Models;
 
 class Constants
 {
+    public const JIRA_LINK = 'https://jira.secext.samsung.net/browse/';
     public const LP_WRITE_PATH = WRITEPATH . 'uploads/lp/';
     public const LP_PATH = 'uploads/lp/';
+    public const JIRA_TYPE_DATE_EXTENSION_RULE = 1;
+    public const JIRA_TYPE_NEW_TAG = 2;
+    public const JIRA_TYPE_NEW_RULE = 3;
+    public const JIRA_TYPE_MASTER_APPROVAL = 4;
+    public const JIRA_TYPE_OTHER = 5;
 
     public const JIRA_TICKET_TYPES = [
-        1 => 'Date Extension Rule',
-        2 => 'New Tag',
-        3 => 'New Rule',
-        4 => 'Master Approval',
-        5 => 'Other',
+        self::JIRA_TYPE_DATE_EXTENSION_RULE => 'Date Extension Rule',
+        self::JIRA_TYPE_NEW_TAG => 'New Tag',
+        self::JIRA_TYPE_NEW_RULE => 'New Rule',
+        self::JIRA_TYPE_MASTER_APPROVAL => 'Master Approval',
+        self::JIRA_TYPE_OTHER => 'Other',
     ];
 
     public const STATUS_ENABLED = 1;
@@ -21,10 +27,10 @@ class Constants
     public const STATUS_PENDING_VERIFICATION = 4;
 
     public const STATUS = [
-        1 => 'Enabled',
-        2 => 'Disabled',
-        3 => 'Expired',
-        4 => 'Pending Verification',
+        self::STATUS_ENABLED => 'Enabled',
+        self::STATUS_DISABLED => 'Disabled',
+        self::STATUS_EXPIRED => 'Expired',
+        self::STATUS_PENDING_VERIFICATION => 'Pending Verification',
     ];
 
     public const ACC_TYPE = [
@@ -47,13 +53,5 @@ class Constants
         '(.*)',
         '(.*orderConfirmation)',
         '(.*unpacked)',
-    ];
-
-    public const DATE_DISPLAY_FORMATS = [
-        'Y-m-d'       => 'YYYY‑MM‑DD',
-        'd/m/Y'       => 'DD/MM/YYYY',
-        'm-d-Y'       => 'MM‑DD‑YYYY',
-        'Y-m-d H:i'   => 'YYYY‑MM‑DD HH:MM (24h)',
-        'd M Y'       => 'DD Mon YYYY',
     ];
 }

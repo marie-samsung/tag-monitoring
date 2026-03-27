@@ -13,9 +13,9 @@ class JiraHistoryModel extends Model
         'type',
         'comments',
         'tag_id', // Refer to 'Tags' table
-        'lp_path',
-        'is_active', // bool
+        'file_path',
         'created_by', // Refer to 'Users' table
+        'updated_by', // Refer to 'Users' table
     ];
 
     protected $useTimestamps = true;

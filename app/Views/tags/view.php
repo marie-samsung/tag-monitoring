@@ -1,5 +1,9 @@
 <?= $this->extend('layouts/default') ?>
 
+<?= $this->section('title') ?>
+<?= $tag['name'] ?> : Details
+<?= $this->endSection() ?>
+
 <?= $this->section('content') ?>
 
 <?php 
@@ -37,7 +41,9 @@
         <div class="mb-2">
             <label class="form-label-xs">Tag Name</label>
             <span class="form-control-plaintext fw-semibold p-0 ms-2">
-                <?= esc($tag['name']) ?>
+                <a href="<?= esc($tag['ref_link'] ?? '#') ?>" target="_blank">
+                    <?= esc($tag['name']) ?>
+                </a>
             </span>
         </div>
 
@@ -70,7 +76,7 @@
 
         <div class="mb-2">
             <label class="form-label-xs">Adobe Launch End Date</label>
-            <div class="form-control-plaintext fw-semibold p-0 ms-2">
+            <div class="form-control-plaintext fw-semibold p-0 ms-2 <?= date_class($tag['al_end_date']) ?>">
                 <?= esc($tag['al_end_date'] ?: '—') ?>
             </div>
         </div>
@@ -80,12 +86,6 @@
         <div class="d-flex align-items-center gap-1">
             <a href="<?= site_url('tags') ?>" class="btn btn-secondary btn-sm px-2">Back</a>
             <a href="<?= site_url('tags/update/' . $tag['id']) ?>" class="btn btn-primary btn-sm">Edit</a>
-
-            <?php if (!empty($tag['ref_link'])): ?>
-                <a href="<?= esc($tag['ref_link']) ?>" target="_blank" class="btn btn-danger btn-sm">
-                    Adobe Launch
-                </a>
-            <?php endif; ?>
         </div>
     </div>
     <!-- #endregion -->
@@ -106,7 +106,6 @@
                         <th>Ticket ID</th>
                         <th>Type</th>
                         <th>Comments</th>
-                        <th>Launch Publishing File</th>
                     </tr>
                 </thead>
 
@@ -115,15 +114,12 @@
                         <tr>
                             <td><?= $jira['id'] ?: '-' ?></td>
                             <td>
-                                <?= $jira['ticket_id'] ?: '-' ?>
-                            </td>
-                            <td class="col-3"><?= Constants::JIRA_TICKET_TYPES[$jira['type']] ?: '-' ?></td>
-                            <td class="col-4"><?= $jira['comments'] ?></td>
-                            <td class="col-3">
-                                <a href="<?= site_url('jira/download?file_path=' . urlencode(Constants::LP_WRITE_PATH . $jira['lp_path'])) ?>">
-                                    <?= basename($jira['lp_path']) ?: '-' ?>
+                                <a href="<?= Constants::JIRA_LINK ?><?= $jira['ticket_id'] ?: '#' ?>" target="_blank">
+                                    <?= $jira['ticket_id'] ?: '-' ?>
                                 </a>
                             </td>
+                            <td><?= Constants::JIRA_TICKET_TYPES[$jira['type']] ?: '-' ?></td>
+                            <td><?= $jira['comments'] ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>

@@ -1,5 +1,9 @@
 <?= $this->extend('layouts/default') ?>
 
+<?= $this->section('title') ?>
+Tag Monitoring System
+<?= $this->endSection() ?>
+
 <?= $this->section('content') ?>
 
 <?php

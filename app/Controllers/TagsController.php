@@ -4,7 +4,10 @@ namespace App\Controllers;
 
 use App\Models\Constants;
 use App\Models\JiraHistoryModel;
+use App\Models\PropertiesModel;
+use App\Models\RenewalLogsModel;
 use App\Models\TagsModel;
+use App\Models\VendorsModel;
 
 class TagsController extends BaseController
 {
@@ -152,32 +155,19 @@ class TagsController extends BaseController
                 ]
             );
 
-            // THIS IS WHERE YOU LEFT OFF, CONTINUE THIS MODIFY THIS IF STATEMENT TO ALSO LOG TO RENEWALLOGS AND JIRAHISTORY
-            //  if ($updated) {
-            //     // Log to JiraHistory
-            //     $jiraHistoryModel = new JiraHistoryModel();
-            //     $jiraHistoryModel->insert([
-            //         'tag_id' => $tag['id'],
-            //         'ticket_id' => $info['ticket_id'] ?? null,
-            //         'action' => 'renewed',
-            //         'details' => json_encode([
-            //             'library_name' => $tag['library_name'],
-            //             'property_id' => $tag['property_id'],
-            //             'vendor_id' => $tag['vendor_id'],
-            //             'next_end_date' => $tag['next_end_date'],
-            //         ]),
-            //     ]);
-            // } else {
-            //     var_dump("Failed to update tag ID: {$tag['id']}");
-            // }
+            if ($updated) {
+                $vendorModel = new VendorsModel();
+                $vendor = $vendorModel->find($tag['vendor_id']);
+                $this->saveJiraHistory($tag['id'], $info['ticket_id'], $vendor['name'] ?? 'Unknown Vendor');
+            } else {
+                var_dump("Failed to update tag ID: {$tag['id']}");
+            }
         }
 
         $propertyIds = array_unique(array_column($tags, 'property_id'));
         $vendorIds = array_unique(array_column($tags, 'vendor_id'));
 
-        // add function here to save to RenewalLogs
-        // add function here to auto generate the Launch Publishing File on correct path
-        // add function here to save to JiraHistory
+        $this->saveRenewalLogs($propertyIds, $vendorIds, $info);
 
         return redirect()
             ->to('/tags')
@@ -202,54 +192,40 @@ class TagsController extends BaseController
             ->with('success', 'Tag renewal has been verified.');
     }
 
-    public function downloadRenewalsXls()
+    public function saveJiraHistory($tagId, $ticketId, $vendorId)
     {
-        $tags = session()->get('tags_export');
+        $jiraHistoryModel = new JiraHistoryModel();
+        if ($jiraHistoryModel->insert([
+            'tag_id' => $tagId,
+            'ticket_id' => $ticketId,
+            'type' => Constants::JIRA_TYPE_DATE_EXTENSION_RULE,
+            'comments' => 'Vendor: ' . $vendorId,
+        ]) == false) {
+            var_dump("Failed to save JIRA history for tag ID: {$tagId}");
+        }
+    }
+ 
+    public function saveRenewalLogs($propertyIds, $vendorIds, $info)
+    {
+        $vendorModel = new VendorsModel();
+        $vendorList = $vendorModel->Options();
 
-        $properties = (new \App\Models\PropertiesModel())->Options();
-        $vendors    = (new \App\Models\VendorsModel())->Options();
+        $log = new RenewalLogsModel();
 
-        $today = date('d-m-Y');
-        $library_name = '3PARTYTAGS_RENEW_' . date('dmy');
-        $next_end_date = date('d-m-Y', strtotime('+61 days'));
-        $requester = 'Marie Tiomico';
-        $event = 'Window Loaded';
+        $vendors = [];
 
-        $filename = 'renewals_' . date('Ymd_His') . '.xls';
-
-        header("Content-Type: application/vnd.ms-excel");
-        header("Content-Disposition: attachment; filename=\"$filename\"");
-
-        echo "<table border='1'>";
-        echo "<tr>
-                <th>Request Date</th>
-                <th>Library Name</th>
-                <th>Site Code</th>
-                <th>Rule Name</th>
-                <th>Requester</th>
-                <th>Event</th>
-                <th>Conditions</th>
-                <th>Actions</th>
-                <th>Extensions</th>
-                <th>Expired Date</th>
-            </tr>";
-
-        foreach ($tags as $tag) {
-            echo "<tr>
-                    <td>{$today}</td>
-                    <td>{$library_name}</td>
-                    <td>{$properties[$tag['property_id']]}</td>
-                    <td>{$tag['name']}</td>
-                    <td>{$requester}</td>
-                    <td>{$event}</td>
-                    <td>{$tag['conditions']}</td>
-                    <td>{$vendors[$tag['vendor_id']]}</td>
-                    <td>N</td>
-                    <td>{$next_end_date}</td>
-                </tr>";
+        foreach ($vendorIds as $vendorId) {
+            $vendors[] = $vendorList[(int)$vendorId];
         }
 
-        echo "</table>";
-        exit;
+        foreach ($propertyIds as $propertyId) {
+            $log->insert([
+                'property_id' => $propertyId,
+                'vendor' => implode(', ', $vendors),
+                'ticket_id' => $info['ticket_id'] ?? 'N/A',
+                'al_end_date' => date('Y-m-d', strtotime($info['al_end_date'] ?? null)),
+                'library_name' => $info['library_name'] ?? null,
+            ]) or var_dump("Failed to save renewal log for property ID: {$propertyId}");
+        }
     }
 }

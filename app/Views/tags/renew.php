@@ -18,8 +18,14 @@
 
 <?php if ($ticket_id): ?>
     <h6 class="text-danger"><b><?= esc($ticket_id) ?></b></h6>
+    <?= $this->section('title') ?>
+    Renewal: <?= esc($ticket_id) ?>
+    <?= $this->endSection() ?>
 <?php endif; ?>
 <h4>Renew Tags</h4>
+<?= $this->section('title') ?>
+Tag: Renew
+<?= $this->endSection() ?>
 <hr/>
 
 <!-- #region | PART 1 - TICKET ID -->
@@ -167,6 +173,10 @@
                             <input type="hidden" name="tags[<?= $tag['id'] ?>][next_end_date]" value="<?= $nextExpDate ?>">
                         </tr>
                     <?php endforeach; ?>
+
+                    <input type="hidden" name="info[ticket_id]" value="<?= $ticket_id ?>">
+                    <input type="hidden" name="info[al_end_date]" value="<?= $nextExpDate ?>">
+                    <input type="hidden" name="info[library_name]" value="<?= $libraryName ?>">
                 </tbody>
             </table>
         </div>

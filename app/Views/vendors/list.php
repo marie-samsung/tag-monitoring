@@ -1,5 +1,9 @@
 <?= $this->extend('layouts/default') ?>
 
+<?= $this->section('title') ?>
+Vendors List
+<?= $this->endSection() ?>
+
 <?= $this->section('content') ?>
 
 <?php

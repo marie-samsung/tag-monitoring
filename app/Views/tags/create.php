@@ -1,5 +1,9 @@
 <?= $this->extend('layouts/default') ?>
 
+<?= $this->section('title') ?>
+Tag: Create
+<?= $this->endSection() ?>
+
 <?= $this->section('content') ?>
 
 <div class="d-flex justify-content-between mb-2">

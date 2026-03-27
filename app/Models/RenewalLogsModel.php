@@ -13,7 +13,7 @@ class RenewalLogsModel extends Model
         'ticket_id', // Refer to Jira tickets
         'library_name',
         'vendor', // Refer to Vendors table
-        'end_date',
+        'al_end_date',
         'user',
     ];
 

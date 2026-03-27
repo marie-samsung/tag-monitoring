@@ -1,5 +1,9 @@
 <?= $this->extend('layouts/default') ?>
 
+<?= $this->section('title') ?>
+<?= $tag['name'] ?> : Update
+<?= $this->endSection() ?>
+
 <?= $this->section('content') ?>
 
 <div class="mb-2">
@@ -101,7 +105,7 @@
                     name="al_end_date"
                     id="al_end_date"
                     class="form-control"
-                    value="<?= $tag['al_end_date'] ?>"
+                    value="<?= date('Y-m-d', strtotime($tag['al_end_date'])) ?>"
                     required>
             </div>
 
