@@ -15,7 +15,7 @@ Properties List
     helper('custom_functions');
 ?>
 
-<div class="d-flex justify-content-between mb-3">
+<div class="d-flex justify-content-between">
     <h2>Property List</h2>
     <div>
         <a href="<?= site_url('properties/create') ?>" target="_blank" title="Add a new property" class="btn btn-success btn-sm ms-auto px-2">Create New</a>
@@ -24,7 +24,7 @@ Properties List
 
 <?= csrf_field() ?>
 
-<div class="container">
+<div class="container-fluid">
     <!-- #region | SEARCH FILTER -->
     <div class="row">
         <form method="get" class="row g-3 mb-4">

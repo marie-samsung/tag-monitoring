@@ -13,34 +13,36 @@
     helper('custom_functions');
 
     $propertiesModel = new PropertiesModel();
-    $properties = $propertiesModel->Options();
+    $properties = $propertiesModel->WebsiteLinks();
 
     $vendorsModel = new VendorsModel();
     $vendors = $vendorsModel->Options();
 ?>
 
-<h3><?= $tag['name'] ?></h3>
+<h3 class="container"><?= $tag['name'] ?></h3>
 
 <div class="container d-flex mt-3 gap-3">
     <!-- #region | TAG DETAILS -->
     <div class="w-25 p-4 card">
         <div class="mb-2">
             <label class="form-label-xs">Property</label>
-            <div class="form-control-plaintext fw-semibold p-0 ms-2">
-                <?= esc($properties[$tag['property_id']] ?? '—') ?>
+            <div class="form-control-plaintext p-0 ms-2">
+                <a href="<?= esc($properties[$tag['property_id']]['ref_link'] ?? '#') ?>" target="_blank">
+                    <?= esc($properties[$tag['property_id']]['name'] ?? '—') ?>
+                </a>
             </div>
         </div>
 
         <div class="mb-2">
             <label class="form-label-xs">Vendor</label>
-            <div class="form-control-plaintext fw-semibold p-0 ms-2">
+            <div class="form-control-plaintext p-0 ms-2">
                 <?= esc($vendors[$tag['vendor_id']] ?? '—') ?>
             </div>
         </div>
 
         <div class="mb-2">
             <label class="form-label-xs">Tag Name</label>
-            <span class="form-control-plaintext fw-semibold p-0 ms-2">
+            <span class="form-control-plaintext p-0 ms-2">
                 <a href="<?= esc($tag['ref_link'] ?? '#') ?>" target="_blank">
                     <?= esc($tag['name']) ?>
                 </a>
@@ -49,7 +51,7 @@
 
         <div class="mb-2">
             <label class="form-label-xs">Conditions</label>
-            <div class="form-control-plaintext fw-semibold p-0 ms-2">
+            <div class="form-control-plaintext p-0 ms-2">
                 <?= esc($tag['conditions'] ?: '—') ?>
             </div>
         </div>
@@ -57,7 +59,7 @@
         <div class="mb-2">
             <label class="form-label-xs">Status</label>
             <div class="d-flex gap-2">
-                <div class="col form-control-plaintext fw-semibold p-0 ms-2">
+                <div class="col form-control-plaintext p-0 ms-2">
                     <span class="badge <?= status_class($tag['status']) ?>">
                         <?= esc(Constants::STATUS[$tag['status']] ?? 'Unknown') ?>
                     </span>
@@ -76,7 +78,7 @@
 
         <div class="mb-2">
             <label class="form-label-xs">Adobe Launch End Date</label>
-            <div class="form-control-plaintext fw-semibold p-0 ms-2 <?= date_class($tag['al_end_date'], $tag['status']) ?>">
+            <div class="form-control-plaintext p-0 ms-2 <?= date_class($tag['al_end_date'], $tag['status']) ?>">
                 <?= esc($tag['al_end_date'] ?: '—') ?>
             </div>
         </div>

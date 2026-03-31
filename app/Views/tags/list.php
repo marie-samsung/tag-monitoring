@@ -93,7 +93,7 @@ Tag Monitoring System
     <!-- #region | TAGS TABLE -->
     <div class="table-responsive">
         <table class="table table-bordered table-hover table-striped" id="tblTags">
-            <thead>
+            <thead class="table-active">
                 <tr>
                     <th>#</th>
                     <th></th>

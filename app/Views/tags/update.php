@@ -6,7 +6,7 @@
 
 <?= $this->section('content') ?>
 
-<div class="mb-2">
+<div class="container mb-2">
     <h7>Update Tag</h7>
     <h3><?= $tag['name'] ?></h3>
 </div>

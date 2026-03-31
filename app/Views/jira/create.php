@@ -10,7 +10,7 @@
     $tag = $tagModel->find($tag_id);
 ?>
 
-<div class="mb-2">
+<div class="container mb-2">
     <h7>Add JIRA Entry</h7>
     <h3><?= $tag['name'] ?></h3>    
 </div>
@@ -38,14 +38,6 @@
             </div>
 
             <div class="col">
-                <label for="lp_path" class="form-label-xs">Launch Publishing File Path</label>
-                <br />
-                <input type="file" name="lp_path" accept=".xls,.xlsx">
-            </div>
-        </div>
-        
-        <div class="row mb-3">
-            <div class="col">
                 <label class="form-label-xs">Type</label>
                 <select name="type" class="form-select" required>
                     <?php foreach (Constants::JIRA_TICKET_TYPES as $value => $label): ?>
@@ -57,6 +49,14 @@
                 </select>
             </div>
 
+            <!-- <div class="col">
+                <label for="lp_path" class="form-label-xs">Launch Publishing File Path</label>
+                <br />
+                <input type="file" name="lp_path" accept=".xls,.xlsx">
+            </div> -->
+        </div>
+        
+        <div class="row mb-3">
             <div class="col">
                 <label class="form-label-xs" for="comments">Notes</label>
                 <textarea

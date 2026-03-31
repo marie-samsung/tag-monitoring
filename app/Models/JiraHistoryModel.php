@@ -32,6 +32,7 @@ class JiraHistoryModel extends Model
     {
         return $this->select()
             ->where('tag_id', $id)
+            ->where('type', Constants::JIRA_TYPE_DATE_EXTENSION_RULE)
             ->orderBy('created_at', 'DESC')
             ->first();
     }

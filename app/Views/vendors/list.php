@@ -15,7 +15,7 @@ Vendors List
     helper('custom_functions');
 ?>
 
-<div class="d-flex justify-content-between mb-3">
+<div class="container-fluid d-flex justify-content-between">
     <h2>Vendor List</h2>
     <div>
         <a href="<?= site_url('vendors/create') ?>" target="_blank" title="Add a new vendor" class="btn btn-success btn-sm ms-auto px-2">Create New</a>
@@ -24,7 +24,7 @@ Vendors List
 
 <?= csrf_field() ?>
 
-<div class="container">
+<div class="container-fluid">
     <!-- #region | SEARCH FILTER -->
     <div class="row">
         <form method="get" class="row g-3 mb-4">
@@ -74,9 +74,9 @@ Vendors List
                 <?php foreach ($vendors as $vendor): ?>
                     <tr>
                         <td><?= $vendor['id'] ?></td>
-                        <td><?= $vendor['name'] ?></td>
-                        <td><?= $vendor['about'] ?></td>
-                        <td class="gap-2">
+                        <td class="col-3"><?= $vendor['name'] ?></td>
+                        <td class="col-7"><?= $vendor['about'] ?></td>
+                        <td class="d-flex gap-2">
                             <a href="<?= site_url('vendors/view/'.$vendor['id']) ?>" target="_blank" title="View vendor details" class="btn btn-secondary btn-sm">View</a>
                             <a href="<?= site_url('vendors/update/'.$vendor['id']) ?>" target="_blank" title="Update vendor details" class="btn btn-primary btn-sm">Update</a>
                         </td>

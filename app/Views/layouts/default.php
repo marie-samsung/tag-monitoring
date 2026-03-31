@@ -19,7 +19,7 @@
             </div>
 
             <!-- MAIN CONTENT -->
-            <div class="mt-3">
+            <div class="mt-4">
                 <?php if (session()->getFlashdata('success')) : ?>
                     <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
                         <?= esc(session()->getFlashdata('success')) ?>
