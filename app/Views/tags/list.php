@@ -137,7 +137,7 @@ Tag Monitoring System
                             </a>
                         </td>
                         <!-- Name -->
-                        <td>
+                        <td class="form-label-s">
                             <a href="<?= $tag['ref_link'] ?>" target="_blank">
                                 <?= esc($tag['name']) ?>
                             </a>
@@ -159,18 +159,18 @@ Tag Monitoring System
                             $now = time();
                             $diffDays = ceil(($alEndDate - $now) / 86400);
                         ?>
-                        <td class="<?= days_class($diffDays) ?>">
+                        <td class="<?= days_class($diffDays) ?> form-label-s">
                             <?= esc($diffDays) ?>
                         </td>
                         <!-- End Date -->
-                        <td class="<?= date_class($tag['al_end_date'], $tag['status']) ?>">
-                            <?= esc($tag['al_end_date']) ?>
+                        <td class="<?= date_class($tag['al_end_date'], $tag['status']) ?> form-label-s" style="width:max-content; white-space:nowrap;">
+                            <?= esc(date('d-m-Y', strtotime($tag['al_end_date']))) ?>
                             <?php if ($tag['requested_date']) : ?>
-                                <br><small class="text-muted">[<?= esc($tag['requested_date']) ?>]</small>
+                                <br><small class="text-muted">[<?= esc(date('d-m-Y', strtotime($tag['requested_date']))) ?>]</small>
                             <?php endif; ?>
                         </td>
                         <!-- Updated At -->
-                        <td><?= esc(date('Y-m-d', strtotime($tag['updated_at']))) ?></td>
+                        <td class="form-label-s" style="width:max-content; white-space:nowrap;"><?= esc(date('d-m-Y', strtotime($tag['updated_at']))) ?></td>
                         <!-- <td><?= esc($tag['updated_by']) ?></td> -->
                         <!-- Actions -->
                         <td class="d-flex gap-2">
