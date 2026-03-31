@@ -16,6 +16,7 @@ class TagsModel extends Model
         'status', // Refer to 'Constants' model for values
         'is_active', // bool
         'al_end_date',
+        'requested_date',
         'ref_link', // Link to AL
         'updated_by', // Refer to 'Users' table
         'created_by',
@@ -32,33 +33,51 @@ class TagsModel extends Model
      */
     public function filterTags($filters = [])
     {
-        $builder = $this->builder();
+        $builder = $this->builder()
+                ->select('tags.*')
+                ->join('properties', 'properties.id = tags.property_id', 'left');
 
         if (!empty($filters['keyword'])) {
-            $builder->like('name', $filters['keyword']);
-        }
-
-        if ($filters['status'] !== '' && $filters['status'] !== null) {
-            $builder->where('status', $filters['status']);
+            $builder->like('tags.name', $filters['keyword']);
         }
 
         if (!empty($filters['property_id'])) {
-            $builder->where('property_id', $filters['property_id']);
+            $builder->where('tags.property_id', $filters['property_id']);
         }
 
-        return $builder
-            // ->orderBy('status', 'DESC')
-            ->orderBy('(CASE 
-                    WHEN status = 4 THEN 1
-                    WHEN status = 1 THEN 2
-                    WHEN status = 2 THEN 3
-                    WHEN status = 3 THEN 4
-                    ELSE 5
-                END)', 'ASC')
-            // ->orderBy('(CASE WHEN al_end_date IS NULL OR al_end_date = "" THEN 1 ELSE 0 END)', 'ASC')
-            ->orderBy('al_end_date', 'ASC')
-            ->get()
-            ->getResultArray();
+        if (!empty($filters['status'])) {
+            $builder->where('tags.status', $filters['status']);
+        }
+
+        if (!empty($filters['subsidiary_id'])) {
+            $builder->where('properties.subsidiary_id', $filters['subsidiary_id']);
+        }
+
+        // echo "<pre>";
+        // echo $builder->getCompiledSelect();
+        // echo "</pre>";
+        // die();
+
+        $builder->orderBy(
+                '(CASE 
+                    WHEN tags.al_end_date > DATE_ADD(CURDATE(), INTERVAL 16 DAY) THEN 1
+                    ELSE 0
+                END)', 'ASC', false
+            );
+
+        $builder->orderBy('properties.id', 'ASC');
+
+        $builder->orderBy(
+                '(CASE 
+                    WHEN tags.al_end_date <= DATE_ADD(CURDATE(), INTERVAL 16 DAY) 
+                    THEN tags.al_end_date
+                    ELSE NULL
+                END)', 'ASC', false
+            );
+
+        $builder->orderBy('properties.subsidiary_id', 'ASC');
+
+        return $builder->get()->getResultArray();
     }
 
     /**

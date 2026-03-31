@@ -19,6 +19,7 @@ class TagsController extends BaseController
             'keyword'     => $this->request->getGet('keyword'),
             'status'      => $this->request->getGet('status'),
             'property_id' => $this->request->getGet('property_id'),
+            'subsidiary_id' => $this->request->getGet('subsidiary_id'),
         ];
         $data['tags'] = $tagModel->filterTags($filters);
         $data['filters'] = $filters;
@@ -150,7 +151,7 @@ class TagsController extends BaseController
             $updated = $model->update(
                 $tag['id'], 
                 [
-                    'al_end_date' => date('Y-m-d', strtotime($tag['next_end_date'])),
+                    'requested_date' => date('Y-m-d', strtotime($tag['next_end_date'])),
                     'status' => Constants::STATUS_PENDING_VERIFICATION,
                 ]
             );
@@ -178,6 +179,7 @@ class TagsController extends BaseController
     {
         $model = new TagsModel();
         $tag = $model->find($id);
+        $requestedDate = $tag['requested_date'];
 
         if (!$tag) {
             return redirect()
@@ -185,7 +187,11 @@ class TagsController extends BaseController
                 ->with('error', "Tag ID: {$id} not found.");
         }
 
-        $model->update($id, ['status' => Constants::STATUS_ENABLED]);
+        $model->update($id, [
+            'status' => Constants::STATUS_ENABLED,
+            'al_end_date' => $requestedDate,
+            'requested_date' => null,
+        ]);
 
         return redirect()
             ->to('/tags/view/' . $id)

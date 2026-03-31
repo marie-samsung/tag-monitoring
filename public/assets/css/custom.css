@@ -10,16 +10,22 @@ h1, h2, h3, h4, h5, h6 {
     font-family: 'Poppins', serif;
 }
 
+.bg-purple { background-color: #6f42c1 !important; }
+.bg-teal { background-color: #20c997 !important; }
+.bg-orange { background-color: #fd7e14 !important; }
+.bg-pink { background-color: #d63384 !important; }
+
 .form-label-xs {
     font-size: 0.65rem;
     font-weight: 400;
 }
 
-/* .nav-link.active {
-    background: #0d6efd;
-    color: #fff !important;
-    border-radius: 4px;
-} */
+.form-select-xs {
+    padding: 0.15rem 0.35rem;
+    font-size: 0.90rem;
+    height: calc(1.5em + 0.3rem + 2px);
+    border-radius: 0.2rem;
+}
 
 .nav-link {
     width: 100%;

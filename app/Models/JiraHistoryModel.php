@@ -27,4 +27,12 @@ class JiraHistoryModel extends Model
             ->orderBy('created_at', 'DESC')
             ->findAll();
     }
+
+    public function getLatest(int $id)
+    {
+        return $this->select()
+            ->where('tag_id', $id)
+            ->orderBy('created_at', 'DESC')
+            ->first();
+    }
 }

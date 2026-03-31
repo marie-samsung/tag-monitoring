@@ -76,7 +76,7 @@
 
         <div class="mb-2">
             <label class="form-label-xs">Adobe Launch End Date</label>
-            <div class="form-control-plaintext fw-semibold p-0 ms-2 <?= date_class($tag['al_end_date']) ?>">
+            <div class="form-control-plaintext fw-semibold p-0 ms-2 <?= date_class($tag['al_end_date'], $tag['status']) ?>">
                 <?= esc($tag['al_end_date'] ?: '—') ?>
             </div>
         </div>

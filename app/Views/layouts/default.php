@@ -14,12 +14,12 @@
         <div class="row">
 
             <!-- LEFT SIDEBAR -->
-            <div class="col-2 border-end position-fixed" style="min-height: 100vh;">
+            <div class="mt-3">
                 <?= $this->include('layouts/sidebar') ?>
             </div>
 
             <!-- MAIN CONTENT -->
-            <div class="col-9 col-md-10 mt-4 offset-2">
+            <div class="mt-3">
                 <?php if (session()->getFlashdata('success')) : ?>
                     <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
                         <?= esc(session()->getFlashdata('success')) ?>

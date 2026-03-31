@@ -34,12 +34,13 @@ class PropertiesModel extends Model
 
     public function WebsiteLinks()
     {
-        $rows = $this->select('id, name, website, ref_link')->findAll();
+        $rows = $this->select('id, name, website, subsidiary_id, ref_link')->findAll();
         $links = [];
         foreach ($rows as $row) {
             $links[$row['id']] = [
                 'name' => $row['name'],
                 'website' => $row['website'],
+                'subsidiary_id' => $row['subsidiary_id'],
                 'ref_link' => $row['ref_link'],
             ];
         }

@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Constants;
+
 function status_label(int $code): string
 {
     $map = [
@@ -35,7 +37,7 @@ function bool_class(int $value): string
     };
 }
 
-function date_class(string|null $date): string
+function date_class(string|null $date, int $status): string
 {
     if (empty($date)) {
         return ''; // No date provided
@@ -49,13 +51,42 @@ function date_class(string|null $date): string
 
     $now = time();
 
-    if ($timestamp < $now) {
-        return 'text-muted'; // Past date
-    } elseif ($timestamp - $now <= 11 * 86400) {
-        return 'text-danger';
-    } elseif ($timestamp - $now <= 16 * 86400) {
-        return 'text-warning';
+    if ($status == Constants::STATUS_PENDING_VERIFICATION) {
+        if ($timestamp < $now) {
+            return 'text-danger'; // Past date but pending verification
+        } else {
+            return 'text-warning'; // Future date but pending verification
+        }
+    } elseif ($status == Constants::STATUS_EXPIRED) {
+        return 'text-muted'; // Expired status
+    } elseif ($status == Constants::STATUS_DISABLED) {
+        return 'text-secondary'; // Disabled status
     } else {
-        return 'text-success';
+        if ($timestamp - $now <= 11 * 86400) {
+            return 'text-danger'; // Past date
+        } elseif ($timestamp - $now <= 16 * 86400) {
+            return 'text-warning'; // Future date
+        } else {
+            return 'text-success'; // Distant future date
+        }
     }
+}
+
+function days_class(int $days): string
+{
+    if ($days <= 11) {
+        return 'text-danger'; // Past date
+    } elseif ($days <= 16) {
+        return 'text-warning'; // Future date
+    } else {
+        return 'text-success'; // Distant future date
+    }
+}
+
+function random_bg_style($value): string
+{
+    $hash = md5($value);
+    $color = substr($hash, 0, 6);
+
+    return "background-color:#{$color}; color:white;";
 }
