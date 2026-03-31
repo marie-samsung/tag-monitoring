@@ -15,6 +15,11 @@ h1, h2, h3, h4, h5, h6 {
 .bg-orange { background-color: #fd7e14 !important; }
 .bg-pink { background-color: #d63384 !important; }
 
+.form-label-s {
+    font-size: 0.85rem;
+    font-weight: 400;
+}
+
 .form-label-xs {
     font-size: 0.65rem;
     font-weight: 400;
