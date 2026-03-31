@@ -36,4 +36,18 @@ class JiraHistoryModel extends Model
             ->orderBy('created_at', 'DESC')
             ->first();
     }
+
+    public function filterJiraTickets($filters = [])
+    {
+        $builder = $this->builder()->select();
+
+        if (!empty($filters['keyword'])) {
+            $builder->like('ticket_id', $filters['keyword']);
+        }
+
+        $builder->groupBy('ticket_id');
+
+
+        return $builder->get()->getResultArray();
+    }
 }

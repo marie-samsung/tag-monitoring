@@ -25,12 +25,17 @@ class Constants
     public const STATUS_DISABLED = 2;
     public const STATUS_EXPIRED = 3;
     public const STATUS_PENDING_VERIFICATION = 4;
+    public const STATUS_UPDATED_IN_AL = 5;
+
+    public const YES = 1;
+    public const NO = 0;
 
     public const STATUS = [
         self::STATUS_ENABLED => 'Enabled',
         self::STATUS_DISABLED => 'Disabled',
         self::STATUS_EXPIRED => 'Expired',
         self::STATUS_PENDING_VERIFICATION => 'Pending Verification',
+        self::STATUS_UPDATED_IN_AL => 'Updated in AL',
     ];
 
     public const ACC_TYPE = [

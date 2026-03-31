@@ -146,6 +146,9 @@ class TagsController extends BaseController
                 ->with('error', 'No tags data received for renewal.');
         }
 
+        $propertyIds = array_unique(array_column($tags, 'property_id'));
+        $vendorIds = array_unique(array_column($tags, 'vendor_id'));
+
         $model = new TagsModel();
         foreach ($tags as $tag) {
             $updated = $model->update(
@@ -157,16 +160,11 @@ class TagsController extends BaseController
             );
 
             if ($updated) {
-                $vendorModel = new VendorsModel();
-                $vendor = $vendorModel->find($tag['vendor_id']);
-                $this->saveJiraHistory($tag['id'], $info['ticket_id'], $vendor['name'] ?? 'Unknown Vendor');
+                $this->saveJiraHistory($tag['id'], $info['ticket_id'], $vendorIds);
             } else {
                 var_dump("Failed to update tag ID: {$tag['id']}");
             }
         }
-
-        $propertyIds = array_unique(array_column($tags, 'property_id'));
-        $vendorIds = array_unique(array_column($tags, 'vendor_id'));
 
         $this->saveRenewalLogs($propertyIds, $vendorIds, $info);
 
@@ -198,14 +196,35 @@ class TagsController extends BaseController
             ->with('success', 'Tag renewal has been verified.');
     }
 
-    public function saveJiraHistory($tagId, $ticketId, $vendorId)
+    public function updateAL()
     {
+        $tagId = $this->request->getPost('tag_id');
+
+        $model = new TagsModel();
+        $model->update($tagId, [
+            'status' => Constants::STATUS_UPDATED_IN_AL,
+        ]);
+
+        return $this->response->setJSON(['status' => 'ok']);
+    }
+
+
+    public function saveJiraHistory($tagId, $ticketId, $vendorIds)
+    {
+        $vendorModel = new VendorsModel();
+        $vendorList = $vendorModel->Options();
+        $vendors = [];
+
+        foreach ($vendorIds as $vendorId) {
+            $vendors[] = $vendorList[(int)$vendorId];
+        }
+
         $jiraHistoryModel = new JiraHistoryModel();
         if ($jiraHistoryModel->insert([
             'tag_id' => $tagId,
             'ticket_id' => $ticketId,
             'type' => Constants::JIRA_TYPE_DATE_EXTENSION_RULE,
-            'comments' => 'Vendor: ' . $vendorId,
+            'comments' => 'Vendors: ' . implode(', ', $vendors),
         ]) == false) {
             var_dump("Failed to save JIRA history for tag ID: {$tagId}");
         }

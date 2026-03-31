@@ -14,6 +14,7 @@ $routes->group('tags', function ($routes) {
     $routes->get('view/(:num)', 'TagsController::view/$1');
     $routes->get('verify/(:num)', 'TagsController::verify/$1');
     $routes->post('renew/confirm', 'TagsController::renewConfirm');
+    $routes->post('renew/updateAL', 'TagsController::updateAL');
     $routes->match(['get', 'post'], 'create', 'TagsController::create');
     $routes->match(['get', 'post'], 'update/(:num)', 'TagsController::update/$1');
     $routes->match(['get', 'post'], 'renew', 'TagsController::renew');
@@ -37,5 +38,6 @@ $routes->group('vendors', function ($routes) {
 
 $routes->group('jira', function ($routes) {
     $routes->match(['get', 'post'], 'create', 'JiraController::create');
+    $routes->get('/', 'JiraController::index');
     $routes->get('download', 'JiraController::download');
 });

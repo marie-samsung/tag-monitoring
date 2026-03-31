@@ -9,6 +9,7 @@ function status_label(int $code): string
         2 => 'Disabled',
         3 => 'Expired',
         4 => 'Pending Verification',
+        5 => 'Updated in AL'
     ];
     return $map[$code] ?? 'Unknown';
 }
@@ -20,6 +21,7 @@ function status_class(int $code): string
         2 => 'bg-danger text-white',    // Disabled
         3 => 'bg-secondary text-white', // Expired
         4 => 'bg-warning text-dark', // Pending Verification
+        5 => 'bg-info text-dark', // Updated in AL
         default => 'bg-secondary text-dark',
     };
 }
@@ -89,4 +91,12 @@ function random_bg_style($value): string
     $color = substr($hash, 0, 6);
 
     return "background-color:#{$color}; color:white;";
+}
+
+function random_text_style($value): string
+{
+    $hash = md5($value);
+    $color = substr($hash, 0, 6);
+
+    return "color:#{$color};";
 }

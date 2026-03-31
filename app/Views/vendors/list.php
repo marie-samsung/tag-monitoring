@@ -17,9 +17,9 @@ Vendors List
 
 <div class="container-fluid d-flex justify-content-between">
     <h2>Vendor List</h2>
-    <div>
+    <!-- <div>
         <a href="<?= site_url('vendors/create') ?>" target="_blank" title="Add a new vendor" class="btn btn-success btn-sm ms-auto px-2">Create New</a>
-    </div>
+    </div> -->
 </div>
 
 <?= csrf_field() ?>

@@ -17,9 +17,9 @@ Properties List
 
 <div class="d-flex justify-content-between">
     <h2>Property List</h2>
-    <div>
+    <!-- <div>
         <a href="<?= site_url('properties/create') ?>" target="_blank" title="Add a new property" class="btn btn-success btn-sm ms-auto px-2">Create New</a>
-    </div>
+    </div> -->
 </div>
 
 <?= csrf_field() ?>

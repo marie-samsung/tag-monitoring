@@ -2,6 +2,8 @@
 
 namespace App\Models;
 use CodeIgniter\Model;
+use App\Models\LanguagesModel;
+use App\Models\CountriesModel;
 
 class PropertiesModel extends Model
 {
@@ -34,17 +36,32 @@ class PropertiesModel extends Model
 
     public function WebsiteLinks()
     {
-        $rows = $this->select('id, name, website, subsidiary_id, ref_link')->findAll();
+        $rows = $this->select('id, name, website, subsidiary_id, ref_link, is_shop')->findAll();
         $links = [];
         foreach ($rows as $row) {
             $links[$row['id']] = [
                 'name' => $row['name'],
+                'is_shop' => $row['is_shop'],
                 'website' => $row['website'],
                 'subsidiary_id' => $row['subsidiary_id'],
                 'ref_link' => $row['ref_link'],
             ];
         }
         return $links;
+    }
+
+    public function getSiteCode($propertyId)
+    {
+        $property = $this->find($propertyId);
+        $country = (new CountriesModel())->find($property['country_id']);
+        $language = (new LanguagesModel())->find($property['language_id']);
+        return $country['code'] . '_' . $language['name'];
+    }
+
+    public function isShop($propertyId)
+    {
+        $property = $this->find($propertyId);
+        return $property['is_shop'] === Constants::YES;
     }
 
     /**

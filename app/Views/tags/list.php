@@ -132,7 +132,8 @@ Tag Monitoring System
                         </td>
                         <!-- Property -->
                         <td>
-                            <a href="<?= $properties[$tag['property_id']]['ref_link'] ?>" target="_blank" style="<?= random_bg_style($tag['property_id']) ?>" class="badge">
+                            <i class="bi bi-tag-fill" style="<?= random_text_style($tag['property_id']) ?>"></i>
+                            <a href="<?= $properties[$tag['property_id']]['ref_link'] ?>" target="_blank" class="form-label-s">
                                 <?= $properties[$tag['property_id']]['name'] ?>
                             </a>
                         </td>

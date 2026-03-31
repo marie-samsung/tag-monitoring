@@ -9,6 +9,18 @@ use CodeIgniter\Files\Exceptions\FileException;
 
 class JiraController extends BaseController
 {
+    public function index()
+    {
+        $jiraHistoryModel = new JiraHistoryModel();
+
+        $filters = [
+            'keyword' => $this->request->getGet('keyword'),
+        ];
+
+        $data['jiraTickets'] = $jiraHistoryModel->filterJiraTickets($filters);
+        return view('jira/list', $data);
+    }
+
     public function create()
     {
         $model = new JiraHistoryModel();
@@ -66,17 +78,17 @@ class JiraController extends BaseController
             ->with('success', 'JIRA entry created successfully.');
     }
 
-    public function download()
-    {
-        $file_path = $this->request->getGet('file_path');
-        $file_path = urldecode($file_path);
+    // public function download()
+    // {
+    //     $file_path = $this->request->getGet('file_path');
+    //     $file_path = urldecode($file_path);
 
-        if (!file_exists($file_path)) {
-            return redirect()
-                ->back()
-                ->with('errors', "{$file_path} not found.");
-        }
+    //     if (!file_exists($file_path)) {
+    //         return redirect()
+    //             ->back()
+    //             ->with('errors', "{$file_path} not found.");
+    //     }
 
-        return $this->response->download($file_path, null)->setFileName(basename($file_path));
-    }
+    //     return $this->response->download($file_path, null)->setFileName(basename($file_path));
+    // }
 }

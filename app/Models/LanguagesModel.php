@@ -3,9 +3,9 @@
 namespace App\Models;
 use CodeIgniter\Model;
 
-class CountriesModel extends Model
+class LanguagesModel extends Model
 {
-    protected $table = 'countries';
+    protected $table = 'languages';
     protected $primaryKey = 'id';
     
     protected $allowedFields = [
