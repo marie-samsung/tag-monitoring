@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 31, 2026 at 06:30 AM
+-- Generation Time: Apr 01, 2026 at 08:42 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -74,7 +74,8 @@ CREATE TABLE `jira_history` (
   `ticket_id` varchar(150) NOT NULL,
   `type` varchar(150) NOT NULL,
   `comments` varchar(500) DEFAULT NULL,
-  `tag_id` int(11) NOT NULL COMMENT 'Reference to ''tags'' table',
+  `tag_id` int(11) NOT NULL DEFAULT 0 COMMENT 'Reference to ''tags'' table',
+  `subsidiary_id` int(11) NOT NULL DEFAULT 0,
   `file_path` varchar(200) DEFAULT NULL,
   `created_by` tinyint(4) NOT NULL DEFAULT 0,
   `created_at` datetime NOT NULL,
@@ -86,8 +87,18 @@ CREATE TABLE `jira_history` (
 -- Dumping data for table `jira_history`
 --
 
-INSERT INTO `jira_history` (`id`, `ticket_id`, `type`, `comments`, `tag_id`, `file_path`, `created_by`, `created_at`, `updated_by`, `updated_at`) VALUES
-(1, 'GTA-32896', '1', 'Vendor: Amazon', 7, NULL, 0, '2026-03-27 05:13:58', 0, '2026-03-27 05:13:58');
+INSERT INTO `jira_history` (`id`, `ticket_id`, `type`, `comments`, `tag_id`, `subsidiary_id`, `file_path`, `created_by`, `created_at`, `updated_by`, `updated_at`) VALUES
+(1, 'GTA-12345', '1', 'Vendors: Criteo, Amazon', 5, 0, NULL, 0, '2026-03-31 13:26:28', 0, '2026-03-31 13:26:28'),
+(2, 'GTA-12345', '1', 'Vendors: Criteo, Amazon', 1, 0, NULL, 0, '2026-03-31 13:26:28', 0, '2026-03-31 13:26:28'),
+(3, 'GTA-23456', '1', 'Vendors: Contentsquare', 4, 0, NULL, 0, '2026-03-31 13:26:51', 0, '2026-03-31 13:26:51'),
+(4, 'GTA-78910', '1', 'Vendors: Appsflyer, Contentsquare', 2, 0, NULL, 0, '2026-03-31 13:27:07', 0, '2026-03-31 13:27:07'),
+(5, 'GTA-78910', '1', 'Vendors: Appsflyer, Contentsquare', 3, 0, NULL, 0, '2026-03-31 13:27:07', 0, '2026-03-31 13:27:07'),
+(6, 'GTA-32896', '1', 'Vendors: Contentsquare', 3, 0, NULL, 0, '2026-03-31 18:32:45', 0, '2026-03-31 18:32:45'),
+(7, 'GTA-23456', '1', 'Vendors: Contentsquare, Criteo', 4, 0, NULL, 0, '2026-03-31 18:35:43', 0, '2026-03-31 18:35:43'),
+(8, 'GTA-23456', '1', 'Vendors: Contentsquare, Criteo', 5, 0, NULL, 0, '2026-03-31 18:35:43', 0, '2026-03-31 18:35:43'),
+(9, 'GTA-12345', '1', 'Vendors: Amazon', 1, 0, NULL, 0, '2026-03-31 18:38:02', 0, '2026-03-31 18:38:02'),
+(10, 'GTA-31327', '4', 'Q1 2026', 0, 1, NULL, 0, '2026-04-01 07:35:52', 0, NULL),
+(11, 'GTA-31411', '4', 'Q1 2026', 0, 2, NULL, 0, '2026-04-01 07:36:36', 0, NULL);
 
 -- --------------------------------------------------------
 
@@ -147,9 +158,13 @@ CREATE TABLE `properties` (
 --
 
 INSERT INTO `properties` (`id`, `name`, `is_active`, `is_epp`, `is_shop`, `subsidiary_id`, `country_id`, `language_id`, `website`, `ref_link`, `updated_by`, `updated_at`, `created_by`, `created_at`, `deleted_by`, `deleted_at`) VALUES
-(1, 'ZP6_AE_AR-UAE(SGE) WebSDK', 1, 0, 0, 1, 1, 2, 'https://www.samsung.com/ae_ar', 'https://experience.adobe.com/?lens_env=prod&reactor-lens_version=prod20250220203018#/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PR5657bad4cc9a4d8da75b5a2fca2c1574/overviewhttps://experience.adobe.com/?lens_env=prod&reactor-lens_version=prod20250220203018#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PR5657bad4cc9a4d8da75b5a2fca2c1574/overview', 0, NULL, 0, NULL, 0, NULL),
-(2, 'ZP6_AE-UAE(SGE) WebSDK', 1, 0, 0, 1, 1, 1, 'https://www.samsung.com/ae', 'https://experience.adobe.com/?lens_env=prod&reactor-lens_version=prod20250220203018#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PRa7cdc4dd00c24675812c3d05053e3cf3/overview', 0, NULL, 0, NULL, 0, NULL),
-(3, 'zP6zEPP_AE-UAE(AA) WebSDK', 1, 1, 0, 1, 1, 1, 'https://www.samsung.com/ae/multistore/samsung_employee/', '', 0, NULL, 0, NULL, 0, NULL);
+(1, 'ZP6_AE_AR-UAE(SGE) WebSDK', 1, 0, 0, 1, 1, 2, 'https://www.samsung.com/ae_ar', 'https://experience.adobe.com/#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PR5657bad4cc9a4d8da75b5a2fca2c1574/overview', 0, NULL, 0, NULL, 0, NULL),
+(2, 'ZP6_AE-UAE(SGE) WebSDK', 1, 0, 0, 1, 1, 1, 'https://www.samsung.com/ae', 'https://experience.adobe.com/#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PRa7cdc4dd00c24675812c3d05053e3cf3/overview', 0, NULL, 0, NULL, 0, NULL),
+(3, 'zP6zEPP_AE-UAE(AA) WebSDK', 1, 1, 0, 1, 1, 1, 'https://www.samsung.com/ae/multistore/samsung_employee/', 'https://experience.adobe.com/#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PR66456bebda424fb3af85ef35ee171c71/overview', 0, NULL, 0, NULL, 0, NULL),
+(4, 'ZS_Hybris_AE_AR-UAE (Shop Section) WebSDK\r\n', 1, 0, 1, 1, 1, 2, 'https://shop.samsung.com/ae_ar', 'https://experience.adobe.com/#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PRc290a80a826d4ceeb30cfcbe59148dbc/overview', 0, NULL, 0, NULL, 0, NULL),
+(5, 'ZS_Hybris_AE-UAE EPP (Shop Section) WebSDK', 1, 1, 1, 1, 1, 1, 'https://www.samsung.com/ae_ar/multistore/samsung_employee/', 'https://experience.adobe.com/#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PR89cdc1c03c074927b97991df03ce53d7/overview', 0, NULL, 0, NULL, 0, NULL),
+(6, 'ZS_Hybris_AE-UAE (Shop Section) WebSDK', 1, 0, 1, 1, 1, 1, 'https://shop.samsung.com/ae', 'https://experience.adobe.com/#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PR508988f4e47a4b0f9064de57454b604d/overview', 0, NULL, 0, NULL, 0, NULL),
+(7, 'ZP6_SA_EN-Saudi Arabia(SESAR) WebSDK', 1, 0, 0, 2, 6, 1, 'https://www.samsung.com/sa_en', 'https://experience.adobe.com/#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PR84237b02f2524aae898e192f7bab097a/overview', 0, NULL, 0, NULL, 0, NULL);
 
 -- --------------------------------------------------------
 
@@ -165,7 +180,7 @@ CREATE TABLE `renewal_logs` (
   `vendor` varchar(500) NOT NULL,
   `al_end_date` date NOT NULL,
   `user` tinyint(4) NOT NULL,
-  `updated_at` datetime NOT NULL,
+  `updated_at` datetime DEFAULT NULL,
   `created_at` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -174,8 +189,12 @@ CREATE TABLE `renewal_logs` (
 --
 
 INSERT INTO `renewal_logs` (`id`, `ticket_id`, `property_id`, `library_name`, `vendor`, `al_end_date`, `user`, `updated_at`, `created_at`) VALUES
-(1, 'GTA-32896', 2, 'GTA-32896_27032026', 'Amazon', '2026-07-28', 0, '2026-03-27 05:13:34', '2026-03-27 05:13:34'),
-(2, 'GTA-32896', 2, 'GTA-32896_27032026', 'Amazon', '2026-09-27', 0, '2026-03-27 05:13:58', '2026-03-27 05:13:58');
+(1, 'GTA-12345', 1, 'GTA-12345_31032026', 'Criteo, Amazon', '2026-06-06', 0, '2026-03-31 13:26:28', '2026-03-31 13:26:28'),
+(2, 'GTA-23456', 1, 'GTA-23456_31032026', 'Contentsquare', '2026-06-06', 0, '2026-03-31 13:26:51', '2026-03-31 13:26:51'),
+(3, 'GTA-78910', 1, 'GTA-78910_31032026', 'Appsflyer, Contentsquare', '2026-06-06', 0, '2026-03-31 13:27:07', '2026-03-31 13:27:07'),
+(4, 'GTA-32896', 1, 'GTA-32896_31032026', 'Contentsquare', '2026-06-06', 0, '2026-03-31 18:32:45', '2026-03-31 18:32:45'),
+(5, 'GTA-23456', 1, 'GTA-23456_31032026', 'Contentsquare, Criteo', '2026-06-06', 0, '2026-03-31 18:35:43', '2026-03-31 18:35:43'),
+(6, 'GTA-12345', 1, 'GTA-12345_31032026', 'Amazon', '2026-06-06', 0, '2026-03-31 18:38:02', '2026-03-31 18:38:02');
 
 -- --------------------------------------------------------
 
@@ -240,15 +259,14 @@ CREATE TABLE `tags` (
 --
 
 INSERT INTO `tags` (`id`, `name`, `property_id`, `vendor_id`, `conditions`, `status`, `is_active`, `al_end_date`, `requested_date`, `ref_link`, `updated_by`, `updated_at`, `created_by`, `created_at`, `deleted_by`, `deleted_at`) VALUES
-(1, 'LC-AEM-AD(Amazon)-CM-WL-PXFLW_277a8f5e-2d7b-4799-91f8-a089308d8e1b', 1, 1, 'asdasd', 4, 1, '2026-03-28', '2026-05-28', 'https://experience.adobe.com/?lens_env=prod&reactor-lens_version=prod20250220203018#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PR5657bad4cc9a4d8da75b5a2fca2c1574/rules/RLe876e1603137407a9502d9bfb0df924d', 0, '2026-03-27 05:08:29', 0, NULL, 0, NULL),
-(2, 'LC-AEM-AD(Appsflyer)-CM-WL-PXFLW_smartscript', 1, 1, '(.*)', 1, 1, '2026-03-26', NULL, 'https://experience.adobe.com/?lens_env=prod&reactor-lens_version=prod20250220203018#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PR5657bad4cc9a4d8da75b5a2fca2c1574/rules/RL196621ca70cd4e1faf4a0275b9a8418e', 0, '2026-03-31 03:35:08', 0, NULL, 0, NULL),
-(3, 'LC-AEM-AD(Amazon)-CM-WL-PXFLW_ef2eeeab-6b7e-4867-b8fd-c47091cd2ff2', 2, 1, '(.*)', 1, 1, '2026-03-26', NULL, 'https://experience.adobe.com/?lens_env=prod&reactor-lens_version=prod20250220203018#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PRa7cdc4dd00c24675812c3d05053e3cf3/rules/RLdff128b12190436eab8d806d3bdd3391', 0, '2026-03-31 03:34:49', 0, NULL, 0, NULL),
-(4, 'LC-B2C-AD(Appsflyer)-CM-WL-PXFLW_smartscript', 2, 2, '(.*)', 4, 1, '2026-03-12', '2026-05-12', 'https://experience.adobe.com/?lens_env=prod&reactor-lens_version=prod20250220203018#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PRa7cdc4dd00c24675812c3d05053e3cf3/rules/RL94a08b1c00c9402289c37f4b79f3c200', 0, '2026-03-27 05:11:50', 0, NULL, 0, NULL),
-(5, 'LC-AEM-AD(Insider)-CM-WL-PXFLW_10009534', 3, 3, '(.*)', 4, 1, '2026-03-28', '2026-05-28', 'https://experience.adobe.com/?lens_env=prod&reactor-lens_version=prod20250220203018#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PR66456bebda424fb3af85ef35ee171c71/rules/RLd30dc4f7a2ab4fc8bca5529ebe6ccea1', 0, '2026-03-27 05:02:55', 0, NULL, 0, NULL),
-(6, 'LC-TEST-UPDATE-2', 1, 1, '(.*)', 4, 1, '2026-03-27', '2026-05-27', 'https://www.samsung.com/lb', 0, '2026-03-27 04:59:07', 0, '2026-02-20 12:30:09', 0, NULL),
-(7, 'LC-TEST', 2, 1, 'asdasd', 1, 1, '2026-05-27', NULL, 'https://www.samsung.com/en', 0, '2026-03-30 11:11:40', 0, '2026-02-25 10:26:00', 0, NULL),
-(8, 'LC-TEST-TRY-UPDATE', 3, 3, '(.*)', 1, 1, '2026-05-18', NULL, 'https://www.samsung.com/en', 0, '2026-03-18 05:29:48', 0, '2026-03-09 08:47:39', 0, NULL),
-(9, 'LC-AEM-AD(ContentSquare)-TEST-ONLY', 2, 4, '(.*)', 1, 1, '2026-03-31', NULL, 'https://experience.adobe.com/?lens_env=prod&reactor-lens_version=prod20250220203018#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PR5657bad4cc9a4d8da75b5a2fca2c1574/rules/RLe876e1603137407a9502d9bfb0df924d', 0, '2026-03-31 03:07:18', 0, '2026-03-31 03:07:18', 0, NULL);
+(1, 'LC-AEM-AD(Amazon)-CM-WL-PXFLW_277a8f5e-2d7b-4799-91f8-a089308d8e1b', 1, 1, '(.*)', 4, 1, '2026-04-06', '2026-06-06', 'https://experience.adobe.com/?lens_env=prod&reactor-lens_version=prod20250220203018#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PR5657bad4cc9a4d8da75b5a2fca2c1574/rules/RLe876e1603137407a9502d9bfb0df924d', 0, '2026-03-31 19:21:27', 0, '2026-03-27 08:47:00', 0, NULL),
+(2, 'LC-AEM-AD(Appsflyer)-CM-WL-PXFLW_smartscript', 1, 2, '(.*)', 4, 1, '2026-04-06', '2026-06-06', 'https://experience.adobe.com/?lens_env=prod&reactor-lens_version=prod20250220203018#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PR5657bad4cc9a4d8da75b5a2fca2c1574/rules/RL196621ca70cd4e1faf4a0275b9a8418e', 0, '2026-03-31 13:27:07', 0, '2026-03-27 08:47:21', 0, NULL),
+(3, 'LC-AEM-AD(Contentsquare)-CM-WL-PXFLW_977f9a82566fb', 1, 4, '(.*)', 4, 1, '2026-04-06', '2026-06-06', 'https://experience.adobe.com/?lens_env=prod&reactor-lens_version=prod20250220203018#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PR5657bad4cc9a4d8da75b5a2fca2c1574/rules/RL8b83c36828b340189aaf73e59d6ce6ea', 0, '2026-03-31 18:32:45', 0, '2026-03-27 08:48:13', 0, NULL),
+(4, 'LC-AEM-AD(Contentsquare)-CM-WL-PXFLW_da035490-de75-4a0b-bcac-5dd36318b187', 1, 4, '(.*)', 4, 1, '2026-04-06', '2026-06-06', 'https://experience.adobe.com/?lens_env=prod&reactor-lens_version=prod20250220203018#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PR5657bad4cc9a4d8da75b5a2fca2c1574/rules/RLa6817863bc9b44c989e9da51a7acc42a', 0, '2026-03-31 18:35:43', 0, '2026-03-27 08:48:29', 0, NULL),
+(5, 'LC-AEM-AD(Criteo)-CM-WL-PXFLW_3be66720-a2ec-4b75-a022-ab04b3d8f41a', 1, 5, '(.*)', 4, 1, '2026-04-06', '2026-06-06', 'https://experience.adobe.com/?lens_env=prod&reactor-lens_version=prod20250220203018#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PR5657bad4cc9a4d8da75b5a2fca2c1574/rules/RLcba1121249d242c8acc6e167adeeaed9', 0, '2026-03-31 18:35:43', 0, '2026-03-27 08:50:02', 0, NULL),
+(6, 'LC-AEM-AD(CJ)-CM-ALL(WL)-SDSME-ac76-4b1c9ab097aa', 1, 8, '(.*)', 1, 1, '2026-04-25', NULL, 'https://experience.adobe.com/#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PR5657bad4cc9a4d8da75b5a2fca2c1574/rules/RL321f5ec6fc7949fd8beb649fcd1b3846', 0, '2026-03-27 08:50:31', 0, '2026-03-27 08:50:31', 0, NULL),
+(7, 'LC-AEM-AD(CJ)-CM-ALL(WL)-SDSME-8517-f38da36bcf66', 7, 8, '(.*)', 5, 1, '2026-05-03', NULL, 'https://experience.adobe.com/#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PR84237b02f2524aae898e192f7bab097a/rules/RLf1cd577493d942a1b3d21ea8cf176115', 0, '2026-03-31 19:21:56', 0, '2026-03-27 09:00:03', 0, NULL),
+(8, 'LC-AEM-AD(Contentsquare)-CM-WL-SDSME_d75b776c0f82a', 7, 4, '(.*)', 1, 1, '2026-04-20', NULL, 'https://experience.adobe.com/#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PR84237b02f2524aae898e192f7bab097a/rules/RL7c3d2702ee0748f58f63e3bed21ad36c', 0, '2026-03-27 09:01:18', 0, '2026-03-27 09:01:18', 0, NULL);
 
 -- --------------------------------------------------------
 
@@ -297,7 +315,12 @@ INSERT INTO `vendors` (`id`, `name`, `about`, `tag_purpose`, `collected_data`, `
 (1, 'Amazon', NULL, NULL, NULL, 1, 0, NULL, 0, NULL, 0, NULL),
 (2, 'Appsflyer', NULL, NULL, NULL, 1, 0, NULL, 0, NULL, 0, NULL),
 (3, 'Admitad', NULL, NULL, NULL, 1, 0, NULL, 0, NULL, 0, NULL),
-(4, 'Contentsquare', NULL, NULL, NULL, 1, 0, NULL, 0, NULL, 0, NULL);
+(4, 'Contentsquare', NULL, NULL, NULL, 1, 0, NULL, 0, NULL, 0, NULL),
+(5, 'Criteo', NULL, NULL, NULL, 1, 0, NULL, 0, NULL, 0, NULL),
+(6, 'Firework', NULL, NULL, NULL, 1, 0, NULL, 0, NULL, 0, NULL),
+(7, 'Insider', NULL, NULL, NULL, 1, 0, NULL, 0, NULL, 0, NULL),
+(8, 'CJ', NULL, NULL, NULL, 1, 0, NULL, 0, NULL, 0, NULL),
+(9, 'Meta', NULL, NULL, NULL, 1, 0, NULL, 0, NULL, 0, NULL);
 
 --
 -- Indexes for dumped tables
@@ -371,7 +394,7 @@ ALTER TABLE `countries`
 -- AUTO_INCREMENT for table `jira_history`
 --
 ALTER TABLE `jira_history`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `languages`
@@ -383,13 +406,13 @@ ALTER TABLE `languages`
 -- AUTO_INCREMENT for table `properties`
 --
 ALTER TABLE `properties`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `renewal_logs`
 --
 ALTER TABLE `renewal_logs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `subsidiaries`
@@ -401,7 +424,7 @@ ALTER TABLE `subsidiaries`
 -- AUTO_INCREMENT for table `tags`
 --
 ALTER TABLE `tags`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `users`
@@ -413,7 +436,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `vendors`
 --
 ALTER TABLE `vendors`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

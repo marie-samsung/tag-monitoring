@@ -3,9 +3,10 @@
 <?= $this->section('content') ?>
 
 <?php
+    use App\Models\RenewalLogsModel;
+    use App\Models\JiraHistoryModel;
     use App\Models\PropertiesModel;
     use App\Models\VendorsModel;
-    use App\Models\RenewalLogsModel;
     use App\Models\Constants;
 
     $renewalsModel = new RenewalLogsModel();
@@ -15,6 +16,8 @@
 
     $vendorsModel = new VendorsModel();
     $vendors = $vendorsModel->Options();
+
+    $jiraHistoryModel = new JiraHistoryModel();
 ?>
 
 <?php if ($ticket_id): ?>
@@ -60,21 +63,27 @@ Tag: Renew
             </table>
         </div>
         <div class="d-flex justify-content-between gap-2">
-            <div>
-                <input type="hidden" name="tags" value="<?= $tag_ids ?>">
-                <input type="text" name="ticket_id" id="ticket_id"
-                    class="form-control"
-                    value="<?= old('ticket_id', $old['ticket_id'] ?? '') ?>"
-                    required>
-                <small class="form-label-xs text-muted">
-                    JIRA ticket ID, GTA-XXXXX
-                </small>
+            <div class="d-flex gap-2 align-items-start align-items-center">
+                <div>
+                    <input type="hidden" name="tags" value="<?= $tag_ids ?>">
+                    <input type="text" name="ticket_id" id="ticket_id"
+                        class="form-control"
+                        value="<?= old('ticket_id', $old['ticket_id'] ?? '') ?>"
+                        required>
+                </div>
+                <a href="<?= Constants::JIRA_CREATE_ISSUE ?>" title="Create Issue in JIRA" class="btn btn-outline-primary btn-sm" target="_blank">
+                    Create JIRA Ticket
+                </a>
             </div>
             <div>
                 <a href="<?= site_url('tags') ?>" title="Cancel" class="btn btn-danger btn-sm">Cancel</a>
                 <button type="submit" class="btn btn-primary btn-sm">Proceed</button>
             </div>
         </div>
+
+        <small class="form-label-xs text-muted">
+            JIRA ticket ID, GTA-XXXXX
+        </small>
     </div>
 </form>
 <!-- #endregion | PART 1 -->
@@ -102,6 +111,7 @@ Tag: Renew
         if ($propertyIds) {
             $siteCode = $propertiesModel->getSiteCode($propertyIds[0]);
             $is_shop = $propertiesModel->isShop($propertyIds[0]) ? 'Shop' : 'AEM';
+            $subsidiaryTicketId = $jiraHistoryModel->getLatestSubsidiary($properties[$propertyIds[0]]['subsidiary_id'])['ticket_id'] ?? null;
         }
         $jiraTitle = sprintf(
             '[LC Request] [%s] [%s] [Date Extension Rule]',
@@ -165,15 +175,17 @@ Tag: Renew
 
 <form action="<?= site_url('tags/renew/confirm') ?>" method="post">
     <div class="container mt-3">
-        <h4 class="text-primary d-flex align-items-center gap-2">
-            <span id="jiraTitle"><?= esc($jiraTitle) ?></span>
-            <a href="javascript:void(0)" onclick="copyJiraTitle()">
-                <i class="bi bi-copy text-secondary"></i>
-            </a>
-            <span id="copyStatus" style="opacity:0; transition: opacity .6s; font-size:10px; color:green;">
-                Copied!
-            </span>
-        </h4>
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h4 class="text-primary d-flex align-items-center gap-2">
+                <span id="jiraTitle"><?= esc($jiraTitle) ?></span>
+                <a href="javascript:void(0)" onclick="copyJiraTitle()">
+                    <i class="bi bi-copy text-primary fs-5"></i>
+                </a>
+                <span id="copyStatus" style="opacity:0; transition: opacity .6s; font-size:10px; color:green;">
+                    Copied!
+                </span>
+            </h4>
+        </div>
 
         <textarea id="details"></textarea>
         <div class="d-flex justify-content-end align-items-center mt-2 gap-2">
@@ -181,9 +193,9 @@ Tag: Renew
                 Copied!
             </span>
 
-            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="copyDetails()">
-                Copy Description
-            </button>
+            <a href="javascript:void(0)" onclick="copyDetails()">
+                <i class="bi bi-copy text-primary fs-5"></i>
+            </a>
         </div>
 
         <!-- #region | DATE EXTENSION DETAILS -->
@@ -272,8 +284,9 @@ Tag: Renew
             </table>
         </ol> -->
 
+        <hr/>
         <!-- #region | TAGS -->
-        <h4 class="mt-5 mb-3 text-primary">Tags List</h4>
+        <h4 class="mt-3 text-primary">Tags List</h4>
         <div class="table-responsive">
             <table class="table table-hover table-bordered table-striped">
                 <thead>
@@ -337,13 +350,31 @@ Tag: Renew
         </div>
         <!-- #endregion | TAGS -->
 
-        <div class="justify-content-end">
-            <a href="<?= site_url('tags') ?>" title="Cancel" class="btn btn-secondary btn-sm">Cancel</a>
-            <button type="submit" 
-                class="btn btn-success btn-sm"
-                onclick="return confirm('Are you sure you want to renew these tags?');">
-                Renew Tags
-            </button>
+        <div class="d-flex justify-content-between mb-5">
+            <div class="d-flex gap-2 align-items-end">
+                <div id="comment" class="form-control" style="height: 140px; width: auto; overflow-y: auto;">
+Hi TAGGING JIRA SUPPORT,
+<br/>Kindly refer to the date extension approval confirmation here: <a href="<?= Constants::JIRA_LINK . $subsidiaryTicketId ?>" target="_blank"><?= $subsidiaryTicketId ?></a>
+<br/><br/>Regards,
+<br/>[Your Name]
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <a href="javascript:void(0)" onclick="copyComment()">
+                        <i class="bi bi-copy text-primary fs-5"></i>
+                    </a>
+                    <span id="copyCommentStatus" style="opacity:0; transition: opacity .6s; font-size:10px; color:green;">
+                        Copied!
+                    </span>
+                </div>
+            </div>
+            <div>
+                <a href="<?= site_url('tags') ?>" title="Cancel" class="btn btn-secondary btn-sm">Cancel</a>
+                <button type="submit" 
+                    class="btn btn-success btn-sm"
+                    onclick="return confirm('Are you sure you want to renew these tags?');">
+                    Renew Tags
+                </button>
+            </div>
         </div>
     </div>
 </form>
@@ -363,7 +394,7 @@ Tag: Renew
                 // ['fontsize', ['fontsize']],
                 // ['color', ['color']],
                 ['para', ['ul', 'ol', 'paragraph']],
-                ['table', ['table']],   // ← THIS ENABLES TABLES
+                ['table', ['table']],
                 // ['insert', ['link', 'picture', 'video']],
                 ['view', ['fullscreen', 'codeview', 'help']]
             ]
@@ -385,8 +416,8 @@ Tag: Renew
 
         $.post("<?= site_url('tags/renew/updateAL') ?>", payload, function(response) {
             if (response.status === 'ok') {
-                btn.hide(); // hide Save button
-                btn.siblings('.updated-label').fadeIn(); // show Updated text
+                btn.hide();
+                btn.siblings('.updated-label').fadeIn();
             }
         }, 'json');
     });
@@ -403,17 +434,24 @@ Tag: Renew
         });
     }
 
-    // function copyDetails() {
-    //     const html = $('#details').summernote('code');
-    //     navigator.clipboard.writeText(html).then(() => {
-    //         const status = document.getElementById('copyDetailsStatus');
-    //         status.style.opacity = 1;
-
-    //         setTimeout(() => {
-    //             status.style.opacity = 0;
-    //         }, 1000);
-    //     });
-    // }
+    function copyComment() {
+        const comment = document.getElementById('comment');
+        const status = document.getElementById('copyCommentStatus');
+        let html = comment.innerHTML;
+        html = html.replace(/<br\s*\/?>/gi, "\n");
+        html = html.replace(/<a [^>]*href="([^"]+)"[^>]*>(.*?)<\/a>/gi, "$2 ($1)");
+        const text = html
+            .replace(/<br\s*\/?>/gi, "\n")
+            .replace(/<a [^>]*href="([^"]+)"[^>]*>(.*?)<\/a>/gi, "$2 ($1)")
+            .replace(/<[^>]+>/g, "")
+            .trim();
+        navigator.clipboard.writeText(text).then(() => {
+            status.style.opacity = 1;
+            setTimeout(() => {
+                status.style.opacity = 0;
+            }, 1000);
+        });
+    }
 
     function copyDetails() {
         const html = $('#details').summernote('code');

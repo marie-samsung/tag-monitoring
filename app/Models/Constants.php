@@ -5,6 +5,7 @@ namespace App\Models;
 class Constants
 {
     public const JIRA_LINK = 'https://jira.secext.samsung.net/browse/';
+    public const JIRA_CREATE_ISSUE = 'https://jira.secext.samsung.net/secure/CreateIssue!default.jspa';
     public const LP_WRITE_PATH = WRITEPATH . 'uploads/lp/';
     public const LP_PATH = 'uploads/lp/';
     public const JIRA_TYPE_DATE_EXTENSION_RULE = 1;

@@ -111,7 +111,7 @@ Tag Monitoring System
             <tbody>
                 <?php
                     foreach ($tags as $tag): 
-                    $ticketId = (new JiraHistoryModel())->getLatest($tag['id'])['ticket_id'] ?? null;
+                    $ticketId = (new JiraHistoryModel())->getLatestTag($tag['id'])['ticket_id'] ?? null;
                     $subsidiaryId = $properties[$tag['property_id']]['subsidiary_id'];
                     $subsidiary = $subsidiaries[$subsidiaryId];
                 ?>
@@ -133,12 +133,12 @@ Tag Monitoring System
                         <!-- Property -->
                         <td>
                             <i class="bi bi-tag-fill" style="<?= random_text_style($tag['property_id']) ?>"></i>
-                            <a href="<?= $properties[$tag['property_id']]['ref_link'] ?>" target="_blank" class="form-label-s">
+                            <a href="<?= $properties[$tag['property_id']]['ref_link'] ?>" target="_blank" class="form-label-sm">
                                 <?= $properties[$tag['property_id']]['name'] ?>
                             </a>
                         </td>
                         <!-- Name -->
-                        <td class="form-label-s">
+                        <td class="form-label-sm">
                             <a href="<?= $tag['ref_link'] ?>" target="_blank">
                                 <?= esc($tag['name']) ?>
                             </a>
@@ -160,18 +160,18 @@ Tag Monitoring System
                             $now = time();
                             $diffDays = ceil(($alEndDate - $now) / 86400);
                         ?>
-                        <td class="<?= days_class($diffDays) ?> form-label-s">
+                        <td class="<?= days_class($diffDays) ?> form-label-sm">
                             <?= esc($diffDays) ?>
                         </td>
                         <!-- End Date -->
-                        <td class="<?= date_class($tag['al_end_date'], $tag['status']) ?> form-label-s" style="width:max-content; white-space:nowrap;">
+                        <td class="<?= date_class($tag['al_end_date'], $tag['status']) ?> form-label-sm" style="width:max-content; white-space:nowrap;">
                             <?= esc(date('d-m-Y', strtotime($tag['al_end_date']))) ?>
                             <?php if ($tag['requested_date']) : ?>
                                 <br><small class="text-muted">[<?= esc(date('d-m-Y', strtotime($tag['requested_date']))) ?>]</small>
                             <?php endif; ?>
                         </td>
                         <!-- Updated At -->
-                        <td class="form-label-s" style="width:max-content; white-space:nowrap;"><?= esc(date('d-m-Y', strtotime($tag['updated_at']))) ?></td>
+                        <td class="form-label-sm" style="width:max-content; white-space:nowrap;"><?= esc(date('d-m-Y', strtotime($tag['updated_at']))) ?></td>
                         <!-- <td><?= esc($tag['updated_by']) ?></td> -->
                         <!-- Actions -->
                         <td class="d-flex gap-2">
