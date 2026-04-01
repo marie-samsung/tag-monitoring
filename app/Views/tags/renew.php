@@ -18,6 +18,24 @@
     $vendors = $vendorsModel->Options();
 
     $jiraHistoryModel = new JiraHistoryModel();
+
+    $propertyIds = array_unique(array_column($tags, 'property_id'));
+    $vendorIds = array_unique(array_column($tags, 'vendor_id'));
+    $vendor = [];
+    foreach ($vendorIds as $vendorId) {
+        $vendor[] = $vendors[$vendorId];
+    }
+
+    if ($propertyIds) {
+        $siteCode = $propertiesModel->getSiteCode($propertyIds[0]);
+        $is_shop = $propertiesModel->isShop($propertyIds[0]) ? 'Shop' : 'AEM';
+        $subsidiaryTicketId = $jiraHistoryModel->getLatestSubsidiary($properties[$propertyIds[0]]['subsidiary_id'])['ticket_id'] ?? null;
+    }
+    $jiraTitle = sprintf(
+        '[LC Request] [%s] [%s] [Date Extension Rule]',
+        $siteCode,
+        implode(', ', $vendor)
+    );
 ?>
 
 <?php if ($ticket_id): ?>
@@ -41,6 +59,18 @@ Tag: Renew
 <form action="<?= site_url('tags/renew') ?>" method="get">
     <div class="container">
         <div class="table-responsive mt-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h4 class="text-primary d-flex align-items-center gap-2">
+                    <span id="jiraTitle"><?= esc($jiraTitle) ?></span>
+                    <a href="javascript:void(0)" onclick="copyJiraTitle()">
+                        <i class="bi bi-copy text-primary fs-5"></i>
+                    </a>
+                    <span id="copyStatus" style="opacity:0; transition: opacity .6s; font-size:10px; color:green;">
+                        Copied!
+                    </span>
+                </h4>
+            </div>
+
             <table class="table table-hover table-bordered table-striped">
                 <thead>
                     <tr>
@@ -91,7 +121,6 @@ Tag: Renew
 <!-- #region | PART 2 - RENEWAL CONFIRMATION -->
 <?php 
     else:
-        $propertyIds = array_unique(array_column($tags, 'property_id'));
         $today = date('dmY');
         $libraryName = $ticket_id . '_' . $today;
 
@@ -102,27 +131,10 @@ Tag: Renew
             return false;
         }
 
-        $vendorIds = array_unique(array_column($tags, 'vendor_id'));
-        $vendor = [];
-        foreach ($vendorIds as $vendorId) {
-            $vendor[] = $vendors[$vendorId];
-        }
-
-        if ($propertyIds) {
-            $siteCode = $propertiesModel->getSiteCode($propertyIds[0]);
-            $is_shop = $propertiesModel->isShop($propertyIds[0]) ? 'Shop' : 'AEM';
-            $subsidiaryTicketId = $jiraHistoryModel->getLatestSubsidiary($properties[$propertyIds[0]]['subsidiary_id'])['ticket_id'] ?? null;
-        }
-        $jiraTitle = sprintf(
-            '[LC Request] [%s] [%s] [Date Extension Rule]',
-            $siteCode,
-            implode(', ', $vendor)
-        );
-
-        $detailsHtml = '<ol>';
+        $detailsHtml = '';
         // Target Property
         $detailsHtml .= '
-            <li><b>Target Property</b></li>
+            <b>1) Target Property</b>
             <ul>';
         foreach ($propertyIds as $property) {
             $detailsHtml .= '<li>' . $is_shop . ' : ' . esc($properties[$property]['name'] ?? 'Unknown') . '</li>';
@@ -132,7 +144,7 @@ Tag: Renew
             </ul>';
         // Target Pages
         $detailsHtml .= '
-            <li><b>Target Page(s)</b></li>
+            <b>2) Target Page(s)</b>
             <ul>';
         foreach ($propertyIds as $property) {
             $detailsHtml .= '<li>' . $is_shop . ' : <a href="' . esc($properties[$property]['website'] ?? 'Unknown') . '" target="_blank">' . esc($properties[$property]['website'] ?? 'Unknown') . '</a></li>';
@@ -140,21 +152,21 @@ Tag: Renew
         $detailsHtml .= '</ul>';
         // Expiration Dates
         $detailsHtml .= '
-            <li><b>Expiration Date</b></li>
+            <b>3) Expiration Date</b>
             <ul>
                 <li><b>as-is :</b> ' . esc($expDate) . '</li>
                 <li><b>to-be :</b> ' . esc($nextExpDate) . '</li>
             </ul>';
         // Purpose & Goal + Table
         $detailsHtml .= '
-            <li><b>Purpose & Goal</b></li>
+            <b>4) Purpose & Goal</b>
             <table border="1" cellpadding="6" cellspacing="0" style="border-collapse: collapse; width: 100%;">
                 <thead>
                     <tr>
                         <th>Tag Name</th>
-                        <th>Renew? (Y/N)</th>
+                        <th>Renew<br/>(Y/N)</th>
                         <th>Renewal Justification</th>
-                        <th>End Date</th>
+                        <th>Duration<br/>of Usage</th>
                     </tr>
                 </thead>
                 <tbody>';
@@ -169,8 +181,7 @@ Tag: Renew
         }
         $detailsHtml .= '
                 </tbody>
-            </table>
-        </ol>';
+            </table>';
 ?>
 
 <form action="<?= site_url('tags/renew/confirm') ?>" method="post">
