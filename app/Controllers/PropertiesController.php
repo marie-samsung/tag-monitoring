@@ -20,4 +20,33 @@ class PropertiesController extends BaseController
 
         return view('properties/list', $data);
     }
+
+    public function create()
+    {
+        $model = new PropertiesModel();
+
+        if ($this->request->getMethod() === 'GET') {
+            return view('properties/create', []);
+        }
+
+        $post = $this->request->getPost();
+
+        $insertData = [
+            'name' => $post['name'],
+            'is_active' => (int)$post['is_active'],
+            'is_epp' => (int)$post['is_epp'],
+            'is_shop' => (int)$post['is_shop'],
+            'subsidiary_id' => (int)$post['subsidiary_id'],
+            'country_id' => (int)$post['country_id'],
+            'language_id' => (int)$post['language_id'],
+            'website' => $post['website'],
+            'ref_link' => $post['ref_link'],
+        ];
+
+        $model->insert($insertData);
+
+        return redirect()
+            ->to('/properties')
+            ->with('success', "Property {$post['name']} created successfully.");
+    }
 }
