@@ -17,9 +17,9 @@ Properties List
 
 <div class="d-flex justify-content-between">
     <h2>Property List</h2>
-    <!-- <div>
+    <div>
         <a href="<?= site_url('properties/create') ?>" target="_blank" title="Add a new property" class="btn btn-success btn-sm ms-auto px-2">Create New</a>
-    </div> -->
+    </div>
 </div>
 
 <?= csrf_field() ?>
@@ -69,7 +69,7 @@ Properties List
                     <th>Property</th>
                     <th>Is EPP?</th>
                     <th>Is Shop?</th>
-                    <th></th>
+                    <!-- <th></th> -->
                 </tr>
             </thead>
             <tbody>
@@ -77,7 +77,11 @@ Properties List
                     <tr>
                         <td><?= $property['id'] ?></td>
                         <td><?= $subsidiaryOptions[$property['subsidiary_id']] ?? 'Unknown' ?></td>
-                        <td><?= $property['name'] ?></td>
+                        <td>
+                            <a href="<?= $property['ref_link'] ?>" target="_blank">
+                                <?= $property['name'] ?>
+                            </a>
+                        </td>
                         <td>
                             <span class="badge <?= bool_class($property['is_epp']) ?>">
                                 <?= esc(bool_label($property['is_epp'])) ?>
@@ -88,10 +92,10 @@ Properties List
                                 <?= esc(bool_label($property['is_shop'])) ?>
                             </span>
                         </td>
-                        <td class="gap-2">
+                        <!-- <td class="gap-2">
                             <a href="<?= site_url('properties/view/'.$property['id']) ?>" target="_blank" title="View property details" class="btn btn-secondary btn-sm">View</a>
                             <a href="<?= site_url('properties/update/'.$property['id']) ?>" target="_blank" title="Update property details" class="btn btn-primary btn-sm">Update</a>
-                        </td>
+                        </td> -->
                     </tr>
                 <?php endforeach; ?>
             </tbody>
