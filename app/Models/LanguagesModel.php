@@ -18,4 +18,10 @@ class LanguagesModel extends Model
 
     protected $useTimestamps = true;
     protected $useSoftDeletes = true;
+
+    public function Options()
+    {
+        $rows = $this->select('id, name')->findAll();
+        return array_column($rows, 'name', 'id');
+    }
 }
