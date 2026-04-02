@@ -47,27 +47,26 @@ class JiraController extends BaseController
                 ->with('errors', "Tag ID not found.");
         }
 
-        $file = $this->request->getFile('lp_path');
+        // $file = $this->request->getFile('lp_path');
 
-        try {
-            if ($file && $file->isValid()) {
-                $tag = new TagsModel();
-                $upload_path = $tag->uploadLPFolderPath($tag_id);
-                // $uploadPath = WRITEPATH . 'uploads/lp';
-                $file_name = $file->getClientName();
-                $file->move(Constants::LP_WRITE_PATH . $upload_path, $file_name);
-                $lp_path = $upload_path . '/' . $file_name;
-            }
-        } catch(FileException $e) {
-            var_dump($e);
-        }
+        // try {
+        //     if ($file && $file->isValid()) {
+        //         $tag = new TagsModel();
+        //         $upload_path = $tag->uploadLPFolderPath($tag_id);
+        //         // $uploadPath = WRITEPATH . 'uploads/lp';
+        //         $file_name = $file->getClientName();
+        //         $file->move(Constants::LP_WRITE_PATH . $upload_path, $file_name);
+        //         $lp_path = $upload_path . '/' . $file_name;
+        //     }
+        // } catch(FileException $e) {
+        //     var_dump($e);
+        // }
 
         $insertData = [
             'ticket_id' => $post['ticket_id'],
             'type' => $post['type'],
             'comments' => $post['comments'],
             'tag_id' => $post['tag_id'],
-            'lp_path' => $lp_path ?? null,
             'created_by' => 0, // @TODO: Replace with actual user ID from session
         ];
 
