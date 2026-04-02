@@ -41,3 +41,7 @@ $routes->group('jira', function ($routes) {
     $routes->get('/', 'JiraController::index');
     $routes->get('download', 'JiraController::download');
 });
+
+$routes->group('activity-log', function ($routes) {
+    $routes->get('/', 'ActivityLogController::index');
+});
