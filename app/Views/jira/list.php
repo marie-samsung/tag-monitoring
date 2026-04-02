@@ -8,6 +8,14 @@ JIRA Tickets List
 
 <?php
     use App\Models\Constants;
+    use App\Models\TagsModel;
+    use App\Models\PropertiesModel;
+    use App\Models\SubsidiariesModel;
+
+    $tagModel = new TagsModel();
+    $propertyModel = new PropertiesModel();
+    $subsidiaryModel = new SubsidiariesModel();
+
     helper('custom_functions');
 ?>
 
@@ -49,15 +57,28 @@ JIRA Tickets List
             <thead>
                 <tr>
                     <th>#</th>
+                    <th>Subsidiary</th>
+                    <th>Property</th>
                     <th>Ticket ID</th>
                     <th>Type</th>
                     <th>Comments</th>
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($jiraTickets as $ticket): ?>
+                <?php
+                    foreach ($jiraTickets as $ticket):
+                        $tag = $tagModel->find($ticket['tag_id']);
+                        $property = $propertyModel->find($tag['property_id']);
+                        $subsidiary = $subsidiaryModel->find($property['subsidiary_id']);
+                ?>
                     <tr>
                         <td><?= $ticket['id'] ?></td>
+                        <td><?= esc($subsidiary['name']) ?></td>
+                        <td>
+                            <a href="<?= $property['ref_link'] ?>" target="_blank">
+                                <?= esc($property['name']) ?>
+                            </a>
+                        </td>
                         <td>
                             <a href="<?= Constants::JIRA_LINK . $ticket['ticket_id'] ?>" target="_blank">
                                 <?= $ticket['ticket_id'] ?>
