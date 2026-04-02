@@ -60,7 +60,7 @@ class JiraHistoryModel extends Model
         $builder = $this->builder()->select();
 
         if (!empty($filters['keyword'])) {
-            $builder->like('ticket_id', $filters['keyword']);
+            $builder->like('ticket_id', '%' . $filters['keyword'] . '%');
         }
 
         $builder->groupBy('ticket_id');
