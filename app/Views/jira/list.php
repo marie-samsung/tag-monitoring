@@ -13,48 +13,88 @@ JIRA Tickets List
     use App\Models\SubsidiariesModel;
 
     $tagModel = new TagsModel();
-    $propertyModel = new PropertiesModel();
+    $propertiesModel = new PropertiesModel();
     $subsidiaryModel = new SubsidiariesModel();
+
+    $properties = $propertiesModel->WebsiteLinks();
+    $propertyOptions = $propertiesModel->Options();
+
+    $subsidiaries = $subsidiaryModel->Options();
 
     helper('custom_functions');
 ?>
 
-<div class="d-flex justify-content-between">
-    <h2>JIRA Tickets List</h2>
-    <!-- <div>
-        <a href="<?= site_url('jira/create') ?>" target="_blank" title="Create new JIRA ticket" class="btn btn-success btn-sm ms-auto px-2">Create New</a>
-    </div> -->
-</div>
-
 <?= csrf_field() ?>
 
 <div class="container-fluid">
-    <!-- #region | SEARCH FILTER -->
-    <div class="row">
-        <form method="get" class="row g-3 mb-4">
+    <div class="d-flex justify-content-between">
+        <h2>JIRA Tickets</h2>
+        <!-- <div>
+            <a href="<?= site_url('jira/create') ?>" target="_blank" title="Create new JIRA ticket" class="btn btn-success btn-sm ms-auto px-2">Create New</a>
+        </div> -->
+    </div>
 
+    <!-- #region | SEARCH FILTER -->
+    <div class="my-3">
+        <form method="get" class="row g-3 mb-4">
             <div class="col">
                 <input 
                     type="text" 
                     name="keyword" 
-                    class="form-control" 
+                    class="form-control form-select-xs" 
                     placeholder="Search..."
                     value="<?= esc($_GET['keyword'] ?? '') ?>"
                 >
             </div>
 
-            <div class="col-md-1">
-                <button class="btn btn-primary w-100">Filter</button>
+            <div class="col">
+                <select name="subsidiary_id" class="form-select form-select-xs">
+                    <option value="">All Subsidiaries</option>
+                    <?php foreach ($subsidiaries as $value => $label): ?>
+                        <option value="<?= esc($value) ?>"
+                            <?= old('subsidiary_id', $filters['subsidiary_id'] ?? '') == $value ? 'selected' : '' ?>>
+                            <?= esc($label) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
             </div>
 
+            <div class="col">
+                <select name="property_id" class="form-select searchable-select">
+                    <option value="">All Properties</option>
+                    <?php foreach ($propertyOptions as $value => $label): ?>
+                        <option value="<?= esc($value) ?>"
+                            <?= old('property_id', $filters['property_id'] ?? '') == $value ? 'selected' : '' ?>>
+                            <?= esc($label) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <div class="col">
+                <select name="ticket_type" class="form-select form-select-xs">
+                    <option value="">All Ticket Types</option>
+                    <?php foreach (Constants::JIRA_TICKET_TYPES as $value => $label): ?>
+                        <option value="<?= esc($value) ?>"
+                            <?= old('ticket_type', $filters['ticket_type'] ?? '') == $value ? 'selected' : '' ?>>
+                            <?= esc($label) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <div class="col-md-2 d-flex align-items-center gap-2">
+                <button class="btn btn-sm btn-primary w-100">Filter</button>
+                <a href="<?= site_url('jira') ?>" class="btn btn-sm btn-secondary w-100">Clear</a>
+            </div>
         </form>
     </div>
     <!-- #endregion -->
 
     <!-- #region | JIRA HISTORY TABLE -->
     <div class="table-responsive">
-        <table class="table table-hover">
-            <thead>
+        <table class="table table-hover table-bordered table-striped">
+            <thead class="table-active">
                 <tr>
                     <th>#</th>
                     <th>Subsidiary</th>
@@ -68,16 +108,39 @@ JIRA Tickets List
                 <?php
                     foreach ($jiraTickets as $ticket):
                         $tag = $tagModel->find($ticket['tag_id']);
-                        $property = $propertyModel->find($tag['property_id']);
-                        $subsidiary = $subsidiaryModel->find($property['subsidiary_id']);
+                        $property = null;
+
+                        if ($tag) {
+                            $property = $propertiesModel->find($tag['property_id']);
+                            $subsidiary = $subsidiaryModel->find($property['subsidiary_id']);
+                        } else {
+                            $subsidiary = $subsidiaryModel->find($ticket['subsidiary_id']);
+                        }
+
+                        $ticketTagsList = [];
+                        if ($ticket['type'] == Constants::JIRA_TYPE_DATE_EXTENSION_RULE) {
+                            $ticketTags = explode(',', $ticket['comments']);
+                            
+                            foreach ($ticketTags as $tagId) {
+                                $tagInfo = $tagModel->find($tagId);
+                                if ($tagInfo) {
+                                    // $ticketTagsList[$tagInfo['name']] = $tagInfo['ref_link']; // If you want to direct at AL
+                                    $ticketTagsList[$tagInfo['id']] = $tagInfo['name'];
+                                }
+                            }
+                        }
                 ?>
                     <tr>
                         <td><?= $ticket['id'] ?></td>
                         <td><?= esc($subsidiary['name']) ?></td>
                         <td>
+                            <?php if ($property): ?>
                             <a href="<?= $property['ref_link'] ?>" target="_blank">
                                 <?= esc($property['name']) ?>
                             </a>
+                            <?php else: ?>
+                                None
+                            <?php endif; ?>
                         </td>
                         <td>
                             <a href="<?= Constants::JIRA_LINK . $ticket['ticket_id'] ?>" target="_blank">
@@ -85,7 +148,21 @@ JIRA Tickets List
                             </a>
                         </td>
                         <td><?= Constants::JIRA_TICKET_TYPES[$ticket['type']] ?></td>
-                        <td><?= $ticket['comments'] ?></td>
+                        <td>
+                            <?php if ($ticketTagsList): ?>
+
+                                <?php foreach ($ticketTagsList as $id => $name): ?>
+                                    <a href="<?= site_url('tags/view/' . $id) ?>" target="_blank"><?= esc($name) ?></a><br>
+                                <?php endforeach; ?>
+
+                                <!-- If you want to direct at AL, use the below code -->
+                                <!-- <?php foreach ($ticketTagsList as $name => $link): ?>
+                                    <a href="<?= $link ?>" target="_blank"><?= esc($name) ?></a><br>
+                                <?php endforeach; ?> -->
+                            <?php else: ?>
+                                <?= esc($ticket['comments']) ?>
+                            <?php endif; ?>
+                        </td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
@@ -93,5 +170,16 @@ JIRA Tickets List
     </div>
     <!-- #endregion -->
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    $('.searchable-select').select2({
+        width: '100%',
+        placeholder: "All Properties",
+        allowClear: true
+    });
+});
+
+</script>
 
 <?= $this->endSection() ?>

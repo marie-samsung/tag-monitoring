@@ -32,6 +32,7 @@ class TagsController extends BaseController
     public function create()
     {
         $model = new TagsModel();
+        $vendorsModel = new VendorsModel();
 
         if ($this->request->getMethod() === 'GET') {
             return view('tags/create', []);
@@ -39,21 +40,53 @@ class TagsController extends BaseController
 
         $post = $this->request->getPost();
 
-        $insertData = [
-            'property_id' => (int)$post['property_id'],
-            'vendor_id' => (int)$post['vendor_id'],
-            'name'       => $post['name'],
+        $propertyId = (int)$post['property_id'];
+        $name = trim($post['name']);
+
+        preg_match('/\((.*?)\)/', $name, $matches);
+        $vendorName = $matches[1] ?? null;
+
+        $existing = $model
+            ->where('property_id', $propertyId)
+            ->where('name', $name)
+            ->first();
+
+        if ($existing) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', "Tag '{$name}' already exists for this property.");
+        }
+
+        $vendor = $vendorsModel->where('name', $vendorName)->first();
+
+        if (!$vendor) {
+            $vendorId = $vendorsModel->insert([
+                'name' => $vendorName,
+            ]);
+        } else {
+            $vendorId = $vendor['id'];
+        }
+
+
+        $insertTagData = [
+            'property_id' => $propertyId,
+            'vendor_id' => $vendorId,
+            'name'       => $name,
             'conditions' => $post['conditions'],
             'status' => $post['status'],
             'al_end_date'   => $post['al_end_date'],
             'ref_link' => $post['ref_link'],
+            'requester_name' => $post['requester_name'],
+            'requester_email' => $post['requester_email'],
+            'requester_organization' => $post['requester_organization'],
         ];
 
-        $model->insert($insertData);
+        $model->insert($insertTagData);
 
         return redirect()
             ->to('/tags')
-            ->with('success', "Tag {$post['name']} created successfully.");
+            ->with('success', "Tag {$name} created successfully.");
     }
 
     public function view($id)
@@ -97,6 +130,9 @@ class TagsController extends BaseController
             'status'      => $post['status'],
             'al_end_date' => $post['al_end_date'],
             'ref_link'    => $post['ref_link'],
+            'requester_name' => $post['requester_name'],
+            'requester_email' => $post['requester_email'],
+            'requester_organization' => $post['requester_organization'],
         ];
 
         $model->update($id, $updateData);
@@ -147,7 +183,7 @@ class TagsController extends BaseController
         }
 
         $propertyIds = array_unique(array_column($tags, 'property_id'));
-        $vendorIds = array_unique(array_column($tags, 'vendor_id'));
+        $tagIds = array_unique(array_column($tags, 'id'));
 
         $model = new TagsModel();
         foreach ($tags as $tag) {
@@ -160,13 +196,13 @@ class TagsController extends BaseController
             );
 
             if ($updated) {
-                $this->saveJiraHistory($tag['id'], $info['ticket_id'], $vendorIds);
+                $this->saveJiraHistory($tag['id'], $info['ticket_id'], $tagIds);
             } else {
                 var_dump("Failed to update tag ID: {$tag['id']}");
             }
         }
 
-        $this->saveRenewalLogs($propertyIds, $vendorIds, $info);
+        $this->saveRenewalLogs($propertyIds, $tagIds, $info);
 
         return redirect()
             ->to('/tags')
@@ -209,44 +245,27 @@ class TagsController extends BaseController
     }
 
 
-    public function saveJiraHistory($tagId, $ticketId, $vendorIds)
+    public function saveJiraHistory($tagId, $ticketId, $tagIds)
     {
-        $vendorModel = new VendorsModel();
-        $vendorList = $vendorModel->Options();
-        $vendors = [];
-
-        foreach ($vendorIds as $vendorId) {
-            $vendors[] = $vendorList[(int)$vendorId];
-        }
-
         $jiraHistoryModel = new JiraHistoryModel();
         if ($jiraHistoryModel->insert([
             'tag_id' => $tagId,
             'ticket_id' => $ticketId,
             'type' => Constants::JIRA_TYPE_DATE_EXTENSION_RULE,
-            'comments' => 'Vendors: ' . implode(', ', $vendors),
+            'comments' => implode(',', $tagIds),
         ]) == false) {
             var_dump("Failed to save JIRA history for tag ID: {$tagId}");
         }
     }
  
-    public function saveRenewalLogs($propertyIds, $vendorIds, $info)
+    public function saveRenewalLogs($propertyIds, $tagIds, $info)
     {
-        $vendorModel = new VendorsModel();
-        $vendorList = $vendorModel->Options();
-
         $log = new RenewalLogsModel();
-
-        $vendors = [];
-
-        foreach ($vendorIds as $vendorId) {
-            $vendors[] = $vendorList[(int)$vendorId];
-        }
 
         foreach ($propertyIds as $propertyId) {
             $log->insert([
                 'property_id' => $propertyId,
-                'vendor' => implode(', ', $vendors),
+                'vendor' => implode(',', $tagIds),
                 'ticket_id' => $info['ticket_id'] ?? 'N/A',
                 'al_end_date' => date('Y-m-d', strtotime($info['al_end_date'] ?? null)),
                 'library_name' => $info['library_name'] ?? null,

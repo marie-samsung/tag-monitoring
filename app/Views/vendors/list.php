@@ -8,6 +8,7 @@ Vendors List
 
 <?php
     use App\Models\VendorsModel;
+    use App\Models\Constants;
 
     $vendorsModel = new VendorsModel();
     $vendorOptions = $vendorsModel->Options();
@@ -15,18 +16,18 @@ Vendors List
     helper('custom_functions');
 ?>
 
-<div class="container-fluid d-flex justify-content-between">
-    <h2>Vendor List</h2>
-    <!-- <div>
-        <a href="<?= site_url('vendors/create') ?>" target="_blank" title="Add a new vendor" class="btn btn-success btn-sm ms-auto px-2">Create New</a>
-    </div> -->
-</div>
-
 <?= csrf_field() ?>
 
 <div class="container-fluid">
+    <div class="d-flex justify-content-between">
+        <h2>Vendors</h2>
+        <!-- <div>
+            <a href="<?= site_url('vendors/create') ?>" target="_blank" title="Add a new vendor" class="btn btn-success btn-sm ms-auto px-2">Create New</a>
+        </div> -->
+    </div>
+
     <!-- #region | SEARCH FILTER -->
-    <div class="row">
+    <div class="my-3">
         <form method="get" class="row g-3 mb-4">
 
             <div class="col">
@@ -51,23 +52,31 @@ Vendors List
                 </select>
             </div>
 
-            <div class="col-md-1">
+            <div class="col-md-2 d-flex align-items-center gap-2">
                 <button class="btn btn-primary w-100">Filter</button>
+                <a href="<?= site_url('vendors') ?>" class="btn btn-secondary w-100">Clear</a>
             </div>
-
         </form>
     </div>
     <!-- #endregion -->
 
     <!-- #region | PROPERTIES TABLE -->
     <div class="table-responsive">
-        <table class="table table-hover" id="tblProperties">
-            <thead>
+        <table class="table table-hover table-bordered table-striped" id="tblProperties">
+            <thead class="table-active">
                 <tr>
                     <th>#</th>
                     <th>Vendor</th>
-                    <th>About</th>
-                    <th></th>
+                    <th><?= Constants::SUBSIDIARIES[Constants::SUBSIDIARY_SGE] ?></th>
+                    <th><?= Constants::SUBSIDIARIES[Constants::SUBSIDIARY_SESAR] ?></th>
+                    <th><?= Constants::SUBSIDIARIES[Constants::SUBSIDIARY_SETK] ?></th>
+                    <th><?= Constants::SUBSIDIARIES[Constants::SUBSIDIARY_SEIL] ?></th>
+                    <th><?= Constants::SUBSIDIARIES[Constants::SUBSIDIARY_SEILPS] ?></th>
+                    <th><?= Constants::SUBSIDIARIES[Constants::SUBSIDIARY_SELV] ?></th>
+                    <th><?= Constants::SUBSIDIARIES[Constants::SUBSIDIARY_SEEG] ?></th>
+                    <th><?= Constants::SUBSIDIARIES[Constants::SUBSIDIARY_SEMAG] ?></th>
+                    <th><?= Constants::SUBSIDIARIES[Constants::SUBSIDIARY_SEPAK] ?></th>
+                    <!-- <th></th> -->
                 </tr>
             </thead>
             <tbody>
@@ -75,11 +84,20 @@ Vendors List
                     <tr>
                         <td><?= $vendor['id'] ?></td>
                         <td class="col-3"><?= $vendor['name'] ?></td>
-                        <td class="col-7"><?= $vendor['about'] ?></td>
-                        <td class="d-flex gap-2">
-                            <a href="<?= site_url('vendors/view/'.$vendor['id']) ?>" target="_blank" title="View vendor details" class="btn btn-secondary btn-sm">View</a>
-                            <a href="<?= site_url('vendors/update/'.$vendor['id']) ?>" target="_blank" title="Update vendor details" class="btn btn-primary btn-sm">Update</a>
-                        </td>
+
+                        <?php foreach (Constants::SUBSIDIARIES as $id => $sub): ?>
+                            <?php $count = $vendorsModel->getTags($vendor['id'], $id); ?>
+
+                            <?php if ($count > 0): ?>
+                                <td>
+                                    <a href="<?= site_url('vendors/view/'.$vendor['id'].'?subsidiary_id='.$id) ?>" target="_blank" style="text-decoration: none;">
+                                        <?= $count ?>
+                                    </a>
+                                </td>
+                            <?php else: ?>
+                                <td><?= "-" ?></td>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
                     </tr>
                 <?php endforeach; ?>
             </tbody>

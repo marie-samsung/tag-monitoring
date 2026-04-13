@@ -8,6 +8,7 @@
 
 <?php 
     use App\Models\Constants;
+    use App\Models\TagsModel;
     use App\Models\PropertiesModel;
     use App\Models\VendorsModel;
     helper('custom_functions');
@@ -17,6 +18,8 @@
 
     $vendorsModel = new VendorsModel();
     $vendors = $vendorsModel->Options();
+
+    $tagModel = new TagsModel();
 ?>
 
 <h3 class="container"><?= $tag['name'] ?></h3>
@@ -82,7 +85,29 @@
                 <?= esc($tag['al_end_date'] ?: '—') ?>
             </div>
         </div>
-        
+
+        <label class="form-label m-0 fw-semibold mt-2">Requester Details</label>
+        <div class="mb-2">
+            <label class="form-label-xs">Name</label>
+            <div class="form-control-plaintext p-0 ms-2">
+                <?= esc($tag['requester_name'] ?? '—') ?>
+            </div>
+        </div>
+
+        <div class="mb-2">
+            <label class="form-label-xs">Email Address</label>
+            <div class="form-control-plaintext p-0 ms-2">
+                <?= esc($tag['requester_email'] ?? '—') ?>
+            </div>
+        </div>
+
+        <div class="mb-2">
+            <label class="form-label-xs">Organization</label>
+            <div class="form-control-plaintext p-0 ms-2">
+                <?= esc(Constants::ORGANIZATIONS[$tag['requester_organization']] ?? '—') ?>
+            </div>
+        </div>
+
         <hr>
 
         <div class="d-flex align-items-center gap-1">
@@ -112,7 +137,21 @@
                 </thead>
 
                 <tbody>
-                    <?php foreach ($jiraTickets as $jira): ?>
+                    <?php 
+                        foreach ($jiraTickets as $jira):
+                            $ticketTagsList = [];
+                            if ($jira['type'] == Constants::JIRA_TYPE_DATE_EXTENSION_RULE) {
+                                $ticketTags = explode(',', $jira['comments']);
+                                
+                                foreach ($ticketTags as $tagId) {
+                                    $tagInfo = $tagModel->find($tagId);
+                                    if ($tagInfo) {
+                                        // $ticketTagsList[$tagInfo['name']] = $tagInfo['ref_link']; // If you want to direct at AL
+                                        $ticketTagsList[$tagInfo['id']] = $tagInfo['name'];
+                                    }
+                                }
+                            }
+                    ?>
                         <tr>
                             <td><?= $jira['id'] ?: '-' ?></td>
                             <td>
@@ -121,7 +160,21 @@
                                 </a>
                             </td>
                             <td><?= Constants::JIRA_TICKET_TYPES[$jira['type']] ?: '-' ?></td>
-                            <td><?= $jira['comments'] ?></td>
+                            <td>
+                                <?php if ($ticketTagsList): ?>
+
+                                    <?php foreach ($ticketTagsList as $id => $name): ?>
+                                        <a href="<?= site_url('tags/view/' . $id) ?>" target="_blank"><?= esc($name) ?></a><br>
+                                    <?php endforeach; ?>
+
+                                    <!-- If you want to direct at AL, use the below code -->
+                                    <!-- <?php foreach ($ticketTagsList as $name => $link): ?>
+                                        <a href="<?= $link ?>" target="_blank"><?= esc($name) ?></a><br>
+                                    <?php endforeach; ?> -->
+                                <?php else: ?>
+                                    <?= esc($jira['comments']) ?>
+                                <?php endif; ?>
+                            </td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>

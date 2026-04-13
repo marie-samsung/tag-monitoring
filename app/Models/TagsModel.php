@@ -18,6 +18,9 @@ class TagsModel extends Model
         'al_end_date',
         'requested_date',
         'ref_link', // Link to AL
+        'requester_name',
+        'requester_email',
+        'requester_organization',
         'updated_by', // Refer to 'Users' table
         'created_by',
         'deleted_by',
@@ -78,6 +81,16 @@ class TagsModel extends Model
         $builder->orderBy('properties.subsidiary_id', 'ASC');
 
         return $builder->get()->getResultArray();
+    }
+
+    public function getTagsByVendor(int $vendorId, int $subsidiaryId)
+    {
+        return $this->select('tags.*, properties.subsidiary_id, properties.name as property_name')
+            ->join('properties', 'properties.id = tags.property_id', 'left')
+            ->where('vendor_id', $vendorId)
+            ->where('properties.subsidiary_id', $subsidiaryId)
+            ->orderBy('created_at', 'DESC')
+            ->findAll();
     }
 
     /**

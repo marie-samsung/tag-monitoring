@@ -15,18 +15,18 @@ Properties List
     helper('custom_functions');
 ?>
 
-<div class="d-flex justify-content-between">
-    <h2>Property List</h2>
-    <div>
-        <a href="<?= site_url('properties/create') ?>" target="_blank" title="Add a new property" class="btn btn-success btn-sm ms-auto px-2">Create New</a>
-    </div>
-</div>
-
 <?= csrf_field() ?>
 
 <div class="container-fluid">
+    <div class="d-flex justify-content-between">
+        <h2>Properties</h2>
+        <div>
+            <a href="<?= site_url('properties/create') ?>" target="_blank" title="Add a new property" class="btn btn-success btn-sm ms-auto px-2">Create New</a>
+        </div>
+    </div>
+
     <!-- #region | SEARCH FILTER -->
-    <div class="row">
+    <div class="my-3">
         <form method="get" class="row g-3 mb-4">
 
             <div class="col">
@@ -51,18 +51,18 @@ Properties List
                 </select>
             </div>
 
-            <div class="col-md-1">
+            <div class="col-md-2 d-flex align-items-center gap-2">
                 <button class="btn btn-primary w-100">Filter</button>
+                <a href="<?= site_url('properties') ?>" class="btn btn-secondary w-100">Clear</a>
             </div>
-
         </form>
     </div>
     <!-- #endregion -->
 
     <!-- #region | PROPERTIES TABLE -->
     <div class="table-responsive">
-        <table class="table table-hover" id="tblProperties">
-            <thead>
+        <table class="table table-hover table-bordered table-striped" id="tblProperties">
+            <thead class="table-active">
                 <tr>
                     <th>#</th>
                     <th>Subsidiary</th>

@@ -17,25 +17,24 @@ Tag Monitoring System
     $properties = $propertiesModel->WebsiteLinks();
     $propertyOptions = $propertiesModel->Options();
 
-    $subsidiaryModel = new SubsidiariesModel();
-    $subsidiaries = $subsidiaryModel->Options();
+    $subsidiariesModel = new SubsidiariesModel();
+    $subsidiaries = $subsidiariesModel->Options();
 ?>
-
-<div class="container-fluid d-flex justify-content-between">
-    <h2>Tag Inventory</h2>
-    <div>
-        <a href="<?= site_url('tags/renew') ?>" target="_blank" title="Renew selected tags" class="btn btn-primary btn-sm ms-auto px-2" id="btnRenew" style="display:none;">Renew</a>
-        <a href="<?= site_url('tags/create') ?>" target="_blank" title="Add a new tag" class="btn btn-success btn-sm ms-auto px-2">Create New Tag</a>
-    </div>
-</div>
 
 <?= csrf_field() ?>
 
 <div class="container-fluid">
-    <!-- #region | SEARCH FILTER -->
-    <div class="row">
-        <form method="get" class="row g-3 mb-3">
+    <div class="d-flex justify-content-between">
+        <h2>Tag Inventory</h2>
+        <div class="d-flex align-items-center gap-2">
+            <a href="<?= site_url('tags/renew') ?>" target="_blank" title="Renew selected tags" class="btn btn-primary btn-sm ms-auto px-2" id="btnRenew" style="display:none;">Renew</a>
+            <a href="<?= site_url('tags/create') ?>" target="_blank" title="Add a new tag" class="btn btn-success btn-sm ms-auto px-2">Create New Tag</a>
+        </div>
+    </div>
 
+    <!-- #region | SEARCH FILTER -->
+    <div class="my-3">
+        <form method="get" class="row g-3 mb-3">
             <div class="col">
                 <input 
                     type="text" 
@@ -82,8 +81,9 @@ Tag Monitoring System
                 </select>
             </div>
 
-            <div class="col-md-1">
-                <button class="btn btn-primary w-100">Filter</button>
+            <div class="col-md-2 d-flex align-items-center gap-2">
+                <button class="btn btn-sm btn-primary w-100">Filter</button>
+                <a href="<?= site_url('tags') ?>" class="btn btn-sm btn-secondary w-100">Clear</a>
             </div>
 
         </form>
@@ -104,8 +104,7 @@ Tag Monitoring System
                     <th>Days</th>
                     <th>End Date</th>
                     <th>Updated</th>
-                    <!-- <th>Updated By</th> -->
-                    <th></th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -174,7 +173,7 @@ Tag Monitoring System
                         <td class="form-label-sm" style="width:max-content; white-space:nowrap;"><?= esc(date('d-m-Y', strtotime($tag['updated_at']))) ?></td>
                         <!-- <td><?= esc($tag['updated_by']) ?></td> -->
                         <!-- Actions -->
-                        <td class="d-flex gap-2">
+                        <td class="text-nowrap align-middle">
                             <a href="<?= site_url('tags/view/'.$tag['id']) ?>" target="_blank" title="View tag details" class="btn btn-secondary btn-sm">View</a>
                             <a href="<?= site_url('tags/update/'.$tag['id']) ?>" target="_blank" title="Update tag details" class="btn btn-primary btn-sm">Update</a>
                         </td>

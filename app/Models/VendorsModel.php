@@ -27,6 +27,25 @@ class VendorsModel extends Model
         return array_column($rows, 'name', 'id');
     }
 
+    public function getTagsCount($vendorId)
+    {
+        $builder = $this->db->table('tags');
+        $builder->where('vendor_id', $vendorId);
+        return $builder->countAllResults();
+    }
+
+    public function getTags($vendorId, $subsidiaryId, $isCount = true)
+    {
+        $builder = $this->db
+            ->table('tags')
+            ->select('tags.*')
+            ->join('properties', 'properties.id = tags.property_id', 'left')
+            ->where('tags.vendor_id', $vendorId)
+            ->where('properties.subsidiary_id', $subsidiaryId);
+
+        return $isCount ? $builder->countAllResults() : $builder->get()->getResultArray();
+    }
+
     /**
      * Filtering of vendors in list view
      * @param mixed $filters

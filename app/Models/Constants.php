@@ -28,9 +28,6 @@ class Constants
     public const STATUS_PENDING_VERIFICATION = 4;
     public const STATUS_UPDATED_IN_AL = 5;
 
-    public const YES = 1;
-    public const NO = 0;
-
     public const STATUS = [
         self::STATUS_ENABLED => 'Enabled',
         self::STATUS_DISABLED => 'Disabled',
@@ -38,6 +35,37 @@ class Constants
         self::STATUS_PENDING_VERIFICATION => 'Pending Verification',
         self::STATUS_UPDATED_IN_AL => 'Updated in AL',
     ];
+
+    public const SUBSIDIARY_SGE = 1;
+    public const SUBSIDIARY_SESAR = 2;
+    public const SUBSIDIARY_SETK = 3;
+    public const SUBSIDIARY_SEIL = 4;
+    public const SUBSIDIARY_SEILPS = 5;
+    public const SUBSIDIARY_SELV = 6;
+    public const SUBSIDIARY_SEEG = 7;
+    public const SUBSIDIARY_SEMAG = 8;
+    public const SUBSIDIARY_SEPAK = 9;
+
+    public const SUBSIDIARIES = [
+        self::SUBSIDIARY_SGE => 'SGE',
+        self::SUBSIDIARY_SESAR => 'SESAR',
+        self::SUBSIDIARY_SETK => 'SETK',
+        self::SUBSIDIARY_SEIL => 'SEIL',
+        self::SUBSIDIARY_SEILPS => 'SEILPS',
+        self::SUBSIDIARY_SELV => 'SELV',
+        self::SUBSIDIARY_SEEG => 'SEEG',
+        self::SUBSIDIARY_SEMAG => 'SEMAG',
+        self::SUBSIDIARY_SEPAK => 'SEPAK',
+    ];
+
+    public const ORG_MENAO = 1;
+
+    public const ORGANIZATIONS = [
+        self::ORG_MENAO => 'MENAO',
+    ];
+    
+    public const YES = 1;
+    public const NO = 0;
 
     public const ACC_TYPE = [
         0 => 'System',
@@ -53,11 +81,5 @@ class Constants
     public const IS_ACTIVE = [
         0 => 'Inactive',
         1 => 'Active',
-    ];
-
-    public const CONDITIONS = [
-        '(.*)',
-        '(.*orderConfirmation)',
-        '(.*unpacked)',
     ];
 }
