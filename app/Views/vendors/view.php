@@ -19,7 +19,12 @@
 ?>
 
 <?php if ($tags): ?>
-    <h3 class="container-fluid"><?= "[" . $subsidiary . "] " . $vendor['name'] ?></h3>
+    <div class="container-fluid d-flex justify-content-between align-items-center mb-3">
+        <h3><?= "[" . $subsidiary . "] " . $vendor['name'] ?></h3>
+        <a href="<?= site_url('vendors/export/' . $vendor['id'] . '?' . http_build_query($_GET)) ?>" class="btn btn-warning btn-sm">
+            Export as CSV
+        </a>
+    </div>
 
     <div class="container-fluid">
         <div class="table-responsive">

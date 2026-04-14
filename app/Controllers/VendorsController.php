@@ -2,6 +2,8 @@
 
 namespace App\Controllers;
 
+use App\Models\SubsidiariesModel;
+use App\Models\PropertiesModel;
 use App\Models\VendorsModel;
 use App\Models\TagsModel;
 
@@ -44,5 +46,59 @@ class VendorsController extends BaseController
             'tags' => $tagsModel->getTagsByVendor($id, $subsidiary_id),
             'subsidiary_id' => $subsidiary_id,
         ]);
+    }
+
+    public function exportAsCSV($vendorId)
+    {
+        helper('custom_functions');
+        $subsidiaryId = $this->request->getGet('subsidiary_id');
+        $tagsModel = new TagsModel();
+        $tags = $tagsModel->getTagsByVendor($vendorId, $subsidiaryId);
+
+        $vendorsModel = new VendorsModel();
+        $vendor = $vendorsModel->find($vendorId);
+
+        $subsidiariesModel = new SubsidiariesModel();
+        $subsidiary = $subsidiariesModel->find($subsidiaryId);
+
+        $filename = "Tags_[{$subsidiary['name']}][{$vendor['name']}]_" . date('Ymd') . ".csv";
+
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+
+        $csv = fopen('php://output', 'w');
+
+        // CSV column headers
+        fputcsv($csv, [
+            'Subsidiary',
+            'Property Name',
+            'Tag Name',
+            'Days',
+            'AL End Date',
+            'Requested Date',
+            'Updated',
+            'Status',
+        ]);
+
+        // Rows
+        foreach ($tags as $tag) {
+            $propertyId = $tag['property_id'];
+            $propertiesModel = new PropertiesModel();
+            $property = $propertiesModel->find($propertyId);
+
+            fputcsv($csv, [
+                $subsidiary['name'] ?? 'N/A',
+                $property['name'] ?? 'N/A',
+                $tag['name'],
+                isset($tag['al_end_date']) ? ceil((strtotime($tag['al_end_date']) - time()) / 86400) : 'N/A',
+                "'" . date_ymd($tag['al_end_date']),
+                "'" . date_ymd($tag['requested_date']) ?? date_ymd($tag['al_end_date']) ?? '-',
+                "'" . date_ymd($tag['updated_at']) ?? '-',
+                status_label($tag['status']) ?? 'Unknown',
+            ]);
+        }
+
+        fclose($csv);
+        exit;
     }
 }

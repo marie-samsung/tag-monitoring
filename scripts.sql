@@ -4,3 +4,6 @@ ALTER TABLE `tags`
     ADD `requester_organization` TINYINT(4) NOT NULL DEFAULT '1' 
     AFTER `requester_email`;
 
+ALTER TABLE `jira_history` 
+    ADD `property_id` INT NOT NULL DEFAULT '0' 
+    AFTER `tag_id`;

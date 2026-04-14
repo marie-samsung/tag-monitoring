@@ -24,11 +24,12 @@ Tag Monitoring System
 <?= csrf_field() ?>
 
 <div class="container-fluid">
-    <div class="d-flex justify-content-between">
+    <div class="d-flex justify-content-between align-items-center">
         <h2>Tag Inventory</h2>
         <div class="d-flex align-items-center gap-2">
             <a href="<?= site_url('tags/renew') ?>" target="_blank" title="Renew selected tags" class="btn btn-primary btn-sm ms-auto px-2" id="btnRenew" style="display:none;">Renew</a>
             <a href="<?= site_url('tags/create') ?>" target="_blank" title="Add a new tag" class="btn btn-success btn-sm ms-auto px-2">Create New Tag</a>
+            <a href="<?= site_url('tags/export?' . http_build_query($_GET)) ?>" class="btn btn-sm btn-warning ms-auto px-2">Export as CSV</a>
         </div>
     </div>
 
@@ -173,7 +174,7 @@ Tag Monitoring System
                         <td class="form-label-sm" style="width:max-content; white-space:nowrap;"><?= esc(date('d-m-Y', strtotime($tag['updated_at']))) ?></td>
                         <!-- <td><?= esc($tag['updated_by']) ?></td> -->
                         <!-- Actions -->
-                        <td class="text-nowrap align-middle">
+                        <td class="text-nowrap">
                             <a href="<?= site_url('tags/view/'.$tag['id']) ?>" target="_blank" title="View tag details" class="btn btn-secondary btn-sm">View</a>
                             <a href="<?= site_url('tags/update/'.$tag['id']) ?>" target="_blank" title="Update tag details" class="btn btn-primary btn-sm">Update</a>
                         </td>

@@ -4,8 +4,9 @@ namespace App\Controllers;
 
 use App\Models\JiraHistoryModel;
 use App\Models\TagsModel;
+use App\Models\PropertiesModel;
+use App\Models\SubsidiariesModel;
 use App\Models\Constants;
-use CodeIgniter\Files\Exceptions\FileException;
 
 class JiraController extends BaseController
 {
@@ -15,9 +16,14 @@ class JiraController extends BaseController
 
         $filters = [
             'keyword' => $this->request->getGet('keyword'),
+            'ticket_type' => $this->request->getGet('ticket_type'),
+            'property_id' => $this->request->getGet('property_id'),
+            'subsidiary_id' => $this->request->getGet('subsidiary_id'),
         ];
 
         $data['jiraTickets'] = $jiraHistoryModel->filterJiraTickets($filters);
+        $data['filters'] = $filters;
+
         return view('jira/list', $data);
     }
 
@@ -75,6 +81,67 @@ class JiraController extends BaseController
         return redirect()
             ->to('/tags/view/'.$post['tag_id'])
             ->with('success', 'JIRA entry created successfully.');
+    }
+
+    public function exportAsCSV()
+    {
+        $filters = $this->request->getGet();
+
+        $jiraModel = new JiraHistoryModel();
+        $tagModel  = new TagsModel();
+        $propertiesModel = new PropertiesModel();
+        $subsidiaryModel = new SubsidiariesModel();
+
+        $jiraTickets = $jiraModel->filterJiraTickets($filters);
+
+        // CSV filename
+        $filename = "JIRA_Tickets_" . date('Ymd') . ".csv";
+
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+
+        $csv = fopen('php://output', 'w');
+
+        // CSV headers
+        fputcsv($csv, [
+            'Subsidiary', 
+            'Property', 
+            'Ticket ID', 
+            'Type', 
+            'Comments'
+        ]);
+
+        foreach ($jiraTickets as $ticket) {
+            $subsidiary = $subsidiaryModel->find($ticket['subsidiary_id']);
+            $property   = $propertiesModel->find($ticket['property_id']);
+
+            $comments = $ticket['comments'];
+
+            if ($ticket['type'] == Constants::JIRA_TYPE_DATE_EXTENSION_RULE) {
+                $tagIds = explode(',', $ticket['comments']);
+                $names = [];
+
+                foreach ($tagIds as $id) {
+                    $tag = $tagModel->find($id);
+                    if ($tag) {
+                        $names[] = $tag['name'];
+                    }
+                }
+
+                $comments = implode(', ', $names);
+            }
+
+            fputcsv($csv, [
+                $subsidiary['name'] ?? 'N/A',
+                $property['name'] ?? 'N/A',
+                $ticket['ticket_id'],
+                Constants::JIRA_TICKET_TYPES[$ticket['type']],
+                $comments,
+            ]);
+        }
+
+        fclose($csv);
+        exit;
     }
 
     // public function download()

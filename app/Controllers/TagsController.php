@@ -6,6 +6,7 @@ use App\Models\Constants;
 use App\Models\JiraHistoryModel;
 use App\Models\PropertiesModel;
 use App\Models\RenewalLogsModel;
+use App\Models\SubsidiariesModel;
 use App\Models\TagsModel;
 use App\Models\VendorsModel;
 
@@ -196,7 +197,7 @@ class TagsController extends BaseController
             );
 
             if ($updated) {
-                $this->saveJiraHistory($tag['id'], $info['ticket_id'], $tagIds);
+                $this->saveJiraHistory($tag, $info['ticket_id'], $tagIds);
             } else {
                 var_dump("Failed to update tag ID: {$tag['id']}");
             }
@@ -244,17 +245,25 @@ class TagsController extends BaseController
         return $this->response->setJSON(['status' => 'ok']);
     }
 
-
-    public function saveJiraHistory($tagId, $ticketId, $tagIds)
+    public function saveJiraHistory($tag, $ticketId, $tagIds)
     {
-        $jiraHistoryModel = new JiraHistoryModel();
-        if ($jiraHistoryModel->insert([
-            'tag_id' => $tagId,
-            'ticket_id' => $ticketId,
-            'type' => Constants::JIRA_TYPE_DATE_EXTENSION_RULE,
-            'comments' => implode(',', $tagIds),
-        ]) == false) {
-            var_dump("Failed to save JIRA history for tag ID: {$tagId}");
+        if (is_array($tag)) {
+            $tagId = $tag['id'];
+            $propertyId = $tag['property_id'];
+            $propertiesModel = new PropertiesModel();
+            $subsidiaryId = $propertiesModel->find($propertyId)['subsidiary_id'] ?? 0;
+
+            $jiraHistoryModel = new JiraHistoryModel();
+            if ($jiraHistoryModel->insert([
+                'tag_id' => $tagId,
+                'property_id' => $propertyId,
+                'subsidiary_id' => $subsidiaryId,
+                'ticket_id' => $ticketId,
+                'type' => Constants::JIRA_TYPE_DATE_EXTENSION_RULE,
+                'comments' => implode(',', $tagIds),
+            ]) == false) {
+                var_dump("Failed to save JIRA history for tag ID: {$tagId}");
+            }
         }
     }
  
@@ -271,5 +280,56 @@ class TagsController extends BaseController
                 'library_name' => $info['library_name'] ?? null,
             ]) or var_dump("Failed to save renewal log for property ID: {$propertyId}");
         }
+    }
+
+    public function exportAsCSV()
+    {
+        helper('custom_functions');
+        $filters = $this->request->getGet();
+        $tagsModel = new TagsModel();
+        $tags = $tagsModel->filterTags($filters);
+
+        $filename = 'Tag_Inventory_' . date('Ymd') . '.csv';
+
+        $csv = fopen('php://output', 'w');
+
+        // Headers
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+
+        // CSV column headers
+        fputcsv($csv, [
+            'Subsidiary',
+            'Property Name',
+            'Tag Name',
+            'Days',
+            'AL End Date',
+            'Requested Date',
+            'Updated',
+            'Status',
+        ]);
+
+        // Rows
+        foreach ($tags as $tag) {
+            $propertyId = $tag['property_id'];
+            $propertiesModel = new PropertiesModel();
+            $subsidiariesModel = new SubsidiariesModel();
+            $property = $propertiesModel->find($propertyId);
+            $subsidiary = $subsidiariesModel->find($property['subsidiary_id'] ?? 0);
+
+            fputcsv($csv, [
+                $subsidiary['name'] ?? 'N/A',
+                $property['name'] ?? 'N/A',
+                $tag['name'],
+                isset($tag['al_end_date']) ? ceil((strtotime($tag['al_end_date']) - time()) / 86400) : 'N/A',
+                "'" . date_ymd($tag['al_end_date']),
+                "'" . date_ymd($tag['requested_date']) ?? date_ymd($tag['al_end_date']) ?? '-',
+                "'" . date_ymd($tag['updated_at']) ?? '-',
+                status_label($tag['status']) ?? 'Unknown',
+            ]);
+        }
+
+        fclose($csv);
+        exit;
     }
 }

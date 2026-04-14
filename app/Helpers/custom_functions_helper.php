@@ -100,3 +100,18 @@ function random_text_style($value): string
 
     return "color:#{$color};";
 }
+
+function date_ymd(string|null $date): string
+{
+    if (empty($date)) {
+        return 'N/A';
+    }
+
+    $timestamp = strtotime($date);
+
+    if ($timestamp === false) {
+        return 'Invalid date';
+    }
+
+    return date('Y-m-d', $timestamp);
+}

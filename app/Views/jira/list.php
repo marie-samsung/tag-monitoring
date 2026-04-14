@@ -27,8 +27,11 @@ JIRA Tickets List
 <?= csrf_field() ?>
 
 <div class="container-fluid">
-    <div class="d-flex justify-content-between">
+    <div class="d-flex justify-content-between align-items-center">
         <h2>JIRA Tickets</h2>
+        <div>
+            <a href="<?= site_url('jira/export?' . http_build_query($_GET)) ?>" class="btn btn-sm btn-warning px-2">Export as CSV</a>
+        </div>
         <!-- <div>
             <a href="<?= site_url('jira/create') ?>" target="_blank" title="Create new JIRA ticket" class="btn btn-success btn-sm ms-auto px-2">Create New</a>
         </div> -->
@@ -111,8 +114,8 @@ JIRA Tickets List
                         $property = null;
 
                         if ($tag) {
-                            $property = $propertiesModel->find($tag['property_id']);
-                            $subsidiary = $subsidiaryModel->find($property['subsidiary_id']);
+                            $property = $propertiesModel->find($ticket['property_id']);
+                            $subsidiary = $subsidiaryModel->find($ticket['subsidiary_id']);
                         } else {
                             $subsidiary = $subsidiaryModel->find($ticket['subsidiary_id']);
                         }

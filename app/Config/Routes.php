@@ -11,6 +11,7 @@ $routes->get('testdb', 'TestDB::index');
 
 $routes->group('tags', function ($routes) {
     $routes->get('/', 'TagsController::index');
+    $routes->get('export', 'TagsController::exportAsCSV');
     $routes->get('view/(:num)', 'TagsController::view/$1');
     $routes->get('verify/(:num)', 'TagsController::verify/$1');
     $routes->post('renew/confirm', 'TagsController::renewConfirm');
@@ -31,15 +32,17 @@ $routes->group('properties', function ($routes) {
 $routes->group('vendors', function ($routes) {
     $routes->get('/', 'VendorsController::index');
     $routes->get('view/(:num)', 'VendorsController::view/$1');
+    $routes->get('export/(:num)', 'VendorsController::exportAsCSV/$1');
     $routes->match(['get', 'post'], 'create', 'VendorsController::create');
     $routes->match(['get', 'post'], 'update/(:num)', 'VendorsController::update/$1');
     // $routes->post('delete/(:num)', 'VendorsController::delete/$1');
 });
 
 $routes->group('jira', function ($routes) {
-    $routes->match(['get', 'post'], 'create', 'JiraController::create');
     $routes->get('/', 'JiraController::index');
+    $routes->get('export', 'JiraController::exportAsCSV');
     $routes->get('download', 'JiraController::download');
+    $routes->match(['get', 'post'], 'create', 'JiraController::create');
 });
 
 $routes->group('activity-log', function ($routes) {
