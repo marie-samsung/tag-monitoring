@@ -96,16 +96,16 @@ Tag Monitoring System
         <table class="table table-bordered table-hover table-striped" id="tblTags">
             <thead class="table-active">
                 <tr>
-                    <th>#</th>
+                    <th class="form-label-sm fw-semibold">#</th>
                     <th></th>
-                    <th>Subsidiary</th>
-                    <th>Property</th>
-                    <th>Name</th>
-                    <th>Status</th>
-                    <th>Days</th>
-                    <th>End Date</th>
-                    <th>Updated</th>
-                    <th>Actions</th>
+                    <th class="form-label-sm fw-semibold">Subsidiary</th>
+                    <th class="form-label-sm fw-semibold">Property</th>
+                    <th class="form-label-sm fw-semibold">Name</th>
+                    <th class="form-label-sm fw-semibold">Status</th>
+                    <th class="form-label-sm fw-semibold">Days</th>
+                    <th class="form-label-sm fw-semibold">End Date</th>
+                    <th class="form-label-sm fw-semibold">Updated</th>
+                    <th class="form-label-sm fw-semibold">Actions</th>
                 </tr>
             </thead>
             <tbody>
