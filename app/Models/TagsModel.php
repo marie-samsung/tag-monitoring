@@ -63,22 +63,16 @@ class TagsModel extends Model
 
         $builder->orderBy(
                 '(CASE 
-                    WHEN tags.al_end_date > DATE_ADD(CURDATE(), INTERVAL 16 DAY) THEN 1
-                    ELSE 0
+                    WHEN tags.al_end_date < CURDATE() AND tags.status = 1 THEN 0
+                    WHEN tags.al_end_date <= DATE_ADD(CURDATE(), INTERVAL 9 DAY) AND tags.status = 1 THEN 1
+                    WHEN tags.al_end_date <= DATE_ADD(CURDATE(), INTERVAL 16 DAY) AND tags.status = 1 THEN 2
+                    WHEN tags.status = 4 THEN 3
+                    WHEN tags.status = 1 THEN 4
+                    ELSE 5
                 END)', 'ASC', false
             );
 
         $builder->orderBy('properties.id', 'ASC');
-
-        $builder->orderBy(
-                '(CASE 
-                    WHEN tags.al_end_date <= DATE_ADD(CURDATE(), INTERVAL 16 DAY) 
-                    THEN tags.al_end_date
-                    ELSE NULL
-                END)', 'ASC', false
-            );
-
-        $builder->orderBy('properties.subsidiary_id', 'ASC');
 
         return $builder->get()->getResultArray();
     }
