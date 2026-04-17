@@ -77,6 +77,7 @@ class JiraHistoryModel extends Model
         }
 
         $builder->groupBy('ticket_id');
+        $builder->orderBy('created_at', 'DESC');
 
 
         return $builder->get()->getResultArray();
