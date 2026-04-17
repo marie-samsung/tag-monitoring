@@ -11,6 +11,7 @@
     use App\Models\TagsModel;
     use App\Models\PropertiesModel;
     use App\Models\VendorsModel;
+    use App\Models\OrganizationsModel;
     helper('custom_functions');
 
     $propertiesModel = new PropertiesModel();
@@ -18,6 +19,9 @@
 
     $vendorsModel = new VendorsModel();
     $vendors = $vendorsModel->Options();
+
+    $organizationsModel = new OrganizationsModel();
+    $organizations = $organizationsModel->Options();
 
     $tagModel = new TagsModel();
 ?>
@@ -104,7 +108,7 @@
         <div class="mb-2">
             <label class="form-label-xs">Organization</label>
             <div class="form-control-plaintext p-0 ms-2">
-                <?= esc(Constants::ORGANIZATIONS[$tag['requester_organization']] ?? '—') ?>
+                <?= esc($organizations[$tag['requester_organization']] ?? '—') ?>
             </div>
         </div>
 

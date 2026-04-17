@@ -11,6 +11,7 @@ Tag Monitoring System
     use App\Models\PropertiesModel;
     use App\Models\SubsidiariesModel;
     use App\Models\JiraHistoryModel;
+    use App\Models\TagsModel;
     helper('custom_functions');
 
     $propertiesModel = new PropertiesModel();
@@ -19,6 +20,8 @@ Tag Monitoring System
 
     $subsidiariesModel = new SubsidiariesModel();
     $subsidiaries = $subsidiariesModel->Options();
+
+    $tagsModel = new TagsModel();
 ?>
 
 <?= csrf_field() ?>
@@ -33,8 +36,15 @@ Tag Monitoring System
         </div>
     </div>
 
+    <div class="d-flex justify-content-start gap-2 form-label-xs">
+        <p>Active: <span class="text-success fw-semibold"><?= $tagsModel->countActiveTags() ?></span></p>
+        <p>Expiring: <span class="text-danger fw-semibold"><?= $tagsModel->countExpiringTags() ?></span></p>
+        <p>Pending Verification: <span class="text-warning fw-semibold"><?= $tagsModel->countPendingVerificationTags() ?></span></p>
+        <p>Total: <span class="text-dark fw-semibold"><?= $tagsModel->countAllTags() ?></span></p>
+    </div>
+
     <!-- #region | SEARCH FILTER -->
-    <div class="my-3">
+    <div>
         <form method="get" class="row g-3 mb-3">
             <div class="col">
                 <input 
@@ -138,9 +148,14 @@ Tag Monitoring System
                             </a>
                         </td>
                         <!-- Name -->
-                        <td class="form-label-sm">
+                        <td class="form-label-sm d-flex justify-content-between gap-1">
                             <a href="<?= $tag['ref_link'] ?>" target="_blank">
                                 <?= esc($tag['name']) ?>
+                            </a>
+
+                            <!-- Copy button -->
+                            <a href="javascript:void(0)" onclick="copyTagName('<?= esc($tag['name']) ?>', this)" title="Copy tag name">
+                                <i class="bi bi-copy text-secondary fs-7"></i>
                             </a>
                         </td>
                         <!-- Status -->
@@ -222,6 +237,14 @@ document.addEventListener('DOMContentLoaded', function () {
         window.open(url, "_blank");
     });
 
+    window.copyTagName = function(text, el) {
+        navigator.clipboard.writeText(text).then(() => {
+            el.innerHTML = '<i class="bi bi-check-lg text-success fs-7"></i>';
+            setTimeout(() => {
+                el.innerHTML = '<i class="bi bi-copy text-secondary fs-7"></i>';
+            }, 1200);
+        });
+    };
 });
 
 </script>

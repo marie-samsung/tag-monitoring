@@ -35,7 +35,7 @@
     <div class="container">
         <div class="card p-3">
             <div class="row mb-2">
-                <div class="col mb-2>
+                <div class="col">
                     <label class="form-label-xs">Property</label>
                     <select name="property_id" class="form-select searchable-select" required>
                         <?php foreach ($properties as $value => $label): ?>
@@ -48,20 +48,6 @@
                 </div>
 
                 <div class="col">
-                    <label class="form-label-xs">Vendor</label>
-                    <select name="vendor_id" class="form-select searchable-select">
-                        <?php foreach ($vendors as $value => $label): ?>
-                            <option value="<?= esc($value) ?>"
-                                <?= ($tag['vendor_id'] == $value) ? 'selected' : '' ?>>
-                                <?= esc($label) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-            </div>
-
-            <div class="row mb-2">
-                <div class="col">
                     <label for="name" class="form-label-xs">Tag Name</label>
                     <input type="text" name="name" id="name"
                         class="form-control"
@@ -72,7 +58,6 @@
                     </small>
                 </div>
             </div>
-
             
             <div class="row mb-2">
                 <div class="col">

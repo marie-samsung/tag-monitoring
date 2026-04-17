@@ -14,16 +14,20 @@ Tag: Create
     use App\Models\Constants;
     use App\Models\PropertiesModel;
     use App\Models\VendorsModel;
+    use App\Models\OrganizationsModel;
 
     $propertiesModel = new PropertiesModel();
     $properties = $propertiesModel->Options();
 
     $vendorsModel = new VendorsModel();
     $vendors = $vendorsModel->Options();
+
+    $organizationsModel = new OrganizationsModel();
+    $organizations = $organizationsModel->Options();
 ?>
 
 <?php if (session()->getFlashdata('error')): ?>
-    <div class="alert alert-danger">
+    <div class="container alert alert-danger">
         <?= session()->getFlashdata('error') ?>
     </div>
 <?php endif; ?>
@@ -124,8 +128,8 @@ Tag: Create
             <div class="row mb-2">
                 <div class="col">
                     <label class="form-label-xs">Organization</label>
-                    <select name="requester_organization" class="form-select" required>
-                        <?php foreach (Constants::ORGANIZATIONS as $value => $label): ?>
+                    <select name="requester_organization" class="form-select advanced-select" required>
+                        <?php foreach ($organizations as $value => $label): ?>
                             <option value="<?= esc($value) ?>"
                                 <?= old('requester_organization', $tag['requester_organization'] ?? '') == $value ? 'selected' : '' ?>>
                                 <?= esc($label) ?>
@@ -164,6 +168,31 @@ Tag: Create
     document.addEventListener('DOMContentLoaded', function () {
         $('.searchable-select').select2({
             width: '100%',
+        });
+
+        $('.advanced-select').select2({
+            tags: true,
+            width: '100%',
+            allowClear: true,
+            createTag: function (params) {
+                let term = $.trim(params.term);
+
+                if (term === '') {
+                    return null;
+                }
+
+                return {
+                    id: term,   // this will be sent to backend
+                    text: term,
+                    newOption: true
+                };
+            },
+            templateResult: function (data) {
+                if (data.newOption) {
+                    return $('<span>Add: <strong>' + data.text + '</strong></span>');
+                }
+                return data.text;
+            }
         });
     });
 </script>

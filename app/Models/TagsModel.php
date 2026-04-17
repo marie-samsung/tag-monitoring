@@ -49,7 +49,11 @@ class TagsModel extends Model
         }
 
         if (!empty($filters['status'])) {
-            $builder->where('tags.status', $filters['status']);
+            if (count($filters['status']) > 1) {
+                $builder->whereIn('tags.status', $filters['status']);
+            } else {
+                $builder->where('tags.status', $filters['status'][0]);
+            }
         }
 
         if (!empty($filters['subsidiary_id'])) {
@@ -85,6 +89,40 @@ class TagsModel extends Model
             ->where('properties.subsidiary_id', $subsidiaryId)
             ->orderBy('created_at', 'DESC')
             ->findAll();
+    }
+
+    public function countActiveTags()
+    {
+        return $this->whereIn('status', [
+            Constants::STATUS_ENABLED, 
+            Constants::STATUS_PENDING_VERIFICATION, 
+            Constants::STATUS_UPDATED_IN_AL
+        ])->countAllResults();
+    }
+
+    public function countPendingVerificationTags()
+    {
+        return $this->where('status', Constants::STATUS_PENDING_VERIFICATION)->countAllResults();
+    }
+
+    public function countExpiringTags()
+    {
+        $today = date('Y-m-d');
+        $expiring = date('Y-m-d', strtotime('+15 days'));
+
+        return $this->whereIn('status', [
+                Constants::STATUS_ENABLED,
+                Constants::STATUS_PENDING_VERIFICATION,
+                Constants::STATUS_UPDATED_IN_AL
+            ])
+            ->where('al_end_date >=', $today)
+            ->where('al_end_date <=', $expiring)
+            ->countAllResults();
+    }
+
+    public function countAllTags()
+    {
+        return $this->countAllResults();
     }
 
     /**

@@ -9,6 +9,7 @@ use App\Models\RenewalLogsModel;
 use App\Models\SubsidiariesModel;
 use App\Models\TagsModel;
 use App\Models\VendorsModel;
+use App\Models\OrganizationsModel;
 
 class TagsController extends BaseController
 {
@@ -16,9 +17,15 @@ class TagsController extends BaseController
     {
         $tagModel = new TagsModel();
 
+        $status = $this->request->getGet('status');
+
+        if (empty($status)) {
+            $status = '1,4,5'; // Default to show Enabled, Pending Verification, and Updated in AL
+        }
+
         $filters = [
             'keyword'     => $this->request->getGet('keyword'),
-            'status'      => $this->request->getGet('status'),
+            'status'      => explode(',', $status),
             'property_id' => $this->request->getGet('property_id'),
             'subsidiary_id' => $this->request->getGet('subsidiary_id'),
         ];
@@ -34,6 +41,7 @@ class TagsController extends BaseController
     {
         $model = new TagsModel();
         $vendorsModel = new VendorsModel();
+        $organizationsModel = new OrganizationsModel();
 
         if ($this->request->getMethod() === 'GET') {
             return view('tags/create', []);
@@ -60,13 +68,22 @@ class TagsController extends BaseController
         }
 
         $vendor = $vendorsModel->where('name', $vendorName)->first();
-
         if (!$vendor) {
             $vendorId = $vendorsModel->insert([
                 'name' => $vendorName,
             ]);
         } else {
             $vendorId = $vendor['id'];
+        }
+
+        $organizationInput = trim($post['requester_organization']);
+        $organization = $organizationsModel->where('id', $organizationInput)->first();
+        if (!$organization) {
+            $organizationId = $organizationsModel->insert([
+                'name' => $organizationInput,
+            ]);
+        } else {
+            $organizationId = $organization['id'];
         }
 
 
@@ -80,7 +97,7 @@ class TagsController extends BaseController
             'ref_link' => $post['ref_link'],
             'requester_name' => $post['requester_name'],
             'requester_email' => $post['requester_email'],
-            'requester_organization' => $post['requester_organization'],
+            'requester_organization' => $organizationId,
         ];
 
         $model->insert($insertTagData);

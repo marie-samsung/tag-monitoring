@@ -57,15 +57,13 @@ class Constants
         self::SUBSIDIARY_SEMAG => 'SEMAG',
         self::SUBSIDIARY_SEPAK => 'SEPAK',
     ];
-
-    public const ORG_MENAO = 1;
-
-    public const ORGANIZATIONS = [
-        self::ORG_MENAO => 'MENAO',
-    ];
     
     public const YES = 1;
     public const NO = 0;
+    public const YES_NO = [
+        self::NO => 'No',
+        self::YES => 'Yes',
+    ];
 
     public const ACC_TYPE = [
         0 => 'System',
