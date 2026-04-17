@@ -24,7 +24,7 @@
 
 <h3 class="container"><?= $tag['name'] ?></h3>
 
-<div class="container d-flex mt-3 gap-3">
+<div class="container d-flex my-3 gap-3">
     <!-- #region | TAG DETAILS -->
     <div class="w-25 p-4 card">
         <div class="mb-2">
@@ -146,8 +146,8 @@
                                 foreach ($ticketTags as $tagId) {
                                     $tagInfo = $tagModel->find($tagId);
                                     if ($tagInfo) {
-                                        // $ticketTagsList[$tagInfo['name']] = $tagInfo['ref_link']; // If you want to direct at AL
-                                        $ticketTagsList[$tagInfo['id']] = $tagInfo['name'];
+                                        $ticketTagsList[$tagInfo['name']] = $tagInfo['ref_link']; // If you want to direct at AL
+                                        // $ticketTagsList[$tagInfo['id']] = $tagInfo['name'];
                                     }
                                 }
                             }
@@ -163,14 +163,14 @@
                             <td>
                                 <?php if ($ticketTagsList): ?>
 
-                                    <?php foreach ($ticketTagsList as $id => $name): ?>
+                                    <!-- <?php foreach ($ticketTagsList as $id => $name): ?>
                                         <a href="<?= site_url('tags/view/' . $id) ?>" target="_blank"><?= esc($name) ?></a><br>
-                                    <?php endforeach; ?>
+                                    <?php endforeach; ?> -->
 
                                     <!-- If you want to direct at AL, use the below code -->
-                                    <!-- <?php foreach ($ticketTagsList as $name => $link): ?>
+                                    <?php foreach ($ticketTagsList as $name => $link): ?>
                                         <a href="<?= $link ?>" target="_blank"><?= esc($name) ?></a><br>
-                                    <?php endforeach; ?> -->
+                                    <?php endforeach; ?>
                                 <?php else: ?>
                                     <?= esc($jira['comments']) ?>
                                 <?php endif; ?>
