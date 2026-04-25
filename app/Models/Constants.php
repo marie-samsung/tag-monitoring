@@ -13,7 +13,6 @@ class Constants
     public const JIRA_TYPE_NEW_RULE = 3;
     public const JIRA_TYPE_MASTER_APPROVAL = 4;
     public const JIRA_TYPE_OTHER = 5;
-
     public const JIRA_TICKET_TYPES = [
         self::JIRA_TYPE_DATE_EXTENSION_RULE => 'Date Extension Rule',
         self::JIRA_TYPE_NEW_TAG => 'New Tag',
@@ -21,19 +20,39 @@ class Constants
         self::JIRA_TYPE_MASTER_APPROVAL => 'Master Approval',
         self::JIRA_TYPE_OTHER => 'Other',
     ];
+    public const REQUEST_TYPES = [
+        self::JIRA_TYPE_NEW_TAG => 'New Tag',
+        self::JIRA_TYPE_NEW_RULE => 'New Rule',
+    ];
 
     public const STATUS_ENABLED = 1;
     public const STATUS_DISABLED = 2;
     public const STATUS_EXPIRED = 3;
     public const STATUS_PENDING_VERIFICATION = 4;
     public const STATUS_UPDATED_IN_AL = 5;
-
+    public const STATUS_NEW_TAG_SUBMITTED = 6;
+    public const STATUS_NEW_RULE_SUBMITTED = 7;
     public const STATUS = [
         self::STATUS_ENABLED => 'Enabled',
         self::STATUS_DISABLED => 'Disabled',
         self::STATUS_EXPIRED => 'Expired',
         self::STATUS_PENDING_VERIFICATION => 'Pending Verification',
         self::STATUS_UPDATED_IN_AL => 'Updated in AL',
+        self::STATUS_NEW_TAG_SUBMITTED => 'New Tag Request Submitted',
+        self::STATUS_NEW_RULE_SUBMITTED => 'New Rule Request Submitted',
+    ];
+
+    public const STATUS_REQUEST_HQ_REVIEW = 1;
+    public const STATUS_REQUEST_PENDING_ITEMS = 2;
+    public const STATUS_REQUEST_APPROVED = 3;
+    public const STATUS_REQUEST_REJECTED = 4;
+    public const STATUS_REQUEST_PUBLISHED = 5;
+    public const STATUS_REQUESTS = [
+        self::STATUS_REQUEST_HQ_REVIEW => 'HQ Review',
+        self::STATUS_REQUEST_PENDING_ITEMS => 'On-Hold Req',
+        self::STATUS_REQUEST_APPROVED => 'Approved',
+        self::STATUS_REQUEST_REJECTED => 'Rejected',
+        self::STATUS_REQUEST_PUBLISHED => 'Published',
     ];
 
     public const SUBSIDIARY_SGE = 1;
@@ -45,7 +64,6 @@ class Constants
     public const SUBSIDIARY_SEEG = 7;
     public const SUBSIDIARY_SEMAG = 8;
     public const SUBSIDIARY_SEPAK = 9;
-
     public const SUBSIDIARIES = [
         self::SUBSIDIARY_SGE => 'SGE',
         self::SUBSIDIARY_SESAR => 'SESAR',
@@ -56,6 +74,19 @@ class Constants
         self::SUBSIDIARY_SEEG => 'SEEG',
         self::SUBSIDIARY_SEMAG => 'SEMAG',
         self::SUBSIDIARY_SEPAK => 'SEPAK',
+    ];
+
+    public const ATTACHMENT_APPROVAL = 1;
+    public const ATTACHMENT_EMAIL_REQUEST = 2;
+    public const ATTACHMENT_REQUEST_FORM = 3;
+    public const ATTACHMENT_DOCUMENTATION = 4;
+    public const ATTACHMENT_OTHER = 5;
+    public const ATTACHMENTS = [
+        self::ATTACHMENT_APPROVAL => 'Approval',
+        self::ATTACHMENT_EMAIL_REQUEST => 'Email Request',
+        self::ATTACHMENT_REQUEST_FORM => 'Request Form',
+        self::ATTACHMENT_DOCUMENTATION => 'Documentation',
+        self::ATTACHMENT_OTHER => 'Other',
     ];
     
     public const YES = 1;

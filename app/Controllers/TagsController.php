@@ -20,12 +20,12 @@ class TagsController extends BaseController
         $status = $this->request->getGet('status');
 
         if (empty($status)) {
-            $status = '1,4,5'; // Default to show Enabled, Pending Verification, and Updated in AL
+            $status = [1,4,5]; // Default to show Enabled, Pending Verification, and Updated in AL
         }
 
         $filters = [
-            'keyword'     => $this->request->getGet('keyword'),
-            'status'      => explode(',', $status),
+            'keyword' => $this->request->getGet('keyword'),
+            'status' => $status,
             'property_id' => $this->request->getGet('property_id'),
             'subsidiary_id' => $this->request->getGet('subsidiary_id'),
         ];

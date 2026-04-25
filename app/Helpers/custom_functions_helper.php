@@ -5,11 +5,13 @@ use App\Models\Constants;
 function status_label(int $code): string
 {
     $map = [
-        1 => 'Enabled',
-        2 => 'Disabled',
-        3 => 'Expired',
-        4 => 'Pending Verification',
-        5 => 'Updated in AL'
+        Constants::STATUS_ENABLED => 'Enabled',
+        Constants::STATUS_DISABLED => 'Disabled',
+        Constants::STATUS_EXPIRED => 'Expired',
+        Constants::STATUS_PENDING_VERIFICATION => 'Pending Verification',
+        Constants::STATUS_UPDATED_IN_AL => 'Updated in AL',
+        Constants::STATUS_NEW_TAG_SUBMITTED => 'New Tag Request Submitted',
+        Constants::STATUS_NEW_RULE_SUBMITTED => 'New Rule Request Submitted',
     ];
     return $map[$code] ?? 'Unknown';
 }
@@ -17,25 +19,39 @@ function status_label(int $code): string
 function status_class(int $code): string
 {
     return match ($code) {
-        1 => 'bg-success text-white',   // Enabled
-        2 => 'bg-danger text-white',    // Disabled
-        3 => 'bg-secondary text-white', // Expired
-        4 => 'bg-warning text-dark', // Pending Verification
-        5 => 'bg-info text-dark', // Updated in AL
+        Constants::STATUS_ENABLED => 'bg-success text-white',
+        Constants::STATUS_DISABLED => 'bg-danger text-white',
+        Constants::STATUS_EXPIRED => 'bg-secondary text-white',
+        Constants::STATUS_PENDING_VERIFICATION => 'bg-warning text-dark',
+        Constants::STATUS_UPDATED_IN_AL => 'bg-info text-dark',
+        Constants::STATUS_NEW_TAG_SUBMITTED => 'bg-warning text-dark',
+        Constants::STATUS_NEW_RULE_SUBMITTED => 'bg-secondary text-white',
+        default => 'bg-secondary text-dark',
+    };
+}
+
+function status_request_class(int $code): string
+{
+    return match ($code) {
+        Constants::STATUS_REQUEST_HQ_REVIEW => 'bg-warning text-dark',
+        Constants::STATUS_REQUEST_PENDING_ITEMS => 'bg-info text-dark',
+        Constants::STATUS_REQUEST_APPROVED => 'bg-success text-white',
+        Constants::STATUS_REQUEST_PUBLISHED => 'bg-success text-white',
+        Constants::STATUS_REQUEST_REJECTED => 'bg-danger text-white',
         default => 'bg-secondary text-dark',
     };
 }
 
 function bool_label(int $value): string
 {
-    return $value === 1 ? 'Yes' : 'No';
+    return $value === Constants::YES ? 'Yes' : 'No';
 }
 
 function bool_class(int $value): string
 {
     return match ($value) {
-        1 => 'bg-success text-white',   // Yes
-        0 => 'bg-secondary text-white',    // No
+        Constants::YES => 'bg-success text-white',   // Yes
+        Constants::NO => 'bg-secondary text-white',    // No
     };
 }
 

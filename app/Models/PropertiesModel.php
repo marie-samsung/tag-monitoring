@@ -55,7 +55,12 @@ class PropertiesModel extends Model
         $property = $this->find($propertyId);
         $country = (new CountriesModel())->find($property['country_id']);
         $language = (new LanguagesModel())->find($property['language_id']);
-        return $country['code'] . '_' . $language['name'];
+
+        if ($country['code'] != $language['name']) {
+            return $country['code'] . '_' . $language['name'];
+        } else {
+            return $country['code'];
+        }
     }
 
     public function isShop($propertyId)

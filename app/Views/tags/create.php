@@ -38,7 +38,7 @@ Tag: Create
         <div class="card p-3 mt-3">
             <div class="row mb-2">
                 <div class="col mb-2">
-                    <label class="form-label-xs">Property</label>
+                    <label class="form-label-xs text-primary">Property</label>
                     <select name="property_id" class="form-select searchable-select" required>
                         <?php foreach ($properties as $value => $label): ?>
                             <option value="<?= esc($value) ?>"
@@ -50,7 +50,7 @@ Tag: Create
                 </div>
 
                 <div class="col">
-                    <label for="name" class="form-label-xs">Tag Name</label>
+                    <label for="name" class="form-label-xs text-primary">Tag Name</label>
                     <input type="text" name="name" id="name"
                         class="form-control"
                         value="<?= old('name', $old['name'] ?? '') ?>"
@@ -75,7 +75,7 @@ Tag: Create
             
             <div class="row mb-2">
                 <div class="col">
-                    <label for="conditions" class="form-label-xs">Conditions</label>
+                    <label for="conditions" class="form-label-xs text-primary">Conditions</label>
                     <input type="text" name="conditions" id="conditions"
                         class="form-control"
                         value="<?= old('conditions', $old['conditions'] ?? '') ?>"
@@ -86,7 +86,7 @@ Tag: Create
                 </div>
 
                 <div class="col">
-                    <label class="form-label-xs">Status</label>
+                    <label class="form-label-xs text-primary">Status</label>
                     <select name="status" class="form-select" required>
                         <?php foreach (Constants::STATUS as $value => $label): ?>
                             <option value="<?= esc($value) ?>"
@@ -100,7 +100,7 @@ Tag: Create
 
             <div class="row">
                 <div class="col">
-                    <label class="form-label-xs" for="al_end_date">Launch Expiry Date</label>
+                    <label class="form-label-xs text-primary" for="al_end_date">Launch Expiry Date</label>
                     <input type="date"
                         name="al_end_date"
                         id="al_end_date"
@@ -110,7 +110,7 @@ Tag: Create
                 </div>
 
                 <div class="col">
-                    <label for="ref_link" class="form-label-xs">Launch Link</label>
+                    <label for="ref_link" class="form-label-xs text-primary">Launch Link</label>
                     <input type="text" name="ref_link" id="ref_link"
                         class="form-control"
                         value="<?= old('ref_link', $old['ref_link'] ?? '') ?>"
@@ -127,7 +127,7 @@ Tag: Create
         <div class="card p-3">
             <div class="row mb-2">
                 <div class="col">
-                    <label class="form-label-xs">Organization</label>
+                    <label class="form-label-xs text-primary">Organization</label>
                     <select name="requester_organization" class="form-select advanced-select" required>
                         <?php foreach ($organizations as $value => $label): ?>
                             <option value="<?= esc($value) ?>"
@@ -139,7 +139,7 @@ Tag: Create
                 </div>
 
                 <div class="col">
-                    <label for="name" class="form-label-xs">Name</label>
+                    <label class="form-label-xs text-primary">Name</label>
                     <input type="text" name="requester_name" id="requester_name"
                         class="form-control"
                         value="<?= old('requester_name', $old['requester_name'] ?? '') ?>"
@@ -147,7 +147,7 @@ Tag: Create
                 </div>
 
                 <div class="col">
-                    <label for="name" class="form-label-xs">Email Address</label>
+                    <label class="form-label-xs text-primary">Email Address</label>
                     <input type="text" name="requester_email" id="requester_email"
                         class="form-control"
                         value="<?= old('requester_email', $old['requester_email'] ?? '') ?>"

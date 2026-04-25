@@ -12,15 +12,14 @@
 </head>
 <body>
     <div class="container-fluid">
-        <div class="row">
+        <!-- NAVIGATION BAR -->
+        <div class="position-sticky top-0 bg-white py-2 shadow-sm sticky-nav">
+            <?= $this->include('layouts/sidebar') ?>
+        </div>
 
-            <!-- LEFT SIDEBAR -->
-            <div class="mt-3">
-                <?= $this->include('layouts/sidebar') ?>
-            </div>
-
-            <!-- MAIN CONTENT -->
-            <div class="mt-4">
+        <!-- MAIN CONTENT -->
+        <div class="row mt-4">
+            <div class="col">
                 <?php if (session()->getFlashdata('success')) : ?>
                     <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
                         <?= esc(session()->getFlashdata('success')) ?>

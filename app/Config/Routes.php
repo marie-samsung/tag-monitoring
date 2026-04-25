@@ -22,6 +22,11 @@ $routes->group('tags', function ($routes) {
     // $routes->post('delete/(:num)', 'TagsController::delete/$1');
 });
 
+$routes->group('tag-requests', function ($routes) {
+    $routes->get('/', 'TagRequestsController::index');
+    $routes->match(['get', 'post'], 'create', 'TagRequestsController::create');
+});
+
 $routes->group('properties', function ($routes) {
     $routes->get('/', 'PropertiesController::index');
     $routes->match(['get', 'post'], 'create', 'PropertiesController::create');

@@ -7,7 +7,7 @@
 <?= $this->section('content') ?>
 
 <div class="container mb-2">
-    <h7>Update Tag</h7>
+    <h7 class="text-danger fw-semibold">Update Tag</h7>
     <h3><?= $tag['name'] ?></h3>
 </div>
 
@@ -15,12 +15,16 @@
     use App\Models\Constants;
     use App\Models\PropertiesModel;
     use App\Models\VendorsModel;
+    use App\Models\OrganizationsModel;
 
     $propertiesModel = new PropertiesModel();
     $properties = $propertiesModel->Options();
 
     $vendorsModel = new VendorsModel();
     $vendors = $vendorsModel->Options();
+
+    $organizationsModel = new OrganizationsModel();
+    $organizations = $organizationsModel->Options();
 ?>
 
 <?php if (isset($validation)): ?>
@@ -36,7 +40,7 @@
         <div class="card p-3">
             <div class="row mb-2">
                 <div class="col">
-                    <label class="form-label-xs">Property</label>
+                    <label class="form-label-xs text-primary">Property</label>
                     <select name="property_id" class="form-select searchable-select" required>
                         <?php foreach ($properties as $value => $label): ?>
                             <option value="<?= esc($value) ?>"
@@ -48,7 +52,7 @@
                 </div>
 
                 <div class="col">
-                    <label for="name" class="form-label-xs">Tag Name</label>
+                    <label for="name" class="form-label-xs text-primary">Tag Name</label>
                     <input type="text" name="name" id="name"
                         class="form-control"
                         value="<?= $tag['name'] ?>"
@@ -61,7 +65,7 @@
             
             <div class="row mb-2">
                 <div class="col">
-                    <label for="conditions" class="form-label-xs">Conditions</label>
+                    <label for="conditions" class="form-label-xs text-primary">Conditions</label>
                     <input type="text" name="conditions" id="conditions"
                         class="form-control"
                         value="<?= $tag['conditions'] ?>"
@@ -72,7 +76,7 @@
                 </div>
 
                 <div class="col">
-                    <label class="form-label-xs">Status</label>
+                    <label class="form-label-xs text-primary">Status</label>
                     <select name="status" class="form-select" required>
                         <?php foreach (Constants::STATUS as $value => $label): ?>
                             <option value="<?= esc($value) ?>"
@@ -86,7 +90,7 @@
 
             <div class="row">
                 <div class="col">
-                    <label class="form-label-xs" for="al_end_date">Launch Expiry Date</label>
+                    <label class="form-label-xs text-primary" for="al_end_date">Launch Expiry Date</label>
                     <input type="date"
                         name="al_end_date"
                         id="al_end_date"
@@ -96,7 +100,7 @@
                 </div>
 
                 <div class="col">
-                    <label for="ref_link" class="form-label-xs">Launch Link</label>
+                    <label for="ref_link" class="form-label-xs text-primary">Launch Link</label>
                     <input type="text" name="ref_link" id="ref_link"
                         class="form-control"
                         value="<?= $tag['ref_link'] ?>"
@@ -113,9 +117,9 @@
         <div class="card p-3">
             <div class="row mb-2">
                 <div class="col">
-                    <label class="form-label-xs">Organization</label>
-                    <select name="requester_organization" class="form-select" required>
-                        <?php foreach (Constants::ORGANIZATIONS as $value => $label): ?>
+                    <label class="form-label-xs text-primary">Organization</label>
+                    <select name="requester_organization" class="form-select advanced-select" required>
+                        <?php foreach ($organizations as $value => $label): ?>
                             <option value="<?= esc($value) ?>"
                                 <?= old('requester_organization', $tag['requester_organization'] ?? '') == $value ? 'selected' : '' ?>>
                                 <?= esc($label) ?>
@@ -125,7 +129,7 @@
                 </div>
 
                 <div class="col">
-                    <label for="name" class="form-label-xs">Name</label>
+                    <label for="name" class="form-label-xs text-primary">Name</label>
                     <input type="text" name="requester_name" id="requester_name"
                         class="form-control"
                         value="<?= old('requester_name', $old['requester_name'] ?? '') ?>"
@@ -133,7 +137,7 @@
                 </div>
 
                 <div class="col">
-                    <label for="name" class="form-label-xs">Email Address</label>
+                    <label for="name" class="form-label-xs text-primary">Email Address</label>
                     <input type="text" name="requester_email" id="requester_email"
                         class="form-control"
                         value="<?= old('requester_email', $old['requester_email'] ?? '') ?>"
@@ -154,6 +158,32 @@
     document.addEventListener('DOMContentLoaded', function () {
         $('.searchable-select').select2({
             width: '100%',
+        });
+
+        $('.advanced-select').select2({
+            tags: true,
+            width: '100%',
+            height: '200%',
+            allowClear: true,
+            createTag: function (params) {
+                let term = $.trim(params.term);
+
+                if (term === '') {
+                    return null;
+                }
+
+                return {
+                    id: term,   // this will be sent to backend
+                    text: term,
+                    newOption: true
+                };
+            },
+            templateResult: function (data) {
+                if (data.newOption) {
+                    return $('<span>Add: <strong>' + data.text + '</strong></span>');
+                }
+                return data.text;
+            }
         });
     });
 </script>

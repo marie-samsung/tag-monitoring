@@ -17,10 +17,16 @@
     </a>
 </nav> -->
 
-<ul class="nav nav-pills">
+<ul class="nav nav-pills justify-content-center">
     <li class="nav-item">
         <a class="nav-link <?= $segment === 'tags' ? 'active' : '' ?>" href="<?= site_url('/tags') ?>">
             <i class="bi bi-tags-fill"></i> Tags
+        </a>
+    </li>
+
+    <li class="nav-item">
+        <a class="nav-link <?= $segment === 'tag-requests' ? 'active' : '' ?>" href="<?= site_url('/tag-requests') ?>">
+            <i class="bi bi-file-earmark-plus-fill"></i> Tag Requests
         </a>
     </li>
 

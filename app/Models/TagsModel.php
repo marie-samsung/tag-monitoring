@@ -49,7 +49,7 @@ class TagsModel extends Model
         }
 
         if (!empty($filters['status'])) {
-            if (count($filters['status']) > 1) {
+            if (is_array($filters['status'])) {
                 $builder->whereIn('tags.status', $filters['status']);
             } else {
                 $builder->where('tags.status', $filters['status'][0]);
@@ -108,6 +108,7 @@ class TagsModel extends Model
     public function countExpiringTags()
     {
         $today = date('Y-m-d');
+        $base = date('Y-m-d', strtotime('-10 days'));
         $expiring = date('Y-m-d', strtotime('+15 days'));
 
         return $this->whereIn('status', [
@@ -115,7 +116,7 @@ class TagsModel extends Model
                 Constants::STATUS_PENDING_VERIFICATION,
                 Constants::STATUS_UPDATED_IN_AL
             ])
-            ->where('al_end_date >=', $today)
+            ->where('al_end_date >=', $base)
             ->where('al_end_date <=', $expiring)
             ->countAllResults();
     }

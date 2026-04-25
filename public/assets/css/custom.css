@@ -10,6 +10,10 @@ h1, h2, h3, h4, h5, h6 {
     font-family: 'Poppins', serif;
 }
 
+.sticky-nav {
+    z-index: 1050;
+}
+
 .bg-purple { background-color: #6f42c1 !important; }
 .bg-teal { background-color: #20c997 !important; }
 .bg-orange { background-color: #fd7e14 !important; }
@@ -41,3 +45,4 @@ h1, h2, h3, h4, h5, h6 {
     background-color: #0d6efd;
     color: #fff !important;
 }
+

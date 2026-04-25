@@ -38,7 +38,7 @@ Tag Monitoring System
 
     <div class="d-flex justify-content-start gap-2 form-label-xs">
         <p>Active: <span class="text-success fw-semibold"><?= $tagsModel->countActiveTags() ?></span></p>
-        <p>Expiring: <span class="text-danger fw-semibold"><?= $tagsModel->countExpiringTags() ?></span></p>
+        <p>Needs Attention: <span class="text-danger fw-semibold"><?= $tagsModel->countExpiringTags() ?></span></p>
         <p>Pending Verification: <span class="text-warning fw-semibold"><?= $tagsModel->countPendingVerificationTags() ?></span></p>
         <p>Total: <span class="text-dark fw-semibold"><?= $tagsModel->countAllTags() ?></span></p>
     </div>
@@ -148,15 +148,17 @@ Tag Monitoring System
                             </a>
                         </td>
                         <!-- Name -->
-                        <td class="form-label-sm d-flex justify-content-between gap-1">
-                            <a href="<?= $tag['ref_link'] ?>" target="_blank">
-                                <?= esc($tag['name']) ?>
-                            </a>
+                        <td class="form-label-sm">
+                            <div class="d-flex justify-content-between align-items-center gap-1">
+                                <a href="<?= $tag['ref_link'] ?>" target="_blank">
+                                    <?= esc($tag['name']) ?>
+                                </a>
 
-                            <!-- Copy button -->
-                            <a href="javascript:void(0)" onclick="copyTagName('<?= esc($tag['name']) ?>', this)" title="Copy tag name">
-                                <i class="bi bi-copy text-secondary fs-7"></i>
-                            </a>
+                                <!-- Copy button -->
+                                <a href="javascript:void(0)" onclick="copyTagName('<?= esc($tag['name']) ?>', this)" title="Copy tag name">
+                                    <i class="bi bi-copy text-secondary fs-7"></i>
+                                </a>
+                            </div>
                         </td>
                         <!-- Status -->
                         <td>
