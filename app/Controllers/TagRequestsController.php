@@ -56,7 +56,7 @@ class TagRequestsController extends BaseController
             }
 
             $organizationInput = trim($post['requester_organization']);
-            $organization = $organizationsModel->where('id', $organizationInput)->first();
+            $organization = $organizationsModel->where('name', $organizationInput)->first();
             if (!$organization) {
                 $organizationId = $organizationsModel->insert([
                     'name' => $organizationInput,
@@ -99,6 +99,7 @@ class TagRequestsController extends BaseController
                 'request_id' => $requestId,
                 'vendor_name' => $vendorName,
                 'property_id' => $propertyId,
+                'vendor_id' => $vendorId,
                 'request_type' => $jiraType,
             ]);
         } else {
@@ -106,5 +107,39 @@ class TagRequestsController extends BaseController
                 ->to('/tag-requests')
                 ->with('error', "Tags were not successfully created."); 
         }
+    }
+
+    public function createConfirm()
+    {
+        $model = new TagRequestsModel();
+        $post = $this->request->getPost();
+
+        $ticketId = $post['ticket_id'];
+        $id = $post['request_id'];
+
+        if (empty($ticketId)) {
+            return redirect()
+                ->to('/tag-requests')
+                ->with('error', "Ticket was not successfully created.");
+        } else {
+            $tagRequest = $model->find($id);
+
+            if (!$tagRequest) {
+                return redirect()
+                    ->to('/tag-requests')
+                    ->with('error', "Tag request was not found.");
+            } else {
+                $model->update($id, [
+                    'ticket_id' => $ticketId,
+                ]);
+
+                return redirect()
+                    ->to('/tag-requests')
+                    ->with('success', "[{$ticketId}] Tag Request successfully created.");
+            }
+        }
+
+        var_export($post);
+        die();
     }
 }
