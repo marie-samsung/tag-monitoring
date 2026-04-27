@@ -129,9 +129,8 @@ Tag: Requests (New Rule, New Tag)
             </thead>
             <tbody>
                 <?php
-                    foreach ($requests as $request): 
-                    // $subsidiary = $subsidiaries[$request['subsidiary_id']];
-                    $subsidiary = 'SGE';
+                    foreach ($requests as $request):
+                    $subsidiary = Constants::SUBSIDIARIES[$properties[$request['property_id']]['subsidiary_id']];
                     $property = $properties[$request['property_id']];
                 ?>
                     <tr>
@@ -150,7 +149,11 @@ Tag: Requests (New Rule, New Tag)
                                 <?= $property['name'] ?>
                             </a>
                         </td>
-                        <td><?= $request['ticket_id'] ?></td>
+                        <td>
+                            <a href="<?= Constants::JIRA_LINK . $request['ticket_id'] ?>" target="_blank">
+                                <?= $request['ticket_id'] ?>
+                            </a>
+                        </td>
                         <td><?= Constants::REQUEST_TYPES[$request['type']] ?></td>
                         <td>
                             <span class="badge <?= status_request_class($request['status']) ?>">
