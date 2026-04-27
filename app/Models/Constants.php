@@ -6,6 +6,7 @@ class Constants
 {
     public const JIRA_LINK = 'https://jira.secext.samsung.net/browse/';
     public const JIRA_CREATE_ISSUE = 'https://jira.secext.samsung.net/secure/CreateIssue!default.jspa';
+    public const JIRA_SSGTM_TICKET = 'https://jira.secext.samsung.net/browse/GTA-31005';
     public const LP_WRITE_PATH = WRITEPATH . 'uploads/lp/';
     public const LP_PATH = 'uploads/lp/';
     public const JIRA_TYPE_DATE_EXTENSION_RULE = 1;
@@ -110,5 +111,13 @@ class Constants
     public const IS_ACTIVE = [
         0 => 'Inactive',
         1 => 'Active',
+    ];
+
+    public const PURPOSE_GOAL_NEW_TAG = [
+        'What is the official website of the platform/company?',
+        'What is the duration of usage? Will it be used for a specific campaign or as part of an ongoing effort without a defined end date?',
+        'Any KPIs applied to review this tag bi-monthly as we need to extend every 2 months?',
+        'Performance thresholds that will determine renewal or deactivation of this tag?',
+        'What is your internal process for reviewing and validating these KPIs every two months?',
     ];
 }
