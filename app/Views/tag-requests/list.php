@@ -10,6 +10,7 @@ Tag: Requests (New Rule, New Tag)
     use App\Models\Constants;
     use App\Models\PropertiesModel;
     use App\Models\SubsidiariesModel;
+    use App\Models\VendorsModel;
     use App\Models\JiraHistoryModel;
     use App\Models\TagsModel;
     helper('custom_functions');
@@ -20,6 +21,9 @@ Tag: Requests (New Rule, New Tag)
 
     $subsidiariesModel = new SubsidiariesModel();
     $subsidiaries = $subsidiariesModel->Options();
+
+    $vendorsModel = new VendorsModel();
+    $vendors = $vendorsModel->Options();
 
     $tagsModel = new TagsModel();
 ?>
@@ -153,8 +157,11 @@ Tag: Requests (New Rule, New Tag)
                             <a href="<?= Constants::JIRA_LINK . $request['ticket_id'] ?>" target="_blank">
                                 <?= $request['ticket_id'] ?>
                             </a>
+                            (<?= $vendors[$request['vendor_id']] ?? '' ?>)
                         </td>
-                        <td><?= Constants::REQUEST_TYPES[$request['type']] ?></td>
+                        <td>
+                            <?= Constants::REQUEST_TYPES[$request['type']] ?>
+                        </td>
                         <td>
                             <span class="badge <?= status_request_class($request['status']) ?>">
                                 <?= Constants::STATUS_REQUESTS[$request['status']] ?>
