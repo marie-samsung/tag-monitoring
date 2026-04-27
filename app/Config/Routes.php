@@ -24,6 +24,7 @@ $routes->group('tags', function ($routes) {
 
 $routes->group('tag-requests', function ($routes) {
     $routes->get('/', 'TagRequestsController::index');
+    $routes->get('view/(:num)', 'TagRequestsController::view/$1');
     $routes->match(['post'], 'create/confirm', 'TagRequestsController::createConfirm');
     $routes->match(['get', 'post'], 'create', 'TagRequestsController::create');
 });
