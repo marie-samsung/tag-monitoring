@@ -38,7 +38,7 @@ JIRA Tickets List
     </div>
 
     <!-- #region | SEARCH FILTER -->
-    <div class="my-3">
+    <div class="mb-2">
         <form method="get" class="row g-3 mb-4">
             <div class="col">
                 <input 
