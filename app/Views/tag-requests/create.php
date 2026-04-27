@@ -130,12 +130,65 @@ Tag Request: Create
 <?php 
     elseif ($request_type == Constants::JIRA_TYPE_NEW_TAG):
         $property = $propertiesModel->find($property_id);
+        $vendor = $vendorsModel->find($vendor_id);
         $siteCode = $propertiesModel->getSiteCode($property_id);
+        $isShop = $propertiesModel->isShop($property_id);
+        $reason = $vendor['reason'] ?? '-';
+        $ssGTM = Constants::JIRA_SSGTM_TICKET;
         $jiraTitle = sprintf(
             '[LC Request] [%s] - [%s] - [New Tag]',
             $siteCode,
             $vendor_name
         );
+
+        $detailsHtml = '';
+
+        $detailsHtml .= "
+            <b style='color:#337ab7;'>1) Target Property :</b>
+            <ul>
+                <li>". $isShop ." : ". $property['name'] ."</li>
+            </ul>
+
+            <b style='color:#337ab7;'>2) Target Page(s) :</b>
+            <ul>
+                <li>". $isShop ." : <a href='". $property['website'] ."' target='_blank'>". $property['website'] ."</a></li>
+            </ul>
+
+            <b style='color:#337ab7;'>2.2) Reason when the Target Page is for all :</b>
+            <p>". $reason ."</p>
+
+            <b style='color:#337ab7;'>3) Current Status (as-is)</b>
+            <p><i>Insert Local Rule Monitoring File screenshots here...</i></p>
+
+            <b style='color:#337ab7;'>4) Purpose & Goal :</b>
+            <table border='1' cellpadding='6' cellspacing='0' style='border-collapse:collapse; width:100%;'>
+                <tbody>";
+
+        foreach (Constants::PURPOSE_GOAL_NEW_TAG as $value) {
+            $detailsHtml .= "
+                <tr>
+                    <td style='width:50%;'><b>
+                        ". $value ."
+                    </b></td>
+                    <td><i>
+                        Insert answer here from the Media Tag Request form...
+                    </i></td>
+                </tr>
+            ";
+        }
+        
+        $detailsHtml .= "
+            </tbody>
+        </table>
+        
+        </br>
+        <b style='color:#337ab7;'>5) ssGTM</b>
+        <p>
+            For ssGTM requests, please refer to this ticket: 
+            <a href='". $ssGTM ."' target='_blank'> ssGTM </a> 
+        </p>
+        ";
+
 ?>
 <!-- region | PART 2 - NEW TAG REQUEST CONFIRMATION -->
 <form action="<?= site_url('tag-requests/create/confirm') ?>" method="post">
@@ -199,7 +252,9 @@ Tag Request: Create
 <?php elseif ($request_type == Constants::JIRA_TYPE_NEW_RULE):  ?>
 <?php else: ?>
 <?php endif; ?>
+<?= $this->endSection() ?>
 
+<?= $this->section('scripts') ?>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         $('.searchable-select').select2({
@@ -233,7 +288,7 @@ Tag Request: Create
 
         $(document).ready(function() {
             $('#details').summernote({
-                height: 300,
+                height: 500,
                 toolbar: [
                     ['style', ['bold', 'italic', 'underline', 'clear']],
                     // ['font', ['strikethrough', 'superscript', 'subscript']],
@@ -250,6 +305,43 @@ Tag Request: Create
             $('#details').summernote('code', detailsHtml);
         });
     });
-</script>
 
+    function copyJiraTitle() {
+        const text = document.getElementById('jiraTitle').innerText;
+        const status = document.getElementById('copyStatus');
+
+        navigator.clipboard.writeText(text).then(() => {
+            status.style.opacity = 1;
+            setTimeout(() => {
+                status.style.opacity = 0;
+            }, 1000);
+        });
+    }
+
+    function copyDetails() {
+        const html = $('#details').summernote('code');
+
+        const temp = document.createElement('div');
+        temp.style.position = 'fixed';
+        temp.style.left = '-9999px';
+        temp.style.whiteSpace = 'pre-wrap';
+        temp.innerHTML = html;
+        document.body.appendChild(temp);
+
+        const range = document.createRange();
+        range.selectNodeContents(temp);
+
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+
+        document.execCommand('copy');
+
+        document.body.removeChild(temp);
+
+        const status = document.getElementById('copyDetailsStatus');
+        status.style.opacity = 1;
+        setTimeout(() => status.style.opacity = 0, 1000);
+    }
+</script>
 <?= $this->endSection() ?>
