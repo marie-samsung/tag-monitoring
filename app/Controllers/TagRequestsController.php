@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\Constants;
+use App\Models\JiraHistoryModel;
 use App\Models\OrganizationsModel;
 use App\Models\TagRequestsModel;
 use App\Models\PropertiesModel;
@@ -17,6 +18,19 @@ class TagRequestsController extends BaseController
         $data['requests'] = $model->findAll();
 
         return view('tag-requests/list', $data);
+    }
+
+    public function view($id)
+    {
+        $model = new TagRequestsModel();
+        $tagsModel = new TagsModel();
+        $request = $model->find($id);
+
+        if (!$request) {
+            throw new \CodeIgniter\Exceptions\PageNotFoundException("Tag request with ID $id not found.");
+        }
+
+        return view('tag-requests/view', ['request' => $request, 'tags' => $model->getTags($id)] );
     }
 
     public function create()
