@@ -28,7 +28,7 @@
 
     if ($propertyIds) {
         $siteCode = $propertiesModel->getSiteCode($propertyIds[0]);
-        $is_shop = $propertiesModel->isShop($propertyIds[0]) ? 'Shop' : 'AEM';
+        $is_shop = $propertiesModel->isShop($propertyIds[0]);
         $subsidiaryTicketId = $jiraHistoryModel->getLatestSubsidiary($properties[$propertyIds[0]]['subsidiary_id'])['ticket_id'] ?? null;
     }
     $jiraTitle = sprintf(
