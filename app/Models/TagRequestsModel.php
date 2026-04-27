@@ -2,6 +2,7 @@
 
 namespace App\Models;
 use CodeIgniter\Model;
+use App\Models\TagsModel;
 
 class TagRequestsModel extends Model
 {
@@ -26,4 +27,19 @@ class TagRequestsModel extends Model
 
     protected $useTimestamps = true;
     protected $useSoftDeletes = true;
+
+    public function getTags($id)
+    {
+        $request = $this->find($id);
+        $tagsModel = new TagsModel();
+
+        $tagsList = explode(',', $request['tags']);
+        $tags = [];
+
+        foreach ($tagsList as $tag) {
+            $tags[$tag] = $tagsModel->find($tag);
+        }
+
+        return $tags;
+    }
 }
