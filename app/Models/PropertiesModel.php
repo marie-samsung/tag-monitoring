@@ -66,7 +66,7 @@ class PropertiesModel extends Model
     public function isShop($propertyId)
     {
         $property = $this->find($propertyId);
-        return $property['is_shop'] === Constants::YES;
+        return $property['is_shop'] === Constants::YES ? 'Shop' : 'AEM';
     }
 
     /**
