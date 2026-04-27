@@ -29,12 +29,10 @@ JIRA Tickets List
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center">
         <h2>JIRA Tickets</h2>
-        <div>
+        <div class="d-flex justify-content-end align-items-center gap-2">
             <a href="<?= site_url('jira/export?' . http_build_query($_GET)) ?>" class="btn btn-sm btn-warning px-2">Export as CSV</a>
+            <a href="<?= site_url('jira/create') ?>" target="_blank" title="Create new JIRA ticket" class="btn btn-success btn-sm ms-auto px-2">Add a JIRA Ticket</a>
         </div>
-        <!-- <div>
-            <a href="<?= site_url('jira/create') ?>" target="_blank" title="Create new JIRA ticket" class="btn btn-success btn-sm ms-auto px-2">Create New</a>
-        </div> -->
     </div>
 
     <!-- #region | SEARCH FILTER -->
