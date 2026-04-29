@@ -58,5 +58,8 @@ CREATE TABLE `tag_monitoring`.`tag_request_files` (
 ) ENGINE = InnoDB;
 
 ALTER TABLE `tags` CHANGE `conditions` `conditions` VARCHAR(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '(.*)';
+/** [27/04] DB updated on Samsung machine **/
 
+/** [29/04] Updates from Samsung machine **/
+ALTER TABLE `tag_request_files` ADD `updated_at` DATETIME NULL AFTER `created_at`;
 
