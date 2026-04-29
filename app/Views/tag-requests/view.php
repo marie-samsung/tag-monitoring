@@ -31,16 +31,19 @@ $tagModel = new TagsModel();
         <?= Constants::SUBSIDIARIES[$properties[$request['property_id']]['subsidiary_id']] ?>
     </h6>
     <h3>
+        <a href="<?= Constants::JIRA_LINK . $request['ticket_id'] ?>" target="_blank">
+            [<?= $request['ticket_id'] ?>]
+        </a>
         [<?= $vendors[$request['vendor_id']] ?>]
         <?= Constants::JIRA_TICKET_TYPES[$request['type']] ?>
     </h3>
 </div>
 
-<div class="container d-flex my-3 gap-1">
+<div class="container d-flex my-3 gap-3">
     <!-- #region | REQUEST DETAILS -->
-    <div class="w-20 p-4 card">
+    <div class="w-25 p-4 card">
         <div class="mb-2">
-            <label class="form-label-xs">Property</label>
+            <label class="form-label-xs text-primary">Property</label>
             <div class="form-control-plaintext p-0 ms-2">
                 <a href="<?= esc($properties[$request['property_id']]['ref_link'] ?? '#') ?>" target="_blank">
                     <?= esc($properties[$request['property_id']]['name'] ?? '—') ?>
@@ -49,14 +52,14 @@ $tagModel = new TagsModel();
         </div>
 
         <div class="mb-2">
-            <label class="form-label-xs">Vendor</label>
+            <label class="form-label-xs text-primary">Vendor</label>
             <div class="form-control-plaintext p-0 ms-2">
                 <?= esc($vendors[$request['vendor_id']] ?? '—') ?>
             </div>
         </div>
 
         <div class="mb-2">
-            <label class="form-label-xs">Status</label>
+            <label class="form-label-xs text-primary">Status</label>
             <div class="d-flex gap-2">
                 <div class="col form-control-plaintext p-0 ms-2">
                     <span class="badge <?= status_request_class($request['status']) ?>">
@@ -68,21 +71,21 @@ $tagModel = new TagsModel();
 
         <label class="form-label m-0 fw-semibold mt-2">Requester Details</label>
         <div class="mb-2">
-            <label class="form-label-xs">Name</label>
+            <label class="form-label-xs text-primary">Name</label>
             <div class="form-control-plaintext p-0 ms-2">
                 <?= esc($request['requester_name'] ?? '—') ?>
             </div>
         </div>
 
         <div class="mb-2">
-            <label class="form-label-xs">Email Address</label>
+            <label class="form-label-xs text-primary">Email Address</label>
             <div class="form-control-plaintext p-0 ms-2">
                 <?= esc($request['requester_email'] ?? '—') ?>
             </div>
         </div>
 
         <div class="mb-2">
-            <label class="form-label-xs">Organization</label>
+            <label class="form-label-xs text-primary">Organization</label>
             <div class="form-control-plaintext p-0 ms-2">
                 <?= esc($organizations[$request['requester_organization']] ?? '—') ?>
             </div>
@@ -97,50 +100,91 @@ $tagModel = new TagsModel();
     </div>
     <!-- #endregion -->
 
-    <!-- #region | TAGS LIST -->
-    <div class="card w-40 p-4">
-        <h4>Tag(s)</h4>
+    <!-- #region | TAGS LIST & FILES -->
+    <div class="w-75">
+        <div class="card p-4">
+            <h4>Tag(s)</h4>
 
-        <table class="table table-bordered">
-            <tbody>
-                <?php foreach ($tags as $tag) : ?>
+            <table class="table table-bordered">
+                <tbody>
+                    <?php foreach ($tags as $tag) : ?>
+                        <tr>
+                            <td>
+                                <a href="<?= site_url('tags/view/' . $tag['id']) ?>" target="_blank">
+                                    <?= $tag['name'] ?>
+                                </a>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card p-4 mt-3">
+            <h4>File(s)</h4>
+
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>File Type</th>
+                        <th>File Name</th>
+                    </tr>
+                </thead>
+                <tbody>
                     <tr>
                         <td>
-                            <a href="<?= site_url('tags/view/' . $tag['id']) ?>" target="_blank">
-                                <?= $tag['name'] ?>
-                            </a>
+                            TBD
                         </td>
+                        <td></td>
+                        <td></td>
                     </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+                </tbody>
+            </table>
+
+            <hr/>
+
+            <form action="<?= site_url('tag-requests/upload') ?>" method="post" enctype="multipart/form-data">
+                <input type="hidden" name="request_id" value="<?= esc($request['id']) ?>">
+                <input type="hidden" name="property_id" value="<?= esc($request['property_id']) ?>">
+                <input type="hidden" name="vendor_name" value="<?= esc($vendors[$request['vendor_id']]) ?>">
+                <div class="d-flex gap-3 align-items-center">
+                    <div class="col-6">
+                        <label for="type" class="form-label-xs text-primary">File Type</label>
+                        <select name="type" class="form-select" required>
+                            <?php foreach (Constants::ATTACHMENTS as $value => $label): ?>
+                                <option value="<?= esc($value) ?>"
+                                        <?= old('type', $old['type'] ?? 1) == $value ? 'selected' : '' ?>>
+                                    <?= esc($label) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+<!--                    <div class="col">-->
+<!--                        <label for="file_name" class="form-label-xs text-primary">File Name</label>-->
+<!--                        <input type="text" name="file_name" id="file_name"-->
+<!--                               class="form-control"-->
+<!--                               value="--><?php //= old('file_name', $old['file_name'] ?? '') ?><!--"-->
+<!--                               required>-->
+<!--                    </div>-->
+
+                    <div class="col-4">
+                        <label for="file_path" class="form-label-xs text-primary">Upload File</label>
+                        <br />
+                        <input type="file" name="file_path" required>
+                    </div>
+
+                    <div class="col mt-auto d-flex flex-column">
+                        <button type="submit" class="btn btn-sm btn-primary" onclick="return confirm('Confirm uploading of this file?');">
+                            Upload
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>
     <!-- #endregion -->
-
-    <!-- #region | FILES LIST -->
-    <div class="card w-40 p-4">
-        <h4>File(s)</h4>
-
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>File Name</th>
-                    <th>File Type</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>
-                        TBD
-                    </td>
-                    <td></td>
-                    <td></td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-    <!-- #endregion
 </div>
 
 <?= $this->endSection() ?>
