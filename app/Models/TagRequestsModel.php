@@ -28,7 +28,7 @@ class TagRequestsModel extends Model
     protected $useTimestamps = true;
     protected $useSoftDeletes = true;
 
-    public function getTags($id)
+    public function getTags($id): array
     {
         $request = $this->find($id);
         $tagsModel = new TagsModel();
@@ -41,5 +41,13 @@ class TagRequestsModel extends Model
         }
 
         return $tags;
+    }
+
+    public function fileUploadPath($property_id, $vendor_name): string
+    {
+        $propertiesModel = new PropertiesModel();
+        $property = $propertiesModel->find($property_id);
+        $today = date("Y-m-d");
+        return Constants::SUBSIDIARIES[$property['subsidiary_id']] . '/' . $property['name'] . '/' . $vendor_name . '/' . $today;
     }
 }
