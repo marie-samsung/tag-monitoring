@@ -5,10 +5,12 @@ namespace App\Controllers;
 use App\Models\Constants;
 use App\Models\JiraHistoryModel;
 use App\Models\OrganizationsModel;
+use App\Models\TagRequestFilesModel;
 use App\Models\TagRequestsModel;
 use App\Models\PropertiesModel;
 use App\Models\VendorsModel;
 use App\Models\TagsModel;
+use CodeIgniter\Files\Exceptions\FileException;
 
 class TagRequestsController extends BaseController
 {
@@ -152,8 +154,44 @@ class TagRequestsController extends BaseController
                     ->with('success', "[{$ticketId}] Tag Request successfully created.");
             }
         }
+    }
 
-        var_export($post);
-        die();
+    public function uploadFile()
+    {
+        $model = new TagRequestsModel();
+        $filesModel = new TagRequestFilesModel();
+
+        $post = $this->request->getPost();
+        $requestId = $post['request_id'];
+        $file = $this->request->getFile('file_path');
+
+         try {
+             if ($file && $file->isValid()) {
+                 $upload_path = Constants::NEW_TAG_FILE_WRITE_PATH . $model->fileUploadPath($post['property_id'], $post['vendor_name']);
+                 $file_name = $file->getClientName();
+
+                 if ($file->move($upload_path, $file_name)) {
+                     $file_path = $upload_path . '/' . $file_name;
+
+                     $filesModel->insert([
+                         'file_name' => $file_name,
+                         'file_path' => $file_path,
+                         'type' => Constants::ATTACHMENTS[$post['type']],
+                         'request_id' => $requestId,
+                         'created_by' => 0,
+                     ]);
+
+                     return redirect()
+                         ->to('/tag-requests/view/' . $post['request_id'])
+                         ->with('success', "File successfully uploaded.");
+                 }
+             }
+         } catch(FileException|\ReflectionException $e) {
+             var_dump($e);
+         }
+
+        return redirect()
+            ->to('/tag-requests/view/' . $post['request_id'])
+            ->with('error', "An error occurred. File was not uploaded successfully.");
     }
 }
