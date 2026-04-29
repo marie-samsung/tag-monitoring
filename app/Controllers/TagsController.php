@@ -10,6 +10,7 @@ use App\Models\SubsidiariesModel;
 use App\Models\TagsModel;
 use App\Models\VendorsModel;
 use App\Models\OrganizationsModel;
+use ReflectionException;
 
 class TagsController extends BaseController
 {
@@ -262,6 +263,9 @@ class TagsController extends BaseController
         return $this->response->setJSON(['status' => 'ok']);
     }
 
+    /**
+     * @throws ReflectionException
+     */
     public function saveJiraHistory($tag, $ticketId, $tagIds)
     {
         if (is_array($tag)) {
@@ -271,14 +275,14 @@ class TagsController extends BaseController
             $subsidiaryId = $propertiesModel->find($propertyId)['subsidiary_id'] ?? 0;
 
             $jiraHistoryModel = new JiraHistoryModel();
-            if ($jiraHistoryModel->insert([
+            if (!$jiraHistoryModel->insert([
                 'tag_id' => $tagId,
                 'property_id' => $propertyId,
                 'subsidiary_id' => $subsidiaryId,
                 'ticket_id' => $ticketId,
                 'type' => Constants::JIRA_TYPE_DATE_EXTENSION_RULE,
                 'comments' => implode(',', $tagIds),
-            ]) == false) {
+            ])) {
                 var_dump("Failed to save JIRA history for tag ID: {$tagId}");
             }
         }
