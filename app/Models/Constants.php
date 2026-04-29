@@ -9,6 +9,7 @@ class Constants
     public const JIRA_SSGTM_TICKET = 'https://jira.secext.samsung.net/browse/GTA-31005';
     public const LP_WRITE_PATH = WRITEPATH . 'uploads/lp/';
     public const LP_PATH = 'uploads/lp/';
+    public const NEW_TAG_FILE_WRITE_PATH = WRITEPATH . 'uploads/new_tag_requests/';
     public const JIRA_TYPE_DATE_EXTENSION_RULE = 1;
     public const JIRA_TYPE_NEW_TAG = 2;
     public const JIRA_TYPE_NEW_RULE = 3;
