@@ -46,3 +46,29 @@ h1, h2, h3, h4, h5, h6 {
     color: #fff !important;
 }
 
+table.file-table {
+    width: 100%;
+    table-layout: fixed;
+}
+
+table.file-table th:nth-child(1) {
+    width: 150px;
+}
+
+table.file-table th:nth-child(2),
+table.file-table td:nth-child(2) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+table.file-table td:nth-child(2) {
+    white-space: normal;
+    word-break: manual;
+}
+
+table.file-table th:nth-child(3) {
+    width: 120px;
+}
+
+
