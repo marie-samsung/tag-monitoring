@@ -26,13 +26,18 @@ class TagRequestsController extends BaseController
     {
         $model = new TagRequestsModel();
         $tagsModel = new TagsModel();
+        $filesModel = new TagRequestFilesModel();
         $request = $model->find($id);
 
         if (!$request) {
             throw new \CodeIgniter\Exceptions\PageNotFoundException("Tag request with ID $id not found.");
         }
 
-        return view('tag-requests/view', ['request' => $request, 'tags' => $model->getTags($id)] );
+        return view('tag-requests/view', [
+            'request' => $request,
+            'tags' => $model->getTags($id),
+            'files' => $filesModel->getRelatedFiles($id),
+        ] );
     }
 
     public function create()
@@ -176,7 +181,7 @@ class TagRequestsController extends BaseController
                      $filesModel->insert([
                          'file_name' => $file_name,
                          'file_path' => $file_path,
-                         'type' => Constants::ATTACHMENTS[$post['type']],
+                         'type' => $post['type'],
                          'request_id' => $requestId,
                          'created_by' => 0,
                      ]);
