@@ -18,5 +18,12 @@ class TagRequestFilesModel extends Model
     ];
 
     protected $useTimestamps = true;
-    protected $useSoftDeletes = true;
+
+    public function getRelatedFiles($request_id)
+    {
+        return $this->select()
+            ->where('request_id', $request_id)
+            ->orderBy('created_at', 'DESC')
+            ->findAll();
+    }
 }
