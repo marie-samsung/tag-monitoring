@@ -47,7 +47,7 @@ class TagRequestsModel extends Model
     {
         $propertiesModel = new PropertiesModel();
         $property = $propertiesModel->find($property_id);
-        $today = date("Y-m-d");
-        return Constants::SUBSIDIARIES[$property['subsidiary_id']] . '/' . $property['name'] . '/' . $vendor_name . '/' . $today;
+//        $today = date("Y-m-d");
+        return Constants::SUBSIDIARIES[$property['subsidiary_id']] . '/' . $property['name'] . '/' . $vendor_name;
     }
 }
