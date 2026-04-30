@@ -24,6 +24,7 @@ $organizationsModel = new OrganizationsModel();
 $organizations = $organizationsModel->Options();
 
 $tagModel = new TagsModel();
+
 ?>
 
 <div class="container">
@@ -121,26 +122,40 @@ $tagModel = new TagsModel();
         </div>
 
         <div class="card p-4 mt-3">
-            <h4>File(s)</h4>
+            <div class="d-flex gap-2">
+                <h4>File(s)</h4>
+                <i class="bi bi-info-circle-fill text-primary" title="Clicking the name will download the file"></i>
+            </div>
 
-            <table class="table table-bordered">
+            <?php if (!empty($files)) : ?>
+            <table class="table table-bordered file-table">
                 <thead>
                     <tr>
-                        <th>#</th>
                         <th>File Type</th>
                         <th>File Name</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>
-                            TBD
-                        </td>
-                        <td></td>
-                        <td></td>
-                    </tr>
+                    <?php foreach ($files as $file) : ?>
+                        <tr>
+                            <td><?= Constants::ATTACHMENTS[$file['type']] ?></td>
+                            <td>
+                                <a href="<?= '/tag-monitoring/download.php?file=' . rawurlencode($file['file_path']) ?>" download="<?= $file['file_name'] ?>" rel="noopener">
+                                    <?= $file['file_name'] ?>
+                                </a>
+                            </td>
+<!--                            <td class="text-center">-->
+<!--                                <a href="--><?php //= '/tag-monitoring/download.php?file=' . rawurlencode($file['file_path']) ?><!--" download="--><?php //= $file['file_name'] ?><!--" class="btn btn-sm btn-primary">-->
+<!--                                    Download-->
+<!--                                </a>-->
+<!--                            </td>-->
+                        </tr>
+                    <?php endforeach; ?>
                 </tbody>
             </table>
+            <?php else : ?>
+                <span class="alert alert-info">No file available for this request.</span>
+            <?php endif; ?>
 
             <hr/>
 
@@ -176,7 +191,7 @@ $tagModel = new TagsModel();
                     </div>
 
                     <div class="col mt-auto d-flex flex-column">
-                        <button type="submit" class="btn btn-sm btn-primary" onclick="return confirm('Confirm uploading of this file?');">
+                        <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Confirm uploading of this file?');">
                             Upload
                         </button>
                     </div>
