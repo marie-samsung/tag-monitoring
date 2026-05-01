@@ -307,15 +307,24 @@ Tag Request: Create
     });
 
     function copyJiraTitle() {
-        const text = document.getElementById('jiraTitle').innerText;
+        const title = document.getElementById('jiraTitle').innerHTML;
         const status = document.getElementById('copyStatus');
 
-        navigator.clipboard.writeText(text).then(() => {
-            status.style.opacity = 1;
-            setTimeout(() => {
-                status.style.opacity = 0;
-            }, 1000);
-        });
+        const temp = document.createElement('textarea');
+        temp.value = title;
+
+        temp.style.position = 'fixed';
+        temp.style.left = '-9999px';
+        document.body.appendChild(temp);
+
+        temp.focus();
+        temp.select();
+
+        document.execCommand('copy');
+        document.body.removeChild(temp);
+
+        status.style.opacity = 1;
+        setTimeout(() => status.style.opacity = 0, 1000);
     }
 
     function copyDetails() {
