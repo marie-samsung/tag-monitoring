@@ -14,14 +14,24 @@ class Constants
     public const JIRA_TYPE_NEW_TAG = 2;
     public const JIRA_TYPE_NEW_RULE = 3;
     public const JIRA_TYPE_MASTER_APPROVAL = 4;
-    public const JIRA_TYPE_OTHER = 5;
+    public const JIRA_TYPE_UPDATE_RULE = 5;
+    public const JIRA_TYPE_MAINTENANCE_TICKET = 6;
+    public const JIRA_TYPE_OTHER = 7;
     public const JIRA_TICKET_TYPES = [
         self::JIRA_TYPE_DATE_EXTENSION_RULE => 'Date Extension Rule',
         self::JIRA_TYPE_NEW_TAG => 'New Tag',
         self::JIRA_TYPE_NEW_RULE => 'New Rule',
         self::JIRA_TYPE_MASTER_APPROVAL => 'Master Approval',
+        self::JIRA_TYPE_UPDATE_RULE => 'Update Rule',
+        self::JIRA_TYPE_MAINTENANCE_TICKET => 'Maintenance Ticket',
         self::JIRA_TYPE_OTHER => 'Other',
     ];
+    public const JIRA_CREATE_TICKET_TYPES =[
+        self::JIRA_TYPE_MASTER_APPROVAL => 'Master Approval',
+        self::JIRA_TYPE_MAINTENANCE_TICKET => 'Maintenance Ticket',
+        self::JIRA_TYPE_OTHER => 'Other',
+    ];
+
     public const REQUEST_TYPES = [
         self::JIRA_TYPE_NEW_TAG => 'New Tag',
         self::JIRA_TYPE_NEW_RULE => 'New Rule',
@@ -66,6 +76,7 @@ class Constants
     public const SUBSIDIARY_SEEG = 7;
     public const SUBSIDIARY_SEMAG = 8;
     public const SUBSIDIARY_SEPAK = 9;
+    public const SUBSIDIARY_MENAO = 10;
     public const SUBSIDIARIES = [
         self::SUBSIDIARY_SGE => 'SGE',
         self::SUBSIDIARY_SESAR => 'SESAR',
@@ -76,6 +87,7 @@ class Constants
         self::SUBSIDIARY_SEEG => 'SEEG',
         self::SUBSIDIARY_SEMAG => 'SEMAG',
         self::SUBSIDIARY_SEPAK => 'SEPAK',
+        self::SUBSIDIARY_MENAO => 'MENAO',
     ];
 
     public const ATTACHMENT_APPROVAL = 1;
