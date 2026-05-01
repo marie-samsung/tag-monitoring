@@ -8,7 +8,8 @@ JIRA Tickets List
 
 <?php
     use App\Models\Constants;
-    use App\Models\TagsModel;
+use App\Models\TagRequestsModel;
+use App\Models\TagsModel;
     use App\Models\PropertiesModel;
     use App\Models\SubsidiariesModel;
 
@@ -110,6 +111,7 @@ JIRA Tickets List
                     foreach ($jiraTickets as $ticket):
                         $tag = $tagModel->find($ticket['tag_id']);
                         $property = null;
+                        $type = $ticket['type'];
 
                         if ($tag) {
                             $property = $propertiesModel->find($ticket['property_id']);
@@ -119,9 +121,9 @@ JIRA Tickets List
                         }
 
                         $ticketTagsList = [];
-                        if ($ticket['type'] == Constants::JIRA_TYPE_DATE_EXTENSION_RULE ||
-                                $ticket['type'] == Constants::JIRA_TYPE_NEW_TAG ||
-                                $ticket['type'] == Constants::JIRA_TYPE_NEW_RULE) {
+                        if ($type == Constants::JIRA_TYPE_DATE_EXTENSION_RULE ||
+                                $type == Constants::JIRA_TYPE_NEW_TAG ||
+                                $type == Constants::JIRA_TYPE_NEW_RULE) {
                             $ticketTags = explode(',', $ticket['comments']);
                             
                             foreach ($ticketTags as $tagId) {
@@ -150,7 +152,23 @@ JIRA Tickets List
                                 <?= $ticket['ticket_id'] ?>
                             </a>
                         </td>
-                        <td><?= Constants::JIRA_TICKET_TYPES[$ticket['type']] ?></td>
+                        <td>
+                            <?php
+                                if ($type == Constants::JIRA_TYPE_NEW_TAG || $type == Constants::JIRA_TYPE_NEW_RULE) {
+                                    $tagRequestsModel = new TagRequestsModel();
+                                    $request_id = $tagRequestsModel->getRequestByTicketId($ticket['ticket_id']);
+
+                                    if ($request_id) {
+                            ?>
+                                            <a href="<?= site_url('/tag-requests/view/' . $request_id) ?>" target="_blank">
+                                                <?= Constants::JIRA_TICKET_TYPES[$type] ?>
+                                            </a>
+                                <?php } else { ?>
+                                        <?= Constants::JIRA_TICKET_TYPES[$type] ?>
+                            <?php }} else { ?>
+                                <?= Constants::JIRA_TICKET_TYPES[$type] ?>
+                            <?php } ?>
+                        </td>
                         <td>
                             <?php if ($ticketTagsList): ?>
 
