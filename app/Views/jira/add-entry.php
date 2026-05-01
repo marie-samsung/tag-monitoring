@@ -11,7 +11,7 @@
 ?>
 
 <div class="container mb-2">
-    <h7>Add JIRA Entry</h7>
+    <h7 class="text-danger fw-semibold">Add JIRA Entry</h7>
     <h3><?= $tag['name'] ?></h3>    
 </div>
 
@@ -27,7 +27,7 @@
     <div class="container card p-3">
         <div class="row mb-2">
             <div class="col mb-2">
-                <label for="ticket_id" class="form-label-xs">ID</label>
+                <label for="ticket_id" class="form-label-xs text-primary">ID</label>
                 <input type="text" name="ticket_id" id="ticket_id"
                     class="form-control"
                     value="<?= old('ticket_id', $old['ticket_id'] ?? '') ?>"
@@ -38,7 +38,7 @@
             </div>
 
             <div class="col">
-                <label class="form-label-xs">Type</label>
+                <label class="form-label-xs text-primary">Type</label>
                 <select name="type" class="form-select" required>
                     <?php foreach (Constants::JIRA_TICKET_TYPES as $value => $label): ?>
                         <option value="<?= esc($value) ?>"
@@ -58,7 +58,7 @@
         
         <div class="row mb-3">
             <div class="col">
-                <label class="form-label-xs" for="comments">Notes</label>
+                <label class="form-label-xs text-primary" for="comments">Notes</label>
                 <textarea
                     name="comments"
                     id="comments"
@@ -73,7 +73,7 @@
 
         <div class="d-flex justify-content-end gap-2">
             <a href="<?= site_url('tags') ?>" title="Cancel" class="btn btn-secondary btn-sm">Cancel</a>
-            <button type="submit" class="btn btn-success btn-sm">Submit</button>
+            <button type="submit" class="btn btn-success btn-sm">Create</button>
         </div>
     </div>
 </form>
