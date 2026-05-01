@@ -65,3 +65,6 @@ ALTER TABLE `tag_request_files` ADD `updated_at` DATETIME NULL AFTER `created_at
 
 ALTER TABLE `tag_requests` CHANGE `counterpart_ticket` `new_rule_ticket` TINYINT(4) NULL DEFAULT NULL;
 
+ALTER TABLE `tag_requests` CHANGE `ticket_id` `new_tag_ticket` VARCHAR(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL;
+
+ALTER TABLE `tag_requests` CHANGE `new_rule_ticket` `new_rule_ticket` VARCHAR(150) NULL DEFAULT NULL;
