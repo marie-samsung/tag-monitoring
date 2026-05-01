@@ -10,7 +10,7 @@ class TagRequestsModel extends Model
     protected $primaryKey = 'id';
 
     protected $allowedFields = [
-        'ticket_id', // GTA-XXXXX
+        'new_tag_ticket', // GTA-XXXXX
         'tags', // Comma separated list of tag ids, 'tags' table
         'property_id',
         'vendor_id',
@@ -46,7 +46,7 @@ class TagRequestsModel extends Model
     public function getRequestByTicketId($ticketId)
     {
         // New Tag Request
-        $request = $this->where('ticket_id', $ticketId)->first();
+        $request = $this->where('new_tag_ticket', $ticketId)->first();
 
         // New Rule Request
         if (empty($request)) {
