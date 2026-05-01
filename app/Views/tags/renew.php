@@ -279,7 +279,7 @@ Tag: Renew
             <div class="d-flex gap-2 align-items-end">
                 <div id="comment" class="form-control" style="height: 140px; width: auto; overflow-y: auto;">
 Hi TAGGING JIRA SUPPORT,
-<br/>Kindly refer to the date extension approval confirmation here: <a href="<?= Constants::JIRA_LINK . $subsidiaryTicketId ?>" target="_blank"><?= $subsidiaryTicketId ?></a>
+<br/>Kindly refer to the date extension approval confirmation here: <?= Constants::JIRA_LINK . $subsidiaryTicketId ?>
 <br/><br/>Regards,
 <br/>[Your Name]
                 </div>
@@ -347,36 +347,92 @@ Hi TAGGING JIRA SUPPORT,
         }, 'json');
     });
 
+    // function copyJiraTitle() {
+    //     const text = document.getElementById('jiraTitle').innerText;
+    //     const status = document.getElementById('copyStatus');
+    //
+    //     navigator.clipboard.writeText(text).then(() => {
+    //         status.style.opacity = 1;
+    //         setTimeout(() => {
+    //             status.style.opacity = 0;
+    //         }, 1000);
+    //     });
+    // }
+
     function copyJiraTitle() {
-        const text = document.getElementById('jiraTitle').innerText;
+        const title = document.getElementById('jiraTitle').innerHTML;
         const status = document.getElementById('copyStatus');
 
-        navigator.clipboard.writeText(text).then(() => {
-            status.style.opacity = 1;
-            setTimeout(() => {
-                status.style.opacity = 0;
-            }, 1000);
-        });
+        const temp = document.createElement('textarea');
+        temp.value = title;
+
+        temp.style.position = 'fixed';
+        temp.style.left = '-9999px';
+        document.body.appendChild(temp);
+
+        temp.focus();
+        temp.select();
+
+        document.execCommand('copy');
+        document.body.removeChild(temp);
+
+        status.style.opacity = 1;
+        setTimeout(() => status.style.opacity = 0, 1000);
     }
 
+    // function copyComment() {
+    //     const comment = document.getElementById('comment');
+    //     const status = document.getElementById('copyCommentStatus');
+    //     let html = comment.innerHTML;
+    //     html = html.replace(/<br\s*\/?>/gi, "\n");
+    //     html = html.replace(/<a [^>]*href="([^"]+)"[^>]*>(.*?)<\/a>/gi, "$2 ($1)");
+    //     const text = html
+    //         .replace(/<br\s*\/?>/gi, "\n")
+    //         .replace(/<a [^>]*href="([^"]+)"[^>]*>(.*?)<\/a>/gi, "$2 ($1)")
+    //         .replace(/<[^>]+>/g, "")
+    //         .trim();
+    //     navigator.clipboard.writeText(text).then(() => {
+    //         status.style.opacity = 1;
+    //         setTimeout(() => {
+    //             status.style.opacity = 0;
+    //         }, 1000);
+    //     });
+    // }
+
+    /**
+     * Copy the content of #comment to the clipboard without using
+     * navigator.clipboard.*  Works on HTTP/HTTPS and all mainstream browsers.
+     */
     function copyComment() {
         const comment = document.getElementById('comment');
-        const status = document.getElementById('copyCommentStatus');
-        let html = comment.innerHTML;
-        html = html.replace(/<br\s*\/?>/gi, "\n");
-        html = html.replace(/<a [^>]*href="([^"]+)"[^>]*>(.*?)<\/a>/gi, "$2 ($1)");
+        const status  = document.getElementById('copyCommentStatus');
+
+        const html = comment.innerHTML;
+
         const text = html
-            .replace(/<br\s*\/?>/gi, "\n")
-            .replace(/<a [^>]*href="([^"]+)"[^>]*>(.*?)<\/a>/gi, "$2 ($1)")
-            .replace(/<[^>]+>/g, "")
+            .replace(/<br\s*\/?>/gi, '\n')
+            .replace(/<a[^>]*href="([^"]+)"[^>]*>(.*?)<\/a>/gi, (_, url, txt) => `  ( )`)
+            .replace(/<[^>]+>/g, '')
             .trim();
-        navigator.clipboard.writeText(text).then(() => {
-            status.style.opacity = 1;
-            setTimeout(() => {
-                status.style.opacity = 0;
-            }, 1000);
-        });
+
+        const temp = document.createElement('textarea');
+        temp.value = text;
+
+        temp.style.position = 'fixed';
+        temp.style.left = '-9999px';
+        document.body.appendChild(temp);
+
+        temp.focus();
+        temp.select();
+
+        document.execCommand('copy');
+
+        document.body.removeChild(temp);
+
+        status.style.opacity = 1;
+        setTimeout(() => status.style.opacity = 0, 1000);
     }
+
 
     function copyDetails() {
         const html = $('#details').summernote('code');
