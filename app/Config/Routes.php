@@ -50,6 +50,7 @@ $routes->group('jira', function ($routes) {
     $routes->get('/', 'JiraController::index');
     $routes->get('export', 'JiraController::exportAsCSV');
     $routes->get('download', 'JiraController::download');
+    $routes->match(['get', 'post'], 'add-entry', 'JiraController::addEntry');
     $routes->match(['get', 'post'], 'create', 'JiraController::create');
 });
 
