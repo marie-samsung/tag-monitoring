@@ -63,3 +63,5 @@ ALTER TABLE `tags` CHANGE `conditions` `conditions` VARCHAR(200) CHARACTER SET u
 /** [29/04] Updates from Samsung machine **/
 ALTER TABLE `tag_request_files` ADD `updated_at` DATETIME NULL AFTER `created_at`;
 
+ALTER TABLE `tag_requests` CHANGE `counterpart_ticket` `new_rule_ticket` TINYINT(4) NULL DEFAULT NULL;
+
