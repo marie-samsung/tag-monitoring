@@ -16,7 +16,7 @@ class TagRequestsModel extends Model
         'vendor_id',
         'status',
         'type',
-        'counterpart_ticket', // New Rule or New Tag ticket
+        'new_rule_ticket',
         'requester_name',
         'requester_email',
         'requester_organization',
@@ -45,8 +45,15 @@ class TagRequestsModel extends Model
 
     public function getRequestByTicketId($ticketId)
     {
-        $request = $this->find($ticketId);
-        return $request['id'];
+        // New Tag Request
+        $request = $this->where('ticket_id', $ticketId)->first();
+
+        // New Rule Request
+        if (empty($request)) {
+            $request = $this->where('new_rule_ticket', $ticketId)->first();
+        }
+
+        return empty($request) ? null : $request['id'];
     }
 
     public function fileUploadPath($property_id, $vendor_name): string
