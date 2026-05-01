@@ -43,6 +43,12 @@ class TagRequestsModel extends Model
         return $tags;
     }
 
+    public function getRequestByTicketId($ticketId)
+    {
+        $request = $this->find($ticketId);
+        return $request['id'];
+    }
+
     public function fileUploadPath($property_id, $vendor_name): string
     {
         $propertiesModel = new PropertiesModel();
