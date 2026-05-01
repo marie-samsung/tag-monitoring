@@ -27,7 +27,7 @@ class JiraController extends BaseController
         return view('jira/list', $data);
     }
 
-    public function create()
+    public function addEntry()
     {
         $model = new JiraHistoryModel();
         
@@ -36,7 +36,7 @@ class JiraController extends BaseController
 
             if ($tag_id) {
                 $data['tag_id'] = $tag_id;
-                return view('jira/create', $data);
+                return view('jira/add-entry', $data);
             }
 
             return redirect()
