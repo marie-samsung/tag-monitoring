@@ -28,7 +28,7 @@ $tagModel = new TagsModel();
 ?>
 
 <div class="container">
-    <h6 class="text-danger">
+    <h6 class="text-danger fw-semibold">
         <?= Constants::SUBSIDIARIES[$properties[$request['property_id']]['subsidiary_id']] ?>
     </h6>
     <h3>
