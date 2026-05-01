@@ -27,6 +27,27 @@ class JiraController extends BaseController
         return view('jira/list', $data);
     }
 
+    public function create()
+    {
+        $model = new JiraHistoryModel();
+        $post = $this->request->getPost();
+
+        if ($this->request->getMethod() == 'GET') {
+            return view('jira/create', []);
+        }
+
+        $model->insert([
+            'ticket_id' => $post['ticket_id'],
+            'subsidiary_id' => $post['subsidiary_id'],
+            'type' => $post['type'],
+            'comments' => $post['comments'],
+        ]);
+
+        return redirect()
+            ->to('/jira')
+            ->with('success_message', 'JIRA Ticket added successfully.');
+    }
+
     public function addEntry()
     {
         $model = new JiraHistoryModel();
