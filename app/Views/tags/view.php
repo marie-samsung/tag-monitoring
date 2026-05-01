@@ -126,7 +126,7 @@
         <div class="d-flex justify-content-between mb-3">
             <h5>JIRA References</h5>
             <div>
-                <a href="<?= site_url('jira/create?tag_id='.$tag['id']) ?>" target="_blank" title="Add a new JIRA ticket" class="btn btn-success btn-sm ms-auto px-2">Add Entry</a>
+                <a href="<?= site_url('jira/add-entry?tag_id='.$tag['id']) ?>" target="_blank" title="Add a new JIRA ticket" class="btn btn-success btn-sm ms-auto px-2">Add Entry</a>
             </div>
         </div>
         <div class="table-responsive">
@@ -144,7 +144,9 @@
                     <?php 
                         foreach ($jiraTickets as $jira):
                             $ticketTagsList = [];
-                            if ($jira['type'] == Constants::JIRA_TYPE_DATE_EXTENSION_RULE) {
+                            if ($jira['type'] == Constants::JIRA_TYPE_DATE_EXTENSION_RULE ||
+                                    $jira['type'] == Constants::JIRA_TYPE_NEW_TAG ||
+                                    $jira['type'] == Constants::JIRA_TYPE_NEW_RULE) {
                                 $ticketTags = explode(',', $jira['comments']);
                                 
                                 foreach ($ticketTags as $tagId) {
