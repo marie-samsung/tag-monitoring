@@ -119,7 +119,9 @@ JIRA Tickets List
                         }
 
                         $ticketTagsList = [];
-                        if ($ticket['type'] == Constants::JIRA_TYPE_DATE_EXTENSION_RULE) {
+                        if ($ticket['type'] == Constants::JIRA_TYPE_DATE_EXTENSION_RULE ||
+                                $ticket['type'] == Constants::JIRA_TYPE_NEW_TAG ||
+                                $ticket['type'] == Constants::JIRA_TYPE_NEW_RULE) {
                             $ticketTags = explode(',', $ticket['comments']);
                             
                             foreach ($ticketTags as $tagId) {
