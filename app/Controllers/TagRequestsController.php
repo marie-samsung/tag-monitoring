@@ -47,6 +47,7 @@ class TagRequestsController extends BaseController
         $vendorsModel = new VendorsModel();
         $propertiesModel = new PropertiesModel();
         $organizationsModel = new OrganizationsModel();
+        $organizations = $organizationsModel->Options();
 
         if ($this->request->getMethod() === 'GET') {
             return view('tag-requests/create', []);
@@ -76,7 +77,7 @@ class TagRequestsController extends BaseController
                 $vendorId = $vendor['id'];
             }
 
-            $organizationInput = trim($post['requester_organization']);
+            $organizationInput = trim($organizations[$post['requester_organization']]);
             $organization = $organizationsModel->where('name', $organizationInput)->first();
             if (!$organization) {
                 $organizationId = $organizationsModel->insert([
@@ -91,7 +92,7 @@ class TagRequestsController extends BaseController
                     'property_id' => $propertyId,
                     'vendor_id' => $vendorId,
                     'name' => $tag,
-                    'status' => Constants::STATUS_NEW_TAG_SUBMITTED,
+                    'status' => $jiraType == Constants::JIRA_TYPE_NEW_TAG ? Constants::STATUS_NEW_TAG_SUBMITTED : Constants::STATUS_NEW_RULE_SUBMITTED,
                     'al_end_date' => $post['al_end_date'],
                     'ref_link' => 'https://www.samsung.com/',
                     'requester_name' => $reqName,
@@ -133,6 +134,7 @@ class TagRequestsController extends BaseController
     public function createConfirm()
     {
         $model = new TagRequestsModel();
+        $jiraHistoryModel = new JiraHistoryModel();
         $post = $this->request->getPost();
 
         $ticketId = $post['ticket_id'];
@@ -153,6 +155,22 @@ class TagRequestsController extends BaseController
                 $model->update($id, [
                     'ticket_id' => $ticketId,
                 ]);
+
+                $tags = explode(',', $tagRequest['tags']);
+                $propertiesModel = new PropertiesModel();
+                $property = $propertiesModel->find($tagRequest['property_id']);
+
+                foreach ($tags as $tag) {
+                    $jiraHistoryModel->insert([
+                        'ticket_id' => $ticketId,
+                        'type' => $tagRequest['type'],
+                        'comments' => $tagRequest['tags'],
+                        'tag_id' => $tag,
+                        'property_id' => $property['id'],
+                        'subsidiary_id' => $property['subsidiary_id'],
+                        'created_by' => 0, // @TODO: Replace with actual user ID from session
+                    ]);
+                }
 
                 return redirect()
                     ->to('/tag-requests')
