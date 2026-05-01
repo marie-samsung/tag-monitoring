@@ -146,6 +146,10 @@ class TagRequestsController extends BaseController
                 ->with('error', "Ticket was not successfully created.");
         } else {
             $tagRequest = $model->find($id);
+            $ticketColumn = 'new_tag_ticket';
+            if ($tagRequest['type'] == Constants::JIRA_TYPE_NEW_RULE) {
+                $ticketColumn = 'new_rule_ticket';
+            }
 
             if (!$tagRequest) {
                 return redirect()
@@ -153,7 +157,7 @@ class TagRequestsController extends BaseController
                     ->with('error', "Tag request was not found.");
             } else {
                 $model->update($id, [
-                    'ticket_id' => $ticketId,
+                    $ticketColumn => $ticketId,
                 ]);
 
                 $tags = explode(',', $tagRequest['tags']);
