@@ -2,17 +2,16 @@
 
 <?= $this->section('content') ?>
 
-<?php 
+<?php
     use App\Models\Constants;
     use App\Models\TagsModel;
-
-    $tagModel = new TagsModel();
-    $tag = $tagModel->find($tag_id);
 ?>
 
-<div class="container mb-2">
-    <h7>Add JIRA Entry</h7>
-    <h3><?= $tag['name'] ?></h3>    
+<div class="container mb-2 d-flex justify-content-between align-items-center">
+    <h3>Add a JIRA Ticket</h3>
+    <a href="<?= Constants::JIRA_CREATE_ISSUE ?>" title="Create Issue in JIRA" class="btn btn-outline-primary btn-sm" target="_blank">
+        Create Ticket on JIRA
+    </a>
 </div>
 
 <?php if (isset($validation)): ?>
@@ -21,13 +20,25 @@
     </div>
 <?php endif; ?>
 
-<form action="<?= site_url('jira/create?tag_id='.$tag['id']) ?>" method="post" enctype="multipart/form-data">
+<form action="<?= site_url('jira/create') ?>" method="post" enctype="multipart/form-data">
     <?= csrf_field() ?>
 
     <div class="container card p-3">
         <div class="row mb-2">
+            <div class="col">
+                <label class="form-label-xs text-primary">Subsidiary</label>
+                <select name="subsidiary_id" class="form-select" required>
+                    <?php foreach (Constants::SUBSIDIARIES as $value => $label): ?>
+                        <option value="<?= esc($value) ?>"
+                            <?= old('subsidiary_id', $tag['subsidiary_id'] ?? 1) == $value ? 'selected' : '' ?>>
+                            <?= esc($label) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
             <div class="col mb-2">
-                <label for="ticket_id" class="form-label-xs">ID</label>
+                <label for="ticket_id" class="form-label-xs text-primary">ID</label>
                 <input type="text" name="ticket_id" id="ticket_id"
                     class="form-control"
                     value="<?= old('ticket_id', $old['ticket_id'] ?? '') ?>"
@@ -38,9 +49,9 @@
             </div>
 
             <div class="col">
-                <label class="form-label-xs">Type</label>
+                <label class="form-label-xs text-primary">Type</label>
                 <select name="type" class="form-select" required>
-                    <?php foreach (Constants::JIRA_TICKET_TYPES as $value => $label): ?>
+                    <?php foreach (Constants::JIRA_CREATE_TICKET_TYPES as $value => $label): ?>
                         <option value="<?= esc($value) ?>"
                             <?= old('type', $tag['type'] ?? 1) == $value ? 'selected' : '' ?>>
                             <?= esc($label) ?>
@@ -48,32 +59,25 @@
                     <?php endforeach; ?>
                 </select>
             </div>
-
-            <!-- <div class="col">
-                <label for="lp_path" class="form-label-xs">Launch Publishing File Path</label>
-                <br />
-                <input type="file" name="lp_path" accept=".xls,.xlsx">
-            </div> -->
         </div>
-        
+
         <div class="row mb-3">
             <div class="col">
-                <label class="form-label-xs" for="comments">Notes</label>
+                <label class="form-label-xs text-primary" for="comments">Notes</label>
                 <textarea
                     name="comments"
                     id="comments"
                     class="form-control"
                     rows="4"
                     placeholder="Enter comments..."
+                    required
                 ><?= esc(old('comments', $tag['comments'] ?? '')) ?></textarea>
             </div>
         </div>
 
-        <input type="hidden" name="tag_id" value="<?= esc($tag['id'] ?? '') ?>">
-
         <div class="d-flex justify-content-end gap-2">
             <a href="<?= site_url('tags') ?>" title="Cancel" class="btn btn-secondary btn-sm">Cancel</a>
-            <button type="submit" class="btn btn-success btn-sm">Submit</button>
+            <button type="submit" class="btn btn-success btn-sm">Create</button>
         </div>
     </div>
 </form>
