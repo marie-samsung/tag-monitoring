@@ -104,6 +104,7 @@ use App\Models\TagsModel;
                     <th>Ticket ID</th>
                     <th>Type</th>
                     <th>Comments</th>
+                    <th>Created At</th>
                 </tr>
             </thead>
             <tbody>
@@ -184,6 +185,7 @@ use App\Models\TagsModel;
                                 <?= esc($ticket['comments']) ?>
                             <?php endif; ?>
                         </td>
+                        <td><?= $ticket['created_at'] ?></td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
