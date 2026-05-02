@@ -136,6 +136,12 @@ Tag: Requests (New Rule, New Tag)
                     foreach ($requests as $request):
                     $subsidiary = Constants::SUBSIDIARIES[$properties[$request['property_id']]['subsidiary_id']];
                     $property = $properties[$request['property_id']];
+                    $type = $request['type'];
+                    $ticketColumn = 'new_tag_ticket';
+
+                    if ($type == Constants::JIRA_TYPE_NEW_RULE) {
+                        $ticketColumn = 'new_rule_ticket';
+                    }
                 ?>
                     <tr>
                         <!-- ID -->
@@ -154,13 +160,13 @@ Tag: Requests (New Rule, New Tag)
                             </a>
                         </td>
                         <td>
-                            <a href="<?= Constants::JIRA_LINK . $request['ticket_id'] ?>" target="_blank">
-                                <?= $request['ticket_id'] ?>
+                            <a href="<?= Constants::JIRA_LINK . $request[$ticketColumn] ?>" target="_blank">
+                                <?= $request[$ticketColumn] ?>
                             </a>
                             (<?= $vendors[$request['vendor_id']] ?? '' ?>)
                         </td>
                         <td>
-                            <?= Constants::REQUEST_TYPES[$request['type']] ?>
+                            <?= Constants::REQUEST_TYPES[$type] ?>
                         </td>
                         <td>
                             <span class="badge <?= status_request_class($request['status']) ?>">
@@ -171,7 +177,7 @@ Tag: Requests (New Rule, New Tag)
                         <!-- Actions -->
                         <td class="text-nowrap">
                             <a href="<?= site_url('tag-requests/view/'.$request['id']) ?>" target="_blank" title="View tag details" class="btn btn-secondary btn-sm">View</a>
-                            <a href="<?= site_url('tag-requests/update/'.$request['id']) ?>" target="_blank" title="Update tag details" class="btn btn-primary btn-sm">Update</a>
+<!--                            <a href="--><?php //= site_url('tag-requests/update/'.$request['id']) ?><!--" target="_blank" title="Update tag details" class="btn btn-primary btn-sm">Update</a>-->
                         </td>
                     </tr>
                 <?php endforeach; ?>
