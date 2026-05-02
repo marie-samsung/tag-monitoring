@@ -1,7 +1,7 @@
 <?= $this->extend('layouts/default') ?>
 
 <?= $this->section('title') ?>
-[<?= $request['ticket_id']  ?>] Request Details
+[<?= $request['new_tag_ticket']  ?>] Request Details
 <?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
@@ -25,6 +25,9 @@ $organizations = $organizationsModel->Options();
 
 $tagModel = new TagsModel();
 
+$hasNewTag = !empty($request['new_tag_ticket']);
+$hasNewRule = !empty($request['new_rule_ticket']);
+
 ?>
 
 <div class="container">
@@ -32,9 +35,11 @@ $tagModel = new TagsModel();
         <?= Constants::SUBSIDIARIES[$properties[$request['property_id']]['subsidiary_id']] ?>
     </h6>
     <h3>
-        <a href="<?= Constants::JIRA_LINK . $request['ticket_id'] ?>" target="_blank">
-            [<?= $request['ticket_id'] ?>]
-        </a>
+        <?php if ($hasNewTag): ?>
+            <a href="<?= Constants::JIRA_LINK . $request['new_tag_ticket'] ?>" target="_blank">
+                [<?= $request['new_tag_ticket'] ?>]
+            </a>
+        <?php endif; ?>
         [<?= $vendors[$request['vendor_id']] ?>]
         <?= Constants::JIRA_TICKET_TYPES[$request['type']] ?>
     </h3>
@@ -70,6 +75,34 @@ $tagModel = new TagsModel();
             </div>
         </div>
 
+        <?php if ($request['type'] == Constants::JIRA_TYPE_NEW_TAG): ?>
+            <?php if (!$hasNewTag): ?>
+                <div class="mb-2">
+                    <form action="<?= site_url('tag-requests/add-new-tag') ?>" method="post">
+                        <label class="form-label-xs text-primary">New Tag Request</label>
+                        <div class="d-flex gap-2 align-items-center">
+                            <input type="text" name="new_tag_ticket_id" id="new_tag_ticket_id"
+                                   class="form-control form-control-xs w-50"
+                                   value="<?= old('new_tag_ticket_id', $old['new_tag_ticket_id'] ?? '') ?>"
+                                   required>
+                            <button type="submit"
+                                    class="badge bg-primary text-decoration-none border-0"
+                                    onclick="return confirm('Confirm add New Tag ticket ID?');">
+                                Add Ticket
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            <?php endif; ?>
+
+            <div class="mb-2">
+                <label class="form-label-xs text-primary">New Rule Request</label>
+                <div class="form-control-plaintext p-0 ms-2">
+                    <?= esc($request['new_rule_ticket'] ?? '—') ?>
+                </div>
+            </div>
+        <?php endif; ?>
+
         <label class="form-label m-0 fw-semibold mt-2">Requester Details</label>
         <div class="mb-2">
             <label class="form-label-xs text-primary">Name</label>
@@ -96,7 +129,7 @@ $tagModel = new TagsModel();
 
         <div class="d-flex align-items-center gap-1">
             <a href="<?= site_url('tag-requests') ?>" class="btn btn-secondary btn-sm px-2">Back</a>
-            <a href="<?= site_url('tag-requests/update/' . $request['id']) ?>" class="btn btn-primary btn-sm">Edit</a>
+<!--            <a href="--><?php //= site_url('tag-requests/update/' . $request['id']) ?><!--" class="btn btn-primary btn-sm">Edit</a>-->
         </div>
     </div>
     <!-- #endregion -->
