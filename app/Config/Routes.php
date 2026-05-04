@@ -25,8 +25,10 @@ $routes->group('tags', function ($routes) {
 $routes->group('tag-requests', function ($routes) {
     $routes->get('/', 'TagRequestsController::index');
     $routes->get('view/(:num)', 'TagRequestsController::view/$1');
-    $routes->match(['post'], 'upload', 'TagRequestsController::uploadFile');
-    $routes->match(['post'], 'create/confirm', 'TagRequestsController::createConfirm');
+    $routes->post('add-new-tag', 'TagRequestsController::addNewTag');
+    $routes->post('add-new-rule', 'TagRequestsController::addNewRule');
+    $routes->post('upload', 'TagRequestsController::uploadFile');
+    $routes->post('create/confirm', 'TagRequestsController::createConfirm');
     $routes->match(['get', 'post'], 'create', 'TagRequestsController::create');
 });
 

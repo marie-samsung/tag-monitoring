@@ -160,27 +160,67 @@ class TagRequestsController extends BaseController
                     $ticketColumn => $ticketId,
                 ]);
 
-                $tags = explode(',', $tagRequest['tags']);
-                $propertiesModel = new PropertiesModel();
-                $property = $propertiesModel->find($tagRequest['property_id']);
-
-                foreach ($tags as $tag) {
-                    $jiraHistoryModel->insert([
-                        'ticket_id' => $ticketId,
-                        'type' => $tagRequest['type'],
-                        'comments' => $tagRequest['tags'],
-                        'tag_id' => $tag,
-                        'property_id' => $property['id'],
-                        'subsidiary_id' => $property['subsidiary_id'],
-                        'created_by' => 0, // @TODO: Replace with actual user ID from session
-                    ]);
-                }
+                $this->saveJiraHistory($tagRequest['tags'], $tagRequest['property_id'], $ticketId, $tagRequest['type']);
 
                 return redirect()
                     ->to('/tag-requests')
                     ->with('success', "[{$ticketId}] Tag Request successfully created.");
             }
         }
+    }
+
+    public function addNewTag()
+    {
+        $model = new TagRequestsModel();
+        $post = $this->request->getPost();
+        $request = $model->find($post['request_id']);
+
+        if ($model->update($request['id'], [
+           'new_tag_ticket' => $post['new_tag_ticket'],
+        ])) {
+
+            $this->saveJiraHistory($request['tags'], $request['property_id'], $post['new_tag_ticket'], Constants::JIRA_TYPE_NEW_TAG);
+
+            return redirect()
+                ->to('/tag-requests/view/' . $post['request_id'])
+                ->with('success', "Tag Request updated successfully: Added NEW TAG ticket");
+        }
+
+        return redirect()
+            ->to('/tag-requests/view/' . $post['request_id'])
+            ->with('error', "Tag Request was not updated.");
+    }
+
+    public function addNewRule()
+    {
+        $model = new TagRequestsModel();
+        $tagsModel = new TagsModel();
+        $post = $this->request->getPost();
+        $request = $model->find($post['request_id']);
+
+        if ($model->update($request['id'], [
+            'new_rule_ticket' => $post['new_rule_ticket'],
+            'status' => Constants::STATUS_REQUEST_NEW_RULE_REQUEST_SUBMITTED,
+        ])) {
+
+            $tags = explode(',', $request['tags']);
+
+            foreach ($tags as $tag) {
+                $tagsModel->update($tag, [
+                    'status' => Constants::STATUS_NEW_RULE_SUBMITTED,
+                ]);
+            }
+
+            $this->saveJiraHistory($request['tags'], $request['property_id'], $post['new_rule_ticket'], Constants::JIRA_TYPE_NEW_RULE);
+
+            return redirect()
+                ->to('/tag-requests/view/' . $post['request_id'])
+                ->with('success', "Tag Request updated successfully: Added NEW RULE ticket");
+        }
+
+        return redirect()
+            ->to('/tag-requests/view/' . $post['request_id'])
+            ->with('error', "Tag Request was not updated.");
     }
 
     public function uploadFile()
@@ -220,5 +260,25 @@ class TagRequestsController extends BaseController
         return redirect()
             ->to('/tag-requests/view/' . $post['request_id'])
             ->with('error', "An error occurred. File was not uploaded successfully.");
+    }
+
+    public function saveJiraHistory($tagIds, $propertyId, $ticketId, $requestType)
+    {
+        $tags = explode(',', $tagIds);
+        $propertiesModel = new PropertiesModel();
+        $jiraHistoryModel = new JiraHistoryModel();
+        $property = $propertiesModel->find($propertyId);
+
+        foreach ($tags as $tag) {
+            $jiraHistoryModel->insert([
+                'ticket_id' => $ticketId,
+                'type' => $requestType,
+                'comments' => $tagIds,
+                'tag_id' => $tag,
+                'property_id' => $property['id'],
+                'subsidiary_id' => $property['subsidiary_id'],
+                'created_by' => 0, // @TODO: Replace with actual user ID from session
+            ]);
+        }
     }
 }

@@ -81,9 +81,10 @@ $hasNewRule = !empty($request['new_rule_ticket']);
                     <form action="<?= site_url('tag-requests/add-new-tag') ?>" method="post">
                         <label class="form-label-xs text-primary">New Tag Request</label>
                         <div class="d-flex gap-2 align-items-center">
-                            <input type="text" name="new_tag_ticket_id" id="new_tag_ticket_id"
+                            <input type="hidden" name="request_id" value="<?= esc($request['id'] ?? '') ?>">
+                            <input type="text" name="new_tag_ticket" id="new_tag_ticket"
                                    class="form-control form-control-xs w-50"
-                                   value="<?= old('new_tag_ticket_id', $old['new_tag_ticket_id'] ?? '') ?>"
+                                   value="<?= old('new_tag_ticket', $old['new_tag_ticket'] ?? '') ?>"
                                    required>
                             <button type="submit"
                                     class="badge bg-primary text-decoration-none border-0"
@@ -97,8 +98,30 @@ $hasNewRule = !empty($request['new_rule_ticket']);
 
             <div class="mb-2">
                 <label class="form-label-xs text-primary">New Rule Request</label>
-                <div class="form-control-plaintext p-0 ms-2">
-                    <?= esc($request['new_rule_ticket'] ?? '—') ?>
+                <div class="mb-2">
+                <?php if (!$hasNewRule): ?>
+                    <form action="<?= site_url('tag-requests/add-new-rule') ?>" method="post">
+                        <div class="d-flex gap-2 align-items-center">
+                            <input type="hidden" name="request_id" value="<?= esc($request['id'] ?? '') ?>">
+                            <input type="text" name="new_rule_ticket" id="new_rule_ticket"
+                                   class="form-control form-control-xs w-50"
+                                   value="<?= old('new_rule_ticket', $old['new_rule_ticket'] ?? '') ?>"
+                                   required>
+                            <button type="submit"
+                                    class="badge bg-primary text-decoration-none border-0"
+                                    onclick="return confirm('Confirm add New Rule ticket ID?');">
+                                Add Ticket
+                            </button>
+                        </div>
+                    </form>
+
+                <?php else: ?>
+                    <div class="form-control-plaintext p-0 ms-2">
+                        <a href="<?= Constants::JIRA_LINK . $request['new_rule_ticket'] ?>" target="_blank">
+                            <?= esc($request['new_rule_ticket']) ?>
+                        </a>
+                    </div>
+                <?php endif; ?>
                 </div>
             </div>
         <?php endif; ?>

@@ -56,12 +56,14 @@ class Constants
 
     public const STATUS_REQUEST_HQ_REVIEW = 1;
     public const STATUS_REQUEST_PENDING_ITEMS = 2;
-    public const STATUS_REQUEST_APPROVED = 3;
-    public const STATUS_REQUEST_REJECTED = 4;
-    public const STATUS_REQUEST_PUBLISHED = 5;
+    public const STATUS_REQUEST_NEW_RULE_REQUEST_SUBMITTED = 3;
+    public const STATUS_REQUEST_APPROVED = 4;
+    public const STATUS_REQUEST_REJECTED = 5;
+    public const STATUS_REQUEST_PUBLISHED = 6;
     public const STATUS_REQUESTS = [
         self::STATUS_REQUEST_HQ_REVIEW => 'HQ Review',
         self::STATUS_REQUEST_PENDING_ITEMS => 'On-Hold Req',
+        self::STATUS_REQUEST_NEW_RULE_REQUEST_SUBMITTED => 'New Rule Request Submitted',
         self::STATUS_REQUEST_APPROVED => 'Approved',
         self::STATUS_REQUEST_REJECTED => 'Rejected',
         self::STATUS_REQUEST_PUBLISHED => 'Published',

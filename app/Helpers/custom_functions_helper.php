@@ -21,11 +21,9 @@ function status_class(int $code): string
     return match ($code) {
         Constants::STATUS_ENABLED => 'bg-success text-white',
         Constants::STATUS_DISABLED => 'bg-danger text-white',
-        Constants::STATUS_EXPIRED => 'bg-secondary text-white',
-        Constants::STATUS_PENDING_VERIFICATION => 'bg-warning text-dark',
+        Constants::STATUS_EXPIRED, Constants::STATUS_NEW_RULE_SUBMITTED => 'bg-secondary text-white',
+        Constants::STATUS_PENDING_VERIFICATION, Constants::STATUS_NEW_TAG_SUBMITTED => 'bg-warning text-dark',
         Constants::STATUS_UPDATED_IN_AL => 'bg-info text-dark',
-        Constants::STATUS_NEW_TAG_SUBMITTED => 'bg-warning text-dark',
-        Constants::STATUS_NEW_RULE_SUBMITTED => 'bg-secondary text-white',
         default => 'bg-secondary text-dark',
     };
 }
@@ -33,10 +31,9 @@ function status_class(int $code): string
 function status_request_class(int $code): string
 {
     return match ($code) {
-        Constants::STATUS_REQUEST_HQ_REVIEW => 'bg-warning text-dark',
+        Constants::STATUS_REQUEST_HQ_REVIEW, Constants::STATUS_REQUEST_NEW_RULE_REQUEST_SUBMITTED => 'bg-warning text-dark',
         Constants::STATUS_REQUEST_PENDING_ITEMS => 'bg-info text-dark',
-        Constants::STATUS_REQUEST_APPROVED => 'bg-success text-white',
-        Constants::STATUS_REQUEST_PUBLISHED => 'bg-success text-white',
+        Constants::STATUS_REQUEST_APPROVED, Constants::STATUS_REQUEST_PUBLISHED => 'bg-success text-white',
         Constants::STATUS_REQUEST_REJECTED => 'bg-danger text-white',
         default => 'bg-secondary text-dark',
     };
