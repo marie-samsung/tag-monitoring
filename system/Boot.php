@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace CodeIgniter;
 
+require __DIR__ . '/Config/Constants.php';
+
 use CodeIgniter\Cache\FactoriesCache;
 use CodeIgniter\CLI\Console;
 use CodeIgniter\Config\DotEnv;

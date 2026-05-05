@@ -49,6 +49,10 @@ class TagsController extends BaseController
         }
 
         $post = $this->request->getPost();
+        $reqName = $post['requester_name'] ?? null;
+        $reqEmail = $post['requester_email'] ?? null;
+        $reqOrg = $post['requester_organization'] ?? null;
+        $organizationId = null;
 
         $propertyId = (int)$post['property_id'];
         $name = trim($post['name']);
@@ -77,14 +81,16 @@ class TagsController extends BaseController
             $vendorId = $vendor['id'];
         }
 
-        $organizationInput = trim($post['requester_organization']);
-        $organization = $organizationsModel->where('id', $organizationInput)->first();
-        if (!$organization) {
-            $organizationId = $organizationsModel->insert([
-                'name' => $organizationInput,
-            ]);
-        } else {
-            $organizationId = $organization['id'];
+        if ($reqOrg) {
+            $organizationInput = trim($reqOrg);
+            $organization = $organizationsModel->where('id', $organizationInput)->first();
+            if (!$organization) {
+                $organizationId = $organizationsModel->insert([
+                    'name' => $organizationInput,
+                ]);
+            } else {
+                $organizationId = $organization['id'];
+            }
         }
 
 
@@ -96,8 +102,8 @@ class TagsController extends BaseController
             'status' => $post['status'],
             'al_end_date'   => $post['al_end_date'],
             'ref_link' => $post['ref_link'],
-            'requester_name' => $post['requester_name'],
-            'requester_email' => $post['requester_email'],
+            'requester_name' => $reqName,
+            'requester_email' => $reqEmail,
             'requester_organization' => $organizationId,
         ];
 

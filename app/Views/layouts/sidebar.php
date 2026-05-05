@@ -16,6 +16,9 @@
         <i class="bi bi-truck"></i> Vendors
     </a>
 </nav> -->
+<?php if (env('CI_ENVIRONMENT') !== 'production') : ?>
+    <span class="alert alert-danger fw-semibold">DEVELOPMENT MODE</span>
+<?php endif; ?>
 
 <ul class="nav nav-pills justify-content-center">
     <li class="nav-item">

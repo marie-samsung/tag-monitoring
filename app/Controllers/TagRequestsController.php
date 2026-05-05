@@ -56,8 +56,9 @@ class TagRequestsController extends BaseController
         $post = $this->request->getPost();
 
         $propertyId = $post['property_id'];
-        $reqName = $post['requester_name'];
-        $reqEmail = $post['requester_email'];
+        $reqName = $post['requester_name'] ?? null;
+        $reqEmail = $post['requester_email'] ?? null;
+        $reqOrg = $post['requester_organization'] ?? null;
         $jiraType = $post['type'];
         $tagIds = [];
         $vendorId = null;
@@ -77,14 +78,16 @@ class TagRequestsController extends BaseController
                 $vendorId = $vendor['id'];
             }
 
-            $organizationInput = trim($organizations[$post['requester_organization']]);
-            $organization = $organizationsModel->where('name', $organizationInput)->first();
-            if (!$organization) {
-                $organizationId = $organizationsModel->insert([
-                    'name' => $organizationInput,
-                ]);
-            } else {
-                $organizationId = $organization['id'];
+            if ($reqOrg) {
+                $organizationInput = trim($organizations[$reqOrg]);
+                $organization = $organizationsModel->where('name', $organizationInput)->first();
+                if (!$organization) {
+                    $organizationId = $organizationsModel->insert([
+                        'name' => $organizationInput,
+                    ]);
+                } else {
+                    $organizationId = $organization['id'];
+                }
             }
 
             foreach ($post['tags'] as $tag) {

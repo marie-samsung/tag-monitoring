@@ -128,7 +128,8 @@ Tag: Create
             <div class="row mb-2">
                 <div class="col">
                     <label class="form-label-xs text-primary">Organization</label>
-                    <select name="requester_organization" class="form-select advanced-select" required>
+                    <select name="requester_organization" class="form-select advanced-select">
+                        <option value="">-Select-</option>
                         <?php foreach ($organizations as $value => $label): ?>
                             <option value="<?= esc($value) ?>"
                                 <?= old('requester_organization', $tag['requester_organization'] ?? '') == $value ? 'selected' : '' ?>>
@@ -142,16 +143,14 @@ Tag: Create
                     <label class="form-label-xs text-primary">Name</label>
                     <input type="text" name="requester_name" id="requester_name"
                         class="form-control"
-                        value="<?= old('requester_name', $old['requester_name'] ?? '') ?>"
-                        required>
+                        value="<?= old('requester_name', $old['requester_name'] ?? '') ?>">
                 </div>
 
                 <div class="col">
                     <label class="form-label-xs text-primary">Email Address</label>
                     <input type="text" name="requester_email" id="requester_email"
                         class="form-control"
-                        value="<?= old('requester_email', $old['requester_email'] ?? '') ?>"
-                        required>
+                        value="<?= old('requester_email', $old['requester_email'] ?? '') ?>">
                 </div>
             </div>
         </div>

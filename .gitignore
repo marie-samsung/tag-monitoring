@@ -1,1 +1,8 @@
+writable/uploads/lp/*
 writable/*
+/writable/*
+
+.idea
+.env
+
+*.xlsx
