@@ -226,6 +226,41 @@ class TagRequestsController extends BaseController
             ->with('error', "Tag Request was not updated.");
     }
 
+    public function requestApproved($id)
+    {
+        $model = new TagRequestsModel();
+        $tagsModel = new TagsModel();
+        $request = $model->find($id);
+
+        if (!$request) {
+            return redirect()
+                ->to('/tag-requests')
+                ->with('error', "Tag Request with ID: {$id} was not found.");
+        }
+
+        $tags = explode(',', $request['tags']);
+
+        if (!$tags) {
+            return redirect()
+                ->to('/tag-requests')
+                ->with('error', "There were no tags associated with this request.");
+        }
+
+        foreach ($tags as $tag) {
+            $tagsModel->update($tag, [
+                'status' => Constants::STATUS_ENABLED,
+            ]);
+        }
+
+        $model->update($id, [
+            'status' => Constants::STATUS_REQUEST_PUBLISHED,
+        ]);
+
+        return redirect()
+            ->to('/tag-requests/view/' . $id)
+            ->with('success', "Tag Request approved, and associated tags are now enabled.");
+    }
+
     public function uploadFile()
     {
         $model = new TagRequestsModel();

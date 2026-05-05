@@ -116,10 +116,18 @@ $hasNewRule = !empty($request['new_rule_ticket']);
                     </form>
 
                 <?php else: ?>
-                    <div class="form-control-plaintext p-0 ms-2">
+                    <div class="d-flex gap-2 form-control-plaintext p-0 ms-2 align-items-center">
                         <a href="<?= Constants::JIRA_LINK . $request['new_rule_ticket'] ?>" target="_blank">
                             <?= esc($request['new_rule_ticket']) ?>
                         </a>
+
+                        <?php if ($request['status'] == Constants::STATUS_REQUEST_NEW_RULE_REQUEST_SUBMITTED): ?>
+                            <a href="<?= site_url('tag-requests/request-approved/' . $request['id']) ?>"
+                               class="badge bg-success text-decoration-none"
+                               onclick="return confirm('Confirm that the tags are published live? (This will set tags to ENABLED status)');">
+                                Published
+                            </a>
+                        <?php endif; ?>
                     </div>
                 <?php endif; ?>
                 </div>
