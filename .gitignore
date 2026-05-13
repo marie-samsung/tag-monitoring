@@ -1,6 +1,9 @@
-writable/uploads/lp/*
-writable/*
-/writable/*
+writable/logs/*
+writable/cache/*
+writable/debugbar/*
+writable/session/*
+writable/.htaccess
+writable/index.html
 
 .idea
 .env

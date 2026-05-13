@@ -1,4 +1,6 @@
-<?php $segment = service('uri')->getSegment(1); ?>
+<?php use App\Models\Constants;
+
+$segment = service('uri')->getSegment(1); ?>
 
 <!-- <nav class="nav flex-column py-2">
     <a class="nav-link d-flex align-items-center gap-2 <?= $segment === 'tags' ? 'active' : '' ?>"
@@ -16,7 +18,7 @@
         <i class="bi bi-truck"></i> Vendors
     </a>
 </nav> -->
-<?php if (env('CI_ENVIRONMENT') !== 'production') : ?>
+<?php if (Constants::IS_DEV) : ?>
     <span class="alert alert-danger fw-semibold">DEVELOPMENT MODE</span>
 <?php endif; ?>
 

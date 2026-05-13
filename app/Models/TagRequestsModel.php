@@ -61,6 +61,8 @@ class TagRequestsModel extends Model
         $propertiesModel = new PropertiesModel();
         $property = $propertiesModel->find($property_id);
 //        $today = date("Y-m-d");
-        return Constants::SUBSIDIARIES[$property['subsidiary_id']] . '/' . $property['name'] . '/' . $vendor_name;
+        $path = Constants::SUBSIDIARIES[$property['subsidiary_id']] . '/' . $property['name'] . '/' . $vendor_name;
+
+        return Constants::IS_DEV ? 'test-files/' . $path : $path;
     }
 }

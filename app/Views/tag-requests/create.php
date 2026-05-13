@@ -126,7 +126,7 @@ Tag Request: Create
     <!-- #endregion -->
 
 <?php 
-    elseif ($request_type == Constants::JIRA_TYPE_NEW_TAG):
+    elseif ($request_type == Constants::JIRA_TYPE_NEW_TAG || $request_type == Constants::JIRA_TYPE_NEW_RULE):
         $property = $propertiesModel->find($property_id);
         $vendor = $vendorsModel->find($vendor_id);
         $siteCode = $propertiesModel->getSiteCode($property_id);

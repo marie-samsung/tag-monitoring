@@ -1,7 +1,7 @@
 <?= $this->extend('layouts/default') ?>
 
 <?= $this->section('title') ?>
-[<?= $request['new_tag_ticket']  ?>] Request Details
+[<?= $request['new_tag_ticket'] ?? $request['new_rule_ticket']  ?>] Request Details
 <?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
@@ -39,6 +39,10 @@ $hasNewRule = !empty($request['new_rule_ticket']);
             <a href="<?= Constants::JIRA_LINK . $request['new_tag_ticket'] ?>" target="_blank">
                 [<?= $request['new_tag_ticket'] ?>]
             </a>
+        <?php elseif ($hasNewRule): ?>
+            <a href="<?= Constants::JIRA_LINK . $request['new_rule_ticket'] ?>" target="_blank">
+                [<?= $request['new_rule_ticket'] ?>]
+            </a>
         <?php endif; ?>
         [<?= $vendors[$request['vendor_id']] ?>]
         <?= Constants::JIRA_TICKET_TYPES[$request['type']] ?>
@@ -67,10 +71,19 @@ $hasNewRule = !empty($request['new_rule_ticket']);
         <div class="mb-2">
             <label class="form-label-xs text-primary">Status</label>
             <div class="d-flex gap-2">
-                <div class="col form-control-plaintext p-0 ms-2">
+                <div class="form-control-plaintext p-0 ms-2 align-items-center">
                     <span class="badge <?= status_request_class($request['status']) ?>">
                         <?= esc(Constants::STATUS_REQUESTS[$request['status']] ?? 'Unknown') ?>
                     </span>
+
+                    <?php if ($request['status'] == Constants::STATUS_REQUEST_NEW_RULE_REQUEST_SUBMITTED ||
+                            ($request['status'] == Constants::STATUS_REQUEST_HQ_REVIEW && $request['type'] == Constants::JIRA_TYPE_NEW_RULE)): ?>
+                        <a href="<?= site_url('tag-requests/request-approved/' . $request['id']) ?>"
+                           class="badge bg-success text-decoration-none"
+                           onclick="return confirm('Confirm that the tags are published live? (This will set tags to ENABLED status)');">
+                            Published
+                        </a>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -116,18 +129,10 @@ $hasNewRule = !empty($request['new_rule_ticket']);
                     </form>
 
                 <?php else: ?>
-                    <div class="d-flex gap-2 form-control-plaintext p-0 ms-2 align-items-center">
+                    <div class="form-control-plaintext p-0 ms-2 align-items-center">
                         <a href="<?= Constants::JIRA_LINK . $request['new_rule_ticket'] ?>" target="_blank">
                             <?= esc($request['new_rule_ticket']) ?>
                         </a>
-
-                        <?php if ($request['status'] == Constants::STATUS_REQUEST_NEW_RULE_REQUEST_SUBMITTED): ?>
-                            <a href="<?= site_url('tag-requests/request-approved/' . $request['id']) ?>"
-                               class="badge bg-success text-decoration-none"
-                               onclick="return confirm('Confirm that the tags are published live? (This will set tags to ENABLED status)');">
-                                Published
-                            </a>
-                        <?php endif; ?>
                     </div>
                 <?php endif; ?>
                 </div>

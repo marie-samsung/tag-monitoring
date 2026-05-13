@@ -52,6 +52,7 @@
                 </div>
 
                 <div class="col">
+                    <input type="hidden" name="vendor_id" value="<?= $tag['vendor_id'] ?>" />
                     <label for="name" class="form-label-xs text-primary">Tag Name</label>
                     <input type="text" name="name" id="name"
                         class="form-control"
@@ -132,7 +133,7 @@
                     <label for="name" class="form-label-xs text-primary">Name</label>
                     <input type="text" name="requester_name" id="requester_name"
                         class="form-control"
-                        value="<?= old('requester_name', $old['requester_name'] ?? '') ?>"
+                        value="<?= old('requester_name', $tag['requester_name'] ?? '') ?>"
                         required>
                 </div>
 
@@ -140,7 +141,7 @@
                     <label for="name" class="form-label-xs text-primary">Email Address</label>
                     <input type="text" name="requester_email" id="requester_email"
                         class="form-control"
-                        value="<?= old('requester_email', $old['requester_email'] ?? '') ?>"
+                        value="<?= old('requester_email', $tag['requester_email'] ?? '') ?>"
                         required>
                 </div>
             </div>

@@ -4,6 +4,7 @@ namespace App\Models;
 
 class Constants
 {
+    public const IS_DEV = (ENVIRONMENT !== 'production');
     public const JIRA_LINK = 'https://jira.secext.samsung.net/browse/';
     public const JIRA_CREATE_ISSUE = 'https://jira.secext.samsung.net/secure/CreateIssue!default.jspa';
     public const JIRA_SSGTM_TICKET = 'https://jira.secext.samsung.net/browse/GTA-31005';

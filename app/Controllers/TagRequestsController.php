@@ -17,7 +17,7 @@ class TagRequestsController extends BaseController
     public function index()
     {
         $model = new TagRequestsModel();
-        $data['requests'] = $model->findAll();
+        $data['requests'] = $model->orderBy('created_at', 'DESC')->findAll();
 
         return view('tag-requests/list', $data);
     }
@@ -79,8 +79,8 @@ class TagRequestsController extends BaseController
             }
 
             if ($reqOrg) {
-                $organizationInput = trim($organizations[$reqOrg]);
-                $organization = $organizationsModel->where('name', $organizationInput)->first();
+                $organizationInput = trim($reqOrg);
+                $organization = $organizationsModel->where('id', $organizationInput)->first();
                 if (!$organization) {
                     $organizationId = $organizationsModel->insert([
                         'name' => $organizationInput,
