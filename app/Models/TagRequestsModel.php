@@ -28,6 +28,41 @@ class TagRequestsModel extends Model
     protected $useTimestamps = true;
     protected $useSoftDeletes = true;
 
+    public function filterRequests($filters = [])
+    {
+        $builder = $this->builder()
+            ->select('tag_requests.*')
+            ->join('properties', 'properties.id = tag_requests.property_id', 'left');
+
+        if (!empty($filters['keyword'])) {
+            $builder->like('tag_requests.new_tag_ticket', $filters['keyword']);
+            $builder->orLike('tag_requests.new_rule_ticket', $filters['keyword']);
+        }
+
+        if (!empty($filters['subsidiary_id'])) {
+            $builder->where('properties.subsidiary_id', $filters['subsidiary_id']);
+        }
+
+        if (!empty($filters['property_id'])) {
+            $builder->where('tag_requests.property_id', $filters['property_id']);
+        }
+
+        if (!empty($filters['vendor_id'])) {
+            $builder->where('tag_requests.vendor_id', $filters['vendor_id']);
+        }
+
+        if (!empty($filters['type'])) {
+            $builder->where('tag_requests.type', $filters['type']);
+        }
+
+        if (!empty($filters['status'])) {
+            $builder->where('tag_requests.status', $filters['status']);
+        }
+
+        $builder->orderBy('tag_requests.created_at', 'DESC');
+        return $builder->get()->getResultArray();
+    }
+
     public function getTags($id): array
     {
         $request = $this->find($id);
@@ -54,6 +89,21 @@ class TagRequestsModel extends Model
         }
 
         return empty($request) ? null : $request['id'];
+    }
+
+    public function countNewTags()
+    {
+        return $this->where('new_tag_ticket IS NOT NULL')->countAllResults();
+    }
+
+    public function countNewRules()
+    {
+        return $this->where('new_rule_ticket IS NOT NULL')->countAllResults();
+    }
+
+    public function countAllRequests()
+    {
+        return $this->countAllResults();
     }
 
     public function fileUploadPath($property_id, $vendor_name): string

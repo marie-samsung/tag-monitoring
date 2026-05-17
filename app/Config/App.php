@@ -16,8 +16,8 @@ class App extends BaseConfig
      *
      * E.g., http://example.com/
      */
-//    public string $baseURL = 'http://localhost/tag-monitoring/public/';
-    public string $baseURL = 'http://111.101.13.115/tag-monitoring/public/';
+    public string $baseURL = 'http://localhost/tag-monitoring/public/';
+//    public string $baseURL = 'http://111.101.13.115/tag-monitoring/public/';
 
     /**
      * Allowed Hostnames in the Site URL other than the hostname in the baseURL.

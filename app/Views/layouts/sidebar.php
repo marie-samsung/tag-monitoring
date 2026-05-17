@@ -54,7 +54,7 @@ $segment = service('uri')->getSegment(1); ?>
     </li>
 
     <li class="nav-item">
-        <a class="nav-link <?= $segment === 'activity-log' ? 'active' : '' ?>" href="<?= site_url('/activity-log') ?>">
+        <a class="nav-link <?= $segment === 'activity-logs' ? 'active' : '' ?>" href="<?= site_url('/activity-logs') ?>">
             <i class="bi bi-card-list"></i> Activity Logs
         </a>
     </li>

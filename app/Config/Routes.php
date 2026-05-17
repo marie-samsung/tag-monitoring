@@ -57,6 +57,9 @@ $routes->group('jira', function ($routes) {
     $routes->match(['get', 'post'], 'create', 'JiraController::create');
 });
 
-$routes->group('activity-log', function ($routes) {
-    $routes->get('/', 'ActivityLogController::index');
+$routes->group('activity-logs', function ($routes) {
+    $routes->get('/', 'ActivityLogsController::index');
+    $routes->get('view/(:num)', 'ActivityLogsController::view/$1');
+    $routes->match(['get', 'post'], 'create', 'ActivityLogsController::create');
+    $routes->match(['get', 'post'], 'update/(:num)', 'ActivityLogsController::update/$1');
 });

@@ -20,8 +20,12 @@ class TagsController extends BaseController
 
         $status = $this->request->getGet('status');
 
-        if (empty($status)) {
+        if ($status == Constants::STATUS_DEFAULT || empty($status)) {
             $status = [1,4,5]; // Default to show Enabled, Pending Verification, and Updated in AL
+        }
+
+        if ($status == Constants::STATUS_ALL) {
+            $status = null;
         }
 
         $filters = [
@@ -31,9 +35,11 @@ class TagsController extends BaseController
             'subsidiary_id' => $this->request->getGet('subsidiary_id'),
         ];
         $data['tags'] = $tagModel->filterTags($filters);
-        $data['filters'] = $filters;
 
-        // $data['tags'] = $tagModel->findAll();
+        if (is_array($status)) {
+            $filters['status'] = 145;
+        }
+        $data['filters'] = $filters;
 
         return view('tags/list', $data);
     }

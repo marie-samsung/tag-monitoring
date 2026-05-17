@@ -17,7 +17,16 @@ class TagRequestsController extends BaseController
     public function index()
     {
         $model = new TagRequestsModel();
-        $data['requests'] = $model->orderBy('created_at', 'DESC')->findAll();
+        $filters = [
+            'keyword' => $this->request->getGet('keyword'),
+            'subsidiary_id' => $this->request->getGet('subsidiary_id'),
+            'property_id' => $this->request->getGet('property_id'),
+            'vendor_id' => $this->request->getGet('vendor_id'),
+            'type' => $this->request->getGet('type'),
+            'status' => $this->request->getGet('status'),
+        ];
+        $data['requests'] = $model->filterRequests($filters);
+        $data['filters'] = $filters;
 
         return view('tag-requests/list', $data);
     }
@@ -60,6 +69,7 @@ class TagRequestsController extends BaseController
         $reqEmail = $post['requester_email'] ?? null;
         $reqOrg = $post['requester_organization'] ?? null;
         $jiraType = $post['type'];
+        $endDate = $post['al_end_date'] ?? null;
         $tagIds = [];
         $vendorId = null;
         $organizationId = null;
@@ -96,7 +106,7 @@ class TagRequestsController extends BaseController
                     'vendor_id' => $vendorId,
                     'name' => $tag,
                     'status' => $jiraType == Constants::JIRA_TYPE_NEW_TAG ? Constants::STATUS_NEW_TAG_SUBMITTED : Constants::STATUS_NEW_RULE_SUBMITTED,
-                    'al_end_date' => $post['al_end_date'],
+                    'al_end_date' => $endDate,
                     'ref_link' => 'https://www.samsung.com/',
                     'requester_name' => $reqName,
                     'requester_email' => $reqEmail,
@@ -126,6 +136,8 @@ class TagRequestsController extends BaseController
                 'property_id' => $propertyId,
                 'vendor_id' => $vendorId,
                 'request_type' => $jiraType,
+                'ticket_id' => null,
+                'al_end_date' => $endDate,
             ]);
         } else {
             return redirect()
@@ -199,10 +211,11 @@ class TagRequestsController extends BaseController
         $model = new TagRequestsModel();
         $tagsModel = new TagsModel();
         $post = $this->request->getPost();
+        $ticketId = $post['new_rule_ticket'];
         $request = $model->find($post['request_id']);
 
         if ($model->update($request['id'], [
-            'new_rule_ticket' => $post['new_rule_ticket'],
+            'new_rule_ticket' => $ticketId,
             'status' => Constants::STATUS_REQUEST_NEW_RULE_REQUEST_SUBMITTED,
         ])) {
 
@@ -214,11 +227,21 @@ class TagRequestsController extends BaseController
                 ]);
             }
 
-            $this->saveJiraHistory($request['tags'], $request['property_id'], $post['new_rule_ticket'], Constants::JIRA_TYPE_NEW_RULE);
+            $this->saveJiraHistory($request['tags'], $request['property_id'], $ticketId, Constants::JIRA_TYPE_NEW_RULE);
 
-            return redirect()
-                ->to('/tag-requests/view/' . $post['request_id'])
-                ->with('success', "Tag Request updated successfully: Added NEW RULE ticket");
+            return view('tag-requests/create', [
+                'request_id' => $request['id'],
+                'request_type' => Constants::JIRA_TYPE_NEW_RULE,
+                'property_id' => $request['property_id'],
+                'vendor_id' => $request['vendor_id'],
+                'ticket_id' => $ticketId,
+                'al_end_date' => null, // @TODO: Get from tags
+                'tag_ids' => $request['tags'],
+            ]);
+
+//            return redirect()
+//                ->to('/tag-requests/view/' . $post['request_id'])
+//                ->with('success', "Tag Request updated successfully: Added NEW RULE ticket");
         }
 
         return redirect()

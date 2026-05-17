@@ -126,7 +126,7 @@ Tag Request: Create
     <!-- #endregion -->
 
 <?php 
-    elseif ($request_type == Constants::JIRA_TYPE_NEW_TAG || $request_type == Constants::JIRA_TYPE_NEW_RULE):
+    elseif ($request_type == Constants::JIRA_TYPE_NEW_TAG):
         $property = $propertiesModel->find($property_id);
         $vendor = $vendorsModel->find($vendor_id);
         $siteCode = $propertiesModel->getSiteCode($property_id);
@@ -247,7 +247,167 @@ Tag Request: Create
 </form>
 <!-- #endregion -->
 
-<?php elseif ($request_type == Constants::JIRA_TYPE_NEW_RULE):  ?>
+<?php elseif ($request_type == Constants::JIRA_TYPE_NEW_RULE) :
+    $property = $propertiesModel->find($property_id);
+    $vendor = $vendorsModel->find($vendor_id);
+    $siteCode = $propertiesModel->getSiteCode($property_id);
+    $isShop = $propertiesModel->isShop($property_id);
+    $reason = $vendor['reason'] ?? '-';
+    $purpose = $vendor['tag_purpose'] ?? '-';
+    $ssGTM = Constants::JIRA_SSGTM_TICKET;
+    $jiraTitle = sprintf(
+            '[LC Request] [%s] - [%s] - [New Rule]',
+            $siteCode,
+            $vendor['name']
+    );
+
+    $actionLink = empty($ticket_id) ? site_url('tag-requests/create/confirm')
+            : site_url('tag-requests/view/' . $request_id);
+
+    $detailsHtml = '';
+
+    $detailsHtml .= "
+            <b style='color:#337ab7;'>1) Target Property :</b>
+            <ul>
+                <li>". $isShop ." : ". $property['name'] ."</li>
+            </ul>
+    
+            <b style='color:#337ab7;'>2) Target Page(s) :</b>
+            <ul>
+                <li>". $isShop ." : <a href='". $property['website'] ."' target='_blank'>". $property['website'] ."</a></li>
+            </ul>
+    
+            <b style='color:#337ab7;'>2.2) Reason when the Target Page is for all :</b>
+            <p>". $reason ."</p>
+    
+            <b style='color:#337ab7;'>3) Expiration Date (to-be) : </b>". $al_end_date ." <br/><br/>
+    
+            <b style='color:#337ab7;'>4) Status (to-be) :</b>
+            <p><i>Insert Local Rule Monitoring File screenshots here...</i></p>
+            
+            <b style='color:#337ab7;'>5) Purpose & Goal :</b>
+            <p>". $purpose ."</p>
+            
+            <b style='color:#337ab7;'>6) ssGTM</b>
+            <p>
+                For ssGTM requests, please refer to this ticket: 
+                <a href='". $ssGTM ."' target='_blank'> ssGTM </a> 
+            </p>
+            
+            <b style='color:#337ab7;'>7) Required Attachment</b>
+            <p><b>① Test Result Screenshot image file(s)</b></p>
+            <p><i>Insert QA screenshots here...</i></p>
+            
+            <br/>
+            
+            <p><b>② Integration Result: Fill in the checklist below to make sure the new tags aren't affecting your site's operation.</b></p>
+            <table border='1' cellpadding='6' cellspacing='0' style='border-collapse:collapse; width:100%;'>
+                <tbody>";
+
+            foreach (Constants::INTEGRATION_RESULT_PAGE_LOAD as $question => $value) {
+                $detailsHtml .= "
+                    <tr>
+                        <td style='width:50%;'>". $question ."</td>
+                        <td>". $value ."</td>
+                    </tr>
+                ";
+            }
+
+            $detailsHtml .= "
+                </tbody>
+            </table>
+            
+            </br>
+            
+            <table border='1' cellpadding='6' cellspacing='0' style='border-collapse:collapse; width:100%;'>
+                <tbody>";
+
+            foreach (Constants::INTEGRATION_RESULT_EVENT_CLICK as $question => $value) {
+                $detailsHtml .= "
+                    <tr>
+                        <td style='width:50%;'>". $question ."</td>
+                        <td>". $value ."</td>
+                    </tr>
+                ";
+            }
+
+            $detailsHtml .= "
+                        </tbody>
+                    </table>
+                    
+                    </br>
+                    
+            <p><b>③ Local Rule Monitoring Excel file [Local Rule Monitoring Excel file_v1.0_Subsidiary_sitecode_YYMMDD_general.xlsx]</b></p>
+            ";
+?>
+<!-- region | PART 3 - NEW RULE REQUEST CONFIRMATION -->
+<form action="<?= $actionLink ?>" method="post">
+    <div class="container mb-5">
+        <?php if ($ticket_id): ?>
+            <h6 class="text-danger"><b><?= esc($ticket_id) ?></b></h6>
+        <?php endif; ?>
+
+        <h4><?= Constants::JIRA_TICKET_TYPES[$request_type] ?> Request</h4>
+        <div class="d-flex justify-content-between align-items-center mt-3 mb-2">
+            <h4 class="text-primary d-flex align-items-center gap-2">
+                <span id="jiraTitle"><?= esc($jiraTitle) ?></span>
+                <a href="javascript:void(0)" onclick="copyJiraTitle()">
+                    <i class="bi bi-copy text-primary fs-5"></i>
+                </a>
+                <span id="copyStatus" style="opacity:0; transition: opacity .6s; font-size:10px; color:green;">
+                Copied!
+            </span>
+            </h4>
+
+            <div class="d-flex justify-content-end">
+                <div>
+                    <a href="<?= site_url('tag-requests') ?>" title="Cancel" class="btn btn-secondary btn-sm">Cancel</a>
+                    <button type="submit"
+                            class="btn btn-success btn-sm">
+                        Confirm Request
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <textarea id="details"></textarea>
+        <div class="d-flex justify-content-between align-items-center mt-2 gap-2">
+
+            <?php if ($ticket_id == null) : ?>
+                <div class="d-flex align-items-start align-items-center gap-2">
+                    <div>
+                        <input type="hidden" name="request_id" value="<?= $request_id ?>">
+                        <input type="text" name="ticket_id" id="ticket_id"
+                               class="form-control"
+                               value="<?= old('ticket_id', $old['ticket_id'] ?? '') ?>"
+                               required>
+                    </div>
+                    <a href="<?= Constants::JIRA_CREATE_ISSUE ?>" title="Create Issue in JIRA" class="btn btn-outline-primary btn-sm" target="_blank">
+                        Create JIRA Ticket
+                    </a>
+                </div>
+            <?php else: ?>
+                <input type="hidden" name="ticket_id" value="<?= $ticket_id ?>">
+            <?php endif; ?>
+
+            <div>
+            <span id="copyDetailsStatus" style="opacity:0; transition: opacity .6s; font-size:10px; color:green;">
+                Copied!
+            </span>
+
+                <a href="javascript:void(0)" onclick="copyDetails()">
+                    <i class="bi bi-copy text-primary fs-5"></i>
+                </a>
+            </div>
+        </div>
+
+        <?php if ($ticket_id == null) : ?>
+            <small class="form-label-xs text-muted">
+                JIRA ticket ID, GTA-XXXXX
+            </small>
+        <?php endif; ?>
+    </div>
+</form>
 <?php else: ?>
 <?php endif; ?>
 <?= $this->endSection() ?>
