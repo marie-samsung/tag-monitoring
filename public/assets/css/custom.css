@@ -84,4 +84,9 @@ table.file-table th:nth-child(3) {
     width: 120px;
 }
 
+.no-border td,
+.no-border th {
+    border-bottom: none !important;
+}
+
 

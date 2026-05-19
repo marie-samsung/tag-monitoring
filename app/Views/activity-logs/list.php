@@ -129,16 +129,49 @@ Activity Logs
         </thead>
 
         <tbody>
-            <?php foreach ($logs as $log): ?>
+            <?php
+                foreach ($logs as $log):
+
+                    $subsidiary = Constants::ACTIVITY_LOG_SUBSIDIARIES[$log['subsidiary_id']] ?? 'Unknown';
+                    $status = Constants::ACTIVITY_LOGS_STATUS[$log['status']] ?? 'Unknown';
+                    $type = Constants::ACTIVITY_TYPES[$log['type']] ?? 'Unknown';
+                    $project = Constants::PROJECTS[$log['project_id']] ?? 'Unknown';
+                    $assignee = Constants::USERS[$log['assignee']] ?? 'Unknown';
+                    $size = Constants::ACTIVITY_SIZES[$log['size']] ?? 'Unknown';
+            ?>
                 <tr>
                     <td><?= $log['id'] ?></td>
-                    <td><?= Constants::ACTIVITY_LOG_SUBSIDIARIES[$log['subsidiary_id']] ?? 'Unknown' ?></td>
-                    <td><?= Constants::PROJECTS[$log['project_id']] ?? 'Unknown' ?></td>
+                    <td>
+                        <span class="badge" style="<?= random_bg_style($subsidiary) ?>">
+                            <?= $subsidiary ?>
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge" style="<?= random_bg_style($project) ?>">
+                            <?= $project ?>
+                        </span>
+                    </td>
                     <td><?= $log['title'] ?></td>
-                    <td><?= Constants::USERS[$log['assignee']] ?? 'Unknown' ?></td>
-                    <td><?= Constants::ACTIVITY_LOGS_STATUS[$log['status']] ?? 'Unknown' ?></td>
-                    <td><?= Constants::ACTIVITY_TYPES[$log['type']] ?? 'Unknown' ?></td>
-                    <td><?= Constants::ACTIVITY_SIZES[$log['size']] ?? 'Unknown' ?></td>
+                    <td>
+                        <span class="badge" style="<?= random_bg_style($assignee) ?>">
+                            <?= $assignee ?>
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge <?= status_activity_logs_class($log['status']) ?>">
+                            <?= Constants::ACTIVITY_LOGS_STATUS[$log['status']] ?? 'Unknown' ?>
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge" style="<?= random_bg_style($type) ?>">
+                            <?= $type ?>
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge" style="<?= random_bg_style($size) ?>">
+                            <?= $size ?>
+                        </span>
+                    </td>
                     <td><?= $log['created_at'] ?></td>
                     <td>
                         <a href="<?= site_url('activity-logs/view/' . $log['id']) ?>" class="btn btn-sm btn-secondary">Details</a>

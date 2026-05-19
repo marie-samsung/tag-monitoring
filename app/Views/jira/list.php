@@ -138,7 +138,11 @@ use App\Models\TagsModel;
                 ?>
                     <tr>
                         <td><?= $ticket['id'] ?></td>
-                        <td><?= esc($subsidiary['name']) ?></td>
+                        <td>
+                            <span class="badge" style="<?= random_bg_style($subsidiary['name']) ?>">
+                                <?= esc($subsidiary['name']) ?>
+                            </span>
+                        </td>
                         <td>
                             <?php if ($property): ?>
                             <a href="<?= $property['ref_link'] ?>" target="_blank">

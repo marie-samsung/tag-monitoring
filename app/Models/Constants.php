@@ -11,6 +11,7 @@ class Constants
     public const LP_WRITE_PATH = WRITEPATH . 'uploads/lp/';
     public const LP_PATH = 'uploads/lp/';
     public const NEW_TAG_FILE_WRITE_PATH = WRITEPATH . 'uploads/new_tag_requests/';
+    public const ACTIVITY_LOGS_FILE_WRITE_PATH = WRITEPATH . 'uploads/activity_logs/';
     public const JIRA_TYPE_DATE_EXTENSION_RULE = 1;
     public const JIRA_TYPE_NEW_TAG = 2;
     public const JIRA_TYPE_NEW_RULE = 3;

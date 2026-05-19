@@ -28,6 +28,18 @@ function status_class(int $code): string
     };
 }
 
+function status_activity_logs_class(int $code): string
+{
+    return match ($code) {
+        Constants::STATUS_TO_DO => 'bg-secondary text-white',
+        Constants::STATUS_INVESTIGATION, Constants::STATUS_IMPLEMENTATION => 'bg-warning text-dark',
+        Constants::STATUS_QA => 'bg-info text-dark',
+        Constants::STATUS_REVIEW => 'bg-warning text-dark',
+        Constants::STATUS_COMPLETED => 'bg-success text-white',
+        Constants::STATUS_BLOCKED => 'bg-danger text-white',
+    };
+}
+
 function status_request_class(int $code): string
 {
     return match ($code) {
@@ -103,7 +115,18 @@ function random_bg_style($value): string
     $hash = md5($value);
     $color = substr($hash, 0, 6);
 
-    return "background-color:#{$color}; color:white;";
+    // Convert hex to RGB
+    $r = hexdec(substr($color, 0, 2));
+    $g = hexdec(substr($color, 2, 2));
+    $b = hexdec(substr($color, 4, 2));
+
+    // Calculate perceived brightness
+    $brightness = (($r * 299) + ($g * 587) + ($b * 114)) / 1000;
+
+    // Choose text color
+    $textColor = $brightness > 128 ? 'black' : 'white';
+
+    return "background-color:#{$color}; color:{$textColor};";
 }
 
 function random_text_style($value): string

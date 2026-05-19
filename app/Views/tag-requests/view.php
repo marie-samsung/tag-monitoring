@@ -195,21 +195,20 @@ $hasNewRule = !empty($request['new_rule_ticket']);
             </div>
 
             <?php if (!empty($files)) : ?>
-            <table class="table table-bordered file-table">
-                <thead>
-                    <tr>
-                        <th>File Type</th>
-                        <th>File Name</th>
-                    </tr>
-                </thead>
+            <table class="table no-border">
                 <tbody>
                     <?php foreach ($files as $file) : ?>
                         <tr>
-                            <td><?= Constants::ATTACHMENTS[$file['type']] ?></td>
+                            <td style="text-align:right;">
+                                <span class="badge" style="<?= random_bg_style(Constants::ATTACHMENTS[$file['type']]) ?>">
+                                    <?= Constants::ATTACHMENTS[$file['type']] ?>
+                                </span>
+                            </td>
                             <td>
-                                <a href="<?= '/tag-monitoring/download.php?file=' . rawurlencode($file['file_path']) ?>" download="<?= $file['file_name'] ?>" rel="noopener">
+                                <a href="<?= '/tag-monitoring/download.php?file=' . rawurlencode($file['file_path']) ?>" download="<?= $file['file_name'] ?>" rel="noopener" class="row">
                                     <?= $file['file_name'] ?>
                                 </a>
+                                <span class="row form-label-xs text-muted"><?= $file['created_at'] ?></span>
                             </td>
 <!--                            <td class="text-center">-->
 <!--                                <a href="--><?php //= '/tag-monitoring/download.php?file=' . rawurlencode($file['file_path']) ?><!--" download="--><?php //= $file['file_name'] ?><!--" class="btn btn-sm btn-primary">-->

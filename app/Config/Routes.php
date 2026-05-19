@@ -24,6 +24,7 @@ $routes->group('tags', function ($routes) {
 
 $routes->group('tag-requests', function ($routes) {
     $routes->get('/', 'TagRequestsController::index');
+    $routes->get('export', 'TagRequestsController::exportAsCSV');
     $routes->get('view/(:num)', 'TagRequestsController::view/$1');
     $routes->get('request-approved/(:num)', 'TagRequestsController::requestApproved/$1');
     $routes->post('add-new-tag', 'TagRequestsController::addNewTag');
@@ -60,6 +61,8 @@ $routes->group('jira', function ($routes) {
 $routes->group('activity-logs', function ($routes) {
     $routes->get('/', 'ActivityLogsController::index');
     $routes->get('view/(:num)', 'ActivityLogsController::view/$1');
+    $routes->post('comment', 'ActivityLogsController::comment');
+    $routes->post('upload', 'ActivityLogsController::uploadFile');
     $routes->match(['get', 'post'], 'create', 'ActivityLogsController::create');
     $routes->match(['get', 'post'], 'update/(:num)', 'ActivityLogsController::update/$1');
 });

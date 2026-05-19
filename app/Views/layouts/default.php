@@ -10,6 +10,9 @@
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
+
+<?php date_default_timezone_set('Asia/Dubai'); ?>
+
 <body>
     <div class="container-fluid">
         <!-- NAVIGATION BAR -->

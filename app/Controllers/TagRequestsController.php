@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Models\Constants;
 use App\Models\JiraHistoryModel;
 use App\Models\OrganizationsModel;
+use App\Models\SubsidiariesModel;
 use App\Models\TagRequestFilesModel;
 use App\Models\TagRequestsModel;
 use App\Models\PropertiesModel;
@@ -282,6 +283,63 @@ class TagRequestsController extends BaseController
         return redirect()
             ->to('/tag-requests/view/' . $id)
             ->with('success', "Tag Request approved, and associated tags are now enabled.");
+    }
+
+    public function exportAsCSV()
+    {
+        helper('custom_functions');
+        $filters = $this->request->getGet();
+        $propertiesModel = new PropertiesModel();
+        $subsidiariesModel = new SubsidiariesModel();
+        $tagRequestsModel = new TagRequestsModel();
+        $requests = $tagRequestsModel->filterRequests($filters);
+
+        $vendorModel = new VendorsModel();
+        $vendor = !empty($filters['vendor_id'])
+            ? '(' . $vendorModel->find($filters['vendor_id'])['name'] . ')'
+            : null;
+
+        $subsidiary = !empty($filters['subsidiary_id'])
+            ? '(' . Constants::SUBSIDIARIES[$filters['subsidiary_id']] . ')'
+            : null;
+
+        $filename = 'TagRequests' . $subsidiary . $vendor . '_' . date('Ymd') . '.csv';
+
+        $csv = fopen('php://output', 'w');
+
+        // Headers
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+
+        // CSV column headers
+        fputcsv($csv, [
+            'Subsidiary',
+            'Property Name',
+            'Ticket ID',
+            'Ticket Type',
+            'Status',
+            'Created At',
+        ]);
+
+        // Rows
+        foreach ($requests as $request) {
+            $propertyId = $request['property_id'];
+            $property = $propertiesModel->find($propertyId);
+            $subsidiary = $subsidiariesModel->find($property['subsidiary_id'] ?? 0);
+            $ticketColumn = $request['type'] == Constants::JIRA_TYPE_NEW_RULE ? 'new_rule_ticket' : 'new_tag_ticket';
+
+            fputcsv($csv, [
+                $subsidiary['name'] ?? 'N/A',
+                $property['name'] ?? 'N/A',
+                $request[$ticketColumn] ?? 'N/A',
+                Constants::JIRA_TICKET_TYPES[$request['type']] ?? 'N/A',
+                Constants::STATUS_REQUESTS[$request['status']] ?? 'Unknown',
+                "'" . date_ymd($request['created_at']),
+            ]);
+        }
+
+        fclose($csv);
+        exit;
     }
 
     public function uploadFile()

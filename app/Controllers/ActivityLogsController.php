@@ -2,7 +2,11 @@
 
 namespace App\Controllers;
 
+use App\Models\ActivityLogCommentsModel;
+use App\Models\ActivityLogFilesModel;
 use App\Models\ActivityLogsModel;
+use App\Models\Constants;
+use CodeIgniter\Files\Exceptions\FileException;
 
 class ActivityLogsController extends BaseController
 {
@@ -51,13 +55,19 @@ class ActivityLogsController extends BaseController
     public function view($id)
     {
         $model = new ActivityLogsModel();
+        $comments = new ActivityLogCommentsModel();
+        $files = new ActivityLogFilesModel();
         $log = $model->find($id);
 
         if (!$log) {
             throw new \CodeIgniter\Exceptions\PageNotFoundException("Activity log with ID $id not found.");
         }
 
-        return view('activity-logs/view', ['log' => $log]);
+        return view('activity-logs/view', [
+            'log' => $log,
+            'comments' => $comments->getRelatedComments($id),
+            'files' => $files->getRelatedFiles($id),
+        ]);
     }
 
     public function update($id)
@@ -100,7 +110,63 @@ class ActivityLogsController extends BaseController
         $model->update($id, $updateData);
 
         return redirect()
-            ->to('/activity-logs')
+            ->to('/activity-logs/view/' . $id)
             ->with('success', "Activity log '{$updateData['title']}' updated successfully.");
+    }
+
+    public function comment()
+    {
+        $commentsModel = new ActivityLogCommentsModel();
+        $post = $this->request->getPost();
+
+        if (!$post) {
+            return redirect()->back()->with('error', 'No comment data provided.');
+        }
+
+        $commentsModel->insert([
+            'log_id' => $post['log_id'],
+            'comment' => $post['comment'],
+            'commented_by' => $post['commented_by'],
+        ]);
+
+        return redirect()->back()->with('success', 'Update posted successfully.');
+    }
+
+    public function uploadFile()
+    {
+        $model = new ActivityLogsModel();
+        $filesModel = new ActivityLogFilesModel();
+
+        $post = $this->request->getPost();
+        $logId = $post['log_id'];
+        $file = $this->request->getFile('file_path');
+
+        try {
+            if ($file && $file->isValid()) {
+                $upload_path = Constants::ACTIVITY_LOGS_FILE_WRITE_PATH . (Constants::IS_DEV ? 'test-files/' : '');
+                $file_name = $file->getClientName();
+
+                if ($file->move($upload_path, $file_name)) {
+                    $file_path = $upload_path . '/' . $file_name;
+
+                    $filesModel->insert([
+                        'file_name' => $file_name,
+                        'file_path' => $file_path,
+                        'log_id' => $logId,
+                        'created_by' => $post['created_by'],
+                    ]);
+
+                    return redirect()
+                        ->to('/activity-logs/view/' . $post['log_id'])
+                        ->with('success', "File successfully uploaded.");
+                }
+            }
+        } catch(FileException|\ReflectionException $e) {
+            var_dump($e);
+        }
+
+        return redirect()
+            ->to('/activity-logs/view/' . $post['log_id'])
+            ->with('error', "An error occurred. File was not uploaded successfully.");
     }
 }

@@ -111,7 +111,7 @@ Activity Log: Create
                         <option value="">-Select-</option>
                         <?php foreach (Constants::ACTIVITY_SIZES as $value => $label): ?>
                             <option value="<?= esc($value) ?>"
-                                    <?= old('size', $log['size'] ?? '') == $value ? 'selected' : '' ?>>
+                                <?= old('size', $log['size'] ?? '') == $value ? 'selected' : '' ?>>
                                 <?= esc($label) ?>
                             </option>
                         <?php endforeach; ?>
