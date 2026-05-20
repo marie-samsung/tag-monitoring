@@ -342,3 +342,18 @@ table.file-table th:nth-child(3) {
 .group-hover-container a.text-muted:hover {
     color: #1D1D1F !important;
 }
+
+/* Stunning Apple-Like Alerts */
+.alert {
+    border: none;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04), inset 0 0 0 1px rgba(0, 0, 0, 0.02);
+    letter-spacing: -0.1px;
+}
+
+.alert-success { background-color: #F4FBF6 !important; color: #1D8A44 !important; }
+.alert-danger { background-color: #FFF4F4 !important; color: #DE3535 !important; }
+.alert-warning { background-color: #FFFBF0 !important; color: #B46B00 !important; }
+.alert-info { background-color: #F4F9FF !important; color: #0071E3 !important; }
