@@ -156,15 +156,15 @@ Tag: Requests (New Rule, New Tag)
                         <!-- Property -->
                         <td>
                             <i class="bi bi-tag-fill" style="<?= random_text_style($property['name']) ?>"></i>
-                            <a href="<?= $property['ref_link'] ?>" target="_blank" class="form-label-sm">
+                            <a href="<?= $property['ref_link'] ?>" target="_blank" class="apple-link-dark form-label-sm ms-1">
                                 <?= $property['name'] ?>
                             </a>
                         </td>
                         <td>
-                            <a href="<?= Constants::JIRA_LINK . $request[$ticketColumn] ?>" target="_blank">
+                            <a href="<?= Constants::JIRA_LINK . $request[$ticketColumn] ?>" target="_blank" class="apple-link">
                                 <?= $request[$ticketColumn] ?>
                             </a>
-                            (<?= $vendors[$request['vendor_id']] ?? '' ?>)
+                            <span class="text-muted ms-1" style="font-size: 0.8rem;">(<?= $vendors[$request['vendor_id']] ?? '' ?>)</span>
                         </td>
                         <td>
                             <?= Constants::REQUEST_TYPES[$type] ?>

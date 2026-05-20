@@ -164,14 +164,14 @@ Tag Monitoring System
                         <!-- Property -->
                         <td>
                             <i class="bi bi-tag-fill" style="<?= random_text_style($tag['property_id']) ?>"></i>
-                            <a href="<?= $properties[$tag['property_id']]['ref_link'] ?>" target="_blank" class="form-label-sm">
+                            <a href="<?= $properties[$tag['property_id']]['ref_link'] ?>" target="_blank" class="apple-link-dark form-label-sm ms-1">
                                 <?= $properties[$tag['property_id']]['name'] ?>
                             </a>
                         </td>
                         <!-- Name -->
                         <td class="form-label-sm">
                             <div class="d-flex justify-content-start align-items-center gap-2 group-hover-container">
-                                <a href="<?= $tag['ref_link'] ?>" target="_blank" class="text-decoration-none fw-semibold" style="color: #1D1D1F; transition: color 0.2s;">
+                                <a href="<?= $tag['ref_link'] ?>" target="_blank" class="apple-link-dark">
                                     <?= esc($tag['name']) ?>
                                 </a>
 
@@ -187,8 +187,9 @@ Tag Monitoring System
                                 <?= esc(status_label($tag['status'])) ?>
                             </span>
                             <?php if ($tag['status'] == Constants::STATUS_PENDING_VERIFICATION): ?>
-                                <a href="<?= Constants::JIRA_LINK . $ticketId ?>" target="_blank">
-                                   <br><small class="text-muted"><?= $ticketId ?></small> 
+                                <br>
+                                <a href="<?= Constants::JIRA_LINK . $ticketId ?>" target="_blank" class="apple-link ms-1" style="font-size: 0.8rem;">
+                                    <?= $ticketId ?>
                                 </a>
                             <?php endif; ?>
                         </td>
