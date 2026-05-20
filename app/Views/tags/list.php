@@ -56,7 +56,7 @@ Tag Monitoring System
             </div>
         </div>
         <div class="col-md-3">
-            <div class="apple-metric-card" style="cursor: pointer;" onclick="window.location.href='<?= site_url('tags') ?>'">
+            <div class="apple-metric-card" style="cursor: pointer;" onclick="window.location.href='<?= site_url('tags?status=all') ?>'">
                 <div class="apple-metric-label"><i class="bi bi-collection-fill text-secondary"></i> Total</div>
                 <div class="apple-metric-value text-dark"><?= $tagsModel->countAllTags() ?></div>
             </div>

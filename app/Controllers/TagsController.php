@@ -20,7 +20,9 @@ class TagsController extends BaseController
 
         $status = $this->request->getGet('status');
 
-        if (empty($status)) {
+        if ($status === 'all') {
+            $status = null; // null triggers filterTags to ignore status and fetch everything
+        } elseif (empty($status)) {
             $status = [1,4,5]; // Default to show Enabled, Pending Verification, and Updated in AL
         }
 
