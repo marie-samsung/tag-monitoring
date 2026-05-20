@@ -137,10 +137,10 @@ function random_text_style($value): string
     return "color:#{$color};";
 }
 
-function date_ymd(string|null $date): string
+function date_ymd(string|null $date = null): string
 {
     if (empty($date)) {
-        return 'N/A';
+        return date('Y-m-d');
     }
 
     $timestamp = strtotime($date);

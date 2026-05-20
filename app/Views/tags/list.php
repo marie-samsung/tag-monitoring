@@ -30,8 +30,9 @@ Tag Monitoring System
     <div class="d-flex justify-content-between align-items-center">
         <h2>Tag Inventory</h2>
         <div class="d-flex align-items-center gap-2">
-            <a href="<?= site_url('tags/renew') ?>" target="_blank" title="Renew selected tags" class="btn btn-primary btn-sm ms-auto px-2" id="btnRenew" style="display:none;">Renew</a>
-            <a href="<?= site_url('tags/create') ?>" target="_blank" title="Add a new tag" class="btn btn-success btn-sm ms-auto px-2">Create New Tag</a>
+            <a href="<?= site_url('tags/renew') ?>" target="_blank" title="Renew selected tags" class="btn btn-primary btn-sm ms-auto px-2" id="btnRenew" style="display:none;">Extend Expiry Date</a>
+            <a href="<?= site_url('tags/update-rule-request') ?>" target="_blank" title="Create update rule request" class="btn btn-primary btn-sm ms-auto px-2" id="btnUpdateRule" style="display:none;">Create Update Rule Request</a>
+            <a href="<?= site_url('tags/create') ?>" target="_blank" title="Add a new tag" class="btn btn-success btn-sm ms-auto px-2">Add Tag Information</a>
             <a href="<?= site_url('tags/export?' . http_build_query($_GET)) ?>" class="btn btn-sm btn-warning ms-auto px-2">Export as CSV</a>
         </div>
     </div>
@@ -212,11 +213,13 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     const btnRenew = document.getElementById('btnRenew');
+    const btnUpdateRule = document.getElementById('btnUpdateRule');
     const table = document.getElementById('tblTags');
 
     const toggleButton = () => {
         const anyChecked = table.querySelectorAll('input[type="checkbox"]:checked').length > 0;
         btnRenew.style.display = anyChecked ? 'inline-block' : 'none';
+        btnUpdateRule.style.display = anyChecked ? 'inline-block' : 'none';
     };
 
     table.addEventListener('change', function (e) {
@@ -239,13 +242,39 @@ document.addEventListener('DOMContentLoaded', function () {
         window.open(url, "_blank");
     });
 
+    btnUpdateRule.addEventListener('click', function (e) {
+        e.preventDefault();
+
+        const checked = [...document.querySelectorAll('input[name="tag_ids[]"]:checked')]
+            .map(cb => cb.value);
+
+        if (checked.length === 0) return;
+
+        const url = "<?= site_url('tags/update-rule-request') ?>?tags=" + checked.join(',');
+        window.open(url, "_blank");
+    });
+
     window.copyTagName = function(text, el) {
-        navigator.clipboard.writeText(text).then(() => {
-            el.innerHTML = '<i class="bi bi-check-lg text-success fs-7"></i>';
-            setTimeout(() => {
-                el.innerHTML = '<i class="bi bi-copy text-secondary fs-7"></i>';
-            }, 1200);
-        });
+        const temp = document.createElement('textarea');
+        temp.value = text;
+
+        temp.style.position = 'fixed';
+        temp.style.left = '-9999px';
+
+        document.body.appendChild(temp);
+
+        temp.focus();
+        temp.select();
+
+        document.execCommand('copy');
+
+        document.body.removeChild(temp);
+
+        el.innerHTML = '<i class="bi bi-check-lg text-success fs-7"></i>';
+
+        setTimeout(() => {
+            el.innerHTML = '<i class="bi bi-copy text-secondary fs-7"></i>';
+        }, 1200);
     };
 });
 

@@ -13,8 +13,17 @@ class ActivityLogsController extends BaseController
     public function index()
     {
         $model = new ActivityLogsModel();
-        $data = $model->findAll();
-        return view('activity-logs/list', ['logs' => $data]);
+        $filters = [
+            'keyword' => $this->request->getGet('keyword'),
+            'subsidiary_id' => $this->request->getGet('subsidiary_id'),
+            'project_id' => $this->request->getGet('project_id'),
+            'type' => $this->request->getGet('type'),
+            'status' => $this->request->getGet('status'),
+            'assignee' => $this->request->getGet('assignee'),
+        ];
+        $data['logs'] = $model->filterLogs($filters);
+        $data['filters'] = $filters;
+        return view('activity-logs/list', $data);
     }
 
     public function create()
@@ -72,7 +81,9 @@ class ActivityLogsController extends BaseController
 
     public function update($id)
     {
+        helper('custom_functions');
         $model = new ActivityLogsModel();
+        $commentsModel = new ActivityLogCommentsModel();
         $log = $model->find($id);
 
         if (!$log) {
@@ -88,6 +99,39 @@ class ActivityLogsController extends BaseController
         }
 
         $post = $this->request->getPost();
+
+        if ($log['status'] !== $post['status']) {
+            $from = Constants::ACTIVITY_LOGS_STATUS[$log['status']];
+            $to = Constants::ACTIVITY_LOGS_STATUS[$post['status']];
+
+            $commentsModel->insert([
+                'log_id' => $id,
+                'comment' => "Status updated from [{$from}] to [{$to}]",
+                'commented_by' => Constants::USER_SYSTEM,
+                'type' => Constants::COMMENT_TYPE_UPDATE,
+            ]);
+
+            if ($post['status'] == Constants::STATUS_COMPLETED) {
+                $post['finished_date'] = date_ymd();
+            }
+        }
+
+        if ($log['assignee'] !== $post['assignee']) {
+            $from = $log['assignee'] == Constants::USER_SYSTEM
+                ? Constants::USER_SYSTEM_LABEL
+                : Constants::USERS[$log['assignee']];
+
+            $to = $post['assignee'] == Constants::USER_SYSTEM
+                ? Constants::USER_SYSTEM_LABEL
+                : Constants::USERS[$post['assignee']];
+
+            $commentsModel->insert([
+                'log_id' => $id,
+                'comment' => "Assignee changed from [{$from}] to [{$to}]",
+                'commented_by' => Constants::USER_SYSTEM,
+                'type' => Constants::COMMENT_TYPE_UPDATE,
+            ]);
+        }
 
         $updateData = [
             'title'           => trim($post['title']),
@@ -127,6 +171,7 @@ class ActivityLogsController extends BaseController
             'log_id' => $post['log_id'],
             'comment' => $post['comment'],
             'commented_by' => $post['commented_by'],
+            'type' => Constants::COMMENT_TYPE_COMMENT,
         ]);
 
         return redirect()->back()->with('success', 'Update posted successfully.');
@@ -168,5 +213,79 @@ class ActivityLogsController extends BaseController
         return redirect()
             ->to('/activity-logs/view/' . $post['log_id'])
             ->with('error', "An error occurred. File was not uploaded successfully.");
+    }
+
+    public function exportAsCSV()
+    {
+        helper('custom_functions');
+        $logsModel = new ActivityLogsModel();
+        $filters = $this->request->getGet();
+        $logs = $logsModel->filterLogs($filters);
+
+        $subsidiary = (!empty($filters['subsidiary_id']))
+            ? '(' . Constants::ACTIVITY_LOG_SUBSIDIARIES[$filters['subsidiary_id']] . ')'
+            : null;
+
+        $project = (!empty($filters['project_id']))
+            ? '(' . Constants::PROJECTS[$filters['project_id']] . ')'
+            : null;
+
+        $assignee = (!empty($filters['assignee']))
+            ? '(' . Constants::USERS[$filters['assignee']] . ')'
+            : null;
+
+        $filename = 'ActivityLogs' . $subsidiary . $project . $assignee . '_' . date('Y-m-d') . '.csv';
+
+        $csv = fopen('php://output', 'w');
+
+        // Headers
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+
+        // CSV column headers
+        fputcsv($csv, [
+            'Subsidiary',
+            'Project Name',
+            'Activity Log Type',
+            'Assigned To',
+            'Title',
+            'Description',
+            'Status',
+            'Size',
+            'Ticket ID',
+            '(Campaign) Department',
+            '(Campaign) Status',
+            '(Campaign) ID',
+            'Requested By',
+            'Requested Date',
+            'Finished Date',
+            'Created Date',
+        ]);
+
+        // Rows
+        foreach ($logs as $log) {
+
+            fputcsv($csv, [
+                Constants::ACTIVITY_LOG_SUBSIDIARIES[$log['subsidiary_id']] ?? 'N/A',
+                Constants::PROJECTS[$log['project_id']] ?? 'N/A',
+                Constants::ACTIVITY_TYPES[$log['type']] ?? 'N/A',
+                Constants::USERS[$log['assignee']] ?? 'N/A',
+                $log['title'],
+                esc($log['description']),
+                Constants::ACTIVITY_LOGS_STATUS[$log['status']] ?? 'Unknown',
+                Constants::ACTIVITY_SIZES[$log['size']] ?? 'Unknown',
+                $log['ticket_id'] ?? '-',
+                Constants::DWF_DEPARTMENTS[$log['department_id']] ?? '-',
+                Constants::CAMPAIGN_STATUS[$log['campaign_status']] ?? '-',
+                $log['campaign_id'] ?? '-',
+                '\'' . $log['requested_by'] ?? '-',
+                '\'' . $log['requested_date'] ?? '-',
+                '\'' . $log['finished_date'] ?? '-',
+                '\'' . $log['created_at'] ?? '-',
+            ]);
+        }
+
+        fclose($csv);
+        exit;
     }
 }

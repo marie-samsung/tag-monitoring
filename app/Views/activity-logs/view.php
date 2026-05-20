@@ -14,7 +14,7 @@
     $status = Constants::ACTIVITY_LOGS_STATUS[$log['status']] ?? 'Unknown';
     $type = Constants::ACTIVITY_TYPES[$log['type']] ?? 'Unknown';
     $project = Constants::PROJECTS[$log['project_id']] ?? 'Unknown';
-    $assignee = Constants::USERS[$log['assignee']] ?? 'Unknown';
+    $assignee = Constants::USERS[$log['assignee']] ?? Constants::USER_SYSTEM_LABEL;
     $size = Constants::ACTIVITY_SIZES[$log['size']] ?? 'Unknown';
 ?>
 
@@ -48,7 +48,13 @@
         <div class="mb-2">
             <label class="form-label-xs text-primary">Ticket ID</label>
             <div class="form-control-plaintext p-0 ms-2">
-                <?= esc($log['ticket_id'] ?: '—') ?>
+                <?php if (!empty($log['ticket_id'])) : ?>
+                    <a href="<?= Constants::JIRA_LINK . $log['ticket_id'] ?>" target="_blank">
+                        <?= esc($log['ticket_id']) ?>
+                    </a>
+                <?php else: ?>
+                    <?= '-' ?>
+                <?php endif; ?>
             </div>
         </div>
 
@@ -126,13 +132,23 @@
 
             <?php if (!empty($comments)) :
                  foreach ($comments as $comment) : ?>
-                 <div class="d-flex gap-2">
-                     <span class="form-label-xs text-primary">
-                         <?= Constants::USERS[$comment['commented_by']] ?>
-                     </span>
-                     <span class="form-label-xs text-muted"><?= $comment['created_at'] ?></span>
-                 </div>
-                 <span class="p-1 rounded-2 bg-body-tertiary mb-3"><?= $comment['comment'] ?></span>
+                    <?php if ($comment['commented_by'] != Constants::USER_SYSTEM) : ?>
+                         <div class="d-flex gap-2">
+                             <span class="form-label-xs text-primary">
+                                 <?= Constants::USERS[$comment['commented_by']] ?>
+                             </span>
+                             <span class="form-label-xs text-muted"><?= $comment['created_at'] ?></span>
+                         </div>
+                         <span class="ps-3 pt-3 rounded-2 bg-body-tertiary mb-3"><?= $comment['comment'] ?></span>
+                    <?php else: ?>
+                         <div class="d-flex gap-2">
+                             <span class="form-label-xs text-info">
+                                 <?= Constants::USER_SYSTEM_LABEL ?>
+                             </span>
+                             <span class="form-label-xs text-muted"><?= $comment['created_at'] ?></span>
+                         </div>
+                         <span class="p-3 rounded-2 bg-info-subtle mb-3"><?= $comment['comment'] ?></span>
+                    <?php endif; ?>
                 <?php endforeach; ?>
             <?php else: ?>
                 <span class="alert alert-info">No update(s) for this log yet.</span>

@@ -139,9 +139,7 @@ Tag Request: Create
             $vendor_name
         );
 
-        $detailsHtml = '';
-
-        $detailsHtml .= "
+        $detailsHtml = "
             <b style='color:#337ab7;'>1) Target Property :</b>
             <ul>
                 <li>". $isShop ." : ". $property['name'] ."</li>
@@ -254,6 +252,8 @@ Tag Request: Create
     $isShop = $propertiesModel->isShop($property_id);
     $reason = $vendor['reason'] ?? '-';
     $purpose = $vendor['tag_purpose'] ?? '-';
+    $today = date('dmY');
+    $libraryName = (!empty($ticket_id) ?? '') . '_'. $today;
     $ssGTM = Constants::JIRA_SSGTM_TICKET;
     $jiraTitle = sprintf(
             '[LC Request] [%s] - [%s] - [New Rule]',
@@ -264,12 +264,11 @@ Tag Request: Create
     $actionLink = empty($ticket_id) ? site_url('tag-requests/create/confirm')
             : site_url('tag-requests/view/' . $request_id);
 
-    $detailsHtml = '';
-
-    $detailsHtml .= "
+    $detailsHtml = "
             <b style='color:#337ab7;'>1) Target Property :</b>
             <ul>
                 <li>". $isShop ." : ". $property['name'] ."</li>
+                <li>Library Name : ". $libraryName ."</li>
             </ul>
     
             <b style='color:#337ab7;'>2) Target Page(s) :</b>
@@ -341,7 +340,7 @@ Tag Request: Create
             ";
 ?>
 <!-- region | PART 3 - NEW RULE REQUEST CONFIRMATION -->
-<form action="<?= $actionLink ?>" method="post">
+<form action="<?= $actionLink ?>" method="get">
     <div class="container mb-5">
         <?php if ($ticket_id): ?>
             <h6 class="text-danger"><b><?= esc($ticket_id) ?></b></h6>
@@ -391,13 +390,13 @@ Tag Request: Create
             <?php endif; ?>
 
             <div>
-            <span id="copyDetailsStatus" style="opacity:0; transition: opacity .6s; font-size:10px; color:green;">
-                Copied!
-            </span>
-
                 <a href="javascript:void(0)" onclick="copyDetails()">
                     <i class="bi bi-copy text-primary fs-5"></i>
                 </a>
+
+                <span id="copyDetailsStatus" style="opacity:0; transition: opacity .6s; font-size:10px; color:green;">
+                    Copied!
+                </span>
             </div>
         </div>
 
@@ -408,7 +407,6 @@ Tag Request: Create
         <?php endif; ?>
     </div>
 </form>
-<?php else: ?>
 <?php endif; ?>
 <?= $this->endSection() ?>
 

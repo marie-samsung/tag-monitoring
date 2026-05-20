@@ -16,9 +16,11 @@ $routes->group('tags', function ($routes) {
     $routes->get('verify/(:num)', 'TagsController::verify/$1');
     $routes->post('renew/confirm', 'TagsController::renewConfirm');
     $routes->post('renew/updateAL', 'TagsController::updateAL');
+    $routes->post('update-rule/confirm', 'TagsController::updateRuleRequestConfirm');
     $routes->match(['get', 'post'], 'create', 'TagsController::create');
     $routes->match(['get', 'post'], 'update/(:num)', 'TagsController::update/$1');
     $routes->match(['get', 'post'], 'renew', 'TagsController::renew');
+    $routes->match(['get', 'post'], 'update-rule-request', 'TagsController::createUpdateRuleRequest');
     // $routes->post('delete/(:num)', 'TagsController::delete/$1');
 });
 
@@ -60,6 +62,7 @@ $routes->group('jira', function ($routes) {
 
 $routes->group('activity-logs', function ($routes) {
     $routes->get('/', 'ActivityLogsController::index');
+    $routes->get('export', 'ActivityLogsController::exportAsCSV');
     $routes->get('view/(:num)', 'ActivityLogsController::view/$1');
     $routes->post('comment', 'ActivityLogsController::comment');
     $routes->post('upload', 'ActivityLogsController::uploadFile');

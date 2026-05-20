@@ -22,8 +22,8 @@ Activity Logs
     <div class="d-flex justify-content-between align-items-center">
         <h2>Activity Logs</h2>
         <div class="d-flex align-items-center gap-2">
-            <a href="<?= site_url('activity-logs/create') ?>" target="_blank" title="Create a new log" class="btn btn-success btn-sm ms-auto px-2">Add Log</a>
-            <!-- <a href="<?= site_url('tags/export?' . http_build_query($_GET)) ?>" class="btn btn-sm btn-warning ms-auto px-2">Export as CSV</a> -->
+            <a href="<?= site_url('activity-logs/create') ?>" target="_blank" title="Create a new log" class="btn btn-success btn-sm ms-auto px-2">Log Activity</a>
+             <a href="<?= site_url('activity-logs/export?' . http_build_query($_GET)) ?>" class="btn btn-sm btn-warning ms-auto px-2">Export as CSV</a>
         </div>
     </div>
 
@@ -102,7 +102,7 @@ Activity Logs
 
             <div class="col-md-2 d-flex align-items-center gap-2">
                 <button class="btn btn-sm btn-primary w-100">Filter</button>
-                <a href="<?= site_url('tags') ?>" class="btn btn-sm btn-secondary w-100">Clear</a>
+                <a href="<?= site_url('activity-logs') ?>" class="btn btn-sm btn-secondary w-100">Clear</a>
             </div>
 
         </form>
@@ -136,7 +136,7 @@ Activity Logs
                     $status = Constants::ACTIVITY_LOGS_STATUS[$log['status']] ?? 'Unknown';
                     $type = Constants::ACTIVITY_TYPES[$log['type']] ?? 'Unknown';
                     $project = Constants::PROJECTS[$log['project_id']] ?? 'Unknown';
-                    $assignee = Constants::USERS[$log['assignee']] ?? 'Unknown';
+                    $assignee = Constants::USERS[$log['assignee']] ?? Constants::USER_SYSTEM_LABEL;
                     $size = Constants::ACTIVITY_SIZES[$log['size']] ?? 'Unknown';
             ?>
                 <tr>

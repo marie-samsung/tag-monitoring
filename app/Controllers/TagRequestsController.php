@@ -2,6 +2,8 @@
 
 namespace App\Controllers;
 
+use App\Models\ActivityLogCommentsModel;
+use App\Models\ActivityLogsModel;
 use App\Models\Constants;
 use App\Models\JiraHistoryModel;
 use App\Models\OrganizationsModel;
@@ -102,6 +104,19 @@ class TagRequestsController extends BaseController
             }
 
             foreach ($post['tags'] as $tag) {
+                $match = $tagsModel->where('property_id', $propertyId)
+                    ->where('name', $tag)
+                    ->first();
+
+                if ($match) {
+                    $property = $propertiesModel->find($propertyId);
+                    return redirect()
+                        ->to('/tag-requests/create')
+                        ->with('error', "An existing tag with the name [{$name}] on the selected property [{$property['name']}] was found.");
+                }
+            }
+
+            foreach ($post['tags'] as $tag) {
                 $tagIds[] = $tagsModel->insert([
                     'property_id' => $propertyId,
                     'vendor_id' => $vendorId,
@@ -163,9 +178,13 @@ class TagRequestsController extends BaseController
         } else {
             $tagRequest = $model->find($id);
             $ticketColumn = 'new_tag_ticket';
+            $title = "New Tag Request: ";
             if ($tagRequest['type'] == Constants::JIRA_TYPE_NEW_RULE) {
                 $ticketColumn = 'new_rule_ticket';
+                $title = "New Rule Request: ";
             }
+
+            $this->addActivityLog($tagRequest, $title, $ticketId);
 
             if (!$tagRequest) {
                 return redirect()
@@ -254,6 +273,8 @@ class TagRequestsController extends BaseController
     {
         $model = new TagRequestsModel();
         $tagsModel = new TagsModel();
+        $activityLogModel = new ActivityLogsModel();
+        $commentsModel = new ActivityLogCommentsModel();
         $request = $model->find($id);
 
         if (!$request) {
@@ -268,6 +289,24 @@ class TagRequestsController extends BaseController
             return redirect()
                 ->to('/tag-requests')
                 ->with('error', "There were no tags associated with this request.");
+        }
+
+        $ticketId = $request['new_tag_ticket'] ?? $request['new_rule_ticket'];
+        $activityLog = $activityLogModel->where('ticket_id', $ticketId)->first();
+
+        if ($activityLog) {
+            if ($activityLog['status'] != Constants::STATUS_COMPLETED) {
+                $commentsModel->insert([
+                    'log_id' => $activityLog['id'],
+                    'comment' => "Status updated from [{$activityLog['status']}] to [". Constants::STATUS_COMPLETED ."]",
+                    'commented_by' => Constants::USER_SYSTEM,
+                    'type' => Constants::COMMENT_TYPE_UPDATE,
+                ]);
+
+                $activityLogModel->update($activityLog['id'], [
+                    'status' => Constants::STATUS_COMPLETED,
+                ]);
+            }
         }
 
         foreach ($tags as $tag) {
@@ -399,5 +438,34 @@ class TagRequestsController extends BaseController
                 'created_by' => 0, // @TODO: Replace with actual user ID from session
             ]);
         }
+    }
+
+    public function addActivityLog($request, $title, $ticketId)
+    {
+        $activityLogModel = new ActivityLogsModel();
+        $propertiesModel = new PropertiesModel();
+        $vendorsModel = new VendorsModel();
+        $tagsModel = new TagsModel();
+        $vendor = $vendorsModel->find($request['vendor_id']);
+        $property = $propertiesModel->find($request['property_id']);
+        $description = "<ol><li><b>{$property['name']}</b></li><ul>";
+        $tags = explode(',', $request['tags']);
+
+        foreach ($tags as $tag) {
+            $tagInfo = $tagsModel->find($tag);
+            $description .= '<li>' . $tagInfo['name'] . '</li>';
+        }
+
+        $activityLogModel->insert([
+            'title' => $title . $vendor['name'],
+            'description' => $description . '</ul></ol>',
+            'subsidiary_id' => $property['subsidiary_id'],
+            'project_id' => Constants::PROJECT_MEDIA_TAGGING,
+            'ticket_id' => $ticketId ?? null,
+            'assignee' => Constants::USER_SYSTEM,
+            'status' => Constants::STATUS_IMPLEMENTATION,
+            'type' => Constants::ACTIVITY_TYPE_REQUEST,
+            'size' => Constants::ACTIVITY_SIZE_M,
+        ]);
     }
 }

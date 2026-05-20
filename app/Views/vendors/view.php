@@ -19,12 +19,27 @@
 ?>
 
 <?php if ($tags): ?>
-    <div class="container-fluid d-flex justify-content-between align-items-center mb-3">
+    <div class="container-fluid d-flex justify-content-between align-items-center">
         <h3><?= "[" . $subsidiary . "] " . $vendor['name'] ?></h3>
         <a href="<?= site_url('vendors/export/' . $vendor['id'] . '?' . http_build_query($_GET)) ?>" class="btn btn-warning btn-sm">
             Export as CSV
         </a>
     </div>
+
+    <?php if (!empty($vendor['reason']) || !empty($vendor['tag_purpose'])) : ?>
+        <div class="container-fluid justify-content-start mb-3">
+            <?php if (!empty($vendor['reason'])) : ?>
+                <span class="fw-semibold form-label-xs">Business Reason: </span>
+                <span class="form-label-xs"><?= $vendor['reason'] ?></span>
+            <?php endif; ?>
+
+            <?php if (!empty($vendor['tag_purpose'])) : ?>
+                <br>
+                <span class="fw-semibold form-label-xs">Tag Purpose: </span>
+                <span class="form-label-xs"><?= $vendor['tag_purpose'] ?></span>
+            <?php endif; ?>
+        </div>
+    <?php endif; ?>
 
     <div class="container-fluid">
         <div class="table-responsive">

@@ -30,4 +30,38 @@ class ActivityLogsModel extends Model
 
     protected $useTimestamps = true;
     protected $useSoftDeletes = true;
+
+    public function filterLogs($filters = [])
+    {
+        $builder = $this->builder();
+
+        if (!empty($filters['keyword'])) {
+            $builder->like('title', $filters['keyword']);
+            $builder->orLike('description', $filters['keyword']);
+            $builder->orLike('ticket_id', $filters['keyword']);
+        }
+
+        if (!empty($filters['subsidiary_id'])) {
+            $builder->where('subsidiary_id', $filters['subsidiary_id']);
+        }
+
+        if (!empty($filters['project_id'])) {
+            $builder->where('project_id', $filters['project_id']);
+        }
+
+        if (!empty($filters['type'])) {
+            $builder->where('type', $filters['type']);
+        }
+
+        if (!empty($filters['assignee'])) {
+            $builder->where('assignee', $filters['assignee']);
+        }
+
+        if (!empty($filters['status'])) {
+            $builder->where('status', $filters['status']);
+        }
+
+        $builder->orderBy('created_at', 'DESC');
+        return $builder->get()->getResultArray();
+    }
 }

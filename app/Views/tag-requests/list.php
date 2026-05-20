@@ -127,7 +127,7 @@ Tag: Requests (New Rule, New Tag)
 
             <div class="col-md-2 d-flex align-items-center gap-2">
                 <button class="btn btn-sm btn-primary w-100">Filter</button>
-                <a href="<?= site_url('tags') ?>" class="btn btn-sm btn-secondary w-100">Clear</a>
+                <a href="<?= site_url('tag-requests') ?>" class="btn btn-sm btn-secondary w-100">Clear</a>
             </div>
 
         </form>

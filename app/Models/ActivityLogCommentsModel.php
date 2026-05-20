@@ -11,6 +11,7 @@ class ActivityLogCommentsModel extends Model
     protected $allowedFields = [
         'log_id',
         'comment',
+        'type',
         'commented_by',
         'created_at',
     ];

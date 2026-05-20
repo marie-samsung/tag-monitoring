@@ -205,6 +205,7 @@ class Constants
     ];
 
     public const USER_SYSTEM = 0;
+    public const USER_SYSTEM_LABEL = 'System';
     public const USER_MARIE = 1;
     public const USER_KHRISTINE = 2;
     public const USER_LUCKY = 3;
@@ -270,5 +271,12 @@ class Constants
     public const CAMPAIGN_STATUS = [
         self::CAMPAIGN_STATUS_NEW => 'New',
         self::CAMPAIGN_STATUS_EXISTING => 'Existing',
+    ];
+
+    public const COMMENT_TYPE_COMMENT = 1;
+    public const COMMENT_TYPE_UPDATE = 2;
+    public const COMMENT_TYPES = [
+        self::COMMENT_TYPE_COMMENT => 'Comment',
+        self::COMMENT_TYPE_UPDATE => 'Update',
     ];
 }
