@@ -18,11 +18,7 @@ $segment = service('uri')->getSegment(1); ?>
         <i class="bi bi-truck"></i> Vendors
     </a>
 </nav> -->
-<?php if (Constants::IS_DEV) : ?>
-    <div class="d-flex justify-content-center mb-2">
-        <span class="badge bg-warning" style="font-size: 0.65rem; letter-spacing: 1px; padding: 0.35em 0.7em;">DEVELOPMENT MODE</span>
-    </div>
-<?php endif; ?>
+
 
 <div class="d-flex justify-content-center w-100">
 <ul class="nav nav-pills justify-content-center apple-segmented-control" id="appleNav">

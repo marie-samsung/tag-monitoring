@@ -43,6 +43,14 @@
     <script src="<?= base_url('assets/summernote/summernote-lite.js') ?>"></script>
 
     <?= $this->renderSection('scripts') ?>
+
+    <?php if (\App\Models\Constants::IS_DEV) : ?>
+        <div style="position: fixed; bottom: 16px; right: 16px; z-index: 9999; pointer-events: none;">
+            <span class="badge" style="background: rgba(255, 193, 7, 0.85); color: #000; font-size: 0.65rem; letter-spacing: 1px; padding: 0.4em 0.8em; backdrop-filter: blur(4px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: 1px solid rgba(255, 193, 7, 0.3);">
+                DEVELOPMENT MODE
+            </span>
+        </div>
+    <?php endif; ?>
 </body>
 </html>
  
