@@ -30,8 +30,8 @@ Tag Monitoring System
     <div class="d-flex justify-content-between align-items-center">
         <h2>Tag Inventory</h2>
         <div class="d-flex align-items-center gap-2">
-            <a href="<?= site_url('tags/renew') ?>" target="_blank" title="Renew selected tags" class="apple-btn-primary btn-sm ms-auto px-3" id="btnRenew" style="display:none;">Renew</a>
-            <a href="<?= site_url('tags/create') ?>" target="_blank" title="Add a new tag" class="apple-btn-primary btn-sm ms-auto px-3">Create New Tag</a>
+            <a href="<?= site_url('tags/renew') ?>" title="Renew selected tags" class="apple-btn-primary btn-sm ms-auto px-3" id="btnRenew" style="display:none;">Renew</a>
+            <a href="<?= site_url('tags/create') ?>" title="Add a new tag" class="apple-btn-primary btn-sm ms-auto px-3">Create New Tag</a>
             <a href="<?= site_url('tags/export?' . http_build_query($_GET)) ?>" class="apple-btn-secondary btn-sm ms-auto px-3">Export as CSV</a>
         </div>
     </div>
@@ -164,14 +164,14 @@ Tag Monitoring System
                         <!-- Property -->
                         <td>
                             <i class="bi bi-tag-fill" style="<?= random_text_style($tag['property_id']) ?>"></i>
-                            <a href="<?= $properties[$tag['property_id']]['ref_link'] ?>" target="_blank" class="apple-link-dark form-label-sm ms-1">
+                            <a href="<?= $properties[$tag['property_id']]['ref_link'] ?>" class="apple-link-dark form-label-sm ms-1">
                                 <?= $properties[$tag['property_id']]['name'] ?>
                             </a>
                         </td>
                         <!-- Name -->
                         <td class="form-label-sm">
                             <span class="group-hover-container align-items-center">
-                                <a href="<?= $tag['ref_link'] ?>" target="_blank" class="apple-link-dark">
+                                <a href="<?= $tag['ref_link'] ?>" class="apple-link-dark">
                                     <?= esc($tag['name']) ?>
                                 </a>
                                 <a href="javascript:void(0)" onclick="copyTagName('<?= esc($tag['name']) ?>', this)" title="Copy tag name" class="text-muted ms-2" style="transition: color 0.2s; text-decoration: none; line-height: 1;">
@@ -186,7 +186,7 @@ Tag Monitoring System
                             </span>
                             <?php if ($tag['status'] == Constants::STATUS_PENDING_VERIFICATION): ?>
                                 <br>
-                                <a href="<?= Constants::JIRA_LINK . $ticketId ?>" target="_blank" class="apple-link ms-1" style="font-size: 0.8rem;">
+                                <a href="<?= Constants::JIRA_LINK . $ticketId ?>" class="apple-link ms-1" style="font-size: 0.8rem;">
                                     <?= $ticketId ?>
                                 </a>
                             <?php endif; ?>
@@ -212,8 +212,8 @@ Tag Monitoring System
                         <!-- <td><?= esc($tag['updated_by']) ?></td> -->
                         <!-- Actions -->
                         <td class="text-nowrap">
-                            <a href="<?= site_url('tags/view/'.$tag['id']) ?>" target="_blank" title="View tag details" class="apple-btn-secondary btn-sm text-decoration-none">View</a>
-                            <a href="<?= site_url('tags/update/'.$tag['id']) ?>" target="_blank" title="Update tag details" class="apple-btn-primary btn-sm text-decoration-none">Update</a>
+                            <a href="<?= site_url('tags/view/'.$tag['id']) ?>" title="View tag details" class="apple-btn-secondary btn-sm text-decoration-none">View</a>
+                            <a href="<?= site_url('tags/update/'.$tag['id']) ?>" title="Update tag details" class="apple-btn-primary btn-sm text-decoration-none">Update</a>
                         </td>
                     </tr>
                 <?php endforeach; ?>
@@ -257,7 +257,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (checked.length === 0) return;
 
         const url = "<?= site_url('tags/renew') ?>?tags=" + checked.join(',');
-        window.open(url, "_blank");
+        window.location.href = url;
     });
 
     window.copyTagName = function(text, el) {
