@@ -90,7 +90,7 @@ Tag: Create
             <div class="row">
                 <div class="col-md-6 mb-3 mb-md-0">
                     <label class="form-label-sm fw-semibold text-dark mb-1" for="al_end_date">Launch Expiry Date</label>
-                    <input type="date"
+                    <input type="text"
                         name="al_end_date"
                         id="al_end_date"
                         class="form-control form-control-xs"
@@ -152,8 +152,15 @@ Tag: Create
     </div>
 </form>
 
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        flatpickr("#al_end_date", {
+            dateFormat: "Y-m-d",
+            disableMobile: "true"
+        });
+
         $('.searchable-select').select2({
             width: '100%',
         });
