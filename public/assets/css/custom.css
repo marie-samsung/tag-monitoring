@@ -122,10 +122,12 @@ h1, h2, h3, h4, h5, h6 {
     display: inline-flex;
     gap: 4px;
     margin: 0 auto;
+    position: relative;
 }
 
 .apple-segmented-control .nav-item {
     margin: 0;
+    z-index: 1;
 }
 
 .apple-segmented-control .nav-link {
@@ -135,21 +137,34 @@ h1, h2, h3, h4, h5, h6 {
     font-weight: 500;
     color: #49494D;
     border-radius: 8px;
-    transition: all 0.2s ease;
+    transition: color 0.2s ease;
     display: flex;
     align-items: center;
     gap: 6px;
+    position: relative;
 }
 
 .apple-segmented-control .nav-link:hover {
     color: #1D1D1F;
-    background-color: rgba(0,0,0,0.05);
 }
 
 .apple-segmented-control .nav-link.active {
-    background-color: #ffffff;
     color: #1D1D1F !important;
+    background-color: transparent !important;
+}
+
+.sliding-glass-pill {
+    position: absolute;
+    top: 4px;
+    bottom: 4px;
+    left: 0;
+    background-color: #ffffff;
+    border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+    z-index: 0;
+    pointer-events: none;
+    transition: transform 0.35s cubic-bezier(0.25, 0.8, 0.25, 1) 0.05s, width 0.35s cubic-bezier(0.25, 0.8, 0.25, 1) 0.05s;
+    opacity: 0; /* Hidden initially until JS sets it */
 }
 
 table.file-table {
