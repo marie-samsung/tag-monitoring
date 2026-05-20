@@ -38,25 +38,25 @@ Tag Monitoring System
 
     <div class="row g-3 mb-4">
         <div class="col-md-3">
-            <div class="apple-metric-card">
+            <div class="apple-metric-card" style="cursor: pointer;" onclick="window.location.href='<?= site_url('tags?status=' . Constants::STATUS_ENABLED) ?>'">
                 <div class="apple-metric-label"><i class="bi bi-check-circle-fill text-success"></i> Active</div>
                 <div class="apple-metric-value text-success"><?= $tagsModel->countActiveTags() ?></div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="apple-metric-card">
+            <div class="apple-metric-card" style="cursor: pointer;" onclick="window.location.href='<?= site_url('tags?status=expiring') ?>'">
                 <div class="apple-metric-label"><i class="bi bi-exclamation-triangle-fill text-danger"></i> Needs Attention</div>
                 <div class="apple-metric-value text-danger"><?= $tagsModel->countExpiringTags() ?></div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="apple-metric-card">
+            <div class="apple-metric-card" style="cursor: pointer;" onclick="window.location.href='<?= site_url('tags?status=' . Constants::STATUS_PENDING_VERIFICATION) ?>'">
                 <div class="apple-metric-label"><i class="bi bi-hourglass-split text-warning"></i> Pending</div>
                 <div class="apple-metric-value text-warning"><?= $tagsModel->countPendingVerificationTags() ?></div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="apple-metric-card">
+            <div class="apple-metric-card" style="cursor: pointer;" onclick="window.location.href='<?= site_url('tags') ?>'">
                 <div class="apple-metric-label"><i class="bi bi-collection-fill text-secondary"></i> Total</div>
                 <div class="apple-metric-value text-dark"><?= $tagsModel->countAllTags() ?></div>
             </div>

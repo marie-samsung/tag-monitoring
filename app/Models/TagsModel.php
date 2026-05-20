@@ -49,10 +49,20 @@ class TagsModel extends Model
         }
 
         if (!empty($filters['status'])) {
-            if (is_array($filters['status'])) {
+            if ($filters['status'] === 'expiring') {
+                $base = date('Y-m-d', strtotime('-10 days'));
+                $expiring = date('Y-m-d', strtotime('+15 days'));
+                $builder->whereIn('tags.status', [
+                    Constants::STATUS_ENABLED,
+                    Constants::STATUS_PENDING_VERIFICATION,
+                    Constants::STATUS_UPDATED_IN_AL
+                ])
+                ->where('tags.al_end_date >=', $base)
+                ->where('tags.al_end_date <=', $expiring);
+            } else if (is_array($filters['status'])) {
                 $builder->whereIn('tags.status', $filters['status']);
             } else {
-                $builder->where('tags.status', $filters['status'][0]);
+                $builder->where('tags.status', $filters['status']);
             }
         }
 
