@@ -30,22 +30,42 @@ Tag Monitoring System
     <div class="d-flex justify-content-between align-items-center">
         <h2>Tag Inventory</h2>
         <div class="d-flex align-items-center gap-2">
-            <a href="<?= site_url('tags/renew') ?>" target="_blank" title="Renew selected tags" class="btn btn-primary btn-sm ms-auto px-2" id="btnRenew" style="display:none;">Renew</a>
-            <a href="<?= site_url('tags/create') ?>" target="_blank" title="Add a new tag" class="btn btn-success btn-sm ms-auto px-2">Create New Tag</a>
-            <a href="<?= site_url('tags/export?' . http_build_query($_GET)) ?>" class="btn btn-sm btn-warning ms-auto px-2">Export as CSV</a>
+            <a href="<?= site_url('tags/renew') ?>" target="_blank" title="Renew selected tags" class="apple-btn-primary btn-sm ms-auto px-3" id="btnRenew" style="display:none;">Renew</a>
+            <a href="<?= site_url('tags/create') ?>" target="_blank" title="Add a new tag" class="apple-btn-primary btn-sm ms-auto px-3">Create New Tag</a>
+            <a href="<?= site_url('tags/export?' . http_build_query($_GET)) ?>" class="apple-btn-secondary btn-sm ms-auto px-3">Export as CSV</a>
         </div>
     </div>
 
-    <div class="d-flex justify-content-start gap-2 form-label-xs">
-        <p>Active: <span class="text-success fw-semibold"><?= $tagsModel->countActiveTags() ?></span></p>
-        <p>Needs Attention: <span class="text-danger fw-semibold"><?= $tagsModel->countExpiringTags() ?></span></p>
-        <p>Pending Verification: <span class="text-warning fw-semibold"><?= $tagsModel->countPendingVerificationTags() ?></span></p>
-        <p>Total: <span class="text-dark fw-semibold"><?= $tagsModel->countAllTags() ?></span></p>
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="apple-metric-card">
+                <div class="apple-metric-label"><i class="bi bi-check-circle-fill text-success"></i> Active</div>
+                <div class="apple-metric-value text-success"><?= $tagsModel->countActiveTags() ?></div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="apple-metric-card">
+                <div class="apple-metric-label"><i class="bi bi-exclamation-triangle-fill text-danger"></i> Needs Attention</div>
+                <div class="apple-metric-value text-danger"><?= $tagsModel->countExpiringTags() ?></div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="apple-metric-card">
+                <div class="apple-metric-label"><i class="bi bi-hourglass-split text-warning"></i> Pending</div>
+                <div class="apple-metric-value text-warning"><?= $tagsModel->countPendingVerificationTags() ?></div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="apple-metric-card">
+                <div class="apple-metric-label"><i class="bi bi-collection-fill text-secondary"></i> Total</div>
+                <div class="apple-metric-value text-dark"><?= $tagsModel->countAllTags() ?></div>
+            </div>
+        </div>
     </div>
 
     <!-- #region | SEARCH FILTER -->
-    <div>
-        <form method="get" class="row g-3 mb-3">
+    <div class="apple-control-bar mb-4">
+        <form method="get" class="row g-2 w-100 m-0">
             <div class="col">
                 <input 
                     type="text" 
@@ -93,8 +113,8 @@ Tag Monitoring System
             </div>
 
             <div class="col-md-2 d-flex align-items-center gap-2">
-                <button class="btn btn-sm btn-primary w-100">Filter</button>
-                <a href="<?= site_url('tags') ?>" class="btn btn-sm btn-secondary w-100">Clear</a>
+                <button class="apple-btn-primary btn-sm w-100">Filter</button>
+                <a href="<?= site_url('tags') ?>" class="apple-btn-secondary btn-sm w-100 text-center text-decoration-none">Clear</a>
             </div>
 
         </form>
@@ -102,9 +122,10 @@ Tag Monitoring System
     <!-- #endregion -->
 
     <!-- #region | TAGS TABLE -->
-    <div class="table-responsive">
-        <table class="table table-bordered table-hover table-striped" id="tblTags">
-            <thead class="table-active">
+    <div class="apple-table-container">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="tblTags" style="border-collapse: separate; border-spacing: 0; min-width: 100%;">
+            <thead>
                 <tr>
                     <th class="form-label-sm fw-semibold">#</th>
                     <th></th>
@@ -149,14 +170,14 @@ Tag Monitoring System
                         </td>
                         <!-- Name -->
                         <td class="form-label-sm">
-                            <div class="d-flex justify-content-between align-items-center gap-1">
-                                <a href="<?= $tag['ref_link'] ?>" target="_blank">
+                            <div class="d-flex justify-content-start align-items-center gap-2 group-hover-container">
+                                <a href="<?= $tag['ref_link'] ?>" target="_blank" class="text-decoration-none fw-semibold" style="color: #1D1D1F; transition: color 0.2s;">
                                     <?= esc($tag['name']) ?>
                                 </a>
 
                                 <!-- Copy button -->
-                                <a href="javascript:void(0)" onclick="copyTagName('<?= esc($tag['name']) ?>', this)" title="Copy tag name">
-                                    <i class="bi bi-copy text-secondary fs-7"></i>
+                                <a href="javascript:void(0)" onclick="copyTagName('<?= esc($tag['name']) ?>', this)" title="Copy tag name" class="text-muted" style="transition: color 0.2s; text-decoration: none;">
+                                    <i class="bi bi-copy" style="font-size: 0.85rem;"></i>
                                 </a>
                             </div>
                         </td>
@@ -192,13 +213,14 @@ Tag Monitoring System
                         <!-- <td><?= esc($tag['updated_by']) ?></td> -->
                         <!-- Actions -->
                         <td class="text-nowrap">
-                            <a href="<?= site_url('tags/view/'.$tag['id']) ?>" target="_blank" title="View tag details" class="btn btn-secondary btn-sm">View</a>
-                            <a href="<?= site_url('tags/update/'.$tag['id']) ?>" target="_blank" title="Update tag details" class="btn btn-primary btn-sm">Update</a>
+                            <a href="<?= site_url('tags/view/'.$tag['id']) ?>" target="_blank" title="View tag details" class="apple-btn-secondary btn-sm text-decoration-none">View</a>
+                            <a href="<?= site_url('tags/update/'.$tag['id']) ?>" target="_blank" title="Update tag details" class="apple-btn-primary btn-sm text-decoration-none">Update</a>
                         </td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
         </table>
+        </div>
     </div>
     <!-- #endregion -->
 </div>
@@ -240,12 +262,39 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     window.copyTagName = function(text, el) {
-        navigator.clipboard.writeText(text).then(() => {
-            el.innerHTML = '<i class="bi bi-check-lg text-success fs-7"></i>';
+        const onSuccess = () => {
+            el.innerHTML = '<i class="bi bi-check-lg text-success" style="font-size: 0.85rem;"></i>';
             setTimeout(() => {
-                el.innerHTML = '<i class="bi bi-copy text-secondary fs-7"></i>';
+                el.innerHTML = '<i class="bi bi-copy" style="font-size: 0.85rem;"></i>';
             }, 1200);
-        });
+        };
+
+        // Modern approach (requires HTTPS or localhost)
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(onSuccess).catch(err => {
+                console.error("Failed to copy text: ", err);
+            });
+        } else {
+            // Fallback for non-HTTPS local domains (like http://tag-monitoring)
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            // Prevent scrolling to bottom
+            textArea.style.top = "0";
+            textArea.style.left = "0";
+            textArea.style.position = "fixed";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) onSuccess();
+            } catch (err) {
+                console.error('Fallback: Oops, unable to copy', err);
+            }
+
+            document.body.removeChild(textArea);
+        }
     };
 });
 

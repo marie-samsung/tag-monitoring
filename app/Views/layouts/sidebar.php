@@ -19,10 +19,13 @@ $segment = service('uri')->getSegment(1); ?>
     </a>
 </nav> -->
 <?php if (Constants::IS_DEV) : ?>
-    <span class="alert alert-danger fw-semibold">DEVELOPMENT MODE</span>
+    <div class="d-flex justify-content-center mb-2">
+        <span class="badge bg-warning" style="font-size: 0.65rem; letter-spacing: 1px; padding: 0.35em 0.7em;">DEVELOPMENT MODE</span>
+    </div>
 <?php endif; ?>
 
-<ul class="nav nav-pills justify-content-center">
+<div class="d-flex justify-content-center w-100">
+<ul class="nav nav-pills justify-content-center apple-segmented-control">
     <li class="nav-item">
         <a class="nav-link <?= $segment === 'tags' ? 'active' : '' ?>" href="<?= site_url('/tags') ?>">
             <i class="bi bi-tags-fill"></i> Tags
@@ -59,3 +62,4 @@ $segment = service('uri')->getSegment(1); ?>
         </a>
     </li>
 </ul>
+</div>

@@ -153,8 +153,8 @@ Property: Create
             <input type="hidden" name="tag_id" value="<?= esc($tag['id'] ?? '') ?>">
 
             <div class="d-flex justify-content-end gap-2">
-                <a href="<?= site_url('tags') ?>" title="Cancel" class="btn btn-secondary btn-sm">Cancel</a>
-                <button type="submit" class="btn btn-success btn-sm">Submit</button>
+                <a href="<?= site_url('tags') ?>" title="Cancel" class="apple-btn-secondary btn-sm">Cancel</a>
+                <button type="submit" class="apple-btn-primary btn-sm">Submit</button>
             </div>
         </div>
     </div>

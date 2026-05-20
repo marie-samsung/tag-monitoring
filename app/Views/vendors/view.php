@@ -21,15 +21,15 @@
 <?php if ($tags): ?>
     <div class="container-fluid d-flex justify-content-between align-items-center mb-3">
         <h3><?= "[" . $subsidiary . "] " . $vendor['name'] ?></h3>
-        <a href="<?= site_url('vendors/export/' . $vendor['id'] . '?' . http_build_query($_GET)) ?>" class="btn btn-warning btn-sm">
+        <a href="<?= site_url('vendors/export/' . $vendor['id'] . '?' . http_build_query($_GET)) ?>" class="apple-btn-secondary btn-sm">
             Export as CSV
         </a>
     </div>
 
     <div class="container-fluid">
         <div class="table-responsive">
-            <table class="table table-bordered table-hover table-striped">
-                <thead class="table-active">
+            <table class="table table-hover align-middle" style="border-collapse: separate; border-spacing: 0; min-width: 100%;">
+                <thead>
                     <tr>
                         <th>#</th>
                         <th>Property</th>
@@ -93,8 +93,8 @@
                             <td class="form-label-sm" style="width:max-content; white-space:nowrap;"><?= esc(date('d-m-Y', strtotime($tag['updated_at']))) ?></td>
                             <!-- Actions -->
                             <td class="text-nowrap align-middle">
-                                <a href="<?= site_url('tags/view/'.$tag['id']) ?>" target="_blank" title="View tag details" class="btn btn-secondary btn-sm">View</a>
-                                <a href="<?= site_url('tags/update/'.$tag['id']) ?>" target="_blank" title="Update tag details" class="btn btn-primary btn-sm">Update</a>
+                                <a href="<?= site_url('tags/view/'.$tag['id']) ?>" target="_blank" title="View tag details" class="apple-btn-secondary btn-sm">View</a>
+                                <a href="<?= site_url('tags/update/'.$tag['id']) ?>" target="_blank" title="Update tag details" class="apple-btn-primary btn-sm">Update</a>
                             </td>
                         </tr>
                     <?php endforeach; ?>
