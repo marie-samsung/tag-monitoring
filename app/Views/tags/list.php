@@ -170,16 +170,14 @@ Tag Monitoring System
                         </td>
                         <!-- Name -->
                         <td class="form-label-sm">
-                            <div class="d-flex justify-content-start align-items-center gap-2 group-hover-container">
+                            <span class="group-hover-container align-items-center">
                                 <a href="<?= $tag['ref_link'] ?>" target="_blank" class="apple-link-dark">
                                     <?= esc($tag['name']) ?>
                                 </a>
-
-                                <!-- Copy button -->
-                                <a href="javascript:void(0)" onclick="copyTagName('<?= esc($tag['name']) ?>', this)" title="Copy tag name" class="text-muted" style="transition: color 0.2s; text-decoration: none;">
+                                <a href="javascript:void(0)" onclick="copyTagName('<?= esc($tag['name']) ?>', this)" title="Copy tag name" class="text-muted ms-2" style="transition: color 0.2s; text-decoration: none; line-height: 1;">
                                     <i class="bi bi-copy" style="font-size: 0.85rem;"></i>
                                 </a>
-                            </div>
+                            </span>
                         </td>
                         <!-- Status -->
                         <td>
