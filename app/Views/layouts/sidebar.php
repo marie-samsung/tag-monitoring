@@ -76,8 +76,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Find the currently active link on page load
     let activeLink = nav.querySelector('.nav-link.active');
+    let hasMovedOnce = false;
 
-    function movePill(target) {
+    function movePill(target, instant = false) {
         if (!target) return;
         const targetRect = target.getBoundingClientRect();
         const navRect = nav.getBoundingClientRect();
@@ -85,15 +86,26 @@ document.addEventListener('DOMContentLoaded', () => {
         // Calculate relative position inside the ul
         const offsetLeft = targetRect.left - navRect.left;
         
+        if (instant) {
+            pill.style.transition = 'none';
+        }
+        
         pill.style.opacity = '1';
         pill.style.transform = `translateX(${offsetLeft}px)`;
         pill.style.width = `${targetRect.width}px`;
+
+        if (instant) {
+            pill.offsetHeight; // Force reflow
+            pill.style.transition = '';
+        }
+        
+        hasMovedOnce = true;
     }
 
-    // Initialize pill position
+    // Initialize pill position instantly without animation
     if (activeLink) {
         // Need a slight delay to ensure fonts/layout are fully rendered
-        setTimeout(() => movePill(activeLink), 150);
+        setTimeout(() => movePill(activeLink, true), 150);
     }
 
     let leaveTimeout;
@@ -105,7 +117,8 @@ document.addEventListener('DOMContentLoaded', () => {
             clearTimeout(enterTimeout);
             const target = e.currentTarget;
             enterTimeout = setTimeout(() => {
-                movePill(target);
+                // If the pill was completely hidden (e.g., no active link), instantly snap it to the hovered item first
+                movePill(target, !hasMovedOnce);
             }, 75); // 75ms delay prevents jitter if scrubbing across links quickly
         });
 
@@ -120,6 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 movePill(activeLink);
             } else {
                 pill.style.opacity = '0';
+                hasMovedOnce = false; // Reset so next hover snaps instantly
             }
         }, 400); // 400ms delay feels patient and premium
     });
