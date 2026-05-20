@@ -58,7 +58,7 @@ class TagsController extends BaseController
         $name = trim($post['name']);
 
         preg_match('/\((.*?)\)/', $name, $matches);
-        $vendorName = $matches[1] ?? null;
+        $vendorName = !empty($matches[1]) ? trim($matches[1]) : 'Unknown';
 
         $existing = $model
             ->where('property_id', $propertyId)
