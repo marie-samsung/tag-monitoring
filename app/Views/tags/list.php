@@ -103,7 +103,7 @@ Tag Monitoring System
 
             <div class="col">
                 <select name="status" class="form-select form-select-xs">
-                    <option value="<?= Constants::STATUS_ALL ?>">All Status</option>
+                    <option value="<?= Constants::STATUS_ALL ?>" <?= (old('status', $filters['status'] ?? null) == Constants::STATUS_ALL || empty($filters['status'])) ? 'selected' : '' ?>>All Status</option>
                     <?php foreach (Constants::STATUS as $value => $label): ?>
                         <option value="<?= esc($value) ?>"
                             <?= old('status', $filters['status'] ?? null) == $value ? 'selected' : '' ?>>
