@@ -6,7 +6,7 @@ use CodeIgniter\Router\RouteCollection;
  * @var RouteCollection $routes
  */
 
-$routes->get('/', 'Home::index');
+$routes->addRedirect('/', 'tags');
 $routes->get('testdb', 'TestDB::index');
 
 $routes->group('tags', function ($routes) {
