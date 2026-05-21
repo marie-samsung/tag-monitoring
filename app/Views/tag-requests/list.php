@@ -10,6 +10,7 @@ Tag: Requests (New Rule, New Tag)
     use App\Models\Constants;
     use App\Models\PropertiesModel;
     use App\Models\SubsidiariesModel;
+    use App\Models\TagRequestsModel;
     use App\Models\VendorsModel;
     use App\Models\JiraHistoryModel;
     use App\Models\TagsModel;
@@ -26,6 +27,11 @@ Tag: Requests (New Rule, New Tag)
     $vendors = $vendorsModel->Options();
 
     $tagsModel = new TagsModel();
+
+    $tagRequestsModel = new TagRequestsModel();
+
+    $newTagRequestsCount = 0;
+    $newRuleRequestsCount = 0;
 ?>
 
 <?= csrf_field() ?>
@@ -84,7 +90,19 @@ Tag: Requests (New Rule, New Tag)
             </div>
 
             <div class="col">
-                <select name="status" class="form-select form-select-xs">
+                <select name="vendor_id" class="form-select form-select-xs">
+                    <option value="">All Vendors</option>
+                    <?php foreach ($vendors as $value => $label): ?>
+                        <option value="<?= esc($value) ?>"
+                                <?= old('vendor_id', $filters['vendor_id'] ?? '') == $value ? 'selected' : '' ?>>
+                            <?= esc($label) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <div class="col">
+                <select name="type" class="form-select form-select-xs">
                     <option value="">All Types</option>
                     <?php foreach (Constants::REQUEST_TYPES as $value => $label): ?>
                         <option value="<?= esc($value) ?>"
@@ -135,14 +153,17 @@ Tag: Requests (New Rule, New Tag)
             <tbody>
                 <?php
                     foreach ($requests as $request):
-                    $subsidiary = Constants::SUBSIDIARIES[$properties[$request['property_id']]['subsidiary_id']];
-                    $property = $properties[$request['property_id']];
-                    $type = $request['type'];
-                    $ticketColumn = 'new_tag_ticket';
+                        $subsidiary = Constants::SUBSIDIARIES[$properties[$request['property_id']]['subsidiary_id']];
+                        $property = $properties[$request['property_id']];
+                        $type = $request['type'];
+                        $ticketColumn = 'new_tag_ticket';
 
-                    if ($type == Constants::JIRA_TYPE_NEW_RULE) {
-                        $ticketColumn = 'new_rule_ticket';
-                    }
+                        if ($type == Constants::JIRA_TYPE_NEW_RULE) {
+                            $newRuleRequestsCount++;
+                            $ticketColumn = 'new_rule_ticket';
+                        } else {
+                            $newTagRequestsCount++;
+                        }
                 ?>
                     <tr>
                         <!-- ID -->
@@ -187,6 +208,16 @@ Tag: Requests (New Rule, New Tag)
         </div>
     </div>
     <!-- #endregion -->
+
+    <div class="d-flex justify-content-start gap-2 form-label-xs">
+        <!--        <p>New Tag Requests: <span class="text-dark fw-semibold">--><?php //= $tagRequestsModel->countNewTags() ?><!--</span></p>-->
+        <!--        <p>New Rule Requests: <span class="text-dark fw-semibold">--><?php //= $tagRequestsModel->countNewRules() ?><!--</span></p>-->
+        <!--        <p>Total: <span class="text-dark fw-semibold">--><?php //= $tagRequestsModel->countAllRequests() ?><!--</span></p>-->
+
+        <p>New Tag Requests: <span class="text-dark fw-semibold"><?= $newTagRequestsCount ?></span></p>
+        <p>New Rule Requests: <span class="text-dark fw-semibold"><?= $newRuleRequestsCount ?></span></p>
+        <p>Total: <span class="text-dark fw-semibold"><?= $newTagRequestsCount + $newRuleRequestsCount ?></span></p>
+    </div>
 </div>
 
 <script>

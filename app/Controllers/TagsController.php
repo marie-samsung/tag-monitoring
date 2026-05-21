@@ -2,6 +2,8 @@
 
 namespace App\Controllers;
 
+use App\Models\ActivityLogCommentsModel;
+use App\Models\ActivityLogsModel;
 use App\Models\Constants;
 use App\Models\JiraHistoryModel;
 use App\Models\PropertiesModel;
@@ -26,6 +28,10 @@ class TagsController extends BaseController
             $status = [1,4,5]; // Default to show Enabled, Pending Verification, and Updated in AL
         }
 
+        if ($status == Constants::STATUS_ALL) {
+            $status = null;
+        }
+
         $filters = [
             'keyword' => $this->request->getGet('keyword'),
             'status' => $status,
@@ -33,9 +39,11 @@ class TagsController extends BaseController
             'subsidiary_id' => $this->request->getGet('subsidiary_id'),
         ];
         $data['tags'] = $tagModel->filterTags($filters);
-        $data['filters'] = $filters;
 
-        // $data['tags'] = $tagModel->findAll();
+        if (is_array($status)) {
+            $filters['status'] = 145;
+        }
+        $data['filters'] = $filters;
 
         return view('tags/list', $data);
     }
@@ -230,22 +238,50 @@ class TagsController extends BaseController
         }
 
         $this->saveRenewalLogs($propertyIds, $tagIds, $info);
+        $this->addActivityLog($propertyIds[0], $tagIds, $info);
 
         return redirect()
             ->to('/tags')
             ->with('success', 'Selected tags have been renewed successfully.');
     }
 
+    /**
+     * On tag/view - this is to verify the pending verification tags that are recently renewed
+     * @param $id The tag ID
+     * @return \CodeIgniter\HTTP\RedirectResponse
+     * @throws ReflectionException
+     */
     public function verify($id)
     {
         $model = new TagsModel();
         $tag = $model->find($id);
+        $jiraModel = new JiraHistoryModel();
+        $activityLogModel = new ActivityLogsModel();
+        $commentsModel = new ActivityLogCommentsModel();
         $requestedDate = $tag['requested_date'];
 
         if (!$tag) {
             return redirect()
                 ->to('/tags')
                 ->with('error', "Tag ID: {$id} not found.");
+        }
+
+        $jiraTicket = $jiraModel->getRelatedTags($id);
+        $activityLog = $activityLogModel->where('ticket_id', $jiraTicket[0]['ticket_id'])->first();
+
+        if ($activityLog) {
+            if ($activityLog['status'] != Constants::STATUS_COMPLETED) {
+                $commentsModel->insert([
+                    'log_id' => $activityLog['id'],
+                    'comment' => "Status updated from [{$activityLog['status']}] to [". Constants::STATUS_COMPLETED ."]",
+                    'commented_by' => Constants::USER_SYSTEM,
+                    'type' => Constants::COMMENT_TYPE_UPDATE,
+                ]);
+
+                $activityLogModel->update($activityLog['id'], [
+                    'status' => Constants::STATUS_COMPLETED,
+                ]);
+            }
         }
 
         $model->update($id, [
@@ -259,6 +295,11 @@ class TagsController extends BaseController
             ->with('success', 'Tag renewal has been verified.');
     }
 
+    /**
+     * In renew/confirm view, to track if tag is updated in AL but not submitted for review
+     * @return \CodeIgniter\HTTP\ResponseInterface
+     * @throws ReflectionException
+     */
     public function updateAL()
     {
         $tagId = $this->request->getPost('tag_id');
@@ -271,10 +312,62 @@ class TagsController extends BaseController
         return $this->response->setJSON(['status' => 'ok']);
     }
 
+    public function createUpdateRuleRequest()
+    {
+        $model = new TagsModel();
+        $post = $this->request->getGet();
+        $tag_ids = $post['tags'] ?? [];
+        $ticket_id = $post['ticket_id'] ?? null;
+
+        if (empty($tag_ids)) {
+            return redirect()
+                ->to('/tags')
+                ->with('error', 'No tags selected for update rule request.');
+        }
+
+        $tag_ids = is_array($tag_ids) ? $tag_ids : explode(',', $tag_ids);
+
+        $data['tags'] = [];
+        $data['ticket_id'] = $ticket_id;
+
+        foreach ($tag_ids as $id) {
+            $tag = $model->find($id);
+            if ($tag) {
+                $data['tags'][] = $tag;
+            }
+        }
+
+        return view('tags/update-rule-request', $data);
+    }
+
+    public function updateRuleRequestConfirm()
+    {
+        $post = $this->request->getPost();
+        $model = new TagsModel();
+        $tags = $post['tags'] ?? [];
+        $info = $post['info'] ?? [];
+        $propertyId = null;
+        $tagIds = array_unique(array_column($tags, 'id'));
+
+        foreach ($tags as $tag) {
+            if ($propertyId === null) {
+                $propertyId = $tag['property_id'];
+            }
+
+            $this->saveJiraHistory($tag, $info['ticket_id'], $tagIds);
+        }
+
+        $this->addActivityLog($propertyId, $tagIds, $info, false);
+
+        return redirect()
+            ->to('/activity-logs')
+            ->with('success', 'Update Request created successfully.');
+    }
+
     /**
      * @throws ReflectionException
      */
-    public function saveJiraHistory($tag, $ticketId, $tagIds)
+    public function saveJiraHistory($tag, $ticketId, $tagIds, $isRenewal = true)
     {
         if (is_array($tag)) {
             $tagId = $tag['id'];
@@ -288,7 +381,7 @@ class TagsController extends BaseController
                 'property_id' => $propertyId,
                 'subsidiary_id' => $subsidiaryId,
                 'ticket_id' => $ticketId,
-                'type' => Constants::JIRA_TYPE_DATE_EXTENSION_RULE,
+                'type' => $isRenewal ? Constants::JIRA_TYPE_DATE_EXTENSION_RULE : Constants::JIRA_TYPE_UPDATE_RULE,
                 'comments' => implode(',', $tagIds),
             ])) {
                 var_dump("Failed to save JIRA history for tag ID: {$tagId}");
@@ -309,6 +402,40 @@ class TagsController extends BaseController
                 'library_name' => $info['library_name'] ?? null,
             ]) or var_dump("Failed to save renewal log for property ID: {$propertyId}");
         }
+    }
+
+    public function addActivityLog($propertyId, $tagIds, $info, $isRenewal = true)
+    {
+        $activityLogModel = new ActivityLogsModel();
+        $propertyModel = new PropertiesModel();
+        $tagsModel = new TagsModel();
+        $property = $propertyModel->find($propertyId);
+        $description = $isRenewal
+            ? "Renewal of tags: <br/><ul>"
+            : "Update of tags: <br/><ul>";
+
+        $title = $isRenewal
+            ? 'Tag Renewals'
+            : 'Update Request for Tags';
+
+        foreach ($tagIds as $tagId) {
+            $tag = $tagsModel->find($tagId);
+            if ($tag) {
+                $description .= "<li>{$tag['name']}</li>";
+            }
+        }
+
+        $activityLogModel->insert([
+            'title' => $title . ' [' . $info['ticket_id'] .']',
+            'description' => $description . '</ul>',
+            'subsidiary_id' => $property['subsidiary_id'],
+            'project_id' => Constants::PROJECT_MEDIA_TAGGING,
+            'ticket_id' => $info['ticket_id'] ?? null,
+            'assignee' => Constants::USER_SYSTEM,
+            'status' => Constants::STATUS_IMPLEMENTATION,
+            'type' => Constants::ACTIVITY_TYPE_REQUEST,
+            'size' => Constants::ACTIVITY_SIZE_M,
+        ]);
     }
 
     public function exportAsCSV()

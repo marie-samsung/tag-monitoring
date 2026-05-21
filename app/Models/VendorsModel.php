@@ -23,7 +23,10 @@ class VendorsModel extends Model
 
     public function Options()
     {
-        $rows = $this->select('id, name')->findAll();
+        $rows = $this
+            ->select('id, name')
+            ->orderBy('name', 'ASC')
+            ->findAll();
         return array_column($rows, 'name', 'id');
     }
 

@@ -16,14 +16,17 @@ $routes->group('tags', function ($routes) {
     $routes->get('verify/(:num)', 'TagsController::verify/$1');
     $routes->post('renew/confirm', 'TagsController::renewConfirm');
     $routes->post('renew/updateAL', 'TagsController::updateAL');
+    $routes->post('update-rule/confirm', 'TagsController::updateRuleRequestConfirm');
     $routes->match(['get', 'post'], 'create', 'TagsController::create');
     $routes->match(['get', 'post'], 'update/(:num)', 'TagsController::update/$1');
     $routes->match(['get', 'post'], 'renew', 'TagsController::renew');
+    $routes->match(['get', 'post'], 'update-rule-request', 'TagsController::createUpdateRuleRequest');
     // $routes->post('delete/(:num)', 'TagsController::delete/$1');
 });
 
 $routes->group('tag-requests', function ($routes) {
     $routes->get('/', 'TagRequestsController::index');
+    $routes->get('export', 'TagRequestsController::exportAsCSV');
     $routes->get('view/(:num)', 'TagRequestsController::view/$1');
     $routes->get('request-approved/(:num)', 'TagRequestsController::requestApproved/$1');
     $routes->post('add-new-tag', 'TagRequestsController::addNewTag');
@@ -57,6 +60,12 @@ $routes->group('jira', function ($routes) {
     $routes->match(['get', 'post'], 'create', 'JiraController::create');
 });
 
-$routes->group('activity-log', function ($routes) {
-    $routes->get('/', 'ActivityLogController::index');
+$routes->group('activity-logs', function ($routes) {
+    $routes->get('/', 'ActivityLogsController::index');
+    $routes->get('export', 'ActivityLogsController::exportAsCSV');
+    $routes->get('view/(:num)', 'ActivityLogsController::view/$1');
+    $routes->post('comment', 'ActivityLogsController::comment');
+    $routes->post('upload', 'ActivityLogsController::uploadFile');
+    $routes->match(['get', 'post'], 'create', 'ActivityLogsController::create');
+    $routes->match(['get', 'post'], 'update/(:num)', 'ActivityLogsController::update/$1');
 });

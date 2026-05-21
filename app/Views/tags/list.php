@@ -102,7 +102,7 @@ Tag Monitoring System
 
             <div class="col">
                 <select name="status" class="form-select form-select-xs">
-                    <option value="">All Status</option>
+                    <option value="<?= Constants::STATUS_ALL ?>">All Status</option>
                     <?php foreach (Constants::STATUS as $value => $label): ?>
                         <option value="<?= esc($value) ?>"
                             <?= old('status', $filters['status'] ?? null) == $value ? 'selected' : '' ?>>
@@ -233,11 +233,13 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     const btnRenew = document.getElementById('btnRenew');
+    const btnUpdateRule = document.getElementById('btnUpdateRule');
     const table = document.getElementById('tblTags');
 
     const toggleButton = () => {
         const anyChecked = table.querySelectorAll('input[type="checkbox"]:checked').length > 0;
         btnRenew.style.display = anyChecked ? 'inline-block' : 'none';
+        btnUpdateRule.style.display = anyChecked ? 'inline-block' : 'none';
     };
 
     table.addEventListener('change', function (e) {

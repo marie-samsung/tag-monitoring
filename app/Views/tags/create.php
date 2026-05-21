@@ -7,7 +7,7 @@ Tag: Create
 <?= $this->section('content') ?>
 
 <div class="container">
-    <h2>Add a New Tag</h2>    
+    <h2>Add Tag Information</h2>
 </div>
 
 <?php 

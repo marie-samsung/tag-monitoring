@@ -11,6 +11,7 @@ class Constants
     public const LP_WRITE_PATH = WRITEPATH . 'uploads/lp/';
     public const LP_PATH = 'uploads/lp/';
     public const NEW_TAG_FILE_WRITE_PATH = WRITEPATH . 'uploads/new_tag_requests/';
+    public const ACTIVITY_LOGS_FILE_WRITE_PATH = WRITEPATH . 'uploads/activity_logs/';
     public const JIRA_TYPE_DATE_EXTENSION_RULE = 1;
     public const JIRA_TYPE_NEW_TAG = 2;
     public const JIRA_TYPE_NEW_RULE = 3;
@@ -45,7 +46,10 @@ class Constants
     public const STATUS_UPDATED_IN_AL = 5;
     public const STATUS_NEW_TAG_SUBMITTED = 6;
     public const STATUS_NEW_RULE_SUBMITTED = 7;
+    public const STATUS_DEFAULT = 145;
+    public const STATUS_ALL = 999;
     public const STATUS = [
+        self::STATUS_DEFAULT => 'Default',
         self::STATUS_ENABLED => 'Enabled',
         self::STATUS_DISABLED => 'Disabled',
         self::STATUS_EXPIRED => 'Expired',
@@ -80,6 +84,9 @@ class Constants
     public const SUBSIDIARY_SEMAG = 8;
     public const SUBSIDIARY_SEPAK = 9;
     public const SUBSIDIARY_MENAO = 10;
+    public const SUBSIDIARY_AFRICA_RHQ = 11;
+    public const SUBSIDIARY_IRAN_RHQ = 12;
+    public const SUBSIDIARY_SDS = 13;
     public const SUBSIDIARIES = [
         self::SUBSIDIARY_SGE => 'SGE',
         self::SUBSIDIARY_SESAR => 'SESAR',
@@ -90,7 +97,23 @@ class Constants
         self::SUBSIDIARY_SEEG => 'SEEG',
         self::SUBSIDIARY_SEMAG => 'SEMAG',
         self::SUBSIDIARY_SEPAK => 'SEPAK',
+//        self::SUBSIDIARY_MENAO => 'MENAO',
+    ];
+
+    public const ACTIVITY_LOG_SUBSIDIARIES = [
+        self::SUBSIDIARY_SGE => 'SGE',
+        self::SUBSIDIARY_SESAR => 'SESAR',
+        self::SUBSIDIARY_SETK => 'SETK',
+        self::SUBSIDIARY_SEIL => 'SEIL',
+        self::SUBSIDIARY_SEILPS => 'SEILPS',
+        self::SUBSIDIARY_SELV => 'SELV',
+        self::SUBSIDIARY_SEEG => 'SEEG',
+        self::SUBSIDIARY_SEMAG => 'SEMAG',
+        self::SUBSIDIARY_SEPAK => 'SEPAK',
         self::SUBSIDIARY_MENAO => 'MENAO',
+        self::SUBSIDIARY_AFRICA_RHQ => 'Africa RHQ',
+        self::SUBSIDIARY_IRAN_RHQ => 'Iran RHQ',
+        self::SUBSIDIARY_SDS => 'SDS',
     ];
 
     public const ATTACHMENT_APPROVAL = 1;
@@ -135,5 +158,138 @@ class Constants
         'Any KPIs applied to review this tag bi-monthly as we need to extend every 2 months?',
         'Performance thresholds that will determine renewal or deactivation of this tag?',
         'What is your internal process for reviewing and validating these KPIs every two months?',
+    ];
+
+    public const INTEGRATION_RESULT_PAGE_LOAD = [
+        'If the <b>Page Load Rule</b> is included' => 'Confirm (Y/N)',
+        '1) Check the rule is normally generated' => 'Y / N',
+        '2) Confirm that no script errors occur' => 'Y / N',
+        '3) Check that the page loads normally' => 'Y / N',
+        '4) Confirm that all contents in the page are loaded normally' => 'Y / N',
+    ];
+
+    public const INTEGRATION_RESULT_EVENT_CLICK = [
+        'If the <b>Event Click Rule</b> is included' => 'Confirm (Y/N)',
+        '1) Check whether the rule is normally generated' => 'Y / N',
+        '2) Check that no script errors occur' => 'Y / N',
+        '3) When an event occurs, whether the functions corresponding to the event operate normally as before' => 'Y / N',
+        '4) After the event occurs, there is no impact on the expected User Journey' => 'Y / N',
+    ];
+
+    public const DWF_DEPT_CRM = 1;
+    public const DWF_DEPT_CS = 2;
+    public const DWF_DEPT_ESTORE = 3;
+    public const DWF_DEPT_MX = 4;
+    public const DWF_DEPT_MENA_RHQ = 5;
+    public const DWF_DEPT_OTHER = 6;
+    public const DWF_DEPARTMENTS = [
+        self::DWF_DEPT_CRM => 'CRM',
+        self::DWF_DEPT_CS => 'CS',
+        self::DWF_DEPT_ESTORE => 'eStore',
+        self::DWF_DEPT_MX => 'MX',
+        self::DWF_DEPT_MENA_RHQ => 'MENA RHQ',
+        self::DWF_DEPT_OTHER => 'Other',
+    ];
+
+    public const PROJECT_MEDIA_TAGGING = 1;
+    public const PROJECT_DWF = 2;
+    public const PROJECT_CRM = 3;
+    public const PROJECT_SPOKE = 4;
+    public const PROJECT_OTHER = 5;
+    public const PROJECTS = [
+        self::PROJECT_MEDIA_TAGGING => 'Media Tagging',
+        self::PROJECT_DWF => 'DWF',
+        self::PROJECT_CRM => 'CRM 2.0',
+        self::PROJECT_SPOKE => 'Spoke',
+        self::PROJECT_OTHER => 'Other',
+    ];
+
+    public const USER_SYSTEM = 0;
+    public const USER_SYSTEM_LABEL = 'System';
+    public const USER_MARIE = 1;
+    public const USER_KHRISTINE = 2;
+    public const USER_LUCKY = 3;
+    public const USER_JANITHA = 4;
+    public const USER_GEORGE = 5;
+    public const USER_OTHER = 6;
+    public const USERS = [
+        self::USER_MARIE => 'Marie',
+        self::USER_KHRISTINE => 'Khristine',
+        self::USER_LUCKY => 'Lucky',
+        self::USER_JANITHA => 'Janitha',
+        self::USER_GEORGE => 'George',
+        self::USER_OTHER => 'Other',
+    ];
+
+    public const STATUS_TO_DO = 1;
+    public const STATUS_INVESTIGATION = 2;
+    public const STATUS_IMPLEMENTATION = 3;
+    public const STATUS_QA = 4;
+    public const STATUS_REVIEW = 5;
+    public const STATUS_COMPLETED = 6;
+    public const STATUS_BLOCKED = 7;
+    public const ACTIVITY_LOGS_STATUS = [
+        self::STATUS_TO_DO => 'Not yet started',
+        self::STATUS_INVESTIGATION => 'In Progress - Investigation',
+        self::STATUS_IMPLEMENTATION => 'In Progress - Implementation',
+        self::STATUS_QA => 'Testing - QA',
+        self::STATUS_REVIEW => 'Pending Review',
+        self::STATUS_COMPLETED => 'Completed',
+        self::STATUS_BLOCKED => 'Blocked/On Hold',
+    ];
+
+    public const ACTIVITY_TYPE_TASK = 1;
+    public const ACTIVITY_TYPE_SUPPORT = 2;
+    public const ACTIVITY_TYPE_TROUBLESHOOTING = 3;
+    public const ACTIVITY_TYPE_REQUEST = 4;
+    public const ACTIVITY_TYPE_MEETING = 5;
+    public const ACTIVITY_TYPE_OTHER = 6;
+    public const ACTIVITY_TYPES = [
+        self::ACTIVITY_TYPE_TASK => 'Task',
+        self::ACTIVITY_TYPE_SUPPORT => 'Support',
+        self::ACTIVITY_TYPE_TROUBLESHOOTING => 'Troubleshooting',
+        self::ACTIVITY_TYPE_REQUEST => 'Request',
+        self::ACTIVITY_TYPE_MEETING => 'Meeting',
+        self::ACTIVITY_TYPE_OTHER => 'Other',
+    ];
+
+    public const ACTIVITY_SIZE_S = 1;
+    public const ACTIVITY_SIZE_M = 2;
+    public const ACTIVITY_SIZE_L = 3;
+    public const ACTIVITY_SIZE_XL = 4;
+    public const ACTIVITY_SIZE_SPRINT = 5;
+    public const ACTIVITY_SIZES = [
+        self::ACTIVITY_SIZE_S => 'S',
+        self::ACTIVITY_SIZE_M => 'M',
+        self::ACTIVITY_SIZE_L => 'L',
+        self::ACTIVITY_SIZE_XL => 'XL',
+        self::ACTIVITY_SIZE_SPRINT => 'Sprint',
+    ];
+
+    public const PRIORITY_LOW = 1;
+    public const PRIORITY_MEDIUM = 2;
+    public const PRIORITY_HIGH = 3;
+    public const PRIORITY_CRITICAL = 4;
+    public const PRIORITY_BLOCKER = 5;
+    public const PRIORITIES = [
+        self::PRIORITY_LOW => 'Low',
+        self::PRIORITY_MEDIUM => 'Medium',
+        self::PRIORITY_HIGH => 'High',
+        self::PRIORITY_CRITICAL => 'Critical',
+        self::PRIORITY_BLOCKER => 'Blocker',
+    ];
+
+    public const CAMPAIGN_STATUS_NEW = 1;
+    public const CAMPAIGN_STATUS_EXISTING = 2;
+    public const CAMPAIGN_STATUS = [
+        self::CAMPAIGN_STATUS_NEW => 'New',
+        self::CAMPAIGN_STATUS_EXISTING => 'Existing',
+    ];
+
+    public const COMMENT_TYPE_COMMENT = 1;
+    public const COMMENT_TYPE_UPDATE = 2;
+    public const COMMENT_TYPES = [
+        self::COMMENT_TYPE_COMMENT => 'Comment',
+        self::COMMENT_TYPE_UPDATE => 'Update',
     ];
 }

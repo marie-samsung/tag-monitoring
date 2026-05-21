@@ -72,3 +72,27 @@ ALTER TABLE `tag_requests` CHANGE `new_rule_ticket` `new_rule_ticket` VARCHAR(15
 ALTER TABLE `tags` CHANGE `requester_organization` `requester_organization` TINYINT(4) NULL DEFAULT NULL;
 
 ALTER TABLE `tag_requests` CHANGE `requester_organization` `requester_organization` TINYINT(4) NULL DEFAULT NULL;
+
+CREATE TABLE `tag_monitoring`.`activity_logs` (
+    `id` INT NOT NULL AUTO_INCREMENT ,
+    `title` VARCHAR(500) NOT NULL ,
+    `description` VARCHAR(5000) NOT NULL ,
+    `subsidiary_id` INT NOT NULL ,
+    `department_id` INT NULL DEFAULT NULL ,
+    `project_id` INT NOT NULL ,
+    `ticket_id` INT NULL DEFAULT NULL ,
+    `assignee` INT NOT NULL ,
+    `requested_by` VARCHAR(200) NULL DEFAULT NULL ,
+    `status` TINYINT NOT NULL DEFAULT '1',
+    `requested_date` DATETIME NULL DEFAULT NULL ,
+    `finished_date` DATETIME NULL DEFAULT NULL ,
+    `created_at` DATETIME NULL DEFAULT NULL ,
+    `created_by` INT NOT NULL DEFAULT '0' ,
+    `updated_at` DATETIME NULL DEFAULT NULL ,
+    `updated_by` INT NOT NULL DEFAULT '0' ,
+    `deleted_at` DATETIME NULL DEFAULT NULL ,
+    `deleted_by` INT NULL DEFAULT NULL ,
+    `campaign_status` INT NULL DEFAULT NULL ,
+    `campaign_id` VARCHAR(200) NULL DEFAULT NULL ,
+    PRIMARY KEY (`id`)) ENGINE = InnoDB;
+

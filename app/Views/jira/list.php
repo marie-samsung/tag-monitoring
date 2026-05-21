@@ -7,7 +7,9 @@ JIRA Tickets List
 <?= $this->section('content') ?>
 
 <?php
-    use App\Models\Constants;
+
+use App\Models\ActivityLogsModel;
+use App\Models\Constants;
 use App\Models\TagRequestsModel;
 use App\Models\TagsModel;
     use App\Models\PropertiesModel;
@@ -124,7 +126,8 @@ use App\Models\TagsModel;
                         $ticketTagsList = [];
                         if ($type == Constants::JIRA_TYPE_DATE_EXTENSION_RULE ||
                                 $type == Constants::JIRA_TYPE_NEW_TAG ||
-                                $type == Constants::JIRA_TYPE_NEW_RULE) {
+                                $type == Constants::JIRA_TYPE_NEW_RULE ||
+                                $type == Constants::JIRA_TYPE_UPDATE_RULE) {
                             $ticketTags = explode(',', $ticket['comments']);
                             
                             foreach ($ticketTags as $tagId) {
@@ -138,7 +141,11 @@ use App\Models\TagsModel;
                 ?>
                     <tr>
                         <td><?= $ticket['id'] ?></td>
-                        <td><?= esc($subsidiary['name']) ?></td>
+                        <td>
+                            <span class="badge" style="<?= random_bg_style($subsidiary['name']) ?>">
+                                <?= esc($subsidiary['name']) ?>
+                            </span>
+                        </td>
                         <td>
                             <?php if ($property): ?>
                             <a href="<?= $property['ref_link'] ?>" target="_blank">
@@ -161,15 +168,30 @@ use App\Models\TagsModel;
 
                                     if ($request_id) {
                             ?>
-                                            <a href="<?= site_url('/tag-requests/view/' . $request_id) ?>" target="_blank">
-                                                <?= Constants::JIRA_TICKET_TYPES[$type] ?>
-                                            </a>
+                                        <a href="<?= site_url('/tag-requests/view/' . $request_id) ?>" target="_blank">
+                                            <?= Constants::JIRA_TICKET_TYPES[$type] ?>
+                                        </a>
                                 <?php } else { ?>
+                                        <?= Constants::JIRA_TICKET_TYPES[$type] ?>
+                            <?php
+                                    }
+                                } elseif ($type == Constants::JIRA_TYPE_UPDATE_RULE) {
+                                    $activityLogsModel = new ActivityLogsModel();
+                                    $activityLog = $activityLogsModel->where('ticket_id', $ticket['ticket_id'])->first();
+
+                                    if ($activityLog) {
+                            ?>
+                                    <a href="<?= site_url('/activity-logs/view/' . $activityLog['id']) ?>" target="_blank">
+                                        <?= Constants::JIRA_TICKET_TYPES[$type] ?>
+                                    </a>
+
+                                    <?php } else { ?>
                                         <?= Constants::JIRA_TICKET_TYPES[$type] ?>
                             <?php }} else { ?>
                                 <?= Constants::JIRA_TICKET_TYPES[$type] ?>
                             <?php } ?>
                         </td>
+                        <!-- COMMENTS -->
                         <td>
                             <?php if ($ticketTagsList): ?>
 

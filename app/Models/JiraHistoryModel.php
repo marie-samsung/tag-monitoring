@@ -22,7 +22,7 @@ class JiraHistoryModel extends Model
 
     protected $useTimestamps = true;
 
-    public function getRelatedTags(int $id)
+    public function getRelatedTags(int $id): array
     {
         return $this->select()
             ->where('tag_id', $id)

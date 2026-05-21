@@ -37,6 +37,8 @@ if (getcwd() . DIRECTORY_SEPARATOR !== FCPATH) {
     chdir(FCPATH);
 }
 
+date_default_timezone_set('Asia/Dubai');
+
 /*
  *---------------------------------------------------------------
  * BOOTSTRAP THE APPLICATION

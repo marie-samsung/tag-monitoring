@@ -88,56 +88,54 @@ $hasNewRule = !empty($request['new_rule_ticket']);
             </div>
         </div>
 
-        <?php if ($request['type'] == Constants::JIRA_TYPE_NEW_TAG): ?>
-            <?php if (!$hasNewTag): ?>
-                <div class="mb-2">
-                    <form action="<?= site_url('tag-requests/add-new-tag') ?>" method="post">
-                        <label class="form-label-xs text-primary">New Tag Request</label>
-                        <div class="d-flex gap-2 align-items-center">
-                            <input type="hidden" name="request_id" value="<?= esc($request['id'] ?? '') ?>">
-                            <input type="text" name="new_tag_ticket" id="new_tag_ticket"
-                                   class="form-control form-control-xs w-50"
-                                   value="<?= old('new_tag_ticket', $old['new_tag_ticket'] ?? '') ?>"
-                                   required>
-                            <button type="submit"
-                                    class="badge bg-primary text-decoration-none border-0"
-                                    onclick="return confirm('Confirm add New Tag ticket ID?');">
-                                Add Ticket
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            <?php endif; ?>
-
+        <?php if (!$hasNewTag && $request['type'] == Constants::JIRA_TYPE_NEW_TAG): ?>
             <div class="mb-2">
-                <label class="form-label-xs text-primary">New Rule Request</label>
-                <div class="mb-2">
-                <?php if (!$hasNewRule): ?>
-                    <form action="<?= site_url('tag-requests/add-new-rule') ?>" method="post">
-                        <div class="d-flex gap-2 align-items-center">
-                            <input type="hidden" name="request_id" value="<?= esc($request['id'] ?? '') ?>">
-                            <input type="text" name="new_rule_ticket" id="new_rule_ticket"
-                                   class="form-control form-control-xs w-50"
-                                   value="<?= old('new_rule_ticket', $old['new_rule_ticket'] ?? '') ?>"
-                                   required>
-                            <button type="submit"
-                                    class="badge bg-primary text-decoration-none border-0"
-                                    onclick="return confirm('Confirm add New Rule ticket ID?');">
-                                Add Ticket
-                            </button>
-                        </div>
-                    </form>
-
-                <?php else: ?>
-                    <div class="form-control-plaintext p-0 ms-2 align-items-center">
-                        <a href="<?= Constants::JIRA_LINK . $request['new_rule_ticket'] ?>" target="_blank">
-                            <?= esc($request['new_rule_ticket']) ?>
-                        </a>
+                <form action="<?= site_url('tag-requests/add-new-tag') ?>" method="post">
+                    <label class="form-label-xs text-primary">New Tag Request</label>
+                    <div class="d-flex gap-2 align-items-center">
+                        <input type="hidden" name="request_id" value="<?= esc($request['id'] ?? '') ?>">
+                        <input type="text" name="new_tag_ticket" id="new_tag_ticket"
+                               class="form-control form-control-xs w-50"
+                               value="<?= old('new_tag_ticket', $old['new_tag_ticket'] ?? '') ?>"
+                               required>
+                        <button type="submit"
+                                class="badge bg-primary text-decoration-none border-0"
+                                onclick="return confirm('Confirm add New Tag ticket ID?');">
+                            Add Ticket
+                        </button>
                     </div>
-                <?php endif; ?>
-                </div>
+                </form>
             </div>
         <?php endif; ?>
+
+        <div class="mb-2">
+            <label class="form-label-xs text-primary">New Rule Request</label>
+            <div class="mb-2">
+            <?php if (!$hasNewRule): ?>
+                <form action="<?= site_url('tag-requests/add-new-rule') ?>" method="post">
+                    <div class="d-flex gap-2 align-items-center">
+                        <input type="hidden" name="request_id" value="<?= esc($request['id'] ?? '') ?>">
+                        <input type="text" name="new_rule_ticket" id="new_rule_ticket"
+                               class="form-control form-control-xs w-50"
+                               value="<?= old('new_rule_ticket', $old['new_rule_ticket'] ?? '') ?>"
+                               required>
+                        <button type="submit"
+                                class="badge bg-primary text-decoration-none border-0"
+                                onclick="return confirm('Confirm add New Rule ticket ID?');">
+                            Add Ticket
+                        </button>
+                    </div>
+                </form>
+
+            <?php else: ?>
+                <div class="form-control-plaintext p-0 ms-2 align-items-center">
+                    <a href="<?= Constants::JIRA_LINK . $request['new_rule_ticket'] ?>" target="_blank">
+                        <?= esc($request['new_rule_ticket']) ?>
+                    </a>
+                </div>
+            <?php endif; ?>
+            </div>
+        </div>
 
         <label class="form-label m-0 fw-semibold mt-2">Requester Details</label>
         <div class="mb-2">
@@ -197,21 +195,20 @@ $hasNewRule = !empty($request['new_rule_ticket']);
             </div>
 
             <?php if (!empty($files)) : ?>
-            <table class="table table-bordered file-table">
-                <thead>
-                    <tr>
-                        <th>File Type</th>
-                        <th>File Name</th>
-                    </tr>
-                </thead>
+            <table class="table no-border">
                 <tbody>
                     <?php foreach ($files as $file) : ?>
                         <tr>
-                            <td><?= Constants::ATTACHMENTS[$file['type']] ?></td>
+                            <td style="text-align:right;">
+                                <span class="badge" style="<?= random_bg_style(Constants::ATTACHMENTS[$file['type']]) ?>">
+                                    <?= Constants::ATTACHMENTS[$file['type']] ?>
+                                </span>
+                            </td>
                             <td>
-                                <a href="<?= '/tag-monitoring/download.php?file=' . rawurlencode($file['file_path']) ?>" download="<?= $file['file_name'] ?>" rel="noopener">
+                                <a href="<?= '/tag-monitoring/download.php?file=' . rawurlencode($file['file_path']) ?>" download="<?= $file['file_name'] ?>" rel="noopener" class="row">
                                     <?= $file['file_name'] ?>
                                 </a>
+                                <span class="row form-label-xs text-muted"><?= $file['created_at'] ?></span>
                             </td>
 <!--                            <td class="text-center">-->
 <!--                                <a href="--><?php //= '/tag-monitoring/download.php?file=' . rawurlencode($file['file_path']) ?><!--" download="--><?php //= $file['file_name'] ?><!--" class="btn btn-sm btn-primary">-->

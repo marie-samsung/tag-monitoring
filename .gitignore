@@ -4,6 +4,8 @@ writable/debugbar/*
 writable/session/*
 writable/.htaccess
 writable/index.html
+writable/uploads/new_tag_requests/test-files/*
+
 
 .idea
 .env
