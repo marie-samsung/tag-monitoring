@@ -22,7 +22,7 @@ Vendors List
     <div class="d-flex justify-content-between">
         <h2>Vendors</h2>
         <!-- <div>
-            <a href="<?= site_url('vendors/create') ?>" target="_blank" title="Add a new vendor" class="apple-btn-primary btn-sm ms-auto px-2">Create New</a>
+            <a href="<?= site_url('vendors/create') ?>" title="Add a new vendor" class="apple-btn-primary btn-sm ms-auto px-2">Create New</a>
         </div> -->
     </div>
 
@@ -91,7 +91,7 @@ Vendors List
 
                                 <?php if ($count > 0): ?>
                                     <td>
-                                        <a href="<?= site_url('vendors/view/'.$vendor['id'].'?subsidiary_id='.$id) ?>" target="_blank" class="text-decoration-none fw-semibold" style="color: #0071E3;">
+                                        <a href="<?= site_url('vendors/view/'.$vendor['id'].'?subsidiary_id='.$id) ?>" class="text-decoration-none fw-semibold" style="color: #0071E3;">
                                             <?= $count ?>
                                         </a>
                                     </td>

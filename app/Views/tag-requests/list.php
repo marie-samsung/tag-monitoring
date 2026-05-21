@@ -177,12 +177,12 @@ Tag: Requests (New Rule, New Tag)
                         <!-- Property -->
                         <td>
                             <i class="bi bi-tag-fill" style="<?= random_text_style($property['name']) ?>"></i>
-                            <a href="<?= $property['ref_link'] ?>" target="_blank" class="apple-link-dark form-label-sm ms-1">
+                            <a href="<?= $property['ref_link'] ?>" class="apple-link-dark form-label-sm ms-1">
                                 <?= $property['name'] ?>
                             </a>
                         </td>
                         <td>
-                            <a href="<?= Constants::JIRA_LINK . $request[$ticketColumn] ?>" target="_blank" class="apple-link">
+                            <a href="<?= Constants::JIRA_LINK . $request[$ticketColumn] ?>" class="apple-link">
                                 <?= $request[$ticketColumn] ?>
                             </a>
                             <span class="text-muted ms-1" style="font-size: 0.8rem;">(<?= $vendors[$request['vendor_id']] ?? '' ?>)</span>
@@ -205,8 +205,8 @@ Tag: Requests (New Rule, New Tag)
                         <td class="form-label-sm" style="width:max-content; white-space:nowrap;"><?= esc(date('d-m-Y', strtotime($request['created_at']))) ?></td>
                         <!-- Actions -->
                         <td class="text-nowrap">
-                            <a href="<?= site_url('tag-requests/view/'.$request['id']) ?>" target="_blank" title="View tag details" class="apple-btn-secondary btn-sm">View</a>
-<!--                            <a href="--><?php //= site_url('tag-requests/update/'.$request['id']) ?><!--" target="_blank" title="Update tag details" class="apple-btn-primary btn-sm">Update</a>-->
+                            <a href="<?= site_url('tag-requests/view/'.$request['id']) ?>" title="View tag details" class="apple-btn-secondary btn-sm">View</a>
+<!--                            <a href="--><?php //= site_url('tag-requests/update/'.$request['id']) ?><!--" title="Update tag details" class="apple-btn-primary btn-sm">Update</a>-->
                         </td>
                     </tr>
                 <?php endforeach; ?>

@@ -67,13 +67,13 @@
                             <!-- Property -->
                             <td>
                                 <i class="bi bi-tag-fill" style="<?= random_text_style($tag['property_id']) ?>"></i>
-                                <a href="<?= $properties[$tag['property_id']]['ref_link'] ?>" target="_blank" class="form-label-sm">
+                                <a href="<?= $properties[$tag['property_id']]['ref_link'] ?>" class="form-label-sm">
                                     <?= $properties[$tag['property_id']]['name'] ?>
                                 </a>
                             </td>
                             <!-- Name -->
                             <td class="form-label-sm">
-                                <a href="<?= $tag['ref_link'] ?>" target="_blank">
+                                <a href="<?= $tag['ref_link'] ?>">
                                     <?= esc($tag['name']) ?>
                                 </a>
                             </td>
@@ -83,7 +83,7 @@
                                     <?= esc(status_label($tag['status'])) ?>
                                 </span>
                                 <?php if ($tag['status'] == Constants::STATUS_PENDING_VERIFICATION): ?>
-                                    <a href="<?= Constants::JIRA_LINK . $ticketId ?>" target="_blank">
+                                    <a href="<?= Constants::JIRA_LINK . $ticketId ?>">
                                     <br><small class="text-muted"><?= $ticketId ?></small> 
                                     </a>
                                 <?php endif; ?>
@@ -108,8 +108,8 @@
                             <td class="form-label-sm" style="width:max-content; white-space:nowrap;"><?= esc(date('d-m-Y', strtotime($tag['updated_at']))) ?></td>
                             <!-- Actions -->
                             <td class="text-nowrap align-middle">
-                                <a href="<?= site_url('tags/view/'.$tag['id']) ?>" target="_blank" title="View tag details" class="apple-btn-secondary btn-sm">View</a>
-                                <a href="<?= site_url('tags/update/'.$tag['id']) ?>" target="_blank" title="Update tag details" class="apple-btn-primary btn-sm">Update</a>
+                                <a href="<?= site_url('tags/view/'.$tag['id']) ?>" title="View tag details" class="apple-btn-secondary btn-sm">View</a>
+                                <a href="<?= site_url('tags/update/'.$tag['id']) ?>" title="Update tag details" class="apple-btn-primary btn-sm">Update</a>
                             </td>
                         </tr>
                     <?php endforeach; ?>
