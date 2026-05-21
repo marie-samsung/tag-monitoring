@@ -38,7 +38,8 @@ class TagsController extends BaseController
             'property_id' => $this->request->getGet('property_id'),
             'subsidiary_id' => $this->request->getGet('subsidiary_id'),
         ];
-        $data['tags'] = $tagModel->filterTags($filters);
+        $data['tags'] = $tagModel->filterTags($filters, 25);
+        $data['pager'] = $tagModel->pager;
 
         if (is_array($status)) {
             $filters['status'] = 145;

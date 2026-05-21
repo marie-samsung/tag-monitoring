@@ -431,3 +431,56 @@ table.file-table th:nth-child(3) {
 .no-border th {
     border-bottom: none !important;
 }
+
+/* Apple Pagination */
+.apple-pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.apple-pagination {
+    display: flex;
+    padding-left: 0;
+    list-style: none;
+    background-color: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    margin-bottom: 0;
+}
+
+.apple-pagination li {
+    margin: 0 2px;
+}
+
+.apple-pagination li a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 10px;
+    color: #1D1D1F;
+    text-decoration: none;
+    border-radius: 16px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.apple-pagination li a:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.apple-pagination li.active a {
+    background-color: #0071E3;
+    color: #FFFFFF;
+    box-shadow: 0 2px 5px rgba(0, 113, 227, 0.3);
+}
+
+.apple-pagination li.active a:hover {
+    background-color: #0077ED;
+}
