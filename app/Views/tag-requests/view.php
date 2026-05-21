@@ -173,7 +173,7 @@ $hasNewRule = !empty($request['new_rule_ticket']);
         <div class="card p-4">
             <h4>Tag(s)</h4>
 
-            <table class="table table-hover align-middle" style="border-collapse: separate; border-spacing: 0; min-width: 100%;">
+            <table class="table table-hover align-middle apple-table">
                 <tbody>
                     <?php foreach ($tags as $tag) : ?>
                         <tr>

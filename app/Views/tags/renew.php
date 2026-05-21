@@ -71,7 +71,7 @@ Tag: Renew
                 </h4>
             </div>
 
-            <table class="table table-hover align-middle" style="border-collapse: separate; border-spacing: 0; min-width: 100%;">
+            <table class="table table-hover align-middle apple-table">
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -213,7 +213,7 @@ Tag: Renew
         <!-- #region | TAGS -->
         <h4 class="mt-3 text-primary">Tags List</h4>
         <div class="table-responsive">
-            <table class="table table-hover align-middle" style="border-collapse: separate; border-spacing: 0; min-width: 100%;">
+            <table class="table table-hover align-middle apple-table">
                 <thead>
                     <tr>
                         <th>ID</th>
