@@ -365,7 +365,7 @@ class TagsController extends BaseController
     /**
      * @throws ReflectionException
      */
-    public function saveJiraHistory($tag, $ticketId, $tagIds)
+    public function saveJiraHistory($tag, $ticketId, $tagIds, $isRenewal = true)
     {
         if (is_array($tag)) {
             $tagId = $tag['id'];
@@ -379,7 +379,7 @@ class TagsController extends BaseController
                 'property_id' => $propertyId,
                 'subsidiary_id' => $subsidiaryId,
                 'ticket_id' => $ticketId,
-                'type' => Constants::JIRA_TYPE_DATE_EXTENSION_RULE,
+                'type' => $isRenewal ? Constants::JIRA_TYPE_DATE_EXTENSION_RULE : Constants::JIRA_TYPE_UPDATE_RULE,
                 'comments' => implode(',', $tagIds),
             ])) {
                 var_dump("Failed to save JIRA history for tag ID: {$tagId}");

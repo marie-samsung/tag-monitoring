@@ -266,6 +266,19 @@ class Constants
         self::ACTIVITY_SIZE_SPRINT => 'Sprint',
     ];
 
+    public const PRIORITY_LOW = 1;
+    public const PRIORITY_MEDIUM = 2;
+    public const PRIORITY_HIGH = 3;
+    public const PRIORITY_CRITICAL = 4;
+    public const PRIORITY_BLOCKER = 5;
+    public const PRIORITIES = [
+        self::PRIORITY_LOW => 'Low',
+        self::PRIORITY_MEDIUM => 'Medium',
+        self::PRIORITY_HIGH => 'High',
+        self::PRIORITY_CRITICAL => 'Critical',
+        self::PRIORITY_BLOCKER => 'Blocker',
+    ];
+
     public const CAMPAIGN_STATUS_NEW = 1;
     public const CAMPAIGN_STATUS_EXISTING = 2;
     public const CAMPAIGN_STATUS = [

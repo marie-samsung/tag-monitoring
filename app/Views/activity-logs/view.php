@@ -16,16 +16,20 @@
     $project = Constants::PROJECTS[$log['project_id']] ?? 'Unknown';
     $assignee = Constants::USERS[$log['assignee']] ?? Constants::USER_SYSTEM_LABEL;
     $size = Constants::ACTIVITY_SIZES[$log['size']] ?? 'Unknown';
+    $priority = Constants::PRIORITIES[$log['priority']] ?? 'Unknown';
 ?>
 
-<div class="container-fluid d-flex gap-2 justify-content-start align-items-center">
-    <span class="badge" style="<?= random_bg_style($subsidiary) ?>" title="Subsidiary"><?= $subsidiary ?></span>
-    <span class="badge" style="<?= random_bg_style($project) ?>" title="Project"><?= $project ?></span>
-    <span class="badge" style="<?= random_bg_style($type) ?>" title="Activity Log Type"><?= $type ?></span>
-    <span class="badge" style="<?= random_bg_style($assignee) ?>" title="Assigned To"><?= $assignee ?></span>
-    <span class="badge" style="<?= random_bg_style($size) ?>" title="Size"><?= $size ?></span>
-    <span class="badge <?= status_activity_logs_class($log['status']) ?>" title="Status"><?= $status ?></span>
+<div class="container-fluid">
     <h3><?= esc($log['title']) ?></h3>
+    <div class="d-flex gap-2 justify-content-start align-items-center mt-2">
+        <span class="badge" style="<?= random_bg_style($subsidiary) ?>" title="Subsidiary"><?= $subsidiary ?></span>
+        <span class="badge" style="<?= random_bg_style($project) ?>" title="Project"><?= $project ?></span>
+        <span class="badge" style="<?= random_bg_style($type) ?>" title="Activity Log Type"><?= $type ?></span>
+        <span class="badge <?= assignee_class($log['assignee']) ?>" title="Assigned To"><?= $assignee ?></span>
+        <span class="badge <?= size_class($log['size']) ?>" title="Size"><?= $size ?></span>
+        <span class="badge <?= priority_class($log['priority']) ?>" title="Priority"><?= $priority ?></span>
+        <span class="badge <?= status_activity_logs_class($log['status']) ?>" title="Status"><?= $status ?></span>
+    </div>
 </div>
 
 <div class="container-fluid d-flex my-3 gap-2 justify-content-evenly">

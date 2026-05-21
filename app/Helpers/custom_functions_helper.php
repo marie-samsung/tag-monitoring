@@ -2,7 +2,7 @@
 
 use App\Models\Constants;
 
-function status_label(int $code): string
+function status_label(int $id): string
 {
     $map = [
         Constants::STATUS_ENABLED => 'Enabled',
@@ -13,12 +13,12 @@ function status_label(int $code): string
         Constants::STATUS_NEW_TAG_SUBMITTED => 'New Tag Request Submitted',
         Constants::STATUS_NEW_RULE_SUBMITTED => 'New Rule Request Submitted',
     ];
-    return $map[$code] ?? 'Unknown';
+    return $map[$id] ?? 'Unknown';
 }
 
-function status_class(int $code): string
+function status_class(int $id): string
 {
-    return match ($code) {
+    return match ($id) {
         Constants::STATUS_ENABLED => 'bg-success text-white',
         Constants::STATUS_DISABLED => 'bg-danger text-white',
         Constants::STATUS_EXPIRED, Constants::STATUS_NEW_RULE_SUBMITTED => 'bg-secondary text-white',
@@ -28,26 +28,55 @@ function status_class(int $code): string
     };
 }
 
-function status_activity_logs_class(int $code): string
+function status_activity_logs_class(int $id): string
 {
-    return match ($code) {
+    return match ($id) {
         Constants::STATUS_TO_DO => 'bg-secondary text-white',
-        Constants::STATUS_INVESTIGATION, Constants::STATUS_IMPLEMENTATION => 'bg-warning text-dark',
+        Constants::STATUS_INVESTIGATION, Constants::STATUS_IMPLEMENTATION, Constants::STATUS_REVIEW => 'bg-warning text-dark',
         Constants::STATUS_QA => 'bg-info text-dark',
-        Constants::STATUS_REVIEW => 'bg-warning text-dark',
         Constants::STATUS_COMPLETED => 'bg-success text-white',
         Constants::STATUS_BLOCKED => 'bg-danger text-white',
     };
 }
 
-function status_request_class(int $code): string
+function status_request_class(int $id): string
 {
-    return match ($code) {
+    return match ($id) {
         Constants::STATUS_REQUEST_HQ_REVIEW, Constants::STATUS_REQUEST_NEW_RULE_REQUEST_SUBMITTED => 'bg-warning text-dark',
         Constants::STATUS_REQUEST_PENDING_ITEMS => 'bg-info text-dark',
         Constants::STATUS_REQUEST_APPROVED, Constants::STATUS_REQUEST_PUBLISHED => 'bg-success text-white',
         Constants::STATUS_REQUEST_REJECTED => 'bg-danger text-white',
         default => 'bg-secondary text-dark',
+    };
+}
+
+function assignee_class(int $id): string
+{
+    return match ($id) {
+        Constants::USER_SYSTEM, Constants::USER_OTHER => 'bg-info text-white',
+        Constants::USER_MARIE => 'bg-purple text-white',
+        Constants::USER_KHRISTINE => 'bg-pink text-white',
+        Constants::USER_LUCKY => 'bg-green text-white',
+        Constants::USER_JANITHA => 'bg-blue text-dark',
+        Constants::USER_GEORGE => 'bg-teal text-dark',
+    };
+}
+
+function priority_class(int $id): string
+{
+    return match ($id) {
+        Constants::PRIORITY_LOW => 'bg-secondary text-white',
+        Constants::PRIORITY_MEDIUM => 'bg-warning text-dark',
+        Constants::PRIORITY_HIGH, Constants::PRIORITY_CRITICAL, Constants::PRIORITY_BLOCKER => 'bg-danger text-white',
+    };
+}
+
+function size_class(int $id): string
+{
+    return match ($id) {
+        Constants::ACTIVITY_SIZE_S => 'bg-secondary text-white',
+        Constants::ACTIVITY_SIZE_M => 'bg-warning text-dark',
+        Constants::ACTIVITY_SIZE_L, Constants::ACTIVITY_SIZE_XL, Constants::ACTIVITY_SIZE_SPRINT => 'bg-danger text-white',
     };
 }
 

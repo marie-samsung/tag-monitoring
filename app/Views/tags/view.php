@@ -6,26 +6,27 @@
 
 <?= $this->section('content') ?>
 
-<?php 
-    use App\Models\Constants;
-    use App\Models\TagsModel;
-    use App\Models\PropertiesModel;
-    use App\Models\VendorsModel;
-    use App\Models\OrganizationsModel;
-    use App\Models\TagRequestsModel;
-    helper('custom_functions');
+<?php
+use App\Models\ActivityLogsModel;
+use App\Models\Constants;
+use App\Models\TagsModel;
+use App\Models\PropertiesModel;
+use App\Models\VendorsModel;
+use App\Models\OrganizationsModel;
+use App\Models\TagRequestsModel;
+helper('custom_functions');
 
-    $propertiesModel = new PropertiesModel();
-    $properties = $propertiesModel->WebsiteLinks();
+$propertiesModel = new PropertiesModel();
+$properties = $propertiesModel->WebsiteLinks();
 
-    $vendorsModel = new VendorsModel();
-    $vendors = $vendorsModel->Options();
+$vendorsModel = new VendorsModel();
+$vendors = $vendorsModel->Options();
 
-    $organizationsModel = new OrganizationsModel();
-    $organizations = $organizationsModel->Options();
+$organizationsModel = new OrganizationsModel();
+$organizations = $organizationsModel->Options();
 
-    $tagModel = new TagsModel();
-    $tagRequestsModel = new TagRequestsModel();
+$tagModel = new TagsModel();
+$tagRequestsModel = new TagRequestsModel();
 ?>
 
 <h3 class="container"><?= $tag['name'] ?></h3>
@@ -149,7 +150,8 @@
                             $type = $jira['type'];
                             if ($type == Constants::JIRA_TYPE_DATE_EXTENSION_RULE ||
                                     $type == Constants::JIRA_TYPE_NEW_TAG ||
-                                    $type == Constants::JIRA_TYPE_NEW_RULE) {
+                                    $type == Constants::JIRA_TYPE_NEW_RULE ||
+                                    $type == Constants::JIRA_TYPE_UPDATE_RULE) {
                                 $ticketTags = explode(',', $jira['comments']);
                                 
                                 foreach ($ticketTags as $tagId) {
@@ -168,22 +170,40 @@
                                     <?= $jira['ticket_id'] ?: '-' ?>
                                 </a>
                             </td>
+                            <!-- TYPE -->
                             <td>
                                 <?php
-                                if ($type == Constants::JIRA_TYPE_NEW_TAG || $type == Constants::JIRA_TYPE_NEW_RULE) {
-                                    $request_id = $tagRequestsModel->getRequestByTicketId($jira['ticket_id']);
+                                    if ($type == Constants::JIRA_TYPE_NEW_TAG || $type == Constants::JIRA_TYPE_NEW_RULE) {
+                                        $request_id = $tagRequestsModel->getRequestByTicketId($jira['ticket_id']);
 
-                                    if ($request_id) {
-                                        ?>
-                                        <a href="<?= site_url('/tag-requests/view/' . $request_id) ?>" target="_blank">
-                                            <?= Constants::JIRA_TICKET_TYPES[$type] ?>
-                                        </a>
+                                        if ($request_id) {
+                                ?>
+                                            <a href="<?= site_url('/tag-requests/view/' . $request_id) ?>" target="_blank">
+                                                <?= Constants::JIRA_TICKET_TYPES[$type] ?>
+                                            </a>
                                     <?php } else { ?>
                                         <?= Constants::JIRA_TICKET_TYPES[$type] ?>
-                                    <?php }} else { ?>
+                                    <?php } ?>
+
+                                <?php
+                                    } elseif ($type == Constants::JIRA_TYPE_UPDATE_RULE) {
+                                        $activityLogsModel = new ActivityLogsModel();
+                                        $activityLog = $activityLogsModel->where('ticket_id', $jira['ticket_id'])->first();
+
+                                        if ($activityLog) {
+                                ?>
+                                        <a href="<?= site_url('/activity-logs/view/' . $activityLog['id']) ?>" target="_blank">
+                                            <?= Constants::JIRA_TICKET_TYPES[$type] ?>
+                                        </a>
+
+                                        <?php } else { ?>
+                                            <?= Constants::JIRA_TICKET_TYPES[$type] ?>
+
+                                <?php }} else { ?>
                                     <?= Constants::JIRA_TICKET_TYPES[$type] ?>
                                 <?php } ?>
                             </td>
+                            <!-- COMMENTS -->
                             <td>
                                 <?php if ($ticketTagsList): ?>
 

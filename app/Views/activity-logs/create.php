@@ -32,6 +32,19 @@ Activity Log: Create
                         value="<?= old('title', $log['title'] ?? '') ?>"
                         required>
                 </div>
+
+                <div class="col-2">
+                    <label class="form-label-xs text-primary">Assignee</label>
+                    <select name="assignee" class="form-select" required>
+                        <option value="">-Select-</option>
+                        <?php foreach (Constants::USERS as $value => $label): ?>
+                            <option value="<?= esc($value) ?>"
+                                    <?= old('assignee', $log['assignee'] ?? '') == $value ? 'selected' : '' ?>>
+                                <?= esc($label) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
             </div>
 
             <div class="row mb-2">
@@ -50,7 +63,7 @@ Activity Log: Create
                         <option value="">-Select-</option>
                         <?php foreach (Constants::ACTIVITY_LOG_SUBSIDIARIES as $value => $label): ?>
                             <option value="<?= esc($value) ?>"
-                                <?= old('subsidiary_id', $log['subsidiary_id'] ?? '') == $value ? 'selected' : '' ?>>
+                                    <?= old('subsidiary_id', $log['subsidiary_id'] ?? '') == $value ? 'selected' : '' ?>>
                                 <?= esc($label) ?>
                             </option>
                         <?php endforeach; ?>
@@ -63,7 +76,7 @@ Activity Log: Create
                         <option value="">-Select-</option>
                         <?php foreach (Constants::PROJECTS as $value => $label): ?>
                             <option value="<?= esc($value) ?>"
-                                <?= old('project_id', $log['project_id'] ?? '') == $value ? 'selected' : '' ?>>
+                                    <?= old('project_id', $log['project_id'] ?? '') == $value ? 'selected' : '' ?>>
                                 <?= esc($label) ?>
                             </option>
                         <?php endforeach; ?>
@@ -86,19 +99,6 @@ Activity Log: Create
 
             <div class="row mb-2">
                 <div class="col">
-                    <label class="form-label-xs text-primary">Assignee</label>
-                    <select name="assignee" class="form-select" required>
-                        <option value="">-Select-</option>
-                        <?php foreach (Constants::USERS as $value => $label): ?>
-                            <option value="<?= esc($value) ?>"
-                                <?= old('assignee', $log['assignee'] ?? '') == $value ? 'selected' : '' ?>>
-                                <?= esc($label) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-
-                <div class="col">
                     <label for="ticket_id" class="form-label-xs text-primary">Ticket ID</label>
                     <input type="text" name="ticket_id" id="ticket_id"
                         class="form-control"
@@ -112,6 +112,19 @@ Activity Log: Create
                         <?php foreach (Constants::ACTIVITY_SIZES as $value => $label): ?>
                             <option value="<?= esc($value) ?>"
                                 <?= old('size', $log['size'] ?? '') == $value ? 'selected' : '' ?>>
+                                <?= esc($label) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div class="col">
+                    <label class="form-label-xs text-primary">Priority</label>
+                    <select name="priority" class="form-select" required>
+                        <option value="">-Select-</option>
+                        <?php foreach (Constants::PRIORITIES as $value => $label): ?>
+                            <option value="<?= esc($value) ?>"
+                                    <?= old('priority', $log['priority'] ?? '') == $value ? 'selected' : '' ?>>
                                 <?= esc($label) ?>
                             </option>
                         <?php endforeach; ?>

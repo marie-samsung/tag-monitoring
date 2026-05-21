@@ -20,6 +20,7 @@ class ActivityLogsModel extends Model
         'status',
         'type',
         'size',
+        'priority',
         'requested_date',
         'finished_date',
         'created_by',
@@ -53,6 +54,10 @@ class ActivityLogsModel extends Model
             $builder->where('type', $filters['type']);
         }
 
+        if (!empty($filters['priority'])) {
+            $builder->where('priority', $filters['priority']);
+        }
+
         if (!empty($filters['assignee'])) {
             $builder->where('assignee', $filters['assignee']);
         }
@@ -61,6 +66,8 @@ class ActivityLogsModel extends Model
             $builder->where('status', $filters['status']);
         }
 
+        $builder->orderBy('priority', 'DESC');
+        $builder->orderBy('size', 'DESC');
         $builder->orderBy('created_at', 'DESC');
         return $builder->get()->getResultArray();
     }

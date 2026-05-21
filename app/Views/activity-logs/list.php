@@ -65,18 +65,6 @@ Activity Logs
             </div>
 
             <div class="col">
-                <select name="type" class="form-select form-select-xs">
-                    <option value="">All Types</option>
-                    <?php foreach (Constants::ACTIVITY_TYPES as $value => $label): ?>
-                        <option value="<?= esc($value) ?>"
-                                <?= old('type', $filters['type'] ?? '') == $value ? 'selected' : '' ?>>
-                            <?= esc($label) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-
-            <div class="col">
                 <select name="assignee" class="form-select form-select-xs">
                     <option value="">All Assignee</option>
                     <?php foreach (Constants::USERS as $value => $label): ?>
@@ -94,6 +82,30 @@ Activity Logs
                     <?php foreach (Constants::ACTIVITY_LOGS_STATUS as $value => $label): ?>
                         <option value="<?= esc($value) ?>"
                                 <?= old('status', $filters['status'] ?? null) == $value ? 'selected' : '' ?>>
+                            <?= esc($label) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <div class="col">
+                <select name="priority" class="form-select form-select-xs">
+                    <option value="">All Priorities</option>
+                    <?php foreach (Constants::PRIORITIES as $value => $label): ?>
+                        <option value="<?= esc($value) ?>"
+                                <?= old('priority', $filters['priority'] ?? null) == $value ? 'selected' : '' ?>>
+                            <?= esc($label) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <div class="col">
+                <select name="type" class="form-select form-select-xs">
+                    <option value="">All Types</option>
+                    <?php foreach (Constants::ACTIVITY_TYPES as $value => $label): ?>
+                        <option value="<?= esc($value) ?>"
+                                <?= old('type', $filters['type'] ?? '') == $value ? 'selected' : '' ?>>
                             <?= esc($label) ?>
                         </option>
                     <?php endforeach; ?>
@@ -121,6 +133,7 @@ Activity Logs
                 <th class="form-label-sm fw-semibold">Title</th>
                 <th class="form-label-sm fw-semibold">Assignee</th>
                 <th class="form-label-sm fw-semibold">Status</th>
+                <th class="form-label-sm fw-semibold">Priority</th>
                 <th class="form-label-sm fw-semibold">Type</th>
                 <th class="form-label-sm fw-semibold">Size</th>
                 <th class="form-label-sm fw-semibold">Created At</th>
@@ -153,7 +166,7 @@ Activity Logs
                     </td>
                     <td><?= $log['title'] ?></td>
                     <td>
-                        <span class="badge" style="<?= random_bg_style($assignee) ?>">
+                        <span class="badge <?= assignee_class($log['assignee']) ?>">
                             <?= $assignee ?>
                         </span>
                     </td>
@@ -163,12 +176,17 @@ Activity Logs
                         </span>
                     </td>
                     <td>
+                        <span class="badge <?= priority_class($log['priority']) ?>">
+                            <?= Constants::PRIORITIES[$log['priority']] ?? 'Unknown' ?>
+                        </span>
+                    </td>
+                    <td>
                         <span class="badge" style="<?= random_bg_style($type) ?>">
                             <?= $type ?>
                         </span>
                     </td>
                     <td>
-                        <span class="badge" style="<?= random_bg_style($size) ?>">
+                        <span class="badge <?= size_class($log['size']) ?>">
                             <?= $size ?>
                         </span>
                     </td>

@@ -34,6 +34,18 @@
                         value="<?= $log['title'] ?>"
                         required>
                 </div>
+
+                <div class="col-2">
+                    <label class="form-label-xs text-primary">Assignee</label>
+                    <select name="assignee" class="form-select" required>
+                        <?php foreach (Constants::USERS as $value => $label): ?>
+                            <option value="<?= esc($value) ?>"
+                                    <?= ($log['assignee'] == $value) ? 'selected' : '' ?>>
+                                <?= esc($label) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
             </div>
 
             <div class="row mb-2">
@@ -86,18 +98,6 @@
 
             <div class="row mb-2">
                 <div class="col">
-                    <label class="form-label-xs text-primary">Assignee</label>
-                    <select name="assignee" class="form-select" required>
-                        <?php foreach (Constants::USERS as $value => $label): ?>
-                            <option value="<?= esc($value) ?>"
-                                <?= ($log['assignee'] == $value) ? 'selected' : '' ?>>
-                                <?= esc($label) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-
-                <div class="col">
                     <label for="ticket_id" class="form-label-xs text-primary">Ticket ID</label>
                     <input type="text" name="ticket_id" id="ticket_id"
                         class="form-control"
@@ -111,6 +111,19 @@
                         <?php foreach (Constants::ACTIVITY_SIZES as $value => $label): ?>
                             <option value="<?= esc($value) ?>"
                                 <?= ($log['size'] == $value) ? 'selected' : '' ?>>
+                                <?= esc($label) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div class="col">
+                    <label class="form-label-xs text-primary">Priority</label>
+                    <select name="priority" class="form-select" required>
+                        <option value="">-Select-</option>
+                        <?php foreach (Constants::PRIORITIES as $value => $label): ?>
+                            <option value="<?= esc($value) ?>"
+                                    <?= ($log['priority'] == $value) ? 'selected' : '' ?>>
                                 <?= esc($label) ?>
                             </option>
                         <?php endforeach; ?>

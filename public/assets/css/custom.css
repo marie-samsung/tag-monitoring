@@ -18,6 +18,9 @@ h1, h2, h3, h4, h5, h6 {
 .bg-teal { background-color: #20c997 !important; }
 .bg-orange { background-color: #fd7e14 !important; }
 .bg-pink { background-color: #d63384 !important; }
+.bg-blue { background-color: #3690ff !important; }
+.bg-green { background-color: #008018 !important; }
+.bg-red { background-color: #ff0000 !important; }
 
 .form-label-sm {
     font-size: 0.85rem;

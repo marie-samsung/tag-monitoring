@@ -100,6 +100,7 @@ class ActivityLogsController extends BaseController
 
         $post = $this->request->getPost();
 
+        // @NOTE: ACTIVITY LOGS AUTOMATIC UPDATE COMMENTS
         if ($log['status'] !== $post['status']) {
             $from = Constants::ACTIVITY_LOGS_STATUS[$log['status']];
             $to = Constants::ACTIVITY_LOGS_STATUS[$post['status']];
@@ -133,6 +134,18 @@ class ActivityLogsController extends BaseController
             ]);
         }
 
+        if ($log['priority'] !== $post['priority']) {
+            $from = Constants::PRIORITIES[$log['priority']];
+            $to = Constants::PRIORITIES[$post['priority']];
+
+            $commentsModel->insert([
+                'log_id' => $id,
+                'comment' => "Priority updated from [{$from}] to [{$to}]",
+                'commented_by' => Constants::USER_SYSTEM,
+                'type' => Constants::COMMENT_TYPE_UPDATE,
+            ]);
+        }
+
         $updateData = [
             'title'           => trim($post['title']),
             'description'     => $post['description'] ?? null,
@@ -145,6 +158,7 @@ class ActivityLogsController extends BaseController
             'requested_by'    => $post['requested_by'] ?? null,
             'status'          => (int)$post['status'],
             'size'            => (int)$post['size'] ?? null,
+            'priority'        => (int)$post['priority'] ?? null,
             'requested_date'  => !empty($post['requested_date']) ? $post['requested_date'] : null,
             'finished_date'   => !empty($post['finished_date']) ? $post['finished_date'] : null,
             'campaign_status' => !empty($post['campaign_status']) ? (int)$post['campaign_status'] : null,
