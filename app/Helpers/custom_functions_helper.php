@@ -53,12 +53,12 @@ function status_request_class(int $id): string
 function assignee_class(int $id): string
 {
     return match ($id) {
-        Constants::USER_SYSTEM, Constants::USER_OTHER => 'bg-info text-white',
+        Constants::USER_SYSTEM, Constants::USER_OTHER => 'bg-secondary text-white',
         Constants::USER_MARIE => 'bg-purple text-white',
         Constants::USER_KHRISTINE => 'bg-pink text-white',
         Constants::USER_LUCKY => 'bg-green text-white',
         Constants::USER_JANITHA => 'bg-blue text-dark',
-        Constants::USER_GEORGE => 'bg-teal text-dark',
+        Constants::USER_GEORGE => 'bg-orange text-dark',
     };
 }
 

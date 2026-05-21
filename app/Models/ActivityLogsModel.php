@@ -66,6 +66,7 @@ class ActivityLogsModel extends Model
             $builder->where('status', $filters['status']);
         }
 
+        $builder->orderBy('status', 'ASC');
         $builder->orderBy('priority', 'DESC');
         $builder->orderBy('size', 'DESC');
         $builder->orderBy('created_at', 'DESC');

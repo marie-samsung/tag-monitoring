@@ -253,7 +253,7 @@ Tag Request: Create
     $reason = $vendor['reason'] ?? '-';
     $purpose = $vendor['tag_purpose'] ?? '-';
     $today = date('dmY');
-    $libraryName = (!empty($ticket_id) ?? '') . '_'. $today;
+    $libraryName = !empty($ticket_id) ? $ticket_id . '_'. $today : '_' . $today;
     $ssGTM = Constants::JIRA_SSGTM_TICKET;
     $jiraTitle = sprintf(
             '[LC Request] [%s] - [%s] - [New Rule]',
