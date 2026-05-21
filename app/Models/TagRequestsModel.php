@@ -28,39 +28,45 @@ class TagRequestsModel extends Model
     protected $useTimestamps = true;
     protected $useSoftDeletes = true;
 
-    public function filterRequests($filters = [])
+    public function filterRequests($filters = [], $paginate = 0)
     {
-        $builder = $this->builder()
-            ->select('tag_requests.*')
-            ->join('properties', 'properties.id = tag_requests.property_id', 'left');
+        $this->select('tag_requests.*')
+             ->join('properties', 'properties.id = tag_requests.property_id', 'left');
 
         if (!empty($filters['keyword'])) {
-            $builder->like('tag_requests.new_tag_ticket', $filters['keyword']);
-            $builder->orLike('tag_requests.new_rule_ticket', $filters['keyword']);
+            $this->groupStart();
+            $this->like('tag_requests.new_tag_ticket', $filters['keyword']);
+            $this->orLike('tag_requests.new_rule_ticket', $filters['keyword']);
+            $this->groupEnd();
         }
 
         if (!empty($filters['subsidiary_id'])) {
-            $builder->where('properties.subsidiary_id', $filters['subsidiary_id']);
+            $this->where('properties.subsidiary_id', $filters['subsidiary_id']);
         }
 
         if (!empty($filters['property_id'])) {
-            $builder->where('tag_requests.property_id', $filters['property_id']);
+            $this->where('tag_requests.property_id', $filters['property_id']);
         }
 
         if (!empty($filters['vendor_id'])) {
-            $builder->where('tag_requests.vendor_id', $filters['vendor_id']);
+            $this->where('tag_requests.vendor_id', $filters['vendor_id']);
         }
 
         if (!empty($filters['type'])) {
-            $builder->where('tag_requests.type', $filters['type']);
+            $this->where('tag_requests.type', $filters['type']);
         }
 
         if (!empty($filters['status'])) {
-            $builder->where('tag_requests.status', $filters['status']);
+            $this->where('tag_requests.status', $filters['status']);
         }
 
-        $builder->orderBy('tag_requests.created_at', 'DESC');
-        return $builder->get()->getResultArray();
+        $this->orderBy('tag_requests.created_at', 'DESC');
+        
+        if ($paginate > 0) {
+            return $this->paginate($paginate);
+        }
+
+        return $this->findAll();
     }
 
     public function getTags($id): array

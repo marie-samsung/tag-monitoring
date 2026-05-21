@@ -28,7 +28,8 @@ class TagRequestsController extends BaseController
             'type' => $this->request->getGet('type'),
             'status' => $this->request->getGet('status'),
         ];
-        $data['requests'] = $model->filterRequests($filters);
+        $data['requests'] = $model->filterRequests($filters, 25);
+        $data['pager'] = $model->pager;
         $data['filters'] = $filters;
 
         return view('tag-requests/list', $data);
