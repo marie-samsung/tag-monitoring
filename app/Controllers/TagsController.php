@@ -22,7 +22,9 @@ class TagsController extends BaseController
 
         $status = $this->request->getGet('status');
 
-        if ($status == Constants::STATUS_DEFAULT || empty($status)) {
+        if ($status === 'all') {
+            $status = null; // null triggers filterTags to ignore status and fetch everything
+        } elseif ($status == Constants::STATUS_DEFAULT || empty($status)) {
             $status = [1,4,5]; // Default to show Enabled, Pending Verification, and Updated in AL
         }
 
@@ -36,7 +38,8 @@ class TagsController extends BaseController
             'property_id' => $this->request->getGet('property_id'),
             'subsidiary_id' => $this->request->getGet('subsidiary_id'),
         ];
-        $data['tags'] = $tagModel->filterTags($filters);
+        $data['tags'] = $tagModel->filterTags($filters, 25);
+        $data['pager'] = $tagModel->pager;
 
         if (is_array($status)) {
             $filters['status'] = 145;
@@ -66,7 +69,7 @@ class TagsController extends BaseController
         $name = trim($post['name']);
 
         preg_match('/\((.*?)\)/', $name, $matches);
-        $vendorName = $matches[1] ?? null;
+        $vendorName = !empty($matches[1]) ? trim($matches[1]) : 'Unknown';
 
         $existing = $model
             ->where('property_id', $propertyId)

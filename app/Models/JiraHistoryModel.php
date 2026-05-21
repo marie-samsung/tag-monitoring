@@ -76,7 +76,9 @@ class JiraHistoryModel extends Model
             $builder->where('subsidiary_id', $filters['subsidiary_id']);
         }
 
-        $builder->groupBy('ticket_id');
+        // Use a subquery to fetch the latest entry per ticket_id without triggering ONLY_FULL_GROUP_BY
+        $builder->where('id IN (SELECT MAX(id) FROM jira_history GROUP BY ticket_id)', null, false);
+        
         $builder->orderBy('created_at', 'DESC');
 
 

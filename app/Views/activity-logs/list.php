@@ -22,14 +22,14 @@ Activity Logs
     <div class="d-flex justify-content-between align-items-center">
         <h2>Activity Logs</h2>
         <div class="d-flex align-items-center gap-2">
-            <a href="<?= site_url('activity-logs/create') ?>" target="_blank" title="Create a new log" class="btn btn-success btn-sm ms-auto px-2">Log Activity</a>
-             <a href="<?= site_url('activity-logs/export?' . http_build_query($_GET)) ?>" class="btn btn-sm btn-warning ms-auto px-2">Export as CSV</a>
+             <a href="<?= site_url('activity-logs/export?' . http_build_query($_GET)) ?>" class="apple-btn-secondary btn-sm ms-auto px-3">Export as CSV</a>
+            <a href="<?= site_url('activity-logs/create') ?>" title="Create a new log" class="apple-btn-primary btn-sm ms-auto px-3">Log Activity</a>
         </div>
     </div>
 
     <!-- #region | SEARCH FILTER -->
-    <div>
-        <form method="get" class="row g-3 mb-3">
+    <div class="apple-control-bar mb-4">
+        <form method="get" class="row g-2 w-100 m-0">
             <div class="col">
                 <input
                         type="text"
@@ -113,20 +113,22 @@ Activity Logs
             </div>
 
             <div class="col-md-2 d-flex align-items-center gap-2">
-                <button class="btn btn-sm btn-primary w-100">Filter</button>
-                <a href="<?= site_url('activity-logs') ?>" class="btn btn-sm btn-secondary w-100">Clear</a>
+                <button class="apple-btn-primary btn-sm w-100">Filter</button>
+                <a href="<?= site_url('activity-logs') ?>" class="apple-btn-secondary btn-sm w-100 text-center text-decoration-none">Clear</a>
             </div>
 
         </form>
     </div>
     <!-- #endregion -->
+    </div>
 </div>
 
 <!-- #region | LOGS TABLE -->
-<div class="table-responsive">
-    <table class="table table-bordered table-hover table-striped">
-        <thead class="table-active">
-            <tr>
+<div class="apple-table-container">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0" style="border-collapse: separate; border-spacing: 0; min-width: 100%;">
+            <thead>
+                <tr>
                 <th class="form-label-sm fw-semibold">ID</th>
                 <th class="form-label-sm fw-semibold">Subsidiary</th>
                 <th class="form-label-sm fw-semibold">Project</th>
@@ -190,15 +192,16 @@ Activity Logs
                             <?= $size ?>
                         </span>
                     </td>
-                    <td><?= $log['created_at'] ?></td>
-                    <td>
-                        <a href="<?= site_url('activity-logs/view/' . $log['id']) ?>" class="btn btn-sm btn-secondary">Details</a>
-                        <a href="<?= site_url('activity-logs/update/' . $log['id']) ?>" class="btn btn-sm btn-primary">Update</a>
+                    <td class="form-label-sm" style="width:max-content; white-space:nowrap;"><?= esc(date('d-m-Y', strtotime($log['created_at']))) ?></td>
+                    <td class="text-nowrap align-middle">
+                        <a href="<?= site_url('activity-logs/view/' . $log['id']) ?>" class="apple-btn-secondary btn-sm">Details</a>
+                        <a href="<?= site_url('activity-logs/update/' . $log['id']) ?>" class="apple-btn-primary btn-sm">Update</a>
                     </td>
                 </tr>
             <?php endforeach; ?>
         </tbody>
     </table>
+    </div>
 </div>
 <!-- #endregion -->
 

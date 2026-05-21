@@ -118,8 +118,8 @@ $tagRequestsModel = new TagRequestsModel();
         <hr>
 
         <div class="d-flex align-items-center gap-1">
-            <a href="<?= site_url('tags') ?>" class="btn btn-secondary btn-sm px-2">Back</a>
-            <a href="<?= site_url('tags/update/' . $tag['id']) ?>" class="btn btn-primary btn-sm">Edit</a>
+            <a href="<?= site_url('tags') ?>" class="apple-btn-secondary btn-sm px-2">Back</a>
+            <a href="<?= site_url('tags/update/' . $tag['id']) ?>" class="apple-btn-primary btn-sm">Edit</a>
         </div>
     </div>
     <!-- #endregion -->
@@ -129,7 +129,7 @@ $tagRequestsModel = new TagRequestsModel();
         <div class="d-flex justify-content-between mb-3">
             <h5>JIRA References</h5>
             <div>
-                <a href="<?= site_url('jira/add-entry?tag_id='.$tag['id']) ?>" target="_blank" title="Add a new JIRA ticket" class="btn btn-success btn-sm ms-auto px-2">Add Entry</a>
+                <a href="<?= site_url('jira/add-entry?tag_id='.$tag['id']) ?>" target="_blank" title="Add a new JIRA ticket" class="apple-btn-primary btn-sm ms-auto px-2">Add Entry</a>
             </div>
         </div>
         <div class="table-responsive">

@@ -26,7 +26,7 @@
         <!-- region | LP FILE -->
         <h4>Launch Publishing File</h4>
         <div class="table-responsive">
-            <table class="table table-hover table-bordered table-striped">
+            <table class="table table-hover align-middle" style="border-collapse: separate; border-spacing: 0; min-width: 100%;">
                 <thead>
                     <tr>
                         <th>Request Date</th>
@@ -99,9 +99,9 @@
                 <input type="hidden" name="info[requester]" value="<?= $requester ?>">
             </div>
             <div>
-                <a href="<?= site_url('tags') ?>" title="Cancel" class="btn btn-secondary btn-sm">Cancel</a>
+                <a href="<?= site_url('tags') ?>" title="Cancel" class="apple-btn-secondary btn-sm">Cancel</a>
                 <button type="submit" 
-                    class="btn btn-success btn-sm"
+                    class="apple-btn-primary btn-sm"
                     onclick="return confirm('Have you updated these tags in AL?');">
                     Renew Tags
                 </button>

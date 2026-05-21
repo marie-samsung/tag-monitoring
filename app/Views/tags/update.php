@@ -147,8 +147,8 @@
         </div>
 
         <div class="d-flex justify-content-end gap-2 mt-3">
-            <a href="<?= site_url('tags') ?>" title="Cancel" class="btn btn-secondary btn-sm">Cancel</a>
-            <button type="submit" class="btn btn-success btn-sm">Update</button>
+            <a href="<?= site_url('tags') ?>" title="Cancel" class="apple-btn-secondary btn-sm">Cancel</a>
+            <button type="submit" class="apple-btn-primary btn-sm">Update</button>
         </div>
         <!-- #endregion -->
     </div>

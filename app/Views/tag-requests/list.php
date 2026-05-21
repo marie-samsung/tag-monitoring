@@ -40,8 +40,8 @@ Tag: Requests (New Rule, New Tag)
     <div class="d-flex justify-content-between align-items-center">
         <h2>Tag Requests</h2>
         <div class="d-flex align-items-center gap-2">
-            <a href="<?= site_url('tag-requests/create') ?>" target="_blank" title="Create a new request" class="btn btn-success btn-sm ms-auto px-2">Add Request</a>
-            <a href="<?= site_url('tag-requests/export?' . http_build_query($_GET)) ?>" class="btn btn-sm btn-warning ms-auto px-2">Export as CSV</a>
+            <a href="<?= site_url('tag-requests/create') ?>" title="Create a new request" class="apple-btn-primary btn-sm ms-auto px-2">Add Request</a>
+            <a href="<?= site_url('tag-requests/export?' . http_build_query($_GET)) ?>" class="apple-btn-secondary btn-sm ms-auto px-2">Export as CSV</a>
         </div>
     </div>
 
@@ -53,8 +53,8 @@ Tag: Requests (New Rule, New Tag)
     </div> -->
 
     <!-- #region | SEARCH FILTER -->
-    <div>
-        <form method="get" class="row g-3 mb-3">
+    <div class="apple-control-bar mb-4">
+        <form method="get" class="row g-2 w-100 m-0">
             <div class="col">
                 <input 
                     type="text" 
@@ -126,8 +126,8 @@ Tag: Requests (New Rule, New Tag)
             </div>
 
             <div class="col-md-2 d-flex align-items-center gap-2">
-                <button class="btn btn-sm btn-primary w-100">Filter</button>
-                <a href="<?= site_url('tag-requests') ?>" class="btn btn-sm btn-secondary w-100">Clear</a>
+                <button class="apple-btn-primary btn-sm w-100">Filter</button>
+                <a href="<?= site_url('tag-requests') ?>" class="apple-btn-secondary btn-sm w-100 text-center text-decoration-none">Clear</a>
             </div>
 
         </form>
@@ -135,9 +135,10 @@ Tag: Requests (New Rule, New Tag)
     <!-- #endregion -->
 
     <!-- #region | TAGS TABLE -->
-    <div class="table-responsive">
-        <table class="table table-bordered table-hover table-striped" id="tblTags">
-            <thead class="table-active">
+    <div class="apple-table-container">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" style="border-collapse: separate; border-spacing: 0; min-width: 100%;" id="tblTags">
+            <thead>
                 <tr>
                     <th class="form-label-sm fw-semibold">#</th>
                     <th class="form-label-sm fw-semibold">Subsidiary</th>
@@ -176,20 +177,19 @@ Tag: Requests (New Rule, New Tag)
                         <!-- Property -->
                         <td>
                             <i class="bi bi-tag-fill" style="<?= random_text_style($property['name']) ?>"></i>
-                            <a href="<?= $property['ref_link'] ?>" target="_blank" class="form-label-sm">
+                            <a href="<?= $property['ref_link'] ?>" class="apple-link-dark form-label-sm ms-1">
                                 <?= $property['name'] ?>
                             </a>
                         </td>
                         <td>
-                            <a href="<?= Constants::JIRA_LINK . $request[$ticketColumn] ?>" target="_blank">
+                            <a href="<?= Constants::JIRA_LINK . $request[$ticketColumn] ?>" class="apple-link">
                                 <?= $request[$ticketColumn] ?>
                             </a>
-                            (<?= $vendors[$request['vendor_id']] ?? '' ?>)
-
+                            <span class="text-muted ms-1" style="font-size: 0.8rem;">(<?= $vendors[$request['vendor_id']] ?? '' ?>)</span>
                             <?php if ($type == Constants::JIRA_TYPE_NEW_TAG && !empty($request['new_rule_ticket'])) : ?>
                                 <br/>
-                                <small class="form-label-xs">New Rule:</small>
-                                <a href="<?= Constants::JIRA_LINK . $request['new_rule_ticket'] ?>" target="_blank" class="form-label-xs">
+                                <small class="text-muted" style="font-size: 0.75rem;">New Rule:</small>
+                                <a href="<?= Constants::JIRA_LINK . $request['new_rule_ticket'] ?>" class="apple-link" style="font-size: 0.85rem;">
                                     <?= $request['new_rule_ticket'] ?>
                                 </a>
                             <?php endif; ?>
@@ -205,13 +205,14 @@ Tag: Requests (New Rule, New Tag)
                         <td class="form-label-sm" style="width:max-content; white-space:nowrap;"><?= esc(date('d-m-Y', strtotime($request['created_at']))) ?></td>
                         <!-- Actions -->
                         <td class="text-nowrap">
-                            <a href="<?= site_url('tag-requests/view/'.$request['id']) ?>" target="_blank" title="View tag details" class="btn btn-secondary btn-sm">View</a>
-<!--                            <a href="--><?php //= site_url('tag-requests/update/'.$request['id']) ?><!--" target="_blank" title="Update tag details" class="btn btn-primary btn-sm">Update</a>-->
+                            <a href="<?= site_url('tag-requests/view/'.$request['id']) ?>" title="View tag details" class="apple-btn-secondary btn-sm">View</a>
+<!--                            <a href="--><?php //= site_url('tag-requests/update/'.$request['id']) ?><!--" title="Update tag details" class="apple-btn-primary btn-sm">Update</a>-->
                         </td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
         </table>
+        </div>
     </div>
     <!-- #endregion -->
 

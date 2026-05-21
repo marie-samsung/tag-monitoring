@@ -71,7 +71,7 @@ Tag: Renew
                 </h4>
             </div>
 
-            <table class="table table-hover table-bordered table-striped">
+            <table class="table table-hover align-middle" style="border-collapse: separate; border-spacing: 0; min-width: 100%;">
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -101,13 +101,13 @@ Tag: Renew
                         value="<?= old('ticket_id', $old['ticket_id'] ?? '') ?>"
                         required>
                 </div>
-                <a href="<?= Constants::JIRA_CREATE_ISSUE ?>" title="Create Issue in JIRA" class="btn btn-outline-primary btn-sm" target="_blank">
+                <a href="<?= Constants::JIRA_CREATE_ISSUE ?>" title="Create Issue in JIRA" class="apple-btn-secondary btn-sm" target="_blank">
                     Create JIRA Ticket
                 </a>
             </div>
             <div>
-                <a href="<?= site_url('tags') ?>" title="Cancel" class="btn btn-danger btn-sm">Cancel</a>
-                <button type="submit" class="btn btn-primary btn-sm">Proceed</button>
+                <a href="<?= site_url('tags') ?>" title="Cancel" class="apple-btn-secondary btn-sm">Cancel</a>
+                <button type="submit" class="apple-btn-primary btn-sm">Proceed</button>
             </div>
         </div>
 
@@ -213,7 +213,7 @@ Tag: Renew
         <!-- #region | TAGS -->
         <h4 class="mt-3 text-primary">Tags List</h4>
         <div class="table-responsive">
-            <table class="table table-hover table-bordered table-striped">
+            <table class="table table-hover align-middle" style="border-collapse: separate; border-spacing: 0; min-width: 100%;">
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -293,9 +293,9 @@ Hi TAGGING JIRA SUPPORT,
                 </div>
             </div>
             <div>
-                <a href="<?= site_url('tags') ?>" title="Cancel" class="btn btn-secondary btn-sm">Cancel</a>
+                <a href="<?= site_url('tags') ?>" title="Cancel" class="apple-btn-secondary btn-sm">Cancel</a>
                 <button type="submit" 
-                    class="btn btn-success btn-sm"
+                    class="apple-btn-primary btn-sm"
                     onclick="return confirm('Are you sure you want to renew these tags?');">
                     Renew Tags
                 </button>

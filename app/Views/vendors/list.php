@@ -22,26 +22,26 @@ Vendors List
     <div class="d-flex justify-content-between">
         <h2>Vendors</h2>
         <!-- <div>
-            <a href="<?= site_url('vendors/create') ?>" target="_blank" title="Add a new vendor" class="btn btn-success btn-sm ms-auto px-2">Create New</a>
+            <a href="<?= site_url('vendors/create') ?>" title="Add a new vendor" class="apple-btn-primary btn-sm ms-auto px-2">Create New</a>
         </div> -->
     </div>
 
     <!-- #region | SEARCH FILTER -->
-    <div class="mb-2">
-        <form method="get" class="row g-3 mb-4">
+    <div class="apple-control-bar mb-4">
+        <form method="get" class="row g-2 w-100 m-0">
 
             <div class="col">
                 <input 
                     type="text" 
                     name="keyword" 
-                    class="form-control" 
+                    class="form-control form-control-xs" 
                     placeholder="Search..."
                     value="<?= esc($_GET['keyword'] ?? '') ?>"
                 >
             </div>
 
             <div class="col">
-                <select name="id" class="form-select">
+                <select name="id" class="form-select form-select-xs">
                     <option value="">All Vendors</option>
                     <?php foreach ($vendorOptions as $value => $label): ?>
                         <option value="<?= esc($value) ?>"
@@ -53,55 +53,57 @@ Vendors List
             </div>
 
             <div class="col-md-2 d-flex align-items-center gap-2">
-                <button class="btn btn-primary w-100">Filter</button>
-                <a href="<?= site_url('vendors') ?>" class="btn btn-secondary w-100">Clear</a>
+                <button class="apple-btn-primary btn-sm w-100">Filter</button>
+                <a href="<?= site_url('vendors') ?>" class="apple-btn-secondary btn-sm w-100 text-center text-decoration-none">Clear</a>
             </div>
         </form>
     </div>
     <!-- #endregion -->
 
     <!-- #region | PROPERTIES TABLE -->
-    <div class="table-responsive">
-        <table class="table table-hover table-bordered table-striped" id="tblProperties">
-            <thead class="table-active">
-                <tr>
-                    <th>#</th>
-                    <th>Vendor</th>
-                    <th><?= Constants::SUBSIDIARIES[Constants::SUBSIDIARY_SGE] ?></th>
-                    <th><?= Constants::SUBSIDIARIES[Constants::SUBSIDIARY_SESAR] ?></th>
-                    <th><?= Constants::SUBSIDIARIES[Constants::SUBSIDIARY_SETK] ?></th>
-                    <th><?= Constants::SUBSIDIARIES[Constants::SUBSIDIARY_SEIL] ?></th>
-                    <th><?= Constants::SUBSIDIARIES[Constants::SUBSIDIARY_SEILPS] ?></th>
-                    <th><?= Constants::SUBSIDIARIES[Constants::SUBSIDIARY_SELV] ?></th>
-                    <th><?= Constants::SUBSIDIARIES[Constants::SUBSIDIARY_SEEG] ?></th>
-                    <th><?= Constants::SUBSIDIARIES[Constants::SUBSIDIARY_SEMAG] ?></th>
-                    <th><?= Constants::SUBSIDIARIES[Constants::SUBSIDIARY_SEPAK] ?></th>
-                    <!-- <th></th> -->
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($vendors as $vendor): ?>
+    <div class="apple-table-container">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" style="border-collapse: separate; border-spacing: 0; min-width: 100%;" id="tblProperties">
+                <thead>
                     <tr>
-                        <td><?= $vendor['id'] ?></td>
-                        <td class="col-3"><?= $vendor['name'] ?></td>
-
-                        <?php foreach (Constants::SUBSIDIARIES as $id => $sub): ?>
-                            <?php $count = $vendorsModel->getTags($vendor['id'], $id); ?>
-
-                            <?php if ($count > 0): ?>
-                                <td>
-                                    <a href="<?= site_url('vendors/view/'.$vendor['id'].'?subsidiary_id='.$id) ?>" target="_blank" style="text-decoration: none;">
-                                        <?= $count ?>
-                                    </a>
-                                </td>
-                            <?php else: ?>
-                                <td><?= "-" ?></td>
-                            <?php endif; ?>
-                        <?php endforeach; ?>
+                        <th class="form-label-sm fw-semibold">#</th>
+                        <th class="form-label-sm fw-semibold">Vendor</th>
+                        <th class="form-label-sm fw-semibold"><?= Constants::SUBSIDIARIES[Constants::SUBSIDIARY_SGE] ?></th>
+                        <th class="form-label-sm fw-semibold"><?= Constants::SUBSIDIARIES[Constants::SUBSIDIARY_SESAR] ?></th>
+                        <th class="form-label-sm fw-semibold"><?= Constants::SUBSIDIARIES[Constants::SUBSIDIARY_SETK] ?></th>
+                        <th class="form-label-sm fw-semibold"><?= Constants::SUBSIDIARIES[Constants::SUBSIDIARY_SEIL] ?></th>
+                        <th class="form-label-sm fw-semibold"><?= Constants::SUBSIDIARIES[Constants::SUBSIDIARY_SEILPS] ?></th>
+                        <th class="form-label-sm fw-semibold"><?= Constants::SUBSIDIARIES[Constants::SUBSIDIARY_SELV] ?></th>
+                        <th class="form-label-sm fw-semibold"><?= Constants::SUBSIDIARIES[Constants::SUBSIDIARY_SEEG] ?></th>
+                        <th class="form-label-sm fw-semibold"><?= Constants::SUBSIDIARIES[Constants::SUBSIDIARY_SEMAG] ?></th>
+                        <th class="form-label-sm fw-semibold"><?= Constants::SUBSIDIARIES[Constants::SUBSIDIARY_SEPAK] ?></th>
+                        <!-- <th></th> -->
                     </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    <?php foreach ($vendors as $vendor): ?>
+                        <tr>
+                            <td><?= $vendor['id'] ?></td>
+                            <td class="col-3 fw-medium"><?= $vendor['name'] ?></td>
+
+                            <?php foreach (Constants::SUBSIDIARIES as $id => $sub): ?>
+                                <?php $count = $vendorsModel->getTags($vendor['id'], $id); ?>
+
+                                <?php if ($count > 0): ?>
+                                    <td>
+                                        <a href="<?= site_url('vendors/view/'.$vendor['id'].'?subsidiary_id='.$id) ?>" class="text-decoration-none fw-semibold" style="color: #0071E3;">
+                                            <?= $count ?>
+                                        </a>
+                                    </td>
+                                <?php else: ?>
+                                    <td class="text-muted"><?= "-" ?></td>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
     </div>
     <!-- #endregion -->
 </div>

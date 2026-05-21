@@ -34,30 +34,39 @@ class TagsModel extends Model
      * @param mixed $filters
      * @return array
      */
-    public function filterTags($filters = [])
+    public function filterTags($filters = [], $paginate = 0)
     {
-        $builder = $this->builder()
-                ->select('tags.*')
-                ->join('properties', 'properties.id = tags.property_id', 'left');
+        $this->select('tags.*')
+             ->join('properties', 'properties.id = tags.property_id', 'left');
 
         if (!empty($filters['keyword'])) {
-            $builder->like('tags.name', $filters['keyword']);
+            $this->like('tags.name', $filters['keyword']);
         }
 
         if (!empty($filters['property_id'])) {
-            $builder->where('tags.property_id', $filters['property_id']);
+            $this->where('tags.property_id', $filters['property_id']);
         }
 
         if (!empty($filters['status'])) {
-            if (is_array($filters['status'])) {
-                $builder->whereIn('tags.status', $filters['status']);
+            if ($filters['status'] === 'expiring') {
+                $base = date('Y-m-d', strtotime('-10 days'));
+                $expiring = date('Y-m-d', strtotime('+15 days'));
+                $this->whereIn('tags.status', [
+                    Constants::STATUS_ENABLED,
+                    Constants::STATUS_PENDING_VERIFICATION,
+                    Constants::STATUS_UPDATED_IN_AL
+                ])
+                ->where('tags.al_end_date >=', $base)
+                ->where('tags.al_end_date <=', $expiring);
+            } else if (is_array($filters['status'])) {
+                $this->whereIn('tags.status', $filters['status']);
             } else {
-                $builder->where('tags.status', $filters['status'][0]);
+                $this->where('tags.status', $filters['status']);
             }
         }
 
         if (!empty($filters['subsidiary_id'])) {
-            $builder->where('properties.subsidiary_id', $filters['subsidiary_id']);
+            $this->where('properties.subsidiary_id', $filters['subsidiary_id']);
         }
 
         // echo "<pre>";
@@ -65,7 +74,7 @@ class TagsModel extends Model
         // echo "</pre>";
         // die();
 
-        $builder->orderBy(
+        $this->orderBy(
                 '(CASE 
                     WHEN tags.al_end_date < CURDATE() AND tags.status = 1 THEN 0
                     WHEN tags.al_end_date <= DATE_ADD(CURDATE(), INTERVAL 9 DAY) AND tags.status = 1 THEN 1
@@ -76,9 +85,13 @@ class TagsModel extends Model
                 END)', 'ASC', false
             );
 
-        $builder->orderBy('properties.id', 'ASC');
+        $this->orderBy('properties.id', 'ASC');
 
-        return $builder->get()->getResultArray();
+        if ($paginate > 0) {
+            return $this->paginate($paginate);
+        }
+
+        return $this->findAll();
     }
 
     public function getTagsByVendor(int $vendorId, int $subsidiaryId)

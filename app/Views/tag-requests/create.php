@@ -117,8 +117,8 @@ Tag Request: Create
             </div>
 
             <div class="d-flex justify-content-end gap-2 mt-3">
-                <a href="<?= site_url('tag-requests') ?>" title="Cancel" class="btn btn-danger btn-sm">Cancel</a>
-                <button type="submit" class="btn btn-primary btn-sm">Proceed</button>
+                <a href="<?= site_url('tag-requests') ?>" title="Cancel" class="apple-btn-secondary btn-sm">Cancel</a>
+                <button type="submit" class="apple-btn-primary btn-sm">Proceed</button>
             </div>
             <!-- #endregion -->
         </div>
@@ -203,9 +203,9 @@ Tag Request: Create
 
             <div class="d-flex justify-content-end">
                 <div>
-                    <a href="<?= site_url('tag-requests') ?>" title="Cancel" class="btn btn-secondary btn-sm">Cancel</a>
+                    <a href="<?= site_url('tag-requests') ?>" title="Cancel" class="apple-btn-secondary btn-sm">Cancel</a>
                     <button type="submit" 
-                        class="btn btn-success btn-sm">
+                        class="apple-btn-primary btn-sm">
                         Confirm Request
                     </button>
                 </div>
@@ -222,7 +222,7 @@ Tag Request: Create
                         value="<?= old('ticket_id', $old['ticket_id'] ?? '') ?>"
                         required>
                 </div>
-                <a href="<?= Constants::JIRA_CREATE_ISSUE ?>" title="Create Issue in JIRA" class="btn btn-outline-primary btn-sm" target="_blank">
+                <a href="<?= Constants::JIRA_CREATE_ISSUE ?>" title="Create Issue in JIRA" class="apple-btn-secondary btn-sm" target="_blank">
                     Create JIRA Ticket
                 </a>
             </div>

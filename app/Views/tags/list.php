@@ -30,23 +30,43 @@ Tag Monitoring System
     <div class="d-flex justify-content-between align-items-center">
         <h2>Tag Inventory</h2>
         <div class="d-flex align-items-center gap-2">
-            <a href="<?= site_url('tags/renew') ?>" target="_blank" title="Renew selected tags" class="btn btn-primary btn-sm ms-auto px-2" id="btnRenew" style="display:none;">Extend Expiry Date</a>
-            <a href="<?= site_url('tags/update-rule-request') ?>" target="_blank" title="Create update rule request" class="btn btn-primary btn-sm ms-auto px-2" id="btnUpdateRule" style="display:none;">Create Update Rule Request</a>
-            <a href="<?= site_url('tags/create') ?>" target="_blank" title="Add a new tag" class="btn btn-success btn-sm ms-auto px-2">Add Tag Information</a>
-            <a href="<?= site_url('tags/export?' . http_build_query($_GET)) ?>" class="btn btn-sm btn-warning ms-auto px-2">Export as CSV</a>
+            <a href="<?= site_url('tags/renew') ?>" title="Extend Expiry Date" class="apple-btn-primary btn-sm ms-auto px-3" id="btnRenew" style="display:none;">Extend Expiry Date</a>
+            <a href="<?= site_url('tags/update-rule-request') ?>" title="Create update rule request" class="apple-btn-primary btn-sm ms-auto px-3" id="btnUpdateRule" style="display:none;">Create Update Rule Request</a>
+            <a href="<?= site_url('tags/create') ?>" title="Add Tag Information" class="apple-btn-primary btn-sm ms-auto px-3">Add Tag Information</a>
+            <a href="<?= site_url('tags/export?' . http_build_query($_GET)) ?>" class="apple-btn-secondary btn-sm ms-auto px-3">Export as CSV</a>
         </div>
     </div>
 
-    <div class="d-flex justify-content-start gap-2 form-label-xs">
-        <p>Active: <span class="text-success fw-semibold"><?= $tagsModel->countActiveTags() ?></span></p>
-        <p>Needs Attention: <span class="text-danger fw-semibold"><?= $tagsModel->countExpiringTags() ?></span></p>
-        <p>Pending Verification: <span class="text-warning fw-semibold"><?= $tagsModel->countPendingVerificationTags() ?></span></p>
-        <p>Total: <span class="text-dark fw-semibold"><?= $tagsModel->countAllTags() ?></span></p>
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="apple-metric-card" style="cursor: pointer;" onclick="window.location.href='<?= site_url('tags?status=' . Constants::STATUS_ENABLED) ?>'">
+                <div class="apple-metric-label"><i class="bi bi-check-circle-fill text-success"></i> Active</div>
+                <div class="apple-metric-value text-success"><?= $tagsModel->countActiveTags() ?></div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="apple-metric-card" style="cursor: pointer;" onclick="window.location.href='<?= site_url('tags?status=expiring') ?>'">
+                <div class="apple-metric-label"><i class="bi bi-exclamation-triangle-fill text-danger"></i> Needs Attention</div>
+                <div class="apple-metric-value text-danger"><?= $tagsModel->countExpiringTags() ?></div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="apple-metric-card" style="cursor: pointer;" onclick="window.location.href='<?= site_url('tags?status=' . Constants::STATUS_PENDING_VERIFICATION) ?>'">
+                <div class="apple-metric-label"><i class="bi bi-hourglass-split text-warning"></i> Pending</div>
+                <div class="apple-metric-value text-warning"><?= $tagsModel->countPendingVerificationTags() ?></div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="apple-metric-card" style="cursor: pointer;" onclick="window.location.href='<?= site_url('tags?status=all') ?>'">
+                <div class="apple-metric-label"><i class="bi bi-collection-fill text-secondary"></i> Total</div>
+                <div class="apple-metric-value text-dark"><?= $tagsModel->countAllTags() ?></div>
+            </div>
+        </div>
     </div>
 
     <!-- #region | SEARCH FILTER -->
-    <div>
-        <form method="get" class="row g-3 mb-3">
+    <div class="apple-control-bar mb-4">
+        <form method="get" class="row g-2 w-100 m-0">
             <div class="col">
                 <input 
                     type="text" 
@@ -83,7 +103,7 @@ Tag Monitoring System
 
             <div class="col">
                 <select name="status" class="form-select form-select-xs">
-                    <option value="<?= Constants::STATUS_ALL ?>">All Status</option>
+                    <option value="<?= Constants::STATUS_ALL ?>" <?= (old('status', $filters['status'] ?? null) == Constants::STATUS_ALL || empty($filters['status'])) ? 'selected' : '' ?>>All Status</option>
                     <?php foreach (Constants::STATUS as $value => $label): ?>
                         <option value="<?= esc($value) ?>"
                             <?= old('status', $filters['status'] ?? null) == $value ? 'selected' : '' ?>>
@@ -94,8 +114,8 @@ Tag Monitoring System
             </div>
 
             <div class="col-md-2 d-flex align-items-center gap-2">
-                <button class="btn btn-sm btn-primary w-100">Filter</button>
-                <a href="<?= site_url('tags') ?>" class="btn btn-sm btn-secondary w-100">Clear</a>
+                <button class="apple-btn-primary btn-sm w-100">Filter</button>
+                <a href="<?= site_url('tags') ?>" class="apple-btn-secondary btn-sm w-100 text-center text-decoration-none">Clear</a>
             </div>
 
         </form>
@@ -103,9 +123,10 @@ Tag Monitoring System
     <!-- #endregion -->
 
     <!-- #region | TAGS TABLE -->
-    <div class="table-responsive">
-        <table class="table table-bordered table-hover table-striped" id="tblTags">
-            <thead class="table-active">
+    <div class="apple-table-container">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="tblTags" style="border-collapse: separate; border-spacing: 0; min-width: 100%;">
+            <thead>
                 <tr>
                     <th class="form-label-sm fw-semibold">#</th>
                     <th></th>
@@ -144,22 +165,20 @@ Tag Monitoring System
                         <!-- Property -->
                         <td>
                             <i class="bi bi-tag-fill" style="<?= random_text_style($tag['property_id']) ?>"></i>
-                            <a href="<?= $properties[$tag['property_id']]['ref_link'] ?>" target="_blank" class="form-label-sm">
+                            <a href="<?= $properties[$tag['property_id']]['ref_link'] ?>" class="apple-link-dark form-label-sm ms-1">
                                 <?= $properties[$tag['property_id']]['name'] ?>
                             </a>
                         </td>
                         <!-- Name -->
                         <td class="form-label-sm">
-                            <div class="d-flex justify-content-between align-items-center gap-1">
-                                <a href="<?= $tag['ref_link'] ?>" target="_blank">
+                            <span class="group-hover-container align-items-center">
+                                <a href="<?= $tag['ref_link'] ?>" class="apple-link-dark">
                                     <?= esc($tag['name']) ?>
                                 </a>
-
-                                <!-- Copy button -->
-                                <a href="javascript:void(0)" onclick="copyTagName('<?= esc($tag['name']) ?>', this)" title="Copy tag name">
-                                    <i class="bi bi-copy text-secondary fs-7"></i>
+                                <a href="javascript:void(0)" onclick="copyTagName('<?= esc($tag['name']) ?>', this)" title="Copy tag name" class="text-muted ms-2" style="transition: color 0.2s; text-decoration: none; line-height: 1;">
+                                    <i class="bi bi-copy" style="font-size: 0.85rem;"></i>
                                 </a>
-                            </div>
+                            </span>
                         </td>
                         <!-- Status -->
                         <td>
@@ -167,8 +186,9 @@ Tag Monitoring System
                                 <?= esc(status_label($tag['status'])) ?>
                             </span>
                             <?php if ($tag['status'] == Constants::STATUS_PENDING_VERIFICATION): ?>
-                                <a href="<?= Constants::JIRA_LINK . $ticketId ?>" target="_blank">
-                                   <br><small class="text-muted"><?= $ticketId ?></small> 
+                                <br>
+                                <a href="<?= Constants::JIRA_LINK . $ticketId ?>" class="apple-link ms-1" style="font-size: 0.8rem;">
+                                    <?= $ticketId ?>
                                 </a>
                             <?php endif; ?>
                         </td>
@@ -193,13 +213,19 @@ Tag Monitoring System
                         <!-- <td><?= esc($tag['updated_by']) ?></td> -->
                         <!-- Actions -->
                         <td class="text-nowrap">
-                            <a href="<?= site_url('tags/view/'.$tag['id']) ?>" target="_blank" title="View tag details" class="btn btn-secondary btn-sm">View</a>
-                            <a href="<?= site_url('tags/update/'.$tag['id']) ?>" target="_blank" title="Update tag details" class="btn btn-primary btn-sm">Update</a>
+                            <a href="<?= site_url('tags/view/'.$tag['id']) ?>" title="View tag details" class="apple-btn-secondary btn-sm text-decoration-none">View</a>
+                            <a href="<?= site_url('tags/update/'.$tag['id']) ?>" title="Update tag details" class="apple-btn-primary btn-sm text-decoration-none">Update</a>
                         </td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
         </table>
+        </div>
+        <?php if (isset($pager) && $pager->getPageCount() > 1): ?>
+            <div class="mt-4 d-flex justify-content-center">
+                <?= $pager->links('default', 'apple_full') ?>
+            </div>
+        <?php endif; ?>
     </div>
     <!-- #endregion -->
 </div>
@@ -239,7 +265,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (checked.length === 0) return;
 
         const url = "<?= site_url('tags/renew') ?>?tags=" + checked.join(',');
-        window.open(url, "_blank");
+        window.location.href = url;
     });
 
     btnUpdateRule.addEventListener('click', function (e) {
@@ -251,30 +277,43 @@ document.addEventListener('DOMContentLoaded', function () {
         if (checked.length === 0) return;
 
         const url = "<?= site_url('tags/update-rule-request') ?>?tags=" + checked.join(',');
-        window.open(url, "_blank");
+        window.location.href = url;
     });
 
     window.copyTagName = function(text, el) {
-        const temp = document.createElement('textarea');
-        temp.value = text;
+        const onSuccess = () => {
+            el.innerHTML = '<i class="bi bi-check-lg text-success" style="font-size: 0.85rem;"></i>';
+            setTimeout(() => {
+                el.innerHTML = '<i class="bi bi-copy" style="font-size: 0.85rem;"></i>';
+            }, 1200);
+        };
 
-        temp.style.position = 'fixed';
-        temp.style.left = '-9999px';
+        // Modern approach (requires HTTPS or localhost)
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(onSuccess).catch(err => {
+                console.error("Failed to copy text: ", err);
+            });
+        } else {
+            // Fallback for non-HTTPS local domains (like http://tag-monitoring)
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            // Prevent scrolling to bottom
+            textArea.style.top = "0";
+            textArea.style.left = "0";
+            textArea.style.position = "fixed";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
 
-        document.body.appendChild(temp);
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) onSuccess();
+            } catch (err) {
+                console.error('Fallback: Oops, unable to copy', err);
+            }
 
-        temp.focus();
-        temp.select();
-
-        document.execCommand('copy');
-
-        document.body.removeChild(temp);
-
-        el.innerHTML = '<i class="bi bi-check-lg text-success fs-7"></i>';
-
-        setTimeout(() => {
-            el.innerHTML = '<i class="bi bi-copy text-secondary fs-7"></i>';
-        }, 1200);
+            document.body.removeChild(textArea);
+        }
     };
 });
 

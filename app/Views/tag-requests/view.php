@@ -162,8 +162,8 @@ $hasNewRule = !empty($request['new_rule_ticket']);
         <hr>
 
         <div class="d-flex align-items-center gap-1">
-            <a href="<?= site_url('tag-requests') ?>" class="btn btn-secondary btn-sm px-2">Back</a>
-<!--            <a href="--><?php //= site_url('tag-requests/update/' . $request['id']) ?><!--" class="btn btn-primary btn-sm">Edit</a>-->
+            <a href="<?= site_url('tag-requests') ?>" class="apple-btn-secondary btn-sm px-2">Back</a>
+<!--            <a href="--><?php //= site_url('tag-requests/update/' . $request['id']) ?><!--" class="apple-btn-primary btn-sm">Edit</a>-->
         </div>
     </div>
     <!-- #endregion -->
@@ -173,7 +173,7 @@ $hasNewRule = !empty($request['new_rule_ticket']);
         <div class="card p-4">
             <h4>Tag(s)</h4>
 
-            <table class="table table-bordered">
+            <table class="table table-hover align-middle" style="border-collapse: separate; border-spacing: 0; min-width: 100%;">
                 <tbody>
                     <?php foreach ($tags as $tag) : ?>
                         <tr>

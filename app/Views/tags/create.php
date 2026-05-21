@@ -34,11 +34,12 @@ Tag: Create
 
 <form action="<?= site_url('tags/create') ?>" method="post">
     <?= csrf_field() ?>
-    <div class="container">
-        <div class="card p-3 mt-3">
-            <div class="row mb-2">
-                <div class="col mb-2">
-                    <label class="form-label-xs text-primary">Property</label>
+    <div class="container-fluid" style="max-width: 800px; margin-left: 0;">
+        <div class="apple-card mb-4">
+            <h5 class="mb-4">Tag Details</h5>
+            <div class="row mb-3">
+                <div class="col-md-6 mb-3 mb-md-0">
+                    <label class="form-label-sm fw-semibold text-dark mb-1">Property</label>
                     <select name="property_id" class="form-select searchable-select" required>
                         <?php foreach ($properties as $value => $label): ?>
                             <option value="<?= esc($value) ?>"
@@ -49,45 +50,33 @@ Tag: Create
                     </select>
                 </div>
 
-                <div class="col">
-                    <label for="name" class="form-label-xs text-primary">Tag Name</label>
+                <div class="col-md-6">
+                    <label for="name" class="form-label-sm fw-semibold text-dark mb-1">Tag Name</label>
                     <input type="text" name="name" id="name"
-                        class="form-control"
+                        class="form-control form-control-xs"
                         value="<?= old('name', $old['name'] ?? '') ?>"
                         required>
-                    <small class="form-label-xs text-muted">
+                    <small class="form-text text-muted" style="font-size: 0.75rem;">
                         Tag should start with LC-
                     </small>
                 </div>
-
-                <!-- <div class="col">
-                    <label class="form-label-xs">Vendor</label>
-                    <select name="vendor_id" class="form-select searchable-select">
-                        <?php foreach ($vendors as $value => $label): ?>
-                            <option value="<?= esc($value) ?>"
-                                <?= old('vendor_id', $tag['vendor_id'] ?? '') == $value ? 'selected' : '' ?>>
-                                <?= esc($label) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>             -->
             </div>
             
-            <div class="row mb-2">
-                <div class="col">
-                    <label for="conditions" class="form-label-xs text-primary">Conditions</label>
+            <div class="row mb-3">
+                <div class="col-md-6 mb-3 mb-md-0">
+                    <label for="conditions" class="form-label-sm fw-semibold text-dark mb-1">Conditions</label>
                     <input type="text" name="conditions" id="conditions"
-                        class="form-control"
+                        class="form-control form-control-xs"
                         value="<?= old('conditions', $old['conditions'] ?? '') ?>"
                         required>
-                    <small class="form-label-xs text-muted">
+                    <small class="form-text text-muted" style="font-size: 0.75rem;">
                         e.g. (.*)
                     </small>
                 </div>
 
-                <div class="col">
-                    <label class="form-label-xs text-primary">Status</label>
-                    <select name="status" class="form-select" required>
+                <div class="col-md-6">
+                    <label class="form-label-sm fw-semibold text-dark mb-1">Status</label>
+                    <select name="status" class="form-select form-select-xs" required>
                         <?php foreach (Constants::STATUS as $value => $label): ?>
                             <option value="<?= esc($value) ?>"
                                 <?= old('status', $tag['status'] ?? 1) == $value ? 'selected' : '' ?>>
@@ -99,23 +88,23 @@ Tag: Create
             </div>
 
             <div class="row">
-                <div class="col">
-                    <label class="form-label-xs text-primary" for="al_end_date">Launch Expiry Date</label>
-                    <input type="date"
+                <div class="col-md-6 mb-3 mb-md-0">
+                    <label class="form-label-sm fw-semibold text-dark mb-1" for="al_end_date">Launch Expiry Date</label>
+                    <input type="text"
                         name="al_end_date"
                         id="al_end_date"
-                        class="form-control"
+                        class="form-control form-control-xs"
                         value="<?= esc(old('al_end_date', $tag['al_end_date'] ?? '')) ?>"
                         required>
                 </div>
 
-                <div class="col">
-                    <label for="ref_link" class="form-label-xs text-primary">Launch Link</label>
+                <div class="col-md-6">
+                    <label for="ref_link" class="form-label-sm fw-semibold text-dark mb-1">Launch Link</label>
                     <input type="text" name="ref_link" id="ref_link"
-                        class="form-control"
+                        class="form-control form-control-xs"
                         value="<?= old('ref_link', $old['ref_link'] ?? '') ?>"
                         required>
-                    <small class="form-label-xs text-muted">
+                    <small class="form-text text-muted" style="font-size: 0.75rem;">
                         https://
                     </small>
                 </div>
@@ -123,11 +112,11 @@ Tag: Create
         </div>
 
         <!-- #region | REQUESTER DETAILS -->
-        <h5 class="mt-3">Requester Details</h5>
-        <div class="card p-3">
-            <div class="row mb-2">
-                <div class="col">
-                    <label class="form-label-xs text-primary">Organization</label>
+        <div class="apple-card mb-4">
+            <h5 class="mb-4">Requester Details</h5>
+            <div class="row">
+                <div class="col-md-4 mb-3 mb-md-0">
+                    <label class="form-label-sm fw-semibold text-dark mb-1">Organization</label>
                     <select name="requester_organization" class="form-select advanced-select">
                         <option value="">-Select-</option>
                         <?php foreach ($organizations as $value => $label): ?>
@@ -139,32 +128,39 @@ Tag: Create
                     </select>
                 </div>
 
-                <div class="col">
-                    <label class="form-label-xs text-primary">Name</label>
+                <div class="col-md-4 mb-3 mb-md-0">
+                    <label class="form-label-sm fw-semibold text-dark mb-1">Name</label>
                     <input type="text" name="requester_name" id="requester_name"
-                        class="form-control"
+                        class="form-control form-control-xs"
                         value="<?= old('requester_name', $old['requester_name'] ?? '') ?>">
                 </div>
 
-                <div class="col">
-                    <label class="form-label-xs text-primary">Email Address</label>
+                <div class="col-md-4">
+                    <label class="form-label-sm fw-semibold text-dark mb-1">Email Address</label>
                     <input type="text" name="requester_email" id="requester_email"
-                        class="form-control"
+                        class="form-control form-control-xs"
                         value="<?= old('requester_email', $old['requester_email'] ?? '') ?>">
                 </div>
             </div>
         </div>
 
-        <div class="d-flex justify-content-end gap-2 mt-3">
-            <a href="<?= site_url('tags') ?>" title="Cancel" class="btn btn-secondary btn-sm">Cancel</a>
-            <button type="submit" class="btn btn-success btn-sm">Submit</button>
+        <div class="d-flex justify-content-end gap-2 mt-4">
+            <a href="<?= site_url('tags') ?>" title="Cancel" class="apple-btn-secondary px-4">Cancel</a>
+            <button type="submit" class="apple-btn-primary px-4">Submit</button>
         </div>
         <!-- #endregion -->
     </div>
 </form>
 
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        flatpickr("#al_end_date", {
+            dateFormat: "Y-m-d",
+            disableMobile: "true"
+        });
+
         $('.searchable-select').select2({
             width: '100%',
         });
