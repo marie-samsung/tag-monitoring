@@ -40,8 +40,8 @@ Tag: Requests (New Rule, New Tag)
     <div class="d-flex justify-content-between align-items-center">
         <h2>Tag Requests</h2>
         <div class="d-flex align-items-center gap-2">
-            <a href="<?= site_url('tag-requests/create') ?>" target="_blank" title="Create a new request" class="apple-btn-primary btn-sm ms-auto px-2">Add Request</a>
-            <!-- <a href="<?= site_url('tags/export?' . http_build_query($_GET)) ?>" class="btn btn-sm btn-warning ms-auto px-2">Export as CSV</a> -->
+            <a href="<?= site_url('tag-requests/create') ?>" title="Create a new request" class="apple-btn-primary btn-sm ms-auto px-2">Add Request</a>
+            <a href="<?= site_url('tag-requests/export?' . http_build_query($_GET)) ?>" class="apple-btn-secondary btn-sm ms-auto px-2">Export as CSV</a>
         </div>
     </div>
 
@@ -186,6 +186,13 @@ Tag: Requests (New Rule, New Tag)
                                 <?= $request[$ticketColumn] ?>
                             </a>
                             <span class="text-muted ms-1" style="font-size: 0.8rem;">(<?= $vendors[$request['vendor_id']] ?? '' ?>)</span>
+                            <?php if ($type == Constants::JIRA_TYPE_NEW_TAG && !empty($request['new_rule_ticket'])) : ?>
+                                <br/>
+                                <small class="text-muted" style="font-size: 0.75rem;">New Rule:</small>
+                                <a href="<?= Constants::JIRA_LINK . $request['new_rule_ticket'] ?>" class="apple-link" style="font-size: 0.85rem;">
+                                    <?= $request['new_rule_ticket'] ?>
+                                </a>
+                            <?php endif; ?>
                         </td>
                         <td>
                             <?= Constants::REQUEST_TYPES[$type] ?>

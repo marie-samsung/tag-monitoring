@@ -30,8 +30,9 @@ Tag Monitoring System
     <div class="d-flex justify-content-between align-items-center">
         <h2>Tag Inventory</h2>
         <div class="d-flex align-items-center gap-2">
-            <a href="<?= site_url('tags/renew') ?>" title="Renew selected tags" class="apple-btn-primary btn-sm ms-auto px-3" id="btnRenew" style="display:none;">Renew</a>
-            <a href="<?= site_url('tags/create') ?>" title="Add a new tag" class="apple-btn-primary btn-sm ms-auto px-3">Create New Tag</a>
+            <a href="<?= site_url('tags/renew') ?>" title="Extend Expiry Date" class="apple-btn-primary btn-sm ms-auto px-3" id="btnRenew" style="display:none;">Extend Expiry Date</a>
+            <a href="<?= site_url('tags/update-rule-request') ?>" title="Create update rule request" class="apple-btn-primary btn-sm ms-auto px-3" id="btnUpdateRule" style="display:none;">Create Update Rule Request</a>
+            <a href="<?= site_url('tags/create') ?>" title="Add Tag Information" class="apple-btn-primary btn-sm ms-auto px-3">Add Tag Information</a>
             <a href="<?= site_url('tags/export?' . http_build_query($_GET)) ?>" class="apple-btn-secondary btn-sm ms-auto px-3">Export as CSV</a>
         </div>
     </div>
@@ -259,6 +260,18 @@ document.addEventListener('DOMContentLoaded', function () {
         if (checked.length === 0) return;
 
         const url = "<?= site_url('tags/renew') ?>?tags=" + checked.join(',');
+        window.location.href = url;
+    });
+
+    btnUpdateRule.addEventListener('click', function (e) {
+        e.preventDefault();
+
+        const checked = [...document.querySelectorAll('input[name="tag_ids[]"]:checked')]
+            .map(cb => cb.value);
+
+        if (checked.length === 0) return;
+
+        const url = "<?= site_url('tags/update-rule-request') ?>?tags=" + checked.join(',');
         window.location.href = url;
     });
 
