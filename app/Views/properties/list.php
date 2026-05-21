@@ -18,10 +18,10 @@ Properties List
 <?= csrf_field() ?>
 
 <div class="container-fluid">
-    <div class="d-flex justify-content-between">
+    <div class="d-flex justify-content-between align-items-center">
         <h2>Properties</h2>
-        <div>
-            <a href="<?= site_url('properties/create') ?>" target="_blank" title="Add a new property" class="apple-btn-primary btn-sm ms-auto px-2">Create New</a>
+        <div class="d-flex align-items-center gap-2">
+            <a href="<?= site_url('properties/create') ?>" title="Add a new property" class="apple-btn-primary btn-sm ms-auto px-3">Create New</a>
         </div>
     </div>
 
@@ -79,7 +79,7 @@ Properties List
                             <td><?= $property['id'] ?></td>
                             <td><?= $subsidiaryOptions[$property['subsidiary_id']] ?? 'Unknown' ?></td>
                             <td>
-                                <a href="<?= $property['ref_link'] ?>" target="_blank" class="text-decoration-none fw-semibold" style="color: #1D1D1F; transition: color 0.2s;" onmouseover="this.style.color='#0071E3'" onmouseout="this.style.color='#1D1D1F'">
+                                <a href="<?= $property['ref_link'] ?>" class="apple-link-dark form-label-sm ms-1">
                                     <?= $property['name'] ?>
                                 </a>
                             </td>
@@ -94,8 +94,8 @@ Properties List
                                 </span>
                             </td>
                             <!-- <td class="gap-2">
-                                <a href="<?= site_url('properties/view/'.$property['id']) ?>" target="_blank" title="View property details" class="apple-btn-secondary btn-sm">View</a>
-                                <a href="<?= site_url('properties/update/'.$property['id']) ?>" target="_blank" title="Update property details" class="apple-btn-primary btn-sm">Update</a>
+                                <a href="<?= site_url('properties/view/'.$property['id']) ?>" title="View property details" class="apple-btn-secondary btn-sm">View</a>
+                                <a href="<?= site_url('properties/update/'.$property['id']) ?>" title="Update property details" class="apple-btn-primary btn-sm">Update</a>
                             </td> -->
                         </tr>
                     <?php endforeach; ?>

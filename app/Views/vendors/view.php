@@ -42,20 +42,21 @@
     <?php endif; ?>
 
     <div class="container-fluid">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle" style="border-collapse: separate; border-spacing: 0; min-width: 100%;">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Property</th>
-                        <th>Name</th>
-                        <th>Status</th>
-                        <th>Days</th>
-                        <th>End Date</th>
-                        <th>Updated</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
+        <div class="apple-table-container">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" style="border-collapse: separate; border-spacing: 0; min-width: 100%;">
+                    <thead>
+                        <tr>
+                            <th class="form-label-sm fw-semibold">#</th>
+                            <th class="form-label-sm fw-semibold">Property</th>
+                            <th class="form-label-sm fw-semibold">Name</th>
+                            <th class="form-label-sm fw-semibold">Status</th>
+                            <th class="form-label-sm fw-semibold">Days</th>
+                            <th class="form-label-sm fw-semibold">End Date</th>
+                            <th class="form-label-sm fw-semibold">Updated</th>
+                            <th class="form-label-sm fw-semibold">Actions</th>
+                        </tr>
+                    </thead>
                 <tbody>
                     <?php
                         foreach ($tags as $tag):
@@ -67,13 +68,13 @@
                             <!-- Property -->
                             <td>
                                 <i class="bi bi-tag-fill" style="<?= random_text_style($tag['property_id']) ?>"></i>
-                                <a href="<?= $properties[$tag['property_id']]['ref_link'] ?>" class="form-label-sm">
+                                <a href="<?= $properties[$tag['property_id']]['ref_link'] ?>" class="apple-link-dark form-label-sm ms-1">
                                     <?= $properties[$tag['property_id']]['name'] ?>
                                 </a>
                             </td>
                             <!-- Name -->
                             <td class="form-label-sm">
-                                <a href="<?= $tag['ref_link'] ?>">
+                                <a href="<?= $tag['ref_link'] ?>" class="apple-link-dark">
                                     <?= esc($tag['name']) ?>
                                 </a>
                             </td>
@@ -83,8 +84,9 @@
                                     <?= esc(status_label($tag['status'])) ?>
                                 </span>
                                 <?php if ($tag['status'] == Constants::STATUS_PENDING_VERIFICATION): ?>
-                                    <a href="<?= Constants::JIRA_LINK . $ticketId ?>">
-                                    <br><small class="text-muted"><?= $ticketId ?></small> 
+                                    <br>
+                                    <a href="<?= Constants::JIRA_LINK . $ticketId ?>" class="apple-link ms-1" style="font-size: 0.8rem;">
+                                        <?= $ticketId ?>
                                     </a>
                                 <?php endif; ?>
                             </td>
@@ -115,6 +117,7 @@
                     <?php endforeach; ?>
                 </tbody>
             </table>
+        </div>
         </div>
     </div>
 <?php else: ?>

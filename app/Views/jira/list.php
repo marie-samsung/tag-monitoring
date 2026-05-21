@@ -33,14 +33,14 @@ use App\Models\TagsModel;
     <div class="d-flex justify-content-between align-items-center">
         <h2>JIRA Tickets</h2>
         <div class="d-flex justify-content-end align-items-center gap-2">
-            <a href="<?= site_url('jira/export?' . http_build_query($_GET)) ?>" class="btn btn-sm btn-warning px-2">Export as CSV</a>
-            <a href="<?= site_url('jira/create') ?>" target="_blank" title="Create new JIRA ticket" class="apple-btn-primary btn-sm ms-auto px-2">Add a JIRA Ticket</a>
+            <a href="<?= site_url('jira/export?' . http_build_query($_GET)) ?>" class="apple-btn-secondary btn-sm px-3">Export as CSV</a>
+            <a href="<?= site_url('jira/create') ?>" title="Create new JIRA ticket" class="apple-btn-primary btn-sm ms-auto px-3">Add a JIRA Ticket</a>
         </div>
     </div>
 
     <!-- #region | SEARCH FILTER -->
-    <div class="mb-2">
-        <form method="get" class="row g-3 mb-4">
+    <div class="apple-control-bar mb-4">
+        <form method="get" class="row g-2 w-100 m-0">
             <div class="col">
                 <input 
                     type="text" 
@@ -88,27 +88,28 @@ use App\Models\TagsModel;
             </div>
 
             <div class="col-md-2 d-flex align-items-center gap-2">
-                <button class="btn btn-sm btn-primary w-100">Filter</button>
-                <a href="<?= site_url('jira') ?>" class="btn btn-sm btn-secondary w-100">Clear</a>
+                <button class="apple-btn-primary btn-sm w-100">Filter</button>
+                <a href="<?= site_url('jira') ?>" class="apple-btn-secondary btn-sm w-100 text-center text-decoration-none">Clear</a>
             </div>
         </form>
     </div>
     <!-- #endregion -->
 
     <!-- #region | JIRA HISTORY TABLE -->
-    <div class="table-responsive">
-        <table class="table table-hover align-middle" style="border-collapse: separate; border-spacing: 0; min-width: 100%;">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Subsidiary</th>
-                    <th>Property</th>
-                    <th>Ticket ID</th>
-                    <th>Type</th>
-                    <th>Comments</th>
-                    <th>Created At</th>
-                </tr>
-            </thead>
+    <div class="apple-table-container">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" style="border-collapse: separate; border-spacing: 0; min-width: 100%;">
+                <thead>
+                    <tr>
+                        <th class="form-label-sm fw-semibold">#</th>
+                        <th class="form-label-sm fw-semibold">Subsidiary</th>
+                        <th class="form-label-sm fw-semibold">Property</th>
+                        <th class="form-label-sm fw-semibold">Ticket ID</th>
+                        <th class="form-label-sm fw-semibold">Type</th>
+                        <th class="form-label-sm fw-semibold">Comments</th>
+                        <th class="form-label-sm fw-semibold">Created At</th>
+                    </tr>
+                </thead>
             <tbody>
                 <?php
                     foreach ($jiraTickets as $ticket):
@@ -148,7 +149,7 @@ use App\Models\TagsModel;
                         </td>
                         <td>
                             <?php if ($property): ?>
-                            <a href="<?= $property['ref_link'] ?>" target="_blank">
+                            <a href="<?= $property['ref_link'] ?>" class="apple-link-dark form-label-sm">
                                 <?= esc($property['name']) ?>
                             </a>
                             <?php else: ?>
@@ -156,11 +157,11 @@ use App\Models\TagsModel;
                             <?php endif; ?>
                         </td>
                         <td>
-                            <a href="<?= Constants::JIRA_LINK . $ticket['ticket_id'] ?>" target="_blank">
+                            <a href="<?= Constants::JIRA_LINK . $ticket['ticket_id'] ?>" class="apple-link form-label-sm">
                                 <?= $ticket['ticket_id'] ?>
                             </a>
                         </td>
-                        <td>
+                        <td class="form-label-sm">
                             <?php
                                 if ($type == Constants::JIRA_TYPE_NEW_TAG || $type == Constants::JIRA_TYPE_NEW_RULE) {
                                     $tagRequestsModel = new TagRequestsModel();
@@ -168,7 +169,7 @@ use App\Models\TagsModel;
 
                                     if ($request_id) {
                             ?>
-                                        <a href="<?= site_url('/tag-requests/view/' . $request_id) ?>" target="_blank">
+                                        <a href="<?= site_url('/tag-requests/view/' . $request_id) ?>" class="apple-link-dark">
                                             <?= Constants::JIRA_TICKET_TYPES[$type] ?>
                                         </a>
                                 <?php } else { ?>
@@ -181,7 +182,7 @@ use App\Models\TagsModel;
 
                                     if ($activityLog) {
                             ?>
-                                    <a href="<?= site_url('/activity-logs/view/' . $activityLog['id']) ?>" target="_blank">
+                                    <a href="<?= site_url('/activity-logs/view/' . $activityLog['id']) ?>" class="apple-link-dark">
                                         <?= Constants::JIRA_TICKET_TYPES[$type] ?>
                                     </a>
 
@@ -192,26 +193,27 @@ use App\Models\TagsModel;
                             <?php } ?>
                         </td>
                         <!-- COMMENTS -->
-                        <td>
+                        <td class="form-label-sm">
                             <?php if ($ticketTagsList): ?>
 
                                 <?php foreach ($ticketTagsList as $id => $name): ?>
-                                    <a href="<?= site_url('tags/view/' . $id) ?>" target="_blank"><?= esc($name) ?></a><br>
+                                    <a href="<?= site_url('tags/view/' . $id) ?>" class="apple-link-dark"><?= esc($name) ?></a><br>
                                 <?php endforeach; ?>
 
                                 <!-- If you want to direct at AL, use the below code -->
                                 <!-- <?php foreach ($ticketTagsList as $name => $link): ?>
-                                    <a href="<?= $link ?>" target="_blank"><?= esc($name) ?></a><br>
+                                    <a href="<?= $link ?>" class="apple-link-dark"><?= esc($name) ?></a><br>
                                 <?php endforeach; ?> -->
                             <?php else: ?>
                                 <?= esc($ticket['comments']) ?>
                             <?php endif; ?>
                         </td>
-                        <td><?= $ticket['created_at'] ?></td>
+                        <td class="form-label-sm" style="width:max-content; white-space:nowrap;"><?= esc(date('d-m-Y', strtotime($ticket['created_at']))) ?></td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
         </table>
+        </div>
     </div>
     <!-- #endregion -->
 </div>
