@@ -137,7 +137,7 @@ Tag: Requests (New Rule, New Tag)
     <!-- #region | TAGS TABLE -->
     <div class="apple-table-container">
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0" style="border-collapse: separate; border-spacing: 0; min-width: 100%;" id="tblTags">
+            <table class="table table-hover align-middle mb-0" id="tblTags">
             <thead>
                 <tr>
                     <th class="form-label-sm fw-semibold">#</th>
