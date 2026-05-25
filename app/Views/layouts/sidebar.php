@@ -34,6 +34,12 @@ $segment = service('uri')->getSegment(1); ?>
         <li class="sliding-glass-pill" id="navSlidingPill"></li>
         
         <li class="nav-item">
+            <a class="nav-link <?= $segment === 'dashboard' ? 'active' : '' ?>" href="<?= site_url('/dashboard') ?>">
+                <i class="bi bi-grid-1x2-fill"></i> Dashboard
+            </a>
+        </li>
+
+        <li class="nav-item">
             <a class="nav-link <?= $segment === 'tags' ? 'active' : '' ?>" href="<?= site_url('/tags') ?>">
                 <i class="bi bi-tags-fill"></i> Tags
             </a>
