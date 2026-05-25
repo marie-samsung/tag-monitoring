@@ -90,12 +90,15 @@ Tag: Create
             <div class="row">
                 <div class="col-md-6 mb-3 mb-md-0">
                     <label class="form-label-sm fw-semibold text-dark mb-1" for="al_end_date">Launch Expiry Date</label>
-                    <input type="text"
-                        name="al_end_date"
-                        id="al_end_date"
-                        class="form-control form-control-xs"
-                        value="<?= esc(old('al_end_date', $tag['al_end_date'] ?? '')) ?>"
-                        required>
+                    <div class="position-relative">
+                        <input type="text"
+                            name="al_end_date"
+                            id="al_end_date"
+                            class="form-control form-control-xs pe-5"
+                            value="<?= esc(old('al_end_date', $tag['al_end_date'] ?? date('Y-m-d', strtotime('+2 months')))) ?>"
+                            required>
+                        <i class="bi bi-calendar-event text-muted position-absolute" style="right: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; font-size: 0.875rem;"></i>
+                    </div>
                 </div>
 
                 <div class="col-md-6">
@@ -156,10 +159,13 @@ Tag: Create
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        flatpickr("#al_end_date", {
+        const picker = flatpickr("#al_end_date", {
             dateFormat: "Y-m-d",
-            disableMobile: "true"
+            disableMobile: "true",
+            defaultDate: "<?= esc(old('al_end_date', $tag['al_end_date'] ?? date('Y-m-d', strtotime('+2 months')))) ?>"
         });
+
+        // Flatpickr triggers on input click/focus
 
         $('.searchable-select').select2({
             width: '100%',
