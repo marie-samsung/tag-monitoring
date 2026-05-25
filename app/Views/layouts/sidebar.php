@@ -20,46 +20,68 @@ $segment = service('uri')->getSegment(1); ?>
 </nav> -->
 
 
-<div class="d-flex justify-content-center w-100">
-<ul class="nav nav-pills justify-content-center apple-segmented-control" id="appleNav">
-    <li class="sliding-glass-pill" id="navSlidingPill"></li>
-    
-    <li class="nav-item">
-        <a class="nav-link <?= $segment === 'tags' ? 'active' : '' ?>" href="<?= site_url('/tags') ?>">
-            <i class="bi bi-tags-fill"></i> Tags
+<div class="d-flex justify-content-between align-items-center w-100 px-4">
+    <!-- Branding logo (aligned to the left) -->
+    <div class="d-flex align-items-center gap-2">
+        <a href="<?= site_url('/') ?>" class="fw-bold text-decoration-none apple-link-dark d-flex align-items-center gap-2" style="font-size: 1.1rem; letter-spacing: -0.5px;">
+            <i class="bi bi-shield-lock-fill text-primary"></i>
+            <span>TagMonitor</span>
         </a>
-    </li>
+    </div>
 
-    <li class="nav-item">
-        <a class="nav-link <?= $segment === 'tag-requests' ? 'active' : '' ?>" href="<?= site_url('/tag-requests') ?>">
-            <i class="bi bi-file-earmark-plus-fill"></i> Tag Requests
-        </a>
-    </li>
+    <!-- Main Navigation pills (centered) -->
+    <ul class="nav nav-pills justify-content-center apple-segmented-control" id="appleNav">
+        <li class="sliding-glass-pill" id="navSlidingPill"></li>
+        
+        <li class="nav-item">
+            <a class="nav-link <?= $segment === 'tags' ? 'active' : '' ?>" href="<?= site_url('/tags') ?>">
+                <i class="bi bi-tags-fill"></i> Tags
+            </a>
+        </li>
 
-    <li class="nav-item">
-        <a class="nav-link <?= $segment === 'properties' ? 'active' : '' ?>" href="<?= site_url('/properties') ?>">
-            <i class="bi bi-building-fill"></i> Properties
-        </a>
-    </li>
+        <li class="nav-item">
+            <a class="nav-link <?= $segment === 'tag-requests' ? 'active' : '' ?>" href="<?= site_url('/tag-requests') ?>">
+                <i class="bi bi-file-earmark-plus-fill"></i> Tag Requests
+            </a>
+        </li>
 
-    <li class="nav-item">
-        <a class="nav-link <?= $segment === 'vendors' ? 'active' : '' ?>" href="<?= site_url('/vendors') ?>">
-            <i class="bi bi-truck-front-fill"></i> Vendors
-        </a>
-    </li>
+        <li class="nav-item">
+            <a class="nav-link <?= $segment === 'properties' ? 'active' : '' ?>" href="<?= site_url('/properties') ?>">
+                <i class="bi bi-building-fill"></i> Properties
+            </a>
+        </li>
 
-    <li class="nav-item">
-        <a class="nav-link <?= $segment === 'jira' ? 'active' : '' ?>" href="<?= site_url('/jira') ?>">
-            <i class="bi bi-ticket-perforated-fill"></i> Jira Tickets
-        </a>
-    </li>
+        <li class="nav-item">
+            <a class="nav-link <?= $segment === 'vendors' ? 'active' : '' ?>" href="<?= site_url('/vendors') ?>">
+                <i class="bi bi-truck-front-fill"></i> Vendors
+            </a>
+        </li>
 
-    <li class="nav-item">
-        <a class="nav-link <?= $segment === 'activity-logs' ? 'active' : '' ?>" href="<?= site_url('/activity-logs') ?>">
-            <i class="bi bi-card-list"></i> Activity Logs
-        </a>
-    </li>
-</ul>
+        <li class="nav-item">
+            <a class="nav-link <?= $segment === 'jira' ? 'active' : '' ?>" href="<?= site_url('/jira') ?>">
+                <i class="bi bi-ticket-perforated-fill"></i> Jira Tickets
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link <?= $segment === 'activity-logs' ? 'active' : '' ?>" href="<?= site_url('/activity-logs') ?>">
+                <i class="bi bi-card-list"></i> Activity Logs
+            </a>
+        </li>
+    </ul>
+
+    <!-- Logged in User Profile Info & Logout Button (aligned to the right) -->
+    <div class="d-flex align-items-center gap-3">
+        <?php if (session()->get('isLoggedIn')): ?>
+            <span class="text-secondary small d-none d-md-inline-block">
+                <i class="bi bi-person-circle text-primary"></i> 
+                <strong><?= esc(session()->get('user_name')) ?></strong>
+            </span>
+            <a href="<?= site_url('logout') ?>" class="apple-btn-secondary btn-sm text-danger d-flex align-items-center gap-1" style="padding: 4px 12px; font-size: 0.8rem; border-radius: 8px;">
+                <i class="bi bi-box-arrow-right"></i> Logout
+            </a>
+        <?php endif; ?>
+    </div>
 </div>
 
 <script>
