@@ -8,6 +8,7 @@ class Constants
     public const JIRA_LINK = 'https://jira.secext.samsung.net/browse/';
     public const JIRA_CREATE_ISSUE = 'https://jira.secext.samsung.net/secure/CreateIssue!default.jspa';
     public const JIRA_SSGTM_TICKET = 'https://jira.secext.samsung.net/browse/GTA-31005';
+    public const JIRA_TAGGING_SUPPORT = 'https://jira.secext.samsung.net/secure/ViewProfile.jspa?name=tagging.jira%40concentrix.com';
     public const LP_WRITE_PATH = WRITEPATH . 'uploads/lp/';
     public const LP_PATH = 'uploads/lp/';
     public const NEW_TAG_FILE_WRITE_PATH = WRITEPATH . 'uploads/new_tag_requests/';

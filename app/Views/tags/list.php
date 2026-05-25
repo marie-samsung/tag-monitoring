@@ -213,6 +213,11 @@ Tag Monitoring System
                                 <a href="<?= Constants::JIRA_LINK . $ticketId ?>" class="apple-link ms-1" style="font-size: 0.8rem;">
                                     <?= $ticketId ?>
                                 </a>
+                                <a href="<?= site_url('tags/verify/' . $tag['id']) ?>"
+                                   class="badge bg-primary text-decoration-none"
+                                   onclick="return confirm('Have you verified the end date matches in AL?');">
+                                    Verify
+                                </a>
                             <?php endif; ?>
                         </td>
                         <!-- Days -->
@@ -304,39 +309,26 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     window.copyTagName = function(text, el) {
-        const onSuccess = () => {
-            el.innerHTML = '<i class="bi bi-check-lg text-success" style="font-size: 0.85rem;"></i>';
-            setTimeout(() => {
-                el.innerHTML = '<i class="bi bi-copy" style="font-size: 0.85rem;"></i>';
-            }, 1200);
-        };
+        const temp = document.createElement('textarea');
+        temp.value = text;
 
-        // Modern approach (requires HTTPS or localhost)
-        if (navigator.clipboard && window.isSecureContext) {
-            navigator.clipboard.writeText(text).then(onSuccess).catch(err => {
-                console.error("Failed to copy text: ", err);
-            });
-        } else {
-            // Fallback for non-HTTPS local domains (like http://tag-monitoring)
-            const textArea = document.createElement("textarea");
-            textArea.value = text;
-            // Prevent scrolling to bottom
-            textArea.style.top = "0";
-            textArea.style.left = "0";
-            textArea.style.position = "fixed";
-            document.body.appendChild(textArea);
-            textArea.focus();
-            textArea.select();
+        temp.style.position = 'fixed';
+        temp.style.left = '-9999px';
 
-            try {
-                const successful = document.execCommand('copy');
-                if (successful) onSuccess();
-            } catch (err) {
-                console.error('Fallback: Oops, unable to copy', err);
-            }
+        document.body.appendChild(temp);
 
-            document.body.removeChild(textArea);
-        }
+        temp.focus();
+        temp.select();
+
+        document.execCommand('copy');
+
+        document.body.removeChild(temp);
+
+        el.innerHTML = '<i class="bi bi-check-lg text-success fs-7"></i>';
+
+        setTimeout(() => {
+            el.innerHTML = '<i class="bi bi-copy text-secondary fs-7"></i>';
+        }, 1200);
     };
 });
 

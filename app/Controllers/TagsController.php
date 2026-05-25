@@ -174,7 +174,7 @@ class TagsController extends BaseController
         $model->update($id, $updateData);
 
         return redirect()
-            ->to('/tags')
+            ->to('/tags/view/' . $id)
             ->with('success', "Tag {$post['name']} updated successfully.");
     }
 
@@ -272,9 +272,12 @@ class TagsController extends BaseController
 
         if ($activityLog) {
             if ($activityLog['status'] != Constants::STATUS_COMPLETED) {
+                $from = Constants::ACTIVITY_LOGS_STATUS[$activityLog['status']];
+                $to = Constants::ACTIVITY_LOGS_STATUS[Constants::STATUS_COMPLETED];
+
                 $commentsModel->insert([
                     'log_id' => $activityLog['id'],
-                    'comment' => "Status updated from [{$activityLog['status']}] to [". Constants::STATUS_COMPLETED ."]",
+                    'comment' => "Status updated from [{$from}] to [{$to}]",
                     'commented_by' => Constants::USER_SYSTEM,
                     'type' => Constants::COMMENT_TYPE_UPDATE,
                 ]);

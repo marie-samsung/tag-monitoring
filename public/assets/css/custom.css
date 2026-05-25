@@ -547,6 +547,7 @@ table.file-table th:nth-child(3) {
     border: 1px solid var(--color-badge-primary-border);
 }
 
+.bubble-purple,
 .badge.bg-purple {
     background-color: var(--color-badge-purple-bg) !important;
     color: var(--color-badge-purple-text) !important;

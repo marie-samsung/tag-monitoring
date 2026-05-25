@@ -90,6 +90,9 @@ $tagRequestsModel = new TagRequestsModel();
             <label class="form-label-xs">Adobe Launch End Date</label>
             <div class="form-control-plaintext p-0 ms-2 <?= date_class($tag['al_end_date'], $tag['status']) ?>">
                 <?= esc($tag['al_end_date'] ?: '—') ?>
+                <?php if ($tag['requested_date']) : ?>
+                    <small class="text-muted">[<?= $tag['requested_date'] ?>]</small>
+                <?php endif; ?>
             </div>
         </div>
 

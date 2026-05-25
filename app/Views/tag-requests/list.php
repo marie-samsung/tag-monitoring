@@ -222,15 +222,15 @@ Tag: Requests (New Rule, New Tag)
     </div>
     <!-- #endregion -->
 
-    <div class="d-flex justify-content-start gap-2 form-label-xs">
+<!--    <div class="d-flex justify-content-start gap-2 form-label-xs">-->
         <!--        <p>New Tag Requests: <span class="text-dark fw-semibold">--><?php //= $tagRequestsModel->countNewTags() ?><!--</span></p>-->
         <!--        <p>New Rule Requests: <span class="text-dark fw-semibold">--><?php //= $tagRequestsModel->countNewRules() ?><!--</span></p>-->
         <!--        <p>Total: <span class="text-dark fw-semibold">--><?php //= $tagRequestsModel->countAllRequests() ?><!--</span></p>-->
 
-        <p>New Tag Requests: <span class="text-dark fw-semibold"><?= $newTagRequestsCount ?></span></p>
-        <p>New Rule Requests: <span class="text-dark fw-semibold"><?= $newRuleRequestsCount ?></span></p>
-        <p>Total: <span class="text-dark fw-semibold"><?= $newTagRequestsCount + $newRuleRequestsCount ?></span></p>
-    </div>
+<!--        <p>New Tag Requests: <span class="text-dark fw-semibold">--><?php //= $newTagRequestsCount ?><!--</span></p>-->
+<!--        <p>New Rule Requests: <span class="text-dark fw-semibold">--><?php //= $newRuleRequestsCount ?><!--</span></p>-->
+<!--        <p>Total: <span class="text-dark fw-semibold">--><?php //= $newTagRequestsCount + $newRuleRequestsCount ?><!--</span></p>-->
+<!--    </div>-->
 </div>
 
 <script>

@@ -32,7 +32,7 @@
         $subsidiaryTicketId = $jiraHistoryModel->getLatestSubsidiary($properties[$propertyIds[0]]['subsidiary_id'])['ticket_id'] ?? null;
     }
     $jiraTitle = sprintf(
-        '[LC Request] [%s] [%s] [Date Extension Rule]',
+        '[LC Request] [%s] - [%s] - [Date Extension Rule]',
         $siteCode,
         implode(', ', $vendor)
     );
@@ -43,17 +43,20 @@
     <?= $this->section('title') ?>
     Renewal: <?= esc($ticket_id) ?>
     <?= $this->endSection() ?>
+<?php else: ?>
+    <?= $this->section('title') ?>
+    Tag: Renew
+    <?= $this->endSection() ?>
 <?php endif; ?>
+
 <h4 class="container">Renew Tags</h4>
-<?= $this->section('title') ?>
-Tag: Renew
-<?= $this->endSection() ?>
 <hr/>
 
 <!-- #region | PART 1 - TICKET ID -->
 <?php
     if ($ticket_id == null): 
         $tag_ids = implode(',', array_column($tags, 'id'));
+        $count = 0;
 ?>
 
 <form action="<?= site_url('tags/renew') ?>" method="get">
@@ -74,6 +77,7 @@ Tag: Renew
             <table class="table table-hover align-middle apple-table">
                 <thead>
                     <tr>
+                        <th>#</th>
                         <th>ID</th>
                         <th>Property</th>
                         <th>Name</th>
@@ -81,8 +85,10 @@ Tag: Renew
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($tags as $tag): ?>
+                    <?php foreach ($tags as $tag):
+                            $count++; ?>
                         <tr>
+                            <td class="fw-semibold"><?= $count ?></td>
                             <td><?= esc($tag['id']) ?></td>
                             <td><?= esc($properties[$tag['property_id']]['name'] ?? 'Unknown') ?></td>
                             <td><?= esc($tag['name']) ?></td>
@@ -121,6 +127,7 @@ Tag: Renew
 <!-- #region | PART 2 - RENEWAL CONFIRMATION -->
 <?php 
     else:
+        $count = 0;
         $today = date('dmY');
         $libraryName = $ticket_id . '_' . $today;
 
@@ -216,6 +223,7 @@ Tag: Renew
             <table class="table table-hover align-middle apple-table">
                 <thead>
                     <tr>
+                        <th>#</th>
                         <th>ID</th>
                         <th>Property</th>
                         <th>Name</th>
@@ -224,18 +232,25 @@ Tag: Renew
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($tags as $tag): ?>
+                    <?php foreach ($tags as $tag): $count++; ?>
                         <tr>
+                            <td class="fw-semibold"><?= $count ?></td>
                             <td><?= esc($tag['id']) ?></td>
                             <td>
                                 <a href="<?= esc($properties[$tag['property_id']]['ref_link']) ?>" target="_blank">
                                     <?= esc($properties[$tag['property_id']]['name'] ?? 'Unknown') ?>
                                 </a>
                             </td>
-                            <td>
-                                <a href="<?= esc($tag['ref_link']) ?>" target="_blank">
-                                    <?= $tag['name'] ?>
-                                </a>
+                            <td class="form-label-sm">
+                                <span class="group-hover-container align-items-center">
+                                    <a href="<?= esc($tag['ref_link']) ?>" target="_blank">
+                                        <?= $tag['name'] ?>
+                                    </a>
+
+                                    <a href="javascript:void(0)" onclick="copyTagName('<?= $tag['name'] ?>', this)" title="Copy tag name" class="text-muted ms-2" style="transition: color 0.2s; text-decoration: none; line-height: 1;">
+                                        <i class="bi bi-copy" style="font-size: 0.85rem;"></i>
+                                    </a>
+                                </span>
                             </td>
                             <td class="text-center">
                                 <?php if ($tag['status'] != Constants::STATUS_UPDATED_IN_AL): ?>
@@ -347,18 +362,6 @@ Hi TAGGING JIRA SUPPORT,
         }, 'json');
     });
 
-    // function copyJiraTitle() {
-    //     const text = document.getElementById('jiraTitle').innerText;
-    //     const status = document.getElementById('copyStatus');
-    //
-    //     navigator.clipboard.writeText(text).then(() => {
-    //         status.style.opacity = 1;
-    //         setTimeout(() => {
-    //             status.style.opacity = 0;
-    //         }, 1000);
-    //     });
-    // }
-
     function copyJiraTitle() {
         const title = document.getElementById('jiraTitle').innerHTML;
         const status = document.getElementById('copyStatus');
@@ -380,29 +383,6 @@ Hi TAGGING JIRA SUPPORT,
         setTimeout(() => status.style.opacity = 0, 1000);
     }
 
-    // function copyComment() {
-    //     const comment = document.getElementById('comment');
-    //     const status = document.getElementById('copyCommentStatus');
-    //     let html = comment.innerHTML;
-    //     html = html.replace(/<br\s*\/?>/gi, "\n");
-    //     html = html.replace(/<a [^>]*href="([^"]+)"[^>]*>(.*?)<\/a>/gi, "$2 ($1)");
-    //     const text = html
-    //         .replace(/<br\s*\/?>/gi, "\n")
-    //         .replace(/<a [^>]*href="([^"]+)"[^>]*>(.*?)<\/a>/gi, "$2 ($1)")
-    //         .replace(/<[^>]+>/g, "")
-    //         .trim();
-    //     navigator.clipboard.writeText(text).then(() => {
-    //         status.style.opacity = 1;
-    //         setTimeout(() => {
-    //             status.style.opacity = 0;
-    //         }, 1000);
-    //     });
-    // }
-
-    /**
-     * Copy the content of #comment to the clipboard without using
-     * navigator.clipboard.*  Works on HTTP/HTTPS and all mainstream browsers.
-     */
     function copyComment() {
         const comment = document.getElementById('comment');
         const status  = document.getElementById('copyCommentStatus');
@@ -458,6 +438,29 @@ Hi TAGGING JIRA SUPPORT,
         const status = document.getElementById('copyDetailsStatus');
         status.style.opacity = 1;
         setTimeout(() => status.style.opacity = 0, 1000);
+    }
+
+    function copyTagName(text, element) {
+        const temp = document.createElement('textarea');
+        temp.value = text;
+
+        temp.style.position = 'fixed';
+        temp.style.left = '-9999px';
+
+        document.body.appendChild(temp);
+
+        temp.focus();
+        temp.select();
+
+        document.execCommand('copy');
+
+        document.body.removeChild(temp);
+
+        element.innerHTML = '<i class="bi bi-check-lg text-success fs-7"></i>';
+
+        setTimeout(() => {
+            element.innerHTML = '<i class="bi bi-copy text-secondary fs-7"></i>';
+        }, 1200);
     }
 
 </script>
