@@ -60,7 +60,7 @@ Dashboard | Tag Monitoring System
 
         <!-- Pending Tag Requests -->
         <div class="col-md-3">
-            <div class="apple-metric-card border-start border-4 border-primary" style="cursor: pointer;" onclick="window.location.href='<?= site_url('tag-requests') ?>'">
+            <div class="apple-metric-card border-start border-4 border-primary" style="cursor: pointer;" onclick="window.location.href='<?= site_url('tag-requests?status=pending') ?>'">
                 <div class="apple-metric-label">
                     <i class="bi bi-file-earmark-plus-fill text-primary fs-5"></i> 
                     <span>Pending Requests</span>
