@@ -6,8 +6,11 @@ use CodeIgniter\Router\RouteCollection;
  * @var RouteCollection $routes
  */
 
-$routes->addRedirect('/', 'tags');
+$routes->addRedirect('/', 'dashboard');
+$routes->get('dashboard', 'DashboardController::index');
 $routes->get('testdb', 'TestDB::index');
+$routes->match(['get', 'post'], 'login', 'AuthController::login');
+$routes->get('logout', 'AuthController::logout');
 
 $routes->group('tags', function ($routes) {
     $routes->get('/', 'TagsController::index');

@@ -116,6 +116,7 @@ Tag: Requests (New Rule, New Tag)
             <div class="col">
                 <select name="status" class="form-select form-select-xs">
                     <option value="">All Status</option>
+                    <option value="pending" <?= old('status', $filters['status'] ?? null) === 'pending' ? 'selected' : '' ?>>Pending Requests</option>
                     <?php foreach (Constants::STATUS_REQUESTS as $value => $label): ?>
                         <option value="<?= esc($value) ?>"
                             <?= old('status', $filters['status'] ?? null) == $value ? 'selected' : '' ?>>

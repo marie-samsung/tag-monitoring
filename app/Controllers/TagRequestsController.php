@@ -128,6 +128,7 @@ class TagRequestsController extends BaseController
                     'requester_name' => $reqName,
                     'requester_email' => $reqEmail,
                     'requester_organization' => $organizationId,
+                    'created_by' => session()->get('user_id') ?? 0,
                 ]);
             }
         }
@@ -142,6 +143,7 @@ class TagRequestsController extends BaseController
                 'requester_name' => $reqName,
                 'requester_email' => $reqEmail,
                 'requester_organization' => $organizationId,
+                'created_by' => session()->get('user_id') ?? 0,
             ];
 
             $requestId = $model->insert($data);
@@ -404,7 +406,7 @@ class TagRequestsController extends BaseController
                          'file_path' => $file_path,
                          'type' => $post['type'],
                          'request_id' => $requestId,
-                         'created_by' => 0,
+                         'created_by' => session()->get('user_id') ?? 0,
                      ]);
 
                      return redirect()
@@ -436,7 +438,7 @@ class TagRequestsController extends BaseController
                 'tag_id' => $tag,
                 'property_id' => $property['id'],
                 'subsidiary_id' => $property['subsidiary_id'],
-                'created_by' => 0, // @TODO: Replace with actual user ID from session
+                'created_by' => session()->get('user_id') ?? 0,
             ]);
         }
     }
@@ -467,6 +469,7 @@ class TagRequestsController extends BaseController
             'status' => Constants::STATUS_IMPLEMENTATION,
             'type' => Constants::ACTIVITY_TYPE_REQUEST,
             'size' => Constants::ACTIVITY_SIZE_M,
+            'created_by' => session()->get('user_id') ?? 0,
         ]);
     }
 }

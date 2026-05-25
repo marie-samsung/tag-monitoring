@@ -57,7 +57,14 @@ class TagRequestsModel extends Model
         }
 
         if (!empty($filters['status'])) {
-            $this->where('tag_requests.status', $filters['status']);
+            if ($filters['status'] === 'pending') {
+                $this->whereNotIn('tag_requests.status', [
+                    Constants::STATUS_REQUEST_PUBLISHED,
+                    Constants::STATUS_REQUEST_REJECTED
+                ]);
+            } else {
+                $this->where('tag_requests.status', $filters['status']);
+            }
         }
 
         $this->orderBy('tag_requests.created_at', 'DESC');

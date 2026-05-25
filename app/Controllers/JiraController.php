@@ -41,6 +41,7 @@ class JiraController extends BaseController
             'subsidiary_id' => $post['subsidiary_id'],
             'type' => $post['type'],
             'comments' => $post['comments'],
+            'created_by' => session()->get('user_id') ?? 0,
         ]);
 
         return redirect()
@@ -94,7 +95,7 @@ class JiraController extends BaseController
             'type' => $post['type'],
             'comments' => $post['comments'],
             'tag_id' => $post['tag_id'],
-            'created_by' => 0, // @TODO: Replace with actual user ID from session
+            'created_by' => session()->get('user_id') ?? 0,
         ];
 
         $model->insert($insertData);
