@@ -8,3 +8,5 @@ writable/uploads/new_tag_requests/test-files/*
 
 .idea
 .env
+
+*.xlsx
