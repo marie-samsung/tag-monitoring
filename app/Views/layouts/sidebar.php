@@ -20,17 +20,17 @@ $segment = service('uri')->getSegment(1); ?>
 </nav> -->
 
 
-<div class="d-flex justify-content-between align-items-center w-100 px-4">
+<div class="d-flex justify-content-between align-items-center w-100 px-4 gap-4 py-2">
     <!-- Branding logo (aligned to the left) -->
-    <div class="d-flex align-items-center gap-2">
+    <div class="d-flex align-items-center gap-2" style="flex: 1; min-width: fit-content;">
         <a href="<?= site_url('/') ?>" class="fw-bold text-decoration-none apple-link-dark d-flex align-items-center gap-2" style="font-size: 1.1rem; letter-spacing: -0.5px;">
             <i class="bi bi-shield-lock-fill text-primary"></i>
-            <span>TagMonitor</span>
+            <span>Tag Monitoring</span>
         </a>
     </div>
 
     <!-- Main Navigation pills (centered) -->
-    <ul class="nav nav-pills justify-content-center apple-segmented-control" id="appleNav">
+    <ul class="nav nav-pills justify-content-center apple-segmented-control flex-nowrap" style="white-space: nowrap; overflow-x: auto;" id="appleNav">
         <li class="sliding-glass-pill" id="navSlidingPill"></li>
         
         <li class="nav-item">
@@ -77,7 +77,7 @@ $segment = service('uri')->getSegment(1); ?>
     </ul>
 
     <!-- Logged in User Profile Info & Logout Button (aligned to the right) -->
-    <div class="d-flex align-items-center gap-3">
+    <div class="d-flex align-items-center justify-content-end gap-3" style="flex: 1; min-width: fit-content;">
         <?php if (session()->get('isLoggedIn')): ?>
             <span class="text-secondary small d-none d-md-inline-block">
                 <i class="bi bi-person-circle text-primary"></i> 

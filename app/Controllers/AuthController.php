@@ -120,7 +120,7 @@ class AuthController extends BaseController
                 ];
                 session()->set($sessionData);
 
-                return redirect()->to(site_url('tags'))
+                return redirect()->to(site_url('dashboard'))
                     ->with('success', 'Welcome back, ' . $user['first_name'] . '!');
             }
 

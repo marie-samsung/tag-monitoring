@@ -26,4 +26,14 @@ class TagRequestFilesModel extends Model
             ->orderBy('created_at', 'DESC')
             ->findAll();
     }
+
+    protected $beforeInsert = ['setCreatedBy'];
+
+    protected function setCreatedBy(array $data)
+    {
+        if (session()->has('user_id') && !isset($data['data']['created_by'])) {
+            $data['data']['created_by'] = session()->get('user_id');
+        }
+        return $data;
+    }
 }

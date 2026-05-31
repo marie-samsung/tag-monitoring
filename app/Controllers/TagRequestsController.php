@@ -472,4 +472,63 @@ class TagRequestsController extends BaseController
             'created_by' => session()->get('user_id') ?? 0,
         ]);
     }
+
+    public function uploadExcel()
+    {
+        return view('tag-requests/upload_excel');
+    }
+
+    public function parseExcel()
+    {
+        $file = $this->request->getFile('excel_file');
+
+        if (!$file || !$file->isValid() || $file->getExtension() !== 'xlsx') {
+            return redirect()->back()->with('error', 'Please upload a valid .xlsx file.');
+        }
+
+        require_once APPPATH . 'Libraries/SimpleXLSX.php';
+
+        $xlsx = \Shuchkin\SimpleXLSX::parse($file->getTempName());
+        
+        if (!$xlsx) {
+            return redirect()->back()->with('error', 'Failed to parse Excel file: ' . \Shuchkin\SimpleXLSX::parseError());
+        }
+
+        $rows = $xlsx->rows();
+
+        $extractedData = [
+            'vendor_name' => '',
+            'validity' => '',
+            'target_properties' => '',
+            'target_pages' => '',
+            'events' => '',
+            'requestor' => '',
+            'tag_script' => ''
+        ];
+
+        foreach ($rows as $row) {
+            if (count($row) < 3) continue;
+            
+            $key = $row[1] ?? '';
+            $value = $row[2] ?? '';
+
+            if (strpos($key, 'Partner/Vendor') !== false) {
+                $extractedData['vendor_name'] = $value;
+            } elseif (strpos($key, 'Validity of the Tags') !== false) {
+                $extractedData['validity'] = $value;
+            } elseif (strpos($key, 'Target Property/Sites') !== false) {
+                $extractedData['target_properties'] = $value;
+            } elseif (strpos($key, 'Target Page(s)') !== false) {
+                $extractedData['target_pages'] = $value;
+            } elseif (strpos($key, 'Events need to be captured') !== false) {
+                $extractedData['events'] = $value;
+            } elseif (strpos($key, 'Requestor') !== false) {
+                $extractedData['requestor'] = $value;
+            } elseif (strpos($key, 'Tag') !== false) {
+                $extractedData['tag_script'] = $value;
+            }
+        }
+
+        return view('tag-requests/create_from_excel', ['extracted_data' => $extractedData]);
+    }
 }

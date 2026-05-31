@@ -24,4 +24,23 @@ class CountriesModel extends Model
         $rows = $this->select('id, name')->findAll();
         return array_column($rows, 'name', 'id');
     }
+
+    protected $beforeInsert = ['setCreatedBy'];
+    protected $beforeUpdate = ['setUpdatedBy'];
+
+    protected function setCreatedBy(array $data)
+    {
+        if (session()->has('user_id') && !isset($data['data']['created_by'])) {
+            $data['data']['created_by'] = session()->get('user_id');
+        }
+        return $data;
+    }
+
+    protected function setUpdatedBy(array $data)
+    {
+        if (session()->has('user_id') && !isset($data['data']['updated_by'])) {
+            $data['data']['updated_by'] = session()->get('user_id');
+        }
+        return $data;
+    }
 }
