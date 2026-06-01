@@ -73,7 +73,15 @@ class TagRequestsController extends BaseController
         $reqEmail = $post['requester_email'] ?? null;
         $reqOrg = $post['requester_organization'] ?? null;
         $jiraType = $post['type'];
-        $endDate = $post['al_end_date'] ?? null;
+        $endDate = date('Y-m-d', strtotime('+60 days'));
+        
+        $background = $post['background'] ?? null;
+        $q1 = $post['q1'] ?? null;
+        $q2 = $post['q2'] ?? null;
+        $q3 = $post['q3'] ?? null;
+        $q4 = $post['q4'] ?? null;
+        $q5 = $post['q5'] ?? null;
+        
         $tagIds = [];
         $vendorId = null;
         $organizationId = null;
@@ -157,6 +165,12 @@ class TagRequestsController extends BaseController
                 'request_type' => $jiraType,
                 'ticket_id' => null,
                 'al_end_date' => $endDate,
+                'background' => $background,
+                'q1' => $q1,
+                'q2' => $q2,
+                'q3' => $q3,
+                'q4' => $q4,
+                'q5' => $q5,
             ]);
         } else {
             return redirect()
@@ -503,7 +517,13 @@ class TagRequestsController extends BaseController
             'target_pages' => '',
             'events' => '',
             'requestor' => '',
-            'tag_script' => ''
+            'tag_script' => '',
+            'background' => '',
+            'q1' => '',
+            'q2' => '',
+            'q3' => '',
+            'q4' => '',
+            'q5' => ''
         ];
 
         foreach ($rows as $row) {
@@ -526,9 +546,21 @@ class TagRequestsController extends BaseController
                 $extractedData['requestor'] = $value;
             } elseif (strpos($key, 'Tag') !== false) {
                 $extractedData['tag_script'] = $value;
+            } elseif (strpos($key, 'Background') !== false) {
+                $extractedData['background'] = $value;
+            } elseif (strpos($key, 'What is the official website of the platform/company?') !== false) {
+                $extractedData['q1'] = $value;
+            } elseif (strpos($key, 'What is the duration of usage?') !== false) {
+                $extractedData['q2'] = $value;
+            } elseif (strpos($key, 'Any KPIs applied to review this tag bi-monthly') !== false) {
+                $extractedData['q3'] = $value;
+            } elseif (strpos($key, 'Performance thresholds that will determine renewal or deactivation of this tag?') !== false) {
+                $extractedData['q4'] = $value;
+            } elseif (strpos($key, 'What is your internal process for reviewing and validating these KPIs every two months?') !== false) {
+                $extractedData['q5'] = $value;
             }
         }
 
-        return view('tag-requests/create_from_excel', ['extracted_data' => $extractedData]);
+        return view('tag-requests/create', ['extracted_data' => $extractedData]);
     }
 }

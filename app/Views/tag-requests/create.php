@@ -32,9 +32,34 @@ Tag Request: Create
     <!-- #region | PART 1 - REQUEST CREATION -->
      <div class="container">
         <h2>Add a Tag Request</h2>    
+        <?php if (!empty($extracted_data)): ?>
+        <div class="alert alert-info mt-3">
+            Data has been extracted from the uploaded Excel file. Please review and complete the form before proceeding.
+            <ul class="mb-0 mt-2">
+                <li><strong>Extracted Vendor:</strong> <?= esc($extracted_data['vendor_name']) ?></li>
+                <li><strong>Target Property/Sites:</strong> <?= esc($extracted_data['target_properties']) ?></li>
+                <li><strong>Extracted Tag Script:</strong> <?= esc($extracted_data['tag_script']) ?></li>
+                <li><strong>Background:</strong> <?= esc($extracted_data['background']) ?></li>
+                <li><strong>Requestor:</strong> <?= esc($extracted_data['requestor']) ?></li>
+                <li><strong><?= Constants::PURPOSE_GOAL_NEW_TAG[0] ?></strong> <?= esc($extracted_data['q1']) ?></li>
+                <li><strong><?= Constants::PURPOSE_GOAL_NEW_TAG[1] ?></strong> <?= esc($extracted_data['q2']) ?></li>
+                <li><strong><?= Constants::PURPOSE_GOAL_NEW_TAG[2] ?></strong> <?= esc($extracted_data['q3']) ?></li>
+                <li><strong><?= Constants::PURPOSE_GOAL_NEW_TAG[3] ?></strong> <?= esc($extracted_data['q4']) ?></li>
+                <li><strong><?= Constants::PURPOSE_GOAL_NEW_TAG[4] ?></strong> <?= esc($extracted_data['q5']) ?></li>
+            </ul>
+        </div>
+        <?php endif; ?>
     </div>
     <form action="<?= site_url('tag-requests/create') ?>" method="post">
         <?= csrf_field() ?>
+        <?php if (!empty($extracted_data)): ?>
+            <input type="hidden" name="background" value="<?= esc($extracted_data['background'] ?? '') ?>">
+            <input type="hidden" name="q1" value="<?= esc($extracted_data['q1'] ?? '') ?>">
+            <input type="hidden" name="q2" value="<?= esc($extracted_data['q2'] ?? '') ?>">
+            <input type="hidden" name="q3" value="<?= esc($extracted_data['q3'] ?? '') ?>">
+            <input type="hidden" name="q4" value="<?= esc($extracted_data['q4'] ?? '') ?>">
+            <input type="hidden" name="q5" value="<?= esc($extracted_data['q5'] ?? '') ?>">
+        <?php endif; ?>
         <div class="container">
             <div class="card p-3 mt-3">
                 <div class="row mb-2">
@@ -52,7 +77,13 @@ Tag Request: Create
 
                     <div class="col">
                         <label class="form-label-xs text-primary">Tag(s)</label>
-                        <select name="tags[]" class="form-select advanced-select" multiple required></select>
+                        <select name="tags[]" class="form-select advanced-select" multiple required>
+                            <?php if (!empty($extracted_data['vendor_name'])): ?>
+                                <option value="LC-XXX (<?= esc($extracted_data['vendor_name']) ?>)" selected>
+                                    LC-XXX (<?= esc($extracted_data['vendor_name']) ?>)
+                                </option>
+                            <?php endif; ?>
+                        </select>
                         <small class="form-label-xs text-muted">
                             Tag names should start with LC-
                         </small>
@@ -73,13 +104,7 @@ Tag Request: Create
                     </div>
 
                     <div class="col">
-                        <label class="form-label-xs text-primary" for="al_end_date">Launch Expiry Date</label>
-                        <input type="date"
-                            name="al_end_date"
-                            id="al_end_date"
-                            class="form-control"
-                            value="<?= esc(old('al_end_date', $request['al_end_date'] ?? '')) ?>"
-                            required>
+                        <!-- Launch Expiry Date is automatically set to +60 days -->
                     </div>
                 </div>
             </div>
@@ -104,7 +129,7 @@ Tag Request: Create
                         <label for="requester_name" class="form-label-xs text-primary">Name</label>
                         <input type="text" name="requester_name" id="requester_name"
                             class="form-control"
-                            value="<?= old('requester_name', $old['requester_name'] ?? '') ?>">
+                            value="<?= old('requester_name', $old['requester_name'] ?? ($extracted_data['requestor'] ?? '')) ?>">
                     </div>
 
                     <div class="col">
@@ -131,7 +156,7 @@ Tag Request: Create
         $vendor = $vendorsModel->find($vendor_id);
         $siteCode = $propertiesModel->getSiteCode($property_id);
         $isShop = $propertiesModel->isShop($property_id);
-        $reason = $vendor['reason'] ?? '-';
+        $reason = !empty($background) ? $background : ($vendor['reason'] ?? '-');
         $ssGTM = Constants::JIRA_SSGTM_TICKET;
         $jiraTitle = sprintf(
             '[LC Request] [%s] - [%s] - [New Tag]',
@@ -160,14 +185,23 @@ Tag Request: Create
             <table border='1' cellpadding='6' cellspacing='0' style='border-collapse:collapse; width:100%;'>
                 <tbody>";
 
-        foreach (Constants::PURPOSE_GOAL_NEW_TAG as $value) {
+        $qAnswers = [
+            $q1 ?? '',
+            $q2 ?? '',
+            $q3 ?? '',
+            $q4 ?? '',
+            $q5 ?? '',
+        ];
+
+        foreach (Constants::PURPOSE_GOAL_NEW_TAG as $index => $value) {
+            $ans = !empty($qAnswers[$index]) ? $qAnswers[$index] : 'Insert answer here from the Media Tag Request form...';
             $detailsHtml .= "
                 <tr>
                     <td style='width:50%;'><b>
                         ". $value ."
                     </b></td>
                     <td><i>
-                        Insert answer here from the Media Tag Request form...
+                        ". $ans ."
                     </i></td>
                 </tr>
             ";
@@ -250,7 +284,7 @@ Tag Request: Create
     $vendor = $vendorsModel->find($vendor_id);
     $siteCode = $propertiesModel->getSiteCode($property_id);
     $isShop = $propertiesModel->isShop($property_id);
-    $reason = $vendor['reason'] ?? '-';
+    $reason = !empty($background) ? $background : ($vendor['reason'] ?? '-');
     $purpose = $vendor['tag_purpose'] ?? '-';
     $today = date('dmY');
     $libraryName = !empty($ticket_id) ? $ticket_id . '_'. $today : '_' . $today;
