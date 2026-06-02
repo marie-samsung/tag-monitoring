@@ -38,11 +38,26 @@ class DashboardController extends BaseController
         // 2. 30-Day Activity Trends
         $thirtyDaysAgo = date('Y-m-d H:i:s', strtotime('-30 days'));
 
-        $tagsQuery = $db->table('tags')
-            ->select("DATE(created_at) as date, COUNT(*) as count")
+        $tagsQuery = $db->table('tag_requests')
+            ->select("DATE(created_at) as date, SUM(LENGTH(tags) - LENGTH(REPLACE(tags, ',', '')) + 1) as count", false)
+            ->where('new_tag_ticket IS NOT NULL')
+            ->where('new_tag_ticket !=', '')
+            ->where('tags !=', '')
             ->where('created_at >=', $thirtyDaysAgo)
             ->where('deleted_at', null)
             ->groupBy("DATE(created_at)")
+            ->orderBy("date", "ASC")
+            ->get()
+            ->getResultArray();
+
+        $newRulesQuery = $db->table('tag_requests')
+            ->select("DATE(updated_at) as date, SUM(LENGTH(tags) - LENGTH(REPLACE(tags, ',', '')) + 1) as count", false)
+            ->where('new_rule_ticket IS NOT NULL')
+            ->where('new_rule_ticket !=', '')
+            ->where('tags !=', '')
+            ->where('updated_at >=', $thirtyDaysAgo)
+            ->where('deleted_at', null)
+            ->groupBy("DATE(updated_at)")
             ->orderBy("date", "ASC")
             ->get()
             ->getResultArray();
@@ -70,6 +85,7 @@ class DashboardController extends BaseController
         $tagsData = [];
         $requestsData = [];
         $activitiesData = [];
+        $newRulesData = [];
 
         for ($i = 29; $i >= 0; $i--) {
             $dateStr = date('Y-m-d', strtotime("-$i days"));
@@ -77,6 +93,7 @@ class DashboardController extends BaseController
             $tagsData[$dateStr] = 0;
             $requestsData[$dateStr] = 0;
             $activitiesData[$dateStr] = 0;
+            $newRulesData[$dateStr] = 0;
         }
 
         foreach ($tagsQuery as $row) {
@@ -89,6 +106,11 @@ class DashboardController extends BaseController
                 $requestsData[$row['date']] = (int)$row['count'];
             }
         }
+        foreach ($newRulesQuery as $row) {
+            if (isset($newRulesData[$row['date']])) {
+                $newRulesData[$row['date']] = (int)$row['count'];
+            }
+        }
         foreach ($activitiesQuery as $row) {
             if (isset($activitiesData[$row['date']])) {
                 $activitiesData[$row['date']] = (int)$row['count'];
@@ -99,6 +121,7 @@ class DashboardController extends BaseController
         $data['chart_tags'] = array_values($tagsData);
         $data['chart_requests'] = array_values($requestsData);
         $data['chart_activities'] = array_values($activitiesData);
+        $data['chart_new_rules'] = array_values($newRulesData);
 
         // 3. Tag Status Distribution
         $statusCounts = $db->table('tags')

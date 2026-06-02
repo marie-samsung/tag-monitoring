@@ -169,6 +169,17 @@ document.addEventListener('DOMContentLoaded', function () {
                     fill: true,
                     pointBackgroundColor: '#A855F7',
                     pointHoverRadius: 6
+                },
+                {
+                    label: 'New Rules',
+                    data: <?= json_encode($chart_new_rules) ?>,
+                    borderColor: '#FD7E14',
+                    backgroundColor: 'rgba(253, 126, 20, 0.05)',
+                    borderWidth: 2,
+                    tension: 0.35,
+                    fill: true,
+                    pointBackgroundColor: '#FD7E14',
+                    pointHoverRadius: 6
                 }
             ]
         },
