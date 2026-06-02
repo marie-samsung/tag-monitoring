@@ -30,6 +30,8 @@ app.baseURL = 'http://localhost/ci4/public/'
 # DATABASE
 #--------------------------------------------------------------------
 
+# database.defaultGroup = development
+
 # database.default.hostname = localhost
 # database.default.database = ci4
 # database.default.username = root
@@ -37,6 +39,14 @@ app.baseURL = 'http://localhost/ci4/public/'
 # database.default.DBDriver = MySQLi
 # database.default.DBPrefix =
 # database.default.port = 3306
+
+# database.development.hostname = localhost
+# database.development.database = ci4
+# database.development.username = root
+# database.development.password = root
+# database.development.DBDriver = MySQLi
+# database.development.DBPrefix =
+# database.development.port = 3306
 
 # If you use MySQLi as tests, first update the values of Config\Database::$tests.
 # database.tests.hostname = localhost
