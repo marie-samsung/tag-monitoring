@@ -98,7 +98,7 @@ Dashboard | Tag Monitoring System
     </div>
 
     <!-- Charts Section: Row 2 -->
-    <div class="row g-4">
+    <div class="row g-4 mb-4">
         <!-- Bar Chart: Top Subsidiaries -->
         <div class="col-md-6">
             <div class="apple-card h-100">
@@ -115,6 +115,69 @@ Dashboard | Tag Monitoring System
                 <h5 class="card-title mb-3">Top 10 Vendors by Tag Count</h5>
                 <div style="position: relative; height: 300px; width: 100%;">
                     <canvas id="vendorDistributionChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section: Row 3 -->
+    <div class="row g-4 mb-4">
+        <!-- Line Chart: Tag Expiration Forecast (Next 45 Days) -->
+        <div class="col-lg-8">
+            <div class="apple-card h-100">
+                <h5 class="card-title mb-1">Tag Expiration Forecast (Next 45 Days)</h5>
+                <p class="text-secondary small mb-3">Expected tag deactivation/renewal timeline</p>
+                <div style="position: relative; height: 300px; width: 100%;">
+                    <canvas id="expirationForecastChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Doughnut Chart: Tag Requests Status Distribution -->
+        <div class="col-lg-4">
+            <div class="apple-card h-100">
+                <h5 class="card-title mb-3">Tag Requests Pipeline</h5>
+                <div style="position: relative; height: 260px; width: 100%;">
+                    <canvas id="requestStatusChart"></canvas>
+                </div>
+                <div class="text-center mt-3 text-secondary small">
+                    Total Requests: <strong><?= $total_requests ?></strong> requests
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section: Row 4 (Activity Logs Analytics) -->
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="apple-card">
+                <h5 class="card-title mb-1">Activity Logs Analytics</h5>
+                <p class="text-secondary small mb-4">Breakdown of support tickets, tasks, and system activities</p>
+                
+                <div class="row g-4">
+                    <!-- Doughnut Chart: Activity Logs by Status -->
+                    <div class="col-md-4">
+                        <h6 class="text-center mb-3">Activities by Status</h6>
+                        <div style="position: relative; height: 240px; width: 100%;">
+                            <canvas id="activityStatusChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Bar Chart: Activity Logs by Priority -->
+                    <div class="col-md-4">
+                        <h6 class="text-center mb-3">Activities by Priority</h6>
+                        <div style="position: relative; height: 240px; width: 100%;">
+                            <canvas id="activityPriorityChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Bar Chart: Activity Logs by Project -->
+                    <div class="col-md-4">
+                        <h6 class="text-center mb-3">Activities by Project</h6>
+                        <div style="position: relative; height: 240px; width: 100%;">
+                            <canvas id="activityProjectChart"></canvas>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -349,6 +412,220 @@ document.addEventListener('DOMContentLoaded', function () {
                     grid: { color: 'rgba(0, 0, 0, 0.04)' }
                 },
                 y: { grid: { display: false } }
+            }
+        }
+    });
+
+    // --- 5. Line Chart: Tag Expiration Forecast ---
+    const forecastCtx = document.getElementById('expirationForecastChart').getContext('2d');
+    new Chart(forecastCtx, {
+        type: 'line',
+        data: {
+            labels: <?= json_encode($forecast_labels) ?>,
+            datasets: [{
+                label: 'Tags Expiring',
+                data: <?= json_encode($forecast_data) ?>,
+                borderColor: '#FF453A',
+                backgroundColor: 'rgba(255, 69, 58, 0.05)',
+                borderWidth: 2,
+                tension: 0.35,
+                fill: true,
+                pointBackgroundColor: '#FF453A',
+                pointHoverRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    padding: 12,
+                    cornerRadius: 8,
+                    backgroundColor: 'rgba(29, 29, 31, 0.95)',
+                    titleFont: { size: 13, weight: '600' },
+                    bodyFont: { size: 12 }
+                }
+            },
+            scales: {
+                x: {
+                    grid: { display: false }
+                },
+                y: {
+                    beginAtZero: true,
+                    ticks: { stepSize: 1 },
+                    grid: { color: 'rgba(0, 0, 0, 0.04)' }
+                }
+            }
+        }
+    });
+
+    // --- 6. Doughnut Chart: Tag Requests Pipeline ---
+    const requestStatusCtx = document.getElementById('requestStatusChart').getContext('2d');
+    const requestStatusData = <?= json_encode($request_status_distribution) ?>;
+    new Chart(requestStatusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: Object.keys(requestStatusData),
+            datasets: [{
+                data: Object.values(requestStatusData),
+                backgroundColor: [
+                    '#0071E3', // HQ Review
+                    '#FF9F0A', // On-Hold Req
+                    '#BF5AF2', // New Rule Request Submitted
+                    '#30D158', // Approved
+                    '#FF453A', // Rejected
+                    '#64D2FF'  // Published
+                ],
+                borderWidth: 2,
+                borderColor: '#ffffff',
+                hoverOffset: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: {
+                        boxWidth: 10,
+                        padding: 10,
+                        font: { size: 10, weight: '500' }
+                    }
+                },
+                tooltip: {
+                    padding: 12,
+                    cornerRadius: 8,
+                    backgroundColor: 'rgba(29, 29, 31, 0.95)'
+                }
+            },
+            cutout: '65%'
+        }
+    });
+
+    // --- 7. Doughnut Chart: Activity Logs by Status ---
+    const activityStatusCtx = document.getElementById('activityStatusChart').getContext('2d');
+    const activityStatusData = <?= json_encode($activity_status_distribution) ?>;
+    new Chart(activityStatusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: Object.keys(activityStatusData),
+            datasets: [{
+                data: Object.values(activityStatusData),
+                backgroundColor: [
+                    '#8E8E93', // Not yet started
+                    '#FF9F0A', // In Progress - Investigation
+                    '#0071E3', // In Progress - Implementation
+                    '#BF5AF2', // Testing - QA
+                    '#64D2FF', // Pending Review
+                    '#30D158', // Completed
+                    '#FF453A'  // Blocked/On Hold
+                ],
+                borderWidth: 2,
+                borderColor: '#ffffff',
+                hoverOffset: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        boxWidth: 8,
+                        padding: 8,
+                        font: { size: 9, weight: '500' }
+                    }
+                },
+                tooltip: {
+                    padding: 12,
+                    cornerRadius: 8,
+                    backgroundColor: 'rgba(29, 29, 31, 0.95)'
+                }
+            },
+            cutout: '65%'
+        }
+    });
+
+    // --- 8. Bar Chart: Activity Logs by Priority ---
+    const activityPriorityCtx = document.getElementById('activityPriorityChart').getContext('2d');
+    const activityPriorityData = <?= json_encode($activity_priority_distribution) ?>;
+    new Chart(activityPriorityCtx, {
+        type: 'bar',
+        data: {
+            labels: Object.keys(activityPriorityData),
+            datasets: [{
+                label: 'Tickets',
+                data: Object.values(activityPriorityData),
+                backgroundColor: [
+                    '#30D158', // Low
+                    '#64D2FF', // Medium
+                    '#FF9F0A', // High
+                    '#FF453A', // Critical
+                    '#BF5AF2'  // Blocker
+                ],
+                borderRadius: 6,
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    padding: 12,
+                    cornerRadius: 8,
+                    backgroundColor: 'rgba(29, 29, 31, 0.95)'
+                }
+            },
+            scales: {
+                x: { grid: { display: false } },
+                y: {
+                    beginAtZero: true,
+                    ticks: { stepSize: 2 },
+                    grid: { color: 'rgba(0, 0, 0, 0.04)' }
+                }
+            }
+        }
+    });
+
+    // --- 9. Bar Chart: Activity Logs by Project ---
+    const activityProjectCtx = document.getElementById('activityProjectChart').getContext('2d');
+    const activityProjectData = <?= json_encode($activity_project_distribution) ?>;
+    new Chart(activityProjectCtx, {
+        type: 'bar',
+        data: {
+            labels: Object.keys(activityProjectData),
+            datasets: [{
+                label: 'Tickets',
+                data: Object.values(activityProjectData),
+                backgroundColor: 'rgba(0, 113, 227, 0.8)',
+                hoverBackgroundColor: '#0071E3',
+                borderRadius: 6,
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    padding: 12,
+                    cornerRadius: 8,
+                    backgroundColor: 'rgba(29, 29, 31, 0.95)'
+                }
+            },
+            scales: {
+                x: { grid: { display: false } },
+                y: {
+                    beginAtZero: true,
+                    ticks: { stepSize: 2 },
+                    grid: { color: 'rgba(0, 0, 0, 0.04)' }
+                }
             }
         }
     });

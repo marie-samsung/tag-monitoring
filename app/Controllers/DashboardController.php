@@ -211,6 +211,116 @@ class DashboardController extends BaseController
         }
         $data['vendor_distribution'] = $vendorDistribution;
 
+        // 6. Tag Expiration Forecast (Next 45 Days)
+        $forecastDates = [];
+        $forecastData = [];
+        for ($i = 0; $i < 45; $i++) {
+            $dateStr = date('Y-m-d', strtotime("+$i days"));
+            $forecastDates[] = date('d M', strtotime($dateStr));
+            $forecastData[$dateStr] = 0;
+        }
+
+        $forecastQuery = $db->table('tags')
+            ->select("al_end_date, COUNT(*) as count")
+            ->whereIn('status', [
+                Constants::STATUS_ENABLED,
+                Constants::STATUS_PENDING_VERIFICATION,
+                Constants::STATUS_UPDATED_IN_AL
+            ])
+            ->where('al_end_date >=', date('Y-m-d'))
+            ->where('al_end_date <=', date('Y-m-d', strtotime('+44 days')))
+            ->where('deleted_at', null)
+            ->groupBy('al_end_date')
+            ->get()
+            ->getResultArray();
+
+        foreach ($forecastQuery as $row) {
+            if (isset($forecastData[$row['al_end_date']])) {
+                $forecastData[$row['al_end_date']] = (int)$row['count'];
+            }
+        }
+
+        $data['forecast_labels'] = $forecastDates;
+        $data['forecast_data'] = array_values($forecastData);
+
+        // 7. Tag Requests Status Distribution
+        $requestStatusCounts = $db->table('tag_requests')
+            ->select('status, COUNT(*) as count')
+            ->where('deleted_at', null)
+            ->groupBy('status')
+            ->get()
+            ->getResultArray();
+
+        $requestStatusDistribution = [];
+        foreach (Constants::STATUS_REQUESTS as $val => $label) {
+            $requestStatusDistribution[$label] = 0;
+        }
+        foreach ($requestStatusCounts as $row) {
+            $label = Constants::STATUS_REQUESTS[$row['status']] ?? 'Unknown';
+            if (isset($requestStatusDistribution[$label])) {
+                $requestStatusDistribution[$label] += (int)$row['count'];
+            }
+        }
+        $data['request_status_distribution'] = $requestStatusDistribution;
+
+        // 8. Activity Logs Analytics (by Status, Priority, Project)
+        $activityStatusCounts = $db->table('activity_logs')
+            ->select('status, COUNT(*) as count')
+            ->where('deleted_at', null)
+            ->groupBy('status')
+            ->get()
+            ->getResultArray();
+
+        $activityStatusDistribution = [];
+        foreach (Constants::ACTIVITY_LOGS_STATUS as $val => $label) {
+            $activityStatusDistribution[$label] = 0;
+        }
+        foreach ($activityStatusCounts as $row) {
+            $label = Constants::ACTIVITY_LOGS_STATUS[$row['status']] ?? 'Unknown';
+            if (isset($activityStatusDistribution[$label])) {
+                $activityStatusDistribution[$label] += (int)$row['count'];
+            }
+        }
+        $data['activity_status_distribution'] = $activityStatusDistribution;
+
+        $activityPriorityCounts = $db->table('activity_logs')
+            ->select('priority, COUNT(*) as count')
+            ->where('deleted_at', null)
+            ->groupBy('priority')
+            ->get()
+            ->getResultArray();
+
+        $activityPriorityDistribution = [];
+        foreach (Constants::PRIORITIES as $val => $label) {
+            $activityPriorityDistribution[$label] = 0;
+        }
+        foreach ($activityPriorityCounts as $row) {
+            $label = Constants::PRIORITIES[$row['priority']] ?? 'Unknown';
+            if (isset($activityPriorityDistribution[$label])) {
+                $activityPriorityDistribution[$label] += (int)$row['count'];
+            }
+        }
+        $data['activity_priority_distribution'] = $activityPriorityDistribution;
+
+        $activityProjectCounts = $db->table('activity_logs')
+            ->select('project_id, COUNT(*) as count')
+            ->where('deleted_at', null)
+            ->groupBy('project_id')
+            ->get()
+            ->getResultArray();
+
+        $activityProjectDistribution = [];
+        foreach (Constants::PROJECTS as $val => $label) {
+            $activityProjectDistribution[$label] = 0;
+        }
+        foreach ($activityProjectCounts as $row) {
+            $label = Constants::PROJECTS[$row['project_id']] ?? 'Unknown';
+            if (isset($activityProjectDistribution[$label])) {
+                $activityProjectDistribution[$label] += (int)$row['count'];
+            }
+        }
+        $data['activity_project_distribution'] = $activityProjectDistribution;
+
         return view('dashboard/index', $data);
     }
 }
