@@ -138,18 +138,40 @@ document.addEventListener('DOMContentLoaded', function () {
             labels: <?= json_encode($chart_labels) ?>,
             datasets: [
                 {
-                    label: 'New Tags Created',
+                    label: 'New Requests',
                     data: <?= json_encode($chart_tags) ?>,
-                    borderColor: '#2E7D32',
-                    backgroundColor: 'rgba(46, 125, 50, 0.05)',
+                    borderColor: '#FD7E14',
+                    backgroundColor: 'rgba(253, 126, 20, 0.05)',
                     borderWidth: 2,
                     tension: 0.35,
                     fill: true,
-                    pointBackgroundColor: '#2E7D32',
+                    pointBackgroundColor: '#FD7E14',
                     pointHoverRadius: 6
                 },
                 {
-                    label: 'Tag Requests Submitted',
+                    label: 'New Implementations',
+                    data: <?= json_encode($chart_new_rules) ?>,
+                    borderColor: '#DC3545',
+                    backgroundColor: 'rgba(220, 53, 69, 0.05)',
+                    borderWidth: 2,
+                    tension: 0.35,
+                    fill: true,
+                    pointBackgroundColor: '#DC3545',
+                    pointHoverRadius: 6
+                },
+                {
+                    label: 'Pending Requests',
+                    data: <?= json_encode($chart_pending) ?>,
+                    borderColor: '#00C2FF',
+                    backgroundColor: 'rgba(0, 194, 255, 0.05)',
+                    borderWidth: 2,
+                    tension: 0.35,
+                    fill: true,
+                    pointBackgroundColor: '#00C2FF',
+                    pointHoverRadius: 6
+                },
+                {
+                    label: 'Date Extensions',
                     data: <?= json_encode($chart_requests) ?>,
                     borderColor: '#0071E3',
                     backgroundColor: 'rgba(0, 113, 227, 0.05)',
@@ -169,18 +191,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     fill: true,
                     pointBackgroundColor: '#A855F7',
                     pointHoverRadius: 6
-                },
-                {
-                    label: 'New Rules',
-                    data: <?= json_encode($chart_new_rules) ?>,
-                    borderColor: '#FD7E14',
-                    backgroundColor: 'rgba(253, 126, 20, 0.05)',
-                    borderWidth: 2,
-                    tension: 0.35,
-                    fill: true,
-                    pointBackgroundColor: '#FD7E14',
-                    pointHoverRadius: 6
                 }
+                
             ]
         },
         options: {

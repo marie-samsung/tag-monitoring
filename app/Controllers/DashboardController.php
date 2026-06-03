@@ -62,11 +62,29 @@ class DashboardController extends BaseController
             ->get()
             ->getResultArray();
 
-        $requestsQuery = $db->table('tag_requests')
-            ->select("DATE(created_at) as date, COUNT(*) as count")
+        $pendingQuery = $db->table('tag_requests')
+            ->select("DATE(created_at) as date, SUM(LENGTH(tags) - LENGTH(REPLACE(tags, ',', '')) + 1) as count", false)
+            ->where('new_tag_ticket IS NOT NULL')
+            ->where('new_tag_ticket !=', '')
+            ->groupStart()
+                ->where('new_rule_ticket', null)
+                ->orWhere('new_rule_ticket', '')
+            ->groupEnd()
+            ->where('tags !=', '')
             ->where('created_at >=', $thirtyDaysAgo)
             ->where('deleted_at', null)
             ->groupBy("DATE(created_at)")
+            ->orderBy("date", "ASC")
+            ->get()
+            ->getResultArray();
+
+        $requestsQuery = $db->table('jira_history')
+            ->select("DATE(jira_history.created_at) as date, COUNT(tags.status) as count", false)
+            ->join('tags', 'tags.id = jira_history.tag_id', 'inner')
+            ->where('jira_history.type', \App\Models\Constants::JIRA_TYPE_DATE_EXTENSION_RULE)
+            ->where('jira_history.created_at >=', $thirtyDaysAgo)
+            ->where('tags.deleted_at', null)
+            ->groupBy("DATE(jira_history.created_at)")
             ->orderBy("date", "ASC")
             ->get()
             ->getResultArray();
@@ -86,6 +104,7 @@ class DashboardController extends BaseController
         $requestsData = [];
         $activitiesData = [];
         $newRulesData = [];
+        $pendingData = [];
 
         for ($i = 29; $i >= 0; $i--) {
             $dateStr = date('Y-m-d', strtotime("-$i days"));
@@ -94,6 +113,7 @@ class DashboardController extends BaseController
             $requestsData[$dateStr] = 0;
             $activitiesData[$dateStr] = 0;
             $newRulesData[$dateStr] = 0;
+            $pendingData[$dateStr] = 0;
         }
 
         foreach ($tagsQuery as $row) {
@@ -111,6 +131,11 @@ class DashboardController extends BaseController
                 $newRulesData[$row['date']] = (int)$row['count'];
             }
         }
+        foreach ($pendingQuery as $row) {
+            if (isset($pendingData[$row['date']])) {
+                $pendingData[$row['date']] = (int)$row['count'];
+            }
+        }
         foreach ($activitiesQuery as $row) {
             if (isset($activitiesData[$row['date']])) {
                 $activitiesData[$row['date']] = (int)$row['count'];
@@ -122,6 +147,7 @@ class DashboardController extends BaseController
         $data['chart_requests'] = array_values($requestsData);
         $data['chart_activities'] = array_values($activitiesData);
         $data['chart_new_rules'] = array_values($newRulesData);
+        $data['chart_pending'] = array_values($pendingData);
 
         // 3. Tag Status Distribution
         $statusCounts = $db->table('tags')
