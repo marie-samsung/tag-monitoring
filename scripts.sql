@@ -96,3 +96,14 @@ CREATE TABLE `tag_monitoring`.`activity_logs` (
     `campaign_id` VARCHAR(200) NULL DEFAULT NULL ,
     PRIMARY KEY (`id`)) ENGINE = InnoDB;
 
+CREATE TABLE `tag_monitoring`.`renewal_justification` (
+    `id` INT NOT NULL AUTO_INCREMENT , 
+    `tag_id` INT NOT NULL , 
+    `renew` CHAR(4) NULL DEFAULT NULL , 
+    `justification` VARCHAR(150) NULL DEFAULT NULL , 
+    `duration` VARCHAR(150) NULL DEFAULT NULL , 
+    `created_by` TINYINT NOT NULL DEFAULT '0' , 
+    `created_at` DATETIME NOT NULL , 
+    `updated_by` INT NOT NULL DEFAULT '0' , 
+    `updated_at` DATETIME NOT NULL , 
+    PRIMARY KEY (`id`)) ENGINE = InnoDB;

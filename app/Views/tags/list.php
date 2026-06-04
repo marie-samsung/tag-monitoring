@@ -132,6 +132,7 @@ Martech TMS
             <a href="<?= site_url('tags/renew') ?>" title="Date Extension" class="apple-btn-primary btn-sm ms-auto px-3" id="btnRenew" style="display:none;">Date Extension</a>
             <a href="<?= site_url('tags/update-rule-request') ?>" title="Create update rule request" class="apple-btn-primary btn-sm ms-auto px-3" id="btnUpdateRule" style="display:none;">Create Update Rule Request</a>
             <a href="<?= site_url('tags/create') ?>" title="Add Tag Information" class="apple-btn-primary btn-sm ms-auto px-3">Add Tag Information</a>
+            <a href="<?= site_url('tags/upload-renewal-justifications') ?>" title="Update Renewal Justifications" class="apple-btn-primary btn-sm ms-auto px-3" style="background-color: #dc3545; border-color: #dc3545;">Update Renewal Justifications</a>
             <a href="<?= site_url('tags/export?' . http_build_query($_GET)) ?>" class="apple-btn-secondary btn-sm ms-auto px-3">Export as CSV</a>
         </div>
     </div>

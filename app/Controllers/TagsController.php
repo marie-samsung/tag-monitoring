@@ -25,7 +25,7 @@ class TagsController extends BaseController
         if ($status === 'all') {
             $status = null; // null triggers filterTags to ignore status and fetch everything
         } elseif ($status == Constants::STATUS_DEFAULT || empty($status)) {
-            $status = [1,4,5]; // Default to show Enabled, Pending Verification, and Updated in AL
+            $status = [1, 4, 5]; // Default to show Enabled, Pending Verification, and Updated in AL
         }
 
         if ($status == Constants::STATUS_ALL) {
@@ -65,7 +65,7 @@ class TagsController extends BaseController
         $reqOrg = $post['requester_organization'] ?? null;
         $organizationId = null;
 
-        $propertyId = (int)$post['property_id'];
+        $propertyId = (int) $post['property_id'];
         $name = trim($post['name']);
 
         preg_match('/\((.*?)\)/', $name, $matches);
@@ -108,10 +108,10 @@ class TagsController extends BaseController
         $insertTagData = [
             'property_id' => $propertyId,
             'vendor_id' => $vendorId,
-            'name'       => $name,
+            'name' => $name,
             'conditions' => $post['conditions'],
             'status' => $post['status'],
-            'al_end_date'   => $post['al_end_date'],
+            'al_end_date' => $post['al_end_date'],
             'ref_link' => $post['ref_link'],
             'requester_name' => $reqName,
             'requester_email' => $reqEmail,
@@ -173,13 +173,13 @@ class TagsController extends BaseController
         }
 
         $updateData = [
-            'property_id' => (int)$post['property_id'],
-            'vendor_id' => (int)$vendorId,
-            'name'        => $name,
-            'conditions'  => $post['conditions'],
-            'status'      => $post['status'],
+            'property_id' => (int) $post['property_id'],
+            'vendor_id' => (int) $vendorId,
+            'name' => $name,
+            'conditions' => $post['conditions'],
+            'status' => $post['status'],
             'al_end_date' => $post['al_end_date'],
-            'ref_link'    => $post['ref_link'],
+            'ref_link' => $post['ref_link'],
             'requester_name' => $post['requester_name'],
             'requester_email' => $post['requester_email'],
             'requester_organization' => $post['requester_organization'],
@@ -210,9 +210,12 @@ class TagsController extends BaseController
         $data['tags'] = [];
         $data['ticket_id'] = $ticket_id;
 
+        $justificationModel = new \App\Models\RenewalJustificationModel();
+
         foreach ($tag_ids as $id) {
             $tag = $model->find($id);
             if ($tag) {
+                $tag['justification'] = $justificationModel->where('tag_id', $id)->orderBy('id', 'DESC')->first();
                 $data['tags'][] = $tag;
             }
         }
@@ -238,7 +241,7 @@ class TagsController extends BaseController
         $model = new TagsModel();
         foreach ($tags as $tag) {
             $updated = $model->update(
-                $tag['id'], 
+                $tag['id'],
                 [
                     'requested_date' => date('Y-m-d', strtotime($tag['next_end_date'])),
                     'status' => Constants::STATUS_PENDING_VERIFICATION,
@@ -394,19 +397,21 @@ class TagsController extends BaseController
             $subsidiaryId = $propertiesModel->find($propertyId)['subsidiary_id'] ?? 0;
 
             $jiraHistoryModel = new JiraHistoryModel();
-            if (!$jiraHistoryModel->insert([
-                'tag_id' => $tagId,
-                'property_id' => $propertyId,
-                'subsidiary_id' => $subsidiaryId,
-                'ticket_id' => $ticketId,
-                'type' => $isRenewal ? Constants::JIRA_TYPE_DATE_EXTENSION_RULE : Constants::JIRA_TYPE_UPDATE_RULE,
-                'comments' => implode(',', $tagIds),
-            ])) {
+            if (
+                !$jiraHistoryModel->insert([
+                    'tag_id' => $tagId,
+                    'property_id' => $propertyId,
+                    'subsidiary_id' => $subsidiaryId,
+                    'ticket_id' => $ticketId,
+                    'type' => $isRenewal ? Constants::JIRA_TYPE_DATE_EXTENSION_RULE : Constants::JIRA_TYPE_UPDATE_RULE,
+                    'comments' => implode(',', $tagIds),
+                ])
+            ) {
                 var_dump("Failed to save JIRA history for tag ID: {$tagId}");
             }
         }
     }
- 
+
     public function saveRenewalLogs($propertyIds, $tagIds, $info)
     {
         $log = new RenewalLogsModel();
@@ -444,7 +449,7 @@ class TagsController extends BaseController
         }
 
         $activityLogModel->insert([
-            'title' => $title . ' [' . $info['ticket_id'] .']',
+            'title' => $title . ' [' . $info['ticket_id'] . ']',
             'description' => $description . '</ul>',
             'subsidiary_id' => $property['subsidiary_id'],
             'project_id' => Constants::PROJECT_MEDIA_TAGGING,
@@ -461,10 +466,25 @@ class TagsController extends BaseController
     {
         helper('custom_functions');
         $filters = $this->request->getGet();
+
+        $status = $this->request->getGet('status');
+
+        if ($status === 'all') {
+            $status = null; // null triggers filterTags to ignore status and fetch everything
+        } elseif ($status == Constants::STATUS_DEFAULT || empty($status)) {
+            $status = [1, 4, 5]; // Default to show Enabled, Pending Verification, and Updated in AL
+        }
+
+        if ($status == Constants::STATUS_ALL) {
+            $status = null;
+        }
+
+        $filters['status'] = $status;
+
         $tagsModel = new TagsModel();
         $tags = $tagsModel->filterTags($filters);
 
-        $filename = 'Tag_Inventory_' . date('Ymd') . '.csv';
+        $filename = 'TagsExport_' . date('Ymd') . '.csv';
 
         $csv = fopen('php://output', 'w');
 
@@ -506,5 +526,81 @@ class TagsController extends BaseController
 
         fclose($csv);
         exit;
+    }
+
+    public function uploadRenewalJustifications()
+    {
+        return view('tags/upload_renewal_justifications');
+    }
+
+    public function parseRenewalJustifications()
+    {
+        $file = $this->request->getFile('excel_file');
+
+        if (!$file || !$file->isValid() || $file->getExtension() !== 'xlsx') {
+            return redirect()->back()->with('error', 'Please upload a valid .xlsx file.');
+        }
+
+        require_once APPPATH . 'Libraries/SimpleXLSX.php';
+
+        $xlsx = \Shuchkin\SimpleXLSX::parse($file->getTempName());
+        
+        if (!$xlsx) {
+            return redirect()->back()->with('error', 'Failed to parse Excel file: ' . \Shuchkin\SimpleXLSX::parseError());
+        }
+
+        $rows = $xlsx->rows();
+        
+        $tagsModel = new TagsModel();
+        $propertiesModel = new PropertiesModel();
+        $renewalJustificationModel = new \App\Models\RenewalJustificationModel();
+        $userId = session()->get('user_id') ?? 0;
+        
+        $isFirstRow = true;
+        $savedCount = 0;
+
+        foreach ($rows as $row) {
+            if ($isFirstRow) {
+                // Check if it's the header row
+                $firstCol = trim($row[0] ?? '');
+                if (stripos($firstCol, 'Property Name') !== false) {
+                    $isFirstRow = false;
+                    continue;
+                }
+                $isFirstRow = false;
+            }
+
+            // Ensure we have at least 5 columns
+            if (count($row) >= 5) {
+                $propertyName = trim((string)($row[0] ?? ''));
+                $tagName = trim((string)($row[1] ?? ''));
+                $renew = trim((string)($row[2] ?? ''));
+                $justification = trim((string)($row[3] ?? ''));
+                $duration = trim((string)($row[4] ?? ''));
+
+                if (!empty($propertyName) && !empty($tagName)) {
+                    $property = $propertiesModel->where('name', $propertyName)->first();
+                    if ($property) {
+                        $tag = $tagsModel->where('property_id', $property['id'])
+                                         ->where('name', $tagName)
+                                         ->first();
+                        
+                        if ($tag) {
+                            $renewalJustificationModel->insert([
+                                'tag_id' => $tag['id'],
+                                'renew' => $renew,
+                                'justification' => $justification,
+                                'duration' => $duration,
+                                'created_by' => $userId,
+                                'updated_by' => $userId
+                            ]);
+                            $savedCount++;
+                        }
+                    }
+                }
+            }
+        }
+
+        return redirect()->to('/tags')->with('success', "{$savedCount} renewal justifications have been successfully processed and saved.");
     }
 }

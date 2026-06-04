@@ -100,12 +100,16 @@ Renewal: <?= esc($ticket_id) ?>
             </thead>
             <tbody>';
     foreach ($tags as $tag) {
+        $renewVal = !empty($tag['justification']['renew']) ? esc($tag['justification']['renew']) : 'Y';
+        $justificationVal = !empty($tag['justification']['justification']) ? esc($tag['justification']['justification']) : '';
+        $durationVal = !empty($tag['justification']['duration']) ? esc($tag['justification']['duration']) : '';
+        
         $detailsHtml .= '
                 <tr>
                     <td>' . esc($tag['name']) . '</td>
-                    <td>Y</td>
-                    <td></td>
-                    <td></td>
+                    <td>' . $renewVal . '</td>
+                    <td>' . $justificationVal . '</td>
+                    <td>' . $durationVal . '</td>
                 </tr>';
     }
     $detailsHtml .= '
