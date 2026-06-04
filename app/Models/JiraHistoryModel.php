@@ -56,33 +56,36 @@ class JiraHistoryModel extends Model
             ->first();
     }
 
-    public function filterJiraTickets($filters = [])
+    public function filterJiraTickets($filters = [], $paginate = 0)
     {
-        $builder = $this->builder()->select();
+        $this->select();
 
         if (!empty($filters['keyword'])) {
-            $builder->like('ticket_id', '%' . $filters['keyword'] . '%');
+            $this->like('ticket_id', $filters['keyword']);
         }
 
         if (!empty($filters['ticket_type'])) {
-            $builder->where('type', $filters['ticket_type']);
+            $this->where('type', $filters['ticket_type']);
         }
 
         if (!empty($filters['property_id'])) {
-            $builder->where('property_id', $filters['property_id']);
+            $this->where('property_id', $filters['property_id']);
         }
 
         if (!empty($filters['subsidiary_id'])) {
-            $builder->where('subsidiary_id', $filters['subsidiary_id']);
+            $this->where('subsidiary_id', $filters['subsidiary_id']);
         }
 
         // Use a subquery to fetch the latest entry per ticket_id without triggering ONLY_FULL_GROUP_BY
-        $builder->where('id IN (SELECT MAX(id) FROM jira_history GROUP BY ticket_id)', null, false);
+        $this->where('id IN (SELECT MAX(id) FROM jira_history GROUP BY ticket_id)', null, false);
         
-        $builder->orderBy('created_at', 'DESC');
+        $this->orderBy('created_at', 'DESC');
 
+        if ($paginate > 0) {
+            return $this->paginate($paginate);
+        }
 
-        return $builder->get()->getResultArray();
+        return $this->findAll();
     }
 
     protected $beforeInsert = ['setCreatedBy'];

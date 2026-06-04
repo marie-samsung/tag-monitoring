@@ -214,6 +214,11 @@ use App\Models\TagsModel;
             </tbody>
         </table>
         </div>
+        <?php if (isset($pager) && $pager->getPageCount() > 1): ?>
+            <div class="mt-4 d-flex justify-content-center">
+                <?= $pager->links('default', 'apple_full') ?>
+            </div>
+        <?php endif; ?>
     </div>
     <!-- #endregion -->
 </div>

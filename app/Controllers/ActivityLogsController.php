@@ -30,7 +30,8 @@ class ActivityLogsController extends BaseController
             'status' => $this->request->getGet('status'),
             'assignee' => $isAdmin ? null : $assigneeFilter,
         ];
-        $data['logs'] = $model->filterLogs($filters);
+        $data['logs'] = $model->filterLogs($filters, 25);
+        $data['pager'] = $model->pager;
         $data['filters'] = $filters;
         return view('activity-logs/list', $data);
     }

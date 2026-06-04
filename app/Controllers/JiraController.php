@@ -21,7 +21,8 @@ class JiraController extends BaseController
             'subsidiary_id' => $this->request->getGet('subsidiary_id'),
         ];
 
-        $data['jiraTickets'] = $jiraHistoryModel->filterJiraTickets($filters);
+        $data['jiraTickets'] = $jiraHistoryModel->filterJiraTickets($filters, 25);
+        $data['pager'] = $jiraHistoryModel->pager;
         $data['filters'] = $filters;
 
         return view('jira/list', $data);

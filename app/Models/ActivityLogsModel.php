@@ -32,45 +32,50 @@ class ActivityLogsModel extends Model
     protected $useTimestamps = true;
     protected $useSoftDeletes = true;
 
-    public function filterLogs($filters = [])
+    public function filterLogs($filters = [], $paginate = 0)
     {
-        $builder = $this->builder();
-
         if (!empty($filters['keyword'])) {
-            $builder->like('title', $filters['keyword']);
-            $builder->orLike('description', $filters['keyword']);
-            $builder->orLike('ticket_id', $filters['keyword']);
+            $this->groupStart()
+                 ->like('title', $filters['keyword'])
+                 ->orLike('description', $filters['keyword'])
+                 ->orLike('ticket_id', $filters['keyword'])
+                 ->groupEnd();
         }
 
         if (!empty($filters['subsidiary_id'])) {
-            $builder->where('subsidiary_id', $filters['subsidiary_id']);
+            $this->where('subsidiary_id', $filters['subsidiary_id']);
         }
 
         if (!empty($filters['project_id'])) {
-            $builder->where('project_id', $filters['project_id']);
+            $this->where('project_id', $filters['project_id']);
         }
 
         if (!empty($filters['type'])) {
-            $builder->where('type', $filters['type']);
+            $this->where('type', $filters['type']);
         }
 
         if (!empty($filters['priority'])) {
-            $builder->where('priority', $filters['priority']);
+            $this->where('priority', $filters['priority']);
         }
 
         if (!empty($filters['assignee'])) {
-            $builder->where('assignee', $filters['assignee']);
+            $this->where('assignee', $filters['assignee']);
         }
 
         if (!empty($filters['status'])) {
-            $builder->where('status', $filters['status']);
+            $this->where('status', $filters['status']);
         }
 
-        $builder->orderBy('status', 'ASC');
-        $builder->orderBy('priority', 'DESC');
-        $builder->orderBy('size', 'DESC');
-        $builder->orderBy('created_at', 'DESC');
-        return $builder->get()->getResultArray();
+        $this->orderBy('status', 'ASC');
+        $this->orderBy('priority', 'DESC');
+        $this->orderBy('size', 'DESC');
+        $this->orderBy('created_at', 'DESC');
+
+        if ($paginate > 0) {
+            return $this->paginate($paginate);
+        }
+
+        return $this->findAll();
     }
 
     protected $beforeInsert = ['setCreatedBy'];
