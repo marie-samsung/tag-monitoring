@@ -13,6 +13,96 @@ Tag Monitoring System
 .selected-row td {
     background-color: rgba(0, 113, 227, 0.05) !important;
 }
+.floating-action-bar {
+    position: fixed;
+    bottom: -80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(29, 29, 31, 0.92);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 40px;
+    padding: 10px 24px;
+    z-index: 1050;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+    transition: bottom 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+    opacity: 0;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+.floating-action-bar.show {
+    bottom: 30px;
+    opacity: 1;
+}
+.floating-action-info {
+    color: #ffffff;
+    font-size: 0.95rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+.floating-action-info .count-badge {
+    background: #0071e3;
+    color: #ffffff;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+.floating-action-divider {
+    width: 1px;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.2);
+}
+.floating-btn-renew {
+    background: #0071e3;
+    color: #ffffff;
+    border: none;
+    border-radius: 30px;
+    padding: 8px 18px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none !important;
+    transition: background-color 0.2s, transform 0.2s;
+}
+.floating-btn-renew:hover {
+    background: #147ce5;
+    color: #ffffff;
+    transform: scale(1.02);
+}
+.floating-btn-renew:active {
+    transform: scale(0.98);
+}
+.floating-btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 30px;
+    padding: 8px 18px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none !important;
+    transition: background-color 0.2s, border-color 0.2s, transform 0.2s;
+}
+.floating-btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+    transform: scale(1.02);
+}
+.floating-btn-secondary:active {
+    transform: scale(0.98);
+}
 </style>
 
 <?php
@@ -268,6 +358,23 @@ Tag Monitoring System
     <!-- #endregion -->
 </div>
 
+<!-- Floating Action Bar -->
+<div id="floatingActionBar" class="floating-action-bar">
+    <div class="floating-action-info">
+        <span id="floatingSelectedCount" class="count-badge">0</span>
+        <span>tags selected</span>
+    </div>
+    <div class="floating-action-divider"></div>
+    <a href="#" id="floatingBtnRenew" class="floating-btn-renew" title="Extend Expiry Date">
+        <i class="bi bi-calendar-check-fill"></i>
+        <span>Extend Expiry</span>
+    </a>
+    <a href="#" id="floatingBtnUpdateRule" class="floating-btn-secondary" title="Create Update Rule Request">
+        <i class="bi bi-pencil-square"></i>
+        <span>Update Rule</span>
+    </a>
+</div>
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     $('.searchable-select').select2({
@@ -295,12 +402,25 @@ document.addEventListener('DOMContentLoaded', function () {
         const checkedCount = table.querySelectorAll('input[name="tag_ids[]"]:checked').length;
         const anyChecked = checkedCount > 0;
         
-        btnRenew.style.display = anyChecked ? 'inline-block' : 'none';
-        btnUpdateRule.style.display = anyChecked ? 'inline-block' : 'none';
+        if (btnRenew) btnRenew.style.display = anyChecked ? 'inline-block' : 'none';
+        if (btnUpdateRule) btnUpdateRule.style.display = anyChecked ? 'inline-block' : 'none';
         
         if (selectedCountBadge) {
             selectedCountBadge.textContent = `${checkedCount} selected`;
             selectedCountBadge.style.display = anyChecked ? 'inline-block' : 'none';
+        }
+
+        const floatingActionBar = document.getElementById('floatingActionBar');
+        const floatingSelectedCount = document.getElementById('floatingSelectedCount');
+        if (floatingActionBar) {
+            if (anyChecked) {
+                if (floatingSelectedCount) {
+                    floatingSelectedCount.textContent = checkedCount;
+                }
+                floatingActionBar.classList.add('show');
+            } else {
+                floatingActionBar.classList.remove('show');
+            }
         }
 
         // Highlight selected rows
@@ -383,29 +503,31 @@ document.addEventListener('DOMContentLoaded', function () {
     toggleButton();
     updateSelectAllState();
 
-    btnRenew.addEventListener('click', function (e) {
-        e.preventDefault();
-
+    const handleRenew = (e) => {
+        if (e) e.preventDefault();
         const checked = [...document.querySelectorAll('input[name="tag_ids[]"]:checked')]
             .map(cb => cb.value);
-
         if (checked.length === 0) return;
-
         const url = "<?= site_url('tags/renew') ?>?tags=" + checked.join(',');
         window.location.href = url;
-    });
+    };
 
-    btnUpdateRule.addEventListener('click', function (e) {
-        e.preventDefault();
-
+    const handleUpdateRule = (e) => {
+        if (e) e.preventDefault();
         const checked = [...document.querySelectorAll('input[name="tag_ids[]"]:checked')]
             .map(cb => cb.value);
-
         if (checked.length === 0) return;
-
         const url = "<?= site_url('tags/update-rule-request') ?>?tags=" + checked.join(',');
         window.location.href = url;
-    });
+    };
+
+    if (btnRenew) btnRenew.addEventListener('click', handleRenew);
+    if (btnUpdateRule) btnUpdateRule.addEventListener('click', handleUpdateRule);
+
+    const floatingBtnRenew = document.getElementById('floatingBtnRenew');
+    const floatingBtnUpdateRule = document.getElementById('floatingBtnUpdateRule');
+    if (floatingBtnRenew) floatingBtnRenew.addEventListener('click', handleRenew);
+    if (floatingBtnUpdateRule) floatingBtnUpdateRule.addEventListener('click', handleUpdateRule);
 
     window.copyTagName = function(text, el) {
         const temp = document.createElement('textarea');
