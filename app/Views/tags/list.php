@@ -443,6 +443,13 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    // Prevent text selection when shift-clicking the table rows
+    table.addEventListener('mousedown', function (e) {
+        if (e.shiftKey) {
+            e.preventDefault();
+        }
+    });
+
     let lastChecked = null;
 
     table.addEventListener('click', function (e) {
@@ -465,6 +472,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 
                 // If shift key is held and we have a lastChecked checkbox
                 if (e.shiftKey && lastChecked && lastChecked !== cb) {
+                    // Clear any text selection that may have occurred
+                    window.getSelection().removeAllRanges();
+                    
                     const checkboxes = Array.from(table.querySelectorAll('input[name="tag_ids[]"]'));
                     const start = checkboxes.indexOf(cb);
                     const end = checkboxes.indexOf(lastChecked);
