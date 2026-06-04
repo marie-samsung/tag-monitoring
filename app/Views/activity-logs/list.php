@@ -14,6 +14,7 @@ Activity Logs
 <?php
     use App\Models\Constants;
     helper('custom_functions');
+    $isAdmin = (session()->get('user_role') === Constants::USER_ROLE_ADMIN);
 ?>
 
 <?= csrf_field() ?>
@@ -64,6 +65,7 @@ Activity Logs
                 </select>
             </div>
 
+            <?php if (!$isAdmin): ?>
             <div class="col">
                 <select name="assignee" class="form-select form-select-xs">
                     <option value="">All Assignee</option>
@@ -75,6 +77,7 @@ Activity Logs
                     <?php endforeach; ?>
                 </select>
             </div>
+            <?php endif; ?>
 
             <div class="col">
                 <select name="status" class="form-select form-select-xs">
@@ -133,7 +136,9 @@ Activity Logs
                 <th class="form-label-sm fw-semibold">Subsidiary</th>
                 <th class="form-label-sm fw-semibold">Project</th>
                 <th class="form-label-sm fw-semibold">Title</th>
+                <?php if (!$isAdmin): ?>
                 <th class="form-label-sm fw-semibold">Assignee</th>
+                <?php endif; ?>
                 <th class="form-label-sm fw-semibold">Status</th>
                 <th class="form-label-sm fw-semibold">Priority</th>
                 <th class="form-label-sm fw-semibold">Type</th>
@@ -167,11 +172,13 @@ Activity Logs
                         </span>
                     </td>
                     <td><?= $log['title'] ?></td>
+                    <?php if (!$isAdmin): ?>
                     <td>
                         <span class="badge <?= assignee_class($log['assignee']) ?>">
                             <?= $assignee ?>
                         </span>
                     </td>
+                    <?php endif; ?>
                     <td>
                         <span class="badge <?= status_activity_logs_class($log['status']) ?>">
                             <?= Constants::ACTIVITY_LOGS_STATUS[$log['status']] ?? 'Unknown' ?>

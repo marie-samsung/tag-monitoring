@@ -222,6 +222,46 @@ class Constants
         self::USER_OTHER => 'Other',
     ];
 
+    public const USER_ROLE_MEDIA_TAGGING = 1;
+    public const USER_ROLE_MARTECH = 2;
+    public const USER_ROLE_ADMIN = 3;
+    public const USER_ROLES = [
+        self::USER_ROLE_MEDIA_TAGGING => 'Media Tagging',
+        self::USER_ROLE_MARTECH => 'Martech',
+        self::USER_ROLE_ADMIN => 'Admin',
+    ];
+
+    public const USER_ACCESS_LEVELS = [
+        self::USER_MARIE => self::USER_ROLE_MEDIA_TAGGING,
+        self::USER_LUCKY => self::USER_ROLE_MEDIA_TAGGING,
+        self::USER_GEORGE => self::USER_ROLE_MEDIA_TAGGING,
+        self::USER_KHRISTINE => self::USER_ROLE_MARTECH,
+        self::USER_JANITHA => self::USER_ROLE_MARTECH,
+        self::USER_OTHER => self::USER_ROLE_ADMIN,
+    ];
+
+    public const USER_ROLES_ACCESS = [
+        self::USER_ROLE_MEDIA_TAGGING => [
+            'dashboard' => true,
+            'tags' => true,
+            'tag-requests' => true,
+            'properties' => true,
+            'vendors' => true,
+            'jira' => true,
+            'activity-logs' => true,
+        ],
+        self::USER_ROLE_MARTECH => [
+            'dashboard' => true,
+            'activity-logs' => true,
+        ],
+        self::USER_ROLE_ADMIN => [
+            'dashboard' => true,
+            'tags' => true,
+            'jira' => true,
+            'activity-logs' => true,
+        ],
+    ];
+
     public const STATUS_TO_DO = 1;
     public const STATUS_INVESTIGATION = 2;
     public const STATUS_IMPLEMENTATION = 3;

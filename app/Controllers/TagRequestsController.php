@@ -73,7 +73,7 @@ class TagRequestsController extends BaseController
         $reqEmail = $post['requester_email'] ?? null;
         $reqOrg = $post['requester_organization'] ?? null;
         $jiraType = $post['type'];
-        $endDate = date('Y-m-d', strtotime('+60 days'));
+        $endDate = date('Y-m-d', strtotime('+61 days'));
         
         $background = $post['background'] ?? null;
         $q1 = $post['q1'] ?? null;
@@ -510,13 +510,18 @@ class TagRequestsController extends BaseController
 
         $rows = $xlsx->rows();
 
+        $propertiesModel = new PropertiesModel();
+        $properties = $propertiesModel->select('id, website')->findAll();
+
         $extractedData = [
+            'property_id' => '',
             'vendor_name' => '',
             'validity' => '',
             'target_properties' => '',
             'target_pages' => '',
             'events' => '',
-            'requestor' => '',
+            'requester_name' => '',
+            'requester_email' => '',
             'tag_script' => '',
             'background' => '',
             'q1' => '',
@@ -542,8 +547,10 @@ class TagRequestsController extends BaseController
                 $extractedData['target_pages'] = $value;
             } elseif (strpos($key, 'Events need to be captured') !== false) {
                 $extractedData['events'] = $value;
-            } elseif (strpos($key, 'Requestor') !== false) {
-                $extractedData['requestor'] = $value;
+            } elseif (strpos($key, 'Requestor Name') !== false || strpos($key, 'Requester Name') !== false) {
+                $extractedData['requester_name'] = $value;
+            } elseif (strpos($key, 'Requestor Email') !== false || strpos($key, 'Requester Email') !== false) {
+                $extractedData['requester_email'] = $value;
             } elseif (strpos($key, 'Tag') !== false) {
                 $extractedData['tag_script'] = $value;
             } elseif (strpos($key, 'Background') !== false) {
@@ -558,6 +565,55 @@ class TagRequestsController extends BaseController
                 $extractedData['q4'] = $value;
             } elseif (strpos($key, 'What is your internal process for reviewing and validating these KPIs every two months?') !== false) {
                 $extractedData['q5'] = $value;
+            }
+        }
+
+        $hasData = false;
+        foreach ($extractedData as $field => $val) {
+            if ($field === 'property_id') continue;
+            if (trim((string) $val) !== '') {
+                $hasData = true;
+                break;
+            }
+        }
+
+        if (!$hasData) {
+            return redirect()->back()->with('error', 'The uploaded Excel file does not contain any valid tag request data.');
+        }
+
+        // Try to match property_id by finding which property website is first listed in target_properties
+        if (!empty($extractedData['target_properties'])) {
+            $urls = preg_split('/[\s,;]+/', $extractedData['target_properties']);
+            $urls = array_filter(array_map('trim', $urls));
+            
+            $normalizeUrl = function ($url) {
+                $url = trim($url);
+                $url = preg_replace('#^https?://(www\.)?#', '', $url);
+                return rtrim($url, '/');
+            };
+
+            foreach ($urls as $url) {
+                $normalizedUrl = $normalizeUrl($url);
+                $bestMatchLen = 0;
+                $bestMatchId = null;
+
+                foreach ($properties as $property) {
+                    if (empty($property['website'])) continue;
+                    $normalizedPropWebsite = $normalizeUrl($property['website']);
+                    
+                    if (strpos($normalizedUrl, $normalizedPropWebsite) === 0) {
+                        $len = strlen($normalizedPropWebsite);
+                        if ($len > $bestMatchLen) {
+                            $bestMatchId = $property['id'];
+                            $bestMatchLen = $len;
+                        }
+                    }
+                }
+                
+                if ($bestMatchId) {
+                    $extractedData['property_id'] = $bestMatchId;
+                    break;
+                }
             }
         }
 

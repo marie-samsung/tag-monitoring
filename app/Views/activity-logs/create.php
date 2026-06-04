@@ -12,6 +12,7 @@ Activity Log: Create
 
 <?php
     use App\Models\Constants;
+    $isAdmin = (session()->get('user_role') === Constants::USER_ROLE_ADMIN);
 ?>
 
 <?php if (session()->getFlashdata('error')): ?>
@@ -25,7 +26,7 @@ Activity Log: Create
     <div class="container mb-5">
         <div class="card p-3 mt-3">
             <div class="row mb-2">
-                <div class="col">
+                <div class="<?= $isAdmin ? 'col' : 'col-10' ?>">
                     <label for="title" class="form-label-xs text-primary">Title</label>
                     <input type="text" name="title" id="title"
                         class="form-control"
@@ -33,6 +34,7 @@ Activity Log: Create
                         required>
                 </div>
 
+                <?php if (!$isAdmin): ?>
                 <div class="col-2">
                     <label class="form-label-xs text-primary">Assignee</label>
                     <select name="assignee" class="form-select" required>
@@ -45,6 +47,7 @@ Activity Log: Create
                         <?php endforeach; ?>
                     </select>
                 </div>
+                <?php endif; ?>
             </div>
 
             <div class="row mb-2">

@@ -38,157 +38,85 @@
     );
 ?>
 
-<?php if ($ticket_id): ?>
-    <h6 class="text-danger container"><b><?= esc($ticket_id) ?></b></h6>
-    <?= $this->section('title') ?>
-    Renewal: <?= esc($ticket_id) ?>
-    <?= $this->endSection() ?>
-<?php else: ?>
-    <?= $this->section('title') ?>
-    Tag: Renew
-    <?= $this->endSection() ?>
-<?php endif; ?>
+<h6 class="text-danger container"><b><span id="ticket-id-header"><?= esc($ticket_id) ?></span></b></h6>
+<?= $this->section('title') ?>
+Renewal: <?= esc($ticket_id) ?>
+<?= $this->endSection() ?>
 
 <h4 class="container">Renew Tags</h4>
 <hr/>
 
-<!-- #region | PART 1 - TICKET ID -->
-<?php
-    if ($ticket_id == null): 
-        $tag_ids = implode(',', array_column($tags, 'id'));
-        $count = 0;
-?>
-
-<form action="<?= site_url('tags/renew') ?>" method="get">
-    <div class="container">
-        <div class="table-responsive mt-3">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-                <h4 class="text-primary d-flex align-items-center gap-2">
-                    <span id="jiraTitle"><?= esc($jiraTitle) ?></span>
-                    <a href="javascript:void(0)" onclick="copyJiraTitle()">
-                        <i class="bi bi-copy text-primary fs-5"></i>
-                    </a>
-                    <span id="copyStatus" style="opacity:0; transition: opacity .6s; font-size:10px; color:green;">
-                        Copied!
-                    </span>
-                </h4>
-            </div>
-
-            <table class="table table-hover align-middle apple-table">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>ID</th>
-                        <th>Property</th>
-                        <th>Name</th>
-                        <th>Current End Date</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($tags as $tag):
-                            $count++; ?>
-                        <tr>
-                            <td class="fw-semibold"><?= $count ?></td>
-                            <td><?= esc($tag['id']) ?></td>
-                            <td><?= esc($properties[$tag['property_id']]['name'] ?? 'Unknown') ?></td>
-                            <td><?= esc($tag['name']) ?></td>
-                            <td><?= esc(date('d-m-Y', strtotime($tag['al_end_date']))) ?></td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
-        <div class="d-flex justify-content-between gap-2">
-            <div class="d-flex gap-2 align-items-start align-items-center">
-                <div>
-                    <input type="hidden" name="tags" value="<?= $tag_ids ?>">
-                    <input type="text" name="ticket_id" id="ticket_id"
-                        class="form-control"
-                        value="<?= old('ticket_id', $old['ticket_id'] ?? '') ?>"
-                        required>
-                </div>
-                <a href="<?= Constants::JIRA_CREATE_ISSUE ?>" title="Create Issue in JIRA" class="apple-btn-secondary btn-sm" target="_blank">
-                    Create JIRA Ticket
-                </a>
-            </div>
-            <div>
-                <a href="<?= site_url('tags') ?>" title="Cancel" class="apple-btn-secondary btn-sm">Cancel</a>
-                <button type="submit" class="apple-btn-primary btn-sm">Proceed</button>
-            </div>
-        </div>
-
-        <small class="form-label-xs text-muted">
-            JIRA ticket ID, GTA-XXXXX
-        </small>
-    </div>
-</form>
-<!-- #endregion | PART 1 -->
-
-<!-- #region | PART 2 - RENEWAL CONFIRMATION -->
 <?php 
-    else:
-        $count = 0;
-        $today = date('dmY');
-        $libraryName = $ticket_id . '_' . $today;
+    $count = 0;
+    $today = date('dmY');
+    $libraryName = $ticket_id . '_' . $today;
 
-        if ($tags) {
-            $expDate = date('d-m-Y', strtotime($tags[0]['al_end_date'] ?? ''));
-            $nextExpDate = date('d-m-Y', strtotime('+61 days', strtotime($expDate)));
-        } else {
-            return false;
-        }
+    if ($tags) {
+        $expDate = date('d-m-Y', strtotime($tags[0]['al_end_date'] ?? ''));
+        $nextExpDate = date('d-m-Y', strtotime('+61 days', strtotime($expDate)));
+    } else {
+        return false;
+    }
 
-        $detailsHtml = '';
-        // Target Property
+    $detailsHtml = '';
+    // Target Property
+    $detailsHtml .= '
+        <b>1) Target Property</b>
+        <ul>';
+    foreach ($propertyIds as $property) {
+        $propIsShop = $propertiesModel->isShop($property);
+        $detailsHtml .= '<li>' . $propIsShop . ' : ' . esc($properties[$property]['name'] ?? 'Unknown') . '</li>';
+    }
+    $detailsHtml .= '
+            <li>Library name: <b><span id="library-name-display">' . esc($libraryName) . '</span></b></li>
+        </ul>';
+    // Target Pages
+    $detailsHtml .= '
+        <b>2) Target Page(s)</b>
+        <ul>';
+    foreach ($propertyIds as $property) {
+        $propIsShop = $propertiesModel->isShop($property);
+        $detailsHtml .= '<li>' . $propIsShop . ' : <a href="' . esc($properties[$property]['website'] ?? 'Unknown') . '" target="_blank">' . esc($properties[$property]['website'] ?? 'Unknown') . '</a></li>';
+    }
+    $detailsHtml .= '</ul>';
+    // Expiration Dates
+    $detailsHtml .= '
+        <b>3) Expiration Date</b>
+        <ul>
+            <li><b>as-is :</b> ' . esc($expDate) . '</li>
+            <li><b>to-be :</b> ' . esc($nextExpDate) . '</li>
+        </ul>';
+    // Purpose & Goal + Table
+    $detailsHtml .= '
+        <b>4) Purpose & Goal</b>
+        <table border="1" cellpadding="6" cellspacing="0" style="border-collapse: collapse; width: 100%;">
+            <thead>
+                <tr>
+                    <th>Tag Name</th>
+                    <th>Renew<br/>(Y/N)</th>
+                    <th>Renewal Justification</th>
+                    <th>Duration<br/>of Usage</th>
+                </tr>
+            </thead>
+            <tbody>';
+    foreach ($tags as $tag) {
         $detailsHtml .= '
-            <b>1) Target Property</b>
-            <ul>';
-        foreach ($propertyIds as $property) {
-            $detailsHtml .= '<li>' . $is_shop . ' : ' . esc($properties[$property]['name'] ?? 'Unknown') . '</li>';
-        }
-        $detailsHtml .= '
-                <li>Library name: <b>' . esc($libraryName) . '</b></li>
-            </ul>';
-        // Target Pages
-        $detailsHtml .= '
-            <b>2) Target Page(s)</b>
-            <ul>';
-        foreach ($propertyIds as $property) {
-            $detailsHtml .= '<li>' . $is_shop . ' : <a href="' . esc($properties[$property]['website'] ?? 'Unknown') . '" target="_blank">' . esc($properties[$property]['website'] ?? 'Unknown') . '</a></li>';
-        }
-        $detailsHtml .= '</ul>';
-        // Expiration Dates
-        $detailsHtml .= '
-            <b>3) Expiration Date</b>
-            <ul>
-                <li><b>as-is :</b> ' . esc($expDate) . '</li>
-                <li><b>to-be :</b> ' . esc($nextExpDate) . '</li>
-            </ul>';
-        // Purpose & Goal + Table
-        $detailsHtml .= '
-            <b>4) Purpose & Goal</b>
-            <table border="1" cellpadding="6" cellspacing="0" style="border-collapse: collapse; width: 100%;">
-                <thead>
-                    <tr>
-                        <th>Tag Name</th>
-                        <th>Renew<br/>(Y/N)</th>
-                        <th>Renewal Justification</th>
-                        <th>Duration<br/>of Usage</th>
-                    </tr>
-                </thead>
-                <tbody>';
-        foreach ($tags as $tag) {
-            $detailsHtml .= '
-                    <tr>
-                        <td>' . esc($tag['name']) . '</td>
-                        <td>Y</td>
-                        <td></td>
-                        <td></td>
-                    </tr>';
-        }
-        $detailsHtml .= '
-                </tbody>
-            </table>';
+                <tr>
+                    <td>' . esc($tag['name']) . '</td>
+                    <td>Y</td>
+                    <td></td>
+                    <td></td>
+                </tr>';
+    }
+    $detailsHtml .= '
+            </tbody>
+        </table>';
+
+    $commentHtml = 'Hi <a href="' . Constants::JIRA_TAGGING_SUPPORT . '" target="_blank">TAGGING JIRA SUPPORT</a>,
+<br/>Kindly refer to the date extension approval confirmation here: 
+<a href="' . Constants::JIRA_LINK . $subsidiaryTicketId . '" target="_blank">' . Constants::JIRA_LINK . $subsidiaryTicketId . '</a>
+<br/><br/>Regards,
+<br/>' . $_SESSION['user_name'];
 ?>
 
 <form action="<?= site_url('tags/renew/confirm') ?>" method="post">
@@ -206,16 +134,31 @@
         </div>
 
         <textarea id="details"></textarea>
-        <div class="d-flex justify-content-end align-items-center mt-2 gap-2">
-            <span id="copyDetailsStatus" style="opacity:0; transition: opacity .6s; font-size:10px; color:green;">
-                Copied!
-            </span>
+        <div class="d-flex justify-content-between align-items-center mt-2 gap-2">
+            <div class="d-flex gap-2 align-items-start align-items-center">
+                <div>
+                    <input type="text" name="ticket_id" id="ticket_id"
+                        class="form-control"
+                        value="<?= old('ticket_id', $old['ticket_id'] ?? '') ?>"
+                        required>
+                </div>
+                <a href="<?= Constants::JIRA_CREATE_ISSUE ?>" title="Create Issue in JIRA" class="apple-btn-secondary btn-sm" target="_blank">
+                    Create JIRA Ticket
+                </a>
+            </div>
 
-            <a href="javascript:void(0)" onclick="copyDetails()">
-                <i class="bi bi-copy text-primary fs-5"></i>
-            </a>
+            <div>
+                <span id="copyDetailsStatus" style="opacity:0; transition: opacity .6s; font-size:10px; color:green;">
+                    Copied!
+                </span>
+                <a href="javascript:void(0)" onclick="copyDetails()">
+                    <i class="bi bi-copy text-primary fs-5"></i>
+                </a>
+            </div>
         </div>
-
+        <small class="form-label-xs text-muted">
+            JIRA ticket ID, GTA-XXXXX
+        </small>
         <hr/>
         <!-- #region | TAGS -->
         <h4 class="mt-3 text-primary">Tags List</h4>
@@ -275,16 +218,16 @@
                             <td><?= esc($nextExpDate) ?></td>
 
                             <input type="hidden" name="tags[<?= $tag['id'] ?>][id]" value="<?= $tag['id'] ?>">
-                            <input type="hidden" name="tags[<?= $tag['id'] ?>][library_name]" value="<?= $libraryName ?>">
+                            <input type="hidden" name="tags[<?= $tag['id'] ?>][library_name]" class="library-name-input" value="<?= $libraryName ?>">
                             <input type="hidden" name="tags[<?= $tag['id'] ?>][property_id]" value="<?= $tag['property_id'] ?>">
                             <input type="hidden" name="tags[<?= $tag['id'] ?>][vendor_id]" value="<?= $tag['vendor_id'] ?>">
                             <input type="hidden" name="tags[<?= $tag['id'] ?>][next_end_date]" value="<?= $nextExpDate ?>">
                         </tr>
                     <?php endforeach; ?>
 
-                    <input type="hidden" name="info[ticket_id]" value="<?= $ticket_id ?>">
+                    <input type="hidden" name="info[ticket_id]" id="info_ticket_id" value="<?= $ticket_id ?>">
                     <input type="hidden" name="info[al_end_date]" value="<?= $nextExpDate ?>">
-                    <input type="hidden" name="info[library_name]" value="<?= $libraryName ?>">
+                    <input type="hidden" name="info[library_name]" class="library-name-input" value="<?= $libraryName ?>">
                 </tbody>
             </table>
         </div>
@@ -292,12 +235,7 @@
 
         <div class="d-flex justify-content-between mb-5">
             <div class="d-flex gap-2 align-items-end">
-                <div id="comment" class="form-control" style="height: 140px; width: auto; overflow-y: auto;">
-Hi TAGGING JIRA SUPPORT,
-<br/>Kindly refer to the date extension approval confirmation here: <?= Constants::JIRA_LINK . $subsidiaryTicketId ?>
-<br/><br/>Regards,
-<br/>[Your Name]
-                </div>
+                <textarea id="comment"></textarea>
                 <div class="d-flex align-items-center gap-2">
                     <a href="javascript:void(0)" onclick="copyComment()">
                         <i class="bi bi-copy text-primary fs-5"></i>
@@ -318,9 +256,7 @@ Hi TAGGING JIRA SUPPORT,
         </div>
     </div>
 </form>
-<!-- #endregion | PART 2 -->
 
-<?php endif; ?>
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
@@ -342,6 +278,40 @@ Hi TAGGING JIRA SUPPORT,
 
         var detailsHtml = `<?= $detailsHtml ?? null ?>`;
         $('#details').summernote('code', detailsHtml);
+
+        $('#comment').summernote({
+            height: 150,
+            toolbar: [
+                ['style', ['bold', 'italic', 'underline', 'clear']],
+                ['view', ['fullscreen', 'codeview', 'help']]
+            ]
+        });
+
+        var commentHtml = `<?= $commentHtml ?? null ?>`;
+        $('#comment').summernote('code', commentHtml);
+
+        // Dynamic update of Ticket ID and Library Name in real-time
+        $('#ticket_id').on('input', function() {
+            var ticketId = $(this).val().trim();
+            var today = '<?= $today ?>';
+            var newLibraryName = ticketId + '_' + today;
+
+            // Update visible header
+            $('#ticket-id-header').text(ticketId);
+
+            // Update hidden form inputs
+            $('#info_ticket_id').val(ticketId);
+            $('.library-name-input').val(newLibraryName);
+
+            // Update Library Name inside Summernote RTE editor
+            var currentHtml = $('#details').summernote('code');
+            var $temp = $('<div>').html(currentHtml);
+            var $librarySpan = $temp.find('#library-name-display');
+            if ($librarySpan.length > 0) {
+                $librarySpan.text(newLibraryName);
+                $('#details').summernote('code', $temp.html());
+            }
+        });
     });
 
     $(document).on('click', '.save-btn', function() {

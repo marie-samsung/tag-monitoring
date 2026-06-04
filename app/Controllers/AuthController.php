@@ -110,13 +110,29 @@ class AuthController extends BaseController
                                ->first();
 
             if ($user && password_verify($password, $user['password'])) {
+                // Determine user role and permissions
+                $userId = (int)$user['id'];
+                $roleId = Constants::USER_ACCESS_LEVELS[$userId] ?? null;
+                if ($roleId === null) {
+                    if ((int)$user['account_type'] === 1) {
+                        $roleId = Constants::USER_ROLE_ADMIN;
+                    } else {
+                        $roleId = Constants::USER_ROLE_MEDIA_TAGGING;
+                    }
+                }
+                $roleName = Constants::USER_ROLES[$roleId] ?? 'Unknown';
+                $permissions = Constants::USER_ROLES_ACCESS[$roleId] ?? [];
+
                 // Set session variables
                 $sessionData = [
-                    'user_id'      => (int)$user['id'],
-                    'username'     => $user['username'],
-                    'user_name'    => $user['first_name'] . ' ' . $user['last_name'],
-                    'account_type' => (int)$user['account_type'],
-                    'isLoggedIn'   => true,
+                    'user_id'        => $userId,
+                    'username'       => $user['username'],
+                    'user_name'      => $user['first_name'] . ' ' . $user['last_name'],
+                    'account_type'   => (int)$user['account_type'],
+                    'user_role'      => $roleId,
+                    'user_role_name' => $roleName,
+                    'permissions'    => $permissions,
+                    'isLoggedIn'     => true,
                 ];
                 session()->set($sessionData);
 

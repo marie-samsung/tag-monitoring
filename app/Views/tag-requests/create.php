@@ -40,7 +40,8 @@ Tag Request: Create
                 <li><strong>Target Property/Sites:</strong> <?= esc($extracted_data['target_properties']) ?></li>
                 <li><strong>Extracted Tag Script:</strong> <?= esc($extracted_data['tag_script']) ?></li>
                 <li><strong>Background:</strong> <?= esc($extracted_data['background']) ?></li>
-                <li><strong>Requestor:</strong> <?= esc($extracted_data['requestor']) ?></li>
+                <li><strong>Requestor Name:</strong> <?= esc($extracted_data['requester_name'] ?? '') ?></li>
+                <li><strong>Requestor Email:</strong> <?= esc($extracted_data['requester_email'] ?? '') ?></li>
                 <li><strong><?= Constants::PURPOSE_GOAL_NEW_TAG[0] ?></strong> <?= esc($extracted_data['q1']) ?></li>
                 <li><strong><?= Constants::PURPOSE_GOAL_NEW_TAG[1] ?></strong> <?= esc($extracted_data['q2']) ?></li>
                 <li><strong><?= Constants::PURPOSE_GOAL_NEW_TAG[2] ?></strong> <?= esc($extracted_data['q3']) ?></li>
@@ -68,7 +69,7 @@ Tag Request: Create
                         <select name="property_id" class="form-select searchable-select" required>
                             <?php foreach ($properties as $value => $label): ?>
                                 <option value="<?= esc($value) ?>"
-                                    <?= old('property_id', $requests['property_id'] ?? '') == $value ? 'selected' : '' ?>>
+                                    <?= old('property_id', $requests['property_id'] ?? ($extracted_data['property_id'] ?? '')) == $value ? 'selected' : '' ?>>
                                     <?= esc($label) ?>
                                 </option>
                             <?php endforeach; ?>
@@ -78,11 +79,6 @@ Tag Request: Create
                     <div class="col">
                         <label class="form-label-xs text-primary">Tag(s)</label>
                         <select name="tags[]" class="form-select advanced-select" multiple required>
-                            <?php if (!empty($extracted_data['vendor_name'])): ?>
-                                <option value="LC-XXX (<?= esc($extracted_data['vendor_name']) ?>)" selected>
-                                    LC-XXX (<?= esc($extracted_data['vendor_name']) ?>)
-                                </option>
-                            <?php endif; ?>
                         </select>
                         <small class="form-label-xs text-muted">
                             Tag names should start with LC-
@@ -129,14 +125,14 @@ Tag Request: Create
                         <label for="requester_name" class="form-label-xs text-primary">Name</label>
                         <input type="text" name="requester_name" id="requester_name"
                             class="form-control"
-                            value="<?= old('requester_name', $old['requester_name'] ?? ($extracted_data['requestor'] ?? '')) ?>">
+                            value="<?= old('requester_name', $old['requester_name'] ?? ($extracted_data['requester_name'] ?? '')) ?>">
                     </div>
 
                     <div class="col">
                         <label for="requester_email" class="form-label-xs text-primary">Email Address</label>
                         <input type="text" name="requester_email" id="requester_email"
                             class="form-control"
-                            value="<?= old('requester_email', $old['requester_email'] ?? '') ?>">
+                            value="<?= old('requester_email', $old['requester_email'] ?? ($extracted_data['requester_email'] ?? '')) ?>">
                     </div>
                 </div>
             </div>

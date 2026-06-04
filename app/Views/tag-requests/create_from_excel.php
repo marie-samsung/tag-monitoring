@@ -53,7 +53,7 @@ Tag Request: Create
                         <select name="property_id" class="form-select searchable-select" required>
                             <?php foreach ($properties as $value => $label): ?>
                                 <option value="<?= esc($value) ?>"
-                                    <?= old('property_id', $requests['property_id'] ?? '') == $value ? 'selected' : '' ?>>
+                                    <?= old('property_id', $requests['property_id'] ?? ($extracted_data['property_id'] ?? '')) == $value ? 'selected' : '' ?>>
                                     <?= esc($label) ?>
                                 </option>
                             <?php endforeach; ?>
@@ -63,11 +63,6 @@ Tag Request: Create
                     <div class="col">
                         <label class="form-label-xs text-primary">Tag(s)</label>
                         <select name="tags[]" class="form-select advanced-select" multiple required>
-                            <?php if (!empty($extracted_data['vendor_name'])): ?>
-                                <option value="LC-XXX (<?= esc($extracted_data['vendor_name']) ?>)" selected>
-                                    LC-XXX (<?= esc($extracted_data['vendor_name']) ?>)
-                                </option>
-                            <?php endif; ?>
                         </select>
                         <small class="form-label-xs text-muted">
                             Tag names should start with LC-
@@ -120,14 +115,14 @@ Tag Request: Create
                         <label for="requester_name" class="form-label-xs text-primary">Name</label>
                         <input type="text" name="requester_name" id="requester_name"
                             class="form-control"
-                            value="<?= old('requester_name', $old['requester_name'] ?? ($extracted_data['requestor'] ?? '')) ?>">
+                            value="<?= old('requester_name', $old['requester_name'] ?? ($extracted_data['requester_name'] ?? '')) ?>">
                     </div>
 
                     <div class="col">
                         <label for="requester_email" class="form-label-xs text-primary">Email Address</label>
                         <input type="text" name="requester_email" id="requester_email"
                             class="form-control"
-                            value="<?= old('requester_email', $old['requester_email'] ?? '') ?>">
+                            value="<?= old('requester_email', $old['requester_email'] ?? ($extracted_data['requester_email'] ?? '')) ?>">
                     </div>
                 </div>
             </div>

@@ -17,6 +17,7 @@
     $assignee = Constants::USERS[$log['assignee']] ?? Constants::USER_SYSTEM_LABEL;
     $size = Constants::ACTIVITY_SIZES[$log['size']] ?? 'Unknown';
     $priority = Constants::PRIORITIES[$log['priority']] ?? 'Unknown';
+    $isAdmin = (session()->get('user_role') === Constants::USER_ROLE_ADMIN);
 ?>
 
 <div class="container-fluid">
@@ -25,7 +26,9 @@
         <span class="badge" style="<?= random_bg_style($subsidiary) ?>" title="Subsidiary"><?= $subsidiary ?></span>
         <span class="badge" style="<?= random_bg_style($project) ?>" title="Project"><?= $project ?></span>
         <span class="badge" style="<?= random_bg_style($type) ?>" title="Activity Log Type"><?= $type ?></span>
+        <?php if (!$isAdmin): ?>
         <span class="badge <?= assignee_class($log['assignee']) ?>" title="Assigned To"><?= $assignee ?></span>
+        <?php endif; ?>
         <span class="badge <?= size_class($log['size']) ?>" title="Size"><?= $size ?></span>
         <span class="badge <?= priority_class($log['priority']) ?>" title="Priority"><?= $priority ?></span>
         <span class="badge <?= status_activity_logs_class($log['status']) ?>" title="Status"><?= $status ?></span>
@@ -130,6 +133,7 @@
     <!-- #endregion -->
 
     <!-- #region | COMMENTS & FILES -->
+    <?php if (!$isAdmin): ?>
     <div class="col">
         <div class="card p-4">
             <h4>Updates</h4>
@@ -168,19 +172,24 @@
                 </div>
                 <div class="d-flex gap-2 mt-2">
                     <input type="hidden" name="log_id" value="<?= $log['id'] ?>">
-                    <select name="commented_by" class="form-select" required>
-                        <?php foreach (Constants::USERS as $value => $label): ?>
-                            <option value="<?= esc($value) ?>"
-                                <?= $log['assignee'] == $value ? 'selected' : '' ?>>
-                                <?= esc($label) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
+                    <?php if ($isAdmin): ?>
+                        <input type="hidden" name="commented_by" value="<?= session()->get('user_id') ?>">
+                    <?php else: ?>
+                        <select name="commented_by" class="form-select" required>
+                            <?php foreach (Constants::USERS as $value => $label): ?>
+                                <option value="<?= esc($value) ?>"
+                                    <?= $log['assignee'] == $value ? 'selected' : '' ?>>
+                                    <?= esc($label) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    <?php endif; ?>
                     <button type="submit" class="btn btn-primary btn-sm">Post</button>
                 </div>
             </form>
         </div>
     </div>
+    <?php endif; ?>
 
     <div class="col">
         <div class="card p-4">
@@ -204,7 +213,7 @@
 
             <form action="<?= site_url('activity-logs/upload') ?>" method="post" enctype="multipart/form-data">
                 <input type="hidden" name="log_id" value="<?= esc($log['id']) ?>">
-                <input type="hidden" name="created_by" value="<?= esc($log['assignee']) ?>">
+                <input type="hidden" name="created_by" value="<?= $isAdmin ? session()->get('user_id') : esc($log['assignee']) ?>">
                 <div class="d-flex gap-3 justify-content-between align-items-center">
                     <div>
                         <label for="file_path" class="form-label-xs text-primary">Upload File</label>

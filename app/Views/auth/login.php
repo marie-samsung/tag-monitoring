@@ -77,7 +77,7 @@
 
         /* Logo & Header */
         .brand-logo {
-            font-size: 2.2rem;
+            font-size: 1.2rem;
             color: #ffffff;
             margin-bottom: 8px;
             text-align: center;

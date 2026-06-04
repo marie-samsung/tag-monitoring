@@ -13,13 +13,14 @@ class ActivityLogsController extends BaseController
     public function index()
     {
         $model = new ActivityLogsModel();
+        $isAdmin = (session()->get('user_role') === Constants::USER_ROLE_ADMIN);
         $filters = [
             'keyword' => $this->request->getGet('keyword'),
             'subsidiary_id' => $this->request->getGet('subsidiary_id'),
             'project_id' => $this->request->getGet('project_id'),
             'type' => $this->request->getGet('type'),
             'status' => $this->request->getGet('status'),
-            'assignee' => $this->request->getGet('assignee'),
+            'assignee' => $isAdmin ? null : $this->request->getGet('assignee'),
         ];
         $data['logs'] = $model->filterLogs($filters);
         $data['filters'] = $filters;
@@ -35,6 +36,8 @@ class ActivityLogsController extends BaseController
         }
 
         $post = $this->request->getPost();
+        $isAdmin = (session()->get('user_role') === Constants::USER_ROLE_ADMIN);
+        $assigneeId = $isAdmin ? Constants::USER_SYSTEM : (int)($post['assignee'] ?? Constants::USER_SYSTEM);
 
         $insertData = [
             'title'           => trim($post['title']),
@@ -44,7 +47,7 @@ class ActivityLogsController extends BaseController
             'project_id'      => (int)$post['project_id'],
             'type'            => (int)$post['type'] ?? null,
             'ticket_id'       => !empty($post['ticket_id']) ? $post['ticket_id'] : null,
-            'assignee'        => (int)$post['assignee'],
+            'assignee'        => $assigneeId,
             'requested_by'    => $post['requested_by'] ?? null,
             'status'          => (int)$post['status'],
             'size'            => (int)$post['size'] ?? null,
@@ -99,6 +102,8 @@ class ActivityLogsController extends BaseController
         }
 
         $post = $this->request->getPost();
+        $isAdmin = (session()->get('user_role') === Constants::USER_ROLE_ADMIN);
+        $assigneeId = $isAdmin ? (int)$log['assignee'] : (int)($post['assignee'] ?? $log['assignee']);
 
         // @NOTE: ACTIVITY LOGS AUTOMATIC UPDATE COMMENTS
         if ($log['status'] !== $post['status']) {
@@ -117,14 +122,14 @@ class ActivityLogsController extends BaseController
             }
         }
 
-        if ($log['assignee'] !== $post['assignee']) {
+        if (!$isAdmin && $log['assignee'] !== $assigneeId) {
             $from = $log['assignee'] == Constants::USER_SYSTEM
                 ? Constants::USER_SYSTEM_LABEL
                 : Constants::USERS[$log['assignee']];
 
-            $to = $post['assignee'] == Constants::USER_SYSTEM
+            $to = $assigneeId == Constants::USER_SYSTEM
                 ? Constants::USER_SYSTEM_LABEL
-                : Constants::USERS[$post['assignee']];
+                : Constants::USERS[$assigneeId];
 
             $commentsModel->insert([
                 'log_id' => $id,
@@ -154,7 +159,7 @@ class ActivityLogsController extends BaseController
             'project_id'      => (int)$post['project_id'],
             'type'            => (int)$post['type'] ?? null,
             'ticket_id'       => !empty($post['ticket_id']) ? $post['ticket_id'] : null,
-            'assignee'        => (int)$post['assignee'],
+            'assignee'        => $assigneeId,
             'requested_by'    => $post['requested_by'] ?? null,
             'status'          => (int)$post['status'],
             'size'            => (int)$post['size'] ?? null,
@@ -234,6 +239,10 @@ class ActivityLogsController extends BaseController
         helper('custom_functions');
         $logsModel = new ActivityLogsModel();
         $filters = $this->request->getGet();
+        $isAdmin = (session()->get('user_role') === Constants::USER_ROLE_ADMIN);
+        if ($isAdmin) {
+            $filters['assignee'] = null;
+        }
         $logs = $logsModel->filterLogs($filters);
 
         $subsidiary = (!empty($filters['subsidiary_id']))
@@ -244,7 +253,7 @@ class ActivityLogsController extends BaseController
             ? '(' . Constants::PROJECTS[$filters['project_id']] . ')'
             : null;
 
-        $assignee = (!empty($filters['assignee']))
+        $assignee = (!empty($filters['assignee']) && !$isAdmin)
             ? '(' . Constants::USERS[$filters['assignee']] . ')'
             : null;
 
@@ -256,12 +265,15 @@ class ActivityLogsController extends BaseController
         header('Content-Type: text/csv');
         header('Content-Disposition: attachment; filename="' . $filename . '"');
 
-        // CSV column headers
-        fputcsv($csv, [
+        $headers = [
             'Subsidiary',
             'Project Name',
             'Activity Log Type',
-            'Assigned To',
+        ];
+        if (!$isAdmin) {
+            $headers[] = 'Assigned To';
+        }
+        $headers = array_merge($headers, [
             'Title',
             'Description',
             'Status',
@@ -276,14 +288,20 @@ class ActivityLogsController extends BaseController
             'Created Date',
         ]);
 
+        // CSV column headers
+        fputcsv($csv, $headers);
+
         // Rows
         foreach ($logs as $log) {
-
-            fputcsv($csv, [
+            $row = [
                 Constants::ACTIVITY_LOG_SUBSIDIARIES[$log['subsidiary_id']] ?? 'N/A',
                 Constants::PROJECTS[$log['project_id']] ?? 'N/A',
                 Constants::ACTIVITY_TYPES[$log['type']] ?? 'N/A',
-                Constants::USERS[$log['assignee']] ?? 'N/A',
+            ];
+            if (!$isAdmin) {
+                $row[] = Constants::USERS[$log['assignee']] ?? 'N/A';
+            }
+            $row = array_merge($row, [
                 $log['title'],
                 esc($log['description']),
                 Constants::ACTIVITY_LOGS_STATUS[$log['status']] ?? 'Unknown',
@@ -297,6 +315,8 @@ class ActivityLogsController extends BaseController
                 '\'' . $log['finished_date'] ?? '-',
                 '\'' . $log['created_at'] ?? '-',
             ]);
+
+            fputcsv($csv, $row);
         }
 
         fclose($csv);

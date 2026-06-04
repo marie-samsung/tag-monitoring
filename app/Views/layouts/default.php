@@ -28,11 +28,11 @@
                         <?= esc(session()->getFlashdata('success')) ?>
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
-<!--                --><?php //elseif (session()->getFlashdata('error')) : ?>
-<!--                    <div class="container alert alert-danger alert-dismissible fade show mt-3" role="alert">-->
-<!--                        --><?php //= esc(session()->getFlashdata('error')) ?>
-<!--                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>-->
-<!--                    </div>-->
+                <?php elseif (session()->getFlashdata('error')) : ?>
+                    <div class="container alert alert-danger alert-dismissible fade show mt-3" role="alert">
+                        <?= esc(session()->getFlashdata('error')) ?>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
                 <?php endif; ?>
 
                 <?= $this->renderSection('content') ?>

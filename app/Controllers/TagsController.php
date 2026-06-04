@@ -358,7 +358,7 @@ class TagsController extends BaseController
                 $propertyId = $tag['property_id'];
             }
 
-            $this->saveJiraHistory($tag, $info['ticket_id'], $tagIds);
+            $this->saveJiraHistory($tag, $info['ticket_id'], $tagIds, false);
         }
 
         $this->addActivityLog($propertyId, $tagIds, $info, false);

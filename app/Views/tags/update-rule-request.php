@@ -21,198 +21,150 @@
 
     $propertyIds = array_unique(array_column($tags, 'property_id'));
     $vendorIds = array_unique(array_column($tags, 'vendor_id'));
-    $vendor = [];
-    foreach ($vendorIds as $vendorId) {
-        $vendor[] = $vendors[$vendorId];
-    }
 
-    if ($propertyIds) {
-        $siteCode = $propertiesModel->getSiteCode($propertyIds[0]);
-        $is_shop = $propertiesModel->isShop($propertyIds[0]);
-        $subsidiaryTicketId = $jiraHistoryModel->getLatestSubsidiary($properties[$propertyIds[0]]['subsidiary_id'])['ticket_id'] ?? null;
+    $today = date('dmY');
+    $libraryName = $ticket_id . '_' . $today;
+
+    $siteCodes = [];
+    foreach ($propertyIds as $pId) {
+        $siteCodes[] = $propertiesModel->getSiteCode($pId);
     }
+    $siteCode = implode(', ', array_unique($siteCodes));
+
+    $vendor = [];
+    $reasons = [];
+    $purposes = [];
+    foreach ($vendorIds as $vendorId) {
+        if (isset($vendors[$vendorId])) {
+            $vendor[] = $vendors[$vendorId];
+        }
+        $v = $vendorsModel->find($vendorId);
+        if ($v) {
+            if (!empty($v['reason'])) {
+                $reasons[] = $v['reason'];
+            }
+            if (!empty($v['tag_purpose'])) {
+                $purposes[] = $v['tag_purpose'];
+            }
+        }
+    }
+    $vendorName = implode(', ', array_unique($vendor));
+    $reason = !empty($reasons) ? implode('<br/>', array_unique($reasons)) : '-';
+    $purpose = !empty($purposes) ? implode('<br/>', array_unique($purposes)) : '-';
+
+    $expDates = [];
+    foreach ($tags as $tag) {
+        if (!empty($tag['al_end_date'])) {
+            $expDates[] = $tag['al_end_date'];
+        }
+    }
+    $expDateStr = !empty($expDates) ? implode(', ', array_unique($expDates)) : '-';
+
+    $ssGTM = Constants::JIRA_SSGTM_TICKET;
+
     $jiraTitle = sprintf(
         '[LC Request] [%s] - [%s] - [Update Rule]',
         $siteCode,
-        implode(', ', $vendor)
+        $vendorName
     );
+
+    $htmlTitle = ($ticket_id) ? "Update Rule" : "Tag: Update Rule Request";
 ?>
 
-<?php if ($ticket_id): ?>
-    <h6 class="text-danger container"><b><?= esc($ticket_id) ?></b></h6>
-    <?= $this->section('title') ?>
-    Update Rule: <?= esc($ticket_id) ?>
-    <?= $this->endSection() ?>
-<?php endif; ?>
-<h4 class="container">Update Rule Request</h4>
 <?= $this->section('title') ?>
-Tag: Update Rule Request
+<?= $htmlTitle ?>
 <?= $this->endSection() ?>
+
+    <h6 class="text-danger container"><b><span id="ticket-id-header"><?= esc($ticket_id) ?></span></b></h6>
+<h4 class="container"><?= $htmlTitle ?></h4>
 <hr/>
 
-<!-- #region | PART 1 - TICKET ID -->
 <?php
-    if ($ticket_id == null):
-        $tag_ids = implode(',', array_column($tags, 'id'));
-?>
+    $propertyListHtml = "";
+    $pagesListHtml = "";
+    foreach ($propertyIds as $pId) {
+        $pIsShop = $propertiesModel->isShop($pId);
+        $pName = $properties[$pId]['name'] ?? 'Unknown';
+        $pWebsite = $properties[$pId]['website'] ?? 'Unknown';
+        
+        $propertyListHtml .= "<li>" . $pIsShop . " : " . esc($pName) . "</li>";
+        $pagesListHtml .= "<li>" . $pIsShop . " : <a href='" . esc($pWebsite) . "' target='_blank'>" . esc($pWebsite) . "</a></li>";
+    }
 
-<form action="<?= site_url('tags/update-rule-request') ?>" method="get">
-    <div class="container">
-        <div class="table-responsive mt-3">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-                <h4 class="text-primary d-flex align-items-center gap-2">
-                    <span id="jiraTitle"><?= esc($jiraTitle) ?></span>
-                    <a href="javascript:void(0)" onclick="copyJiraTitle()">
-                        <i class="bi bi-copy text-primary fs-5"></i>
-                    </a>
-                    <span id="copyStatus" style="opacity:0; transition: opacity .6s; font-size:10px; color:green;">
-                        Copied!
-                    </span>
-                </h4>
-            </div>
+    $detailsHtml = "
+        <b style='color:#337ab7;'>1) Target Property :</b>
+        <ul>
+            " . $propertyListHtml . "
+            <li>Library Name : <span id='library-name-display'>". $libraryName ."</span></li>
+        </ul>
 
-            <table class="table table-hover table-bordered table-striped">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Property</th>
-                        <th>Name</th>
-                        <th>Current End Date</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($tags as $tag): ?>
-                        <tr>
-                            <td><?= esc($tag['id']) ?></td>
-                            <td><?= esc($properties[$tag['property_id']]['name'] ?? 'Unknown') ?></td>
-                            <td><?= esc($tag['name']) ?></td>
-                            <td><?= esc(date('d-m-Y', strtotime($tag['al_end_date']))) ?></td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
-        <div class="d-flex justify-content-between gap-2">
-            <div class="d-flex gap-2 align-items-start align-items-center">
-                <div>
-                    <input type="hidden" name="tags" value="<?= $tag_ids ?>">
-                    <input type="text" name="ticket_id" id="ticket_id"
-                        class="form-control"
-                        value="<?= old('ticket_id', $old['ticket_id'] ?? '') ?>"
-                        required>
-                </div>
-                <a href="<?= Constants::JIRA_CREATE_ISSUE ?>" title="Create Issue in JIRA" class="btn btn-outline-primary btn-sm" target="_blank">
-                    Create JIRA Ticket
-                </a>
-            </div>
-            <div>
-                <a href="<?= site_url('tags') ?>" title="Cancel" class="btn btn-danger btn-sm">Cancel</a>
-                <button type="submit" class="btn btn-primary btn-sm">Proceed</button>
-            </div>
-        </div>
+        <b style='color:#337ab7;'>2) Target Page(s) :</b>
+        <ul>
+            " . $pagesListHtml . "
+        </ul>
 
-        <small class="form-label-xs text-muted">
-            JIRA ticket ID, GTA-XXXXX
-        </small>
-    </div>
-</form>
-<!-- #endregion | PART 1 -->
+        <b style='color:#337ab7;'>2.2) Reason when the Target Page is for all :</b>
+        <p>". $reason ."</p>
 
-<!-- #region | PART 2 - UPDATE RULE CONFIRMATION -->
-<?php
-    else:
-        $propertyId = $tags[0]['property_id'];
-        $vendorId = $tags[0]['vendor_id'];
-        $today = date('dmY');
-        $libraryName = $ticket_id . '_' . $today;
-        $property = $propertiesModel->find($propertyId);
-        $vendor = $vendorsModel->find($vendorId);
-        $siteCode = $propertiesModel->getSiteCode($propertyId);
-        $isShop = $propertiesModel->isShop($propertyId);
-        $reason = $vendor['reason'] ?? '-';
-        $purpose = $vendor['tag_purpose'] ?? '-';
-        $today = date('dmY');
-        $ssGTM = Constants::JIRA_SSGTM_TICKET;
-        $jiraTitle = sprintf(
-                '[LC Request] [%s] - [%s] - [Update Rule]',
-                $siteCode,
-                $vendor['name']
-        );
+        <b style='color:#337ab7;'>3) Expiration Date (to-be) : </b>". $expDateStr ." <br/><br/>
 
-        $detailsHtml = "
-            <b style='color:#337ab7;'>1) Target Property :</b>
-            <ul>
-                <li>". $isShop ." : ". $property['name'] ."</li>
-                <li>Library Name : ". $libraryName ."</li>
-            </ul>
-    
-            <b style='color:#337ab7;'>2) Target Page(s) :</b>
-            <ul>
-                <li>". $isShop ." : <a href='". $property['website'] ."' target='_blank'>". $property['website'] ."</a></li>
-            </ul>
-    
-            <b style='color:#337ab7;'>2.2) Reason when the Target Page is for all :</b>
-            <p>". $reason ."</p>
-    
-            <b style='color:#337ab7;'>3) Expiration Date (to-be) : </b>". $tags[0]['al_end_date'] ." <br/><br/>
-    
-            <b style='color:#337ab7;'>4) Status (to-be) :</b>
-            <p><i>Insert Local Rule Monitoring File screenshots here...</i></p>
-            
-            <b style='color:#337ab7;'>5) Purpose & Goal :</b>
-            <p>". $purpose ."</p>
-            
-            <b style='color:#337ab7;'>6) ssGTM</b>
-            <p>
-                For ssGTM requests, please refer to this ticket: 
-                <a href='". $ssGTM ."' target='_blank'> ssGTM </a> 
-            </p>
-            
-            <b style='color:#337ab7;'>7) Required Attachment</b>
-            <p><b>① Test Result Screenshot image file(s)</b></p>
-            <p><i>Insert QA screenshots here...</i></p>
-            
-            <br/>
-            
-            <p><b>② Integration Result: Fill in the checklist below to make sure the new tags aren't affecting your site's operation.</b></p>
-            <table border='1' cellpadding='6' cellspacing='0' style='border-collapse:collapse; width:100%;'>
-                <tbody>";
+        <b style='color:#337ab7;'>4) Status (to-be) :</b>
+        <p><i>Insert Local Rule Monitoring File screenshots here...</i></p>
+        
+        <b style='color:#337ab7;'>5) Purpose & Goal :</b>
+        <p>". $purpose ."</p>
+        
+        <b style='color:#337ab7;'>6) ssGTM</b>
+        <p>
+            For ssGTM requests, please refer to this ticket: 
+            <a href='". $ssGTM ."' target='_blank'> ssGTM </a> 
+        </p>
+        
+        <b style='color:#337ab7;'>7) Required Attachment</b>
+        <p><b>① Test Result Screenshot image file(s)</b></p>
+        <p><i>Insert QA screenshots here...</i></p>
+        
+        <br/>
+        
+        <p><b>② Integration Result: Fill in the checklist below to make sure the new tags aren't affecting your site's operation.</b></p>
+        <table border='1' cellpadding='6' cellspacing='0' style='border-collapse:collapse; width:100%;'>
+            <tbody>";
 
-        foreach (Constants::INTEGRATION_RESULT_PAGE_LOAD as $question => $value) {
-            $detailsHtml .= "
-                    <tr>
-                        <td style='width:50%;'>". $question ."</td>
-                        <td>". $value ."</td>
-                    </tr>
-                ";
-        }
-
+    foreach (Constants::INTEGRATION_RESULT_PAGE_LOAD as $question => $value) {
         $detailsHtml .= "
-                </tbody>
-            </table>
-            
-            </br>
-            
-            <table border='1' cellpadding='6' cellspacing='0' style='border-collapse:collapse; width:100%;'>
-                <tbody>";
-
-        foreach (Constants::INTEGRATION_RESULT_EVENT_CLICK as $question => $value) {
-            $detailsHtml .= "
-                    <tr>
-                        <td style='width:50%;'>". $question ."</td>
-                        <td>". $value ."</td>
-                    </tr>
-                ";
-        }
-
-        $detailsHtml .= "
-                        </tbody>
-                    </table>
-                    
-                    </br>
-                    
-            <p><b>③ Local Rule Monitoring Excel file [Local Rule Monitoring Excel file_v1.0_Subsidiary_sitecode_YYMMDD_general.xlsx]</b></p>
+                <tr>
+                    <td style='width:50%;'>". $question ."</td>
+                    <td>". $value ."</td>
+                </tr>
             ";
+    }
+
+    $detailsHtml .= "
+            </tbody>
+        </table>
+        
+        </br>
+        
+        <table border='1' cellpadding='6' cellspacing='0' style='border-collapse:collapse; width:100%;'>
+            <tbody>";
+
+    foreach (Constants::INTEGRATION_RESULT_EVENT_CLICK as $question => $value) {
+        $detailsHtml .= "
+                <tr>
+                    <td style='width:50%;'>". $question ."</td>
+                    <td>". $value ."</td>
+                </tr>
+            ";
+    }
+
+    $detailsHtml .= "
+                    </tbody>
+                </table>
+                
+                </br>
+                
+        <p><b>③ Local Rule Monitoring Excel file [Local Rule Monitoring Excel file_v1.0_Subsidiary_sitecode_YYMMDD_general.xlsx]</b></p>
+        ";
 ?>
 
 <form action="<?= site_url('tags/update-rule/confirm') ?>" method="post">
@@ -230,15 +182,31 @@ Tag: Update Rule Request
         </div>
 
         <textarea id="details"></textarea>
-        <div class="d-flex justify-content-end align-items-center mt-2 gap-2">
-            <span id="copyDetailsStatus" style="opacity:0; transition: opacity .6s; font-size:10px; color:green;">
-                Copied!
-            </span>
+        <div class="d-flex justify-content-between align-items-center mt-2 gap-2">
+            <div class="d-flex gap-2 align-items-start align-items-center">
+                <div>
+                    <input type="text" name="ticket_id" id="ticket_id"
+                        class="form-control"
+                        value="<?= old('ticket_id', $old['ticket_id'] ?? '') ?>"
+                        required>
+                </div>
+                <a href="<?= Constants::JIRA_CREATE_ISSUE ?>" title="Create Issue in JIRA" class="btn btn-outline-primary btn-sm" target="_blank">
+                    Create JIRA Ticket
+                </a>
+            </div>
 
-            <a href="javascript:void(0)" onclick="copyDetails()">
-                <i class="bi bi-copy text-primary fs-5"></i>
-            </a>
+            <div>
+                <span id="copyDetailsStatus" style="opacity:0; transition: opacity .6s; font-size:10px; color:green;">
+                    Copied!
+                </span>
+                <a href="javascript:void(0)" onclick="copyDetails()">
+                    <i class="bi bi-copy text-primary fs-5"></i>
+                </a>
+            </div>
         </div>
+        <small class="form-label-xs text-muted">
+            JIRA ticket ID, GTA-XXXXX
+        </small>
 
         <hr/>
         <!-- #region | TAGS -->
@@ -268,14 +236,14 @@ Tag: Update Rule Request
                             </td>
 
                             <input type="hidden" name="tags[<?= $tag['id'] ?>][id]" value="<?= $tag['id'] ?>">
-                            <input type="hidden" name="tags[<?= $tag['id'] ?>][library_name]" value="<?= $libraryName ?>">
+                            <input type="hidden" name="tags[<?= $tag['id'] ?>][library_name]" class="library-name-input" value="<?= $libraryName ?>">
                             <input type="hidden" name="tags[<?= $tag['id'] ?>][property_id]" value="<?= $tag['property_id'] ?>">
                             <input type="hidden" name="tags[<?= $tag['id'] ?>][vendor_id]" value="<?= $tag['vendor_id'] ?>">
                         </tr>
                     <?php endforeach; ?>
 
-                    <input type="hidden" name="info[ticket_id]" value="<?= $ticket_id ?>">
-                    <input type="hidden" name="info[library_name]" value="<?= $libraryName ?>">
+                    <input type="hidden" name="info[ticket_id]" id="info_ticket_id" value="<?= $ticket_id ?>">
+                    <input type="hidden" name="info[library_name]" class="library-name-input" value="<?= $libraryName ?>">
                 </tbody>
             </table>
         </div>
@@ -291,9 +259,6 @@ Tag: Update Rule Request
         </div>
     </div>
 </form>
-<!-- #endregion | PART 2 -->
-
-<?php endif; ?>
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
@@ -315,6 +280,29 @@ Tag: Update Rule Request
 
         var detailsHtml = `<?= $detailsHtml ?? null ?>`;
         $('#details').summernote('code', detailsHtml);
+
+        // Dynamic update of Ticket ID and Library Name in real-time
+        $('#ticket_id').on('input', function() {
+            var ticketId = $(this).val().trim();
+            var today = '<?= $today ?>';
+            var newLibraryName = ticketId + '_' + today;
+
+            // Update visible header
+            $('#ticket-id-header').text(ticketId);
+
+            // Update hidden form inputs
+            $('#info_ticket_id').val(ticketId);
+            $('.library-name-input').val(newLibraryName);
+
+            // Update Library Name inside Summernote RTE editor
+            var currentHtml = $('#details').summernote('code');
+            var $temp = $('<div>').html(currentHtml);
+            var $librarySpan = $temp.find('#library-name-display');
+            if ($librarySpan.length > 0) {
+                $librarySpan.text(newLibraryName);
+                $('#details').summernote('code', $temp.html());
+            }
+        });
     });
 
     $(document).on('click', '.save-btn', function() {
@@ -334,18 +322,6 @@ Tag: Update Rule Request
             }
         }, 'json');
     });
-
-    // function copyJiraTitle() {
-    //     const text = document.getElementById('jiraTitle').innerText;
-    //     const status = document.getElementById('copyStatus');
-    //
-    //     navigator.clipboard.writeText(text).then(() => {
-    //         status.style.opacity = 1;
-    //         setTimeout(() => {
-    //             status.style.opacity = 0;
-    //         }, 1000);
-    //     });
-    // }
 
     function copyJiraTitle() {
         const title = document.getElementById('jiraTitle').innerHTML;
