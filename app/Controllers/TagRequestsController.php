@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\ActivityLogCommentsModel;
 use App\Models\ActivityLogsModel;
+use App\Models\ActivityLogFilesModel;
 use App\Models\Constants;
 use App\Models\JiraHistoryModel;
 use App\Models\OrganizationsModel;
@@ -72,6 +73,8 @@ class TagRequestsController extends BaseController
         $reqName = $post['requester_name'] ?? null;
         $reqEmail = $post['requester_email'] ?? null;
         $reqOrg = $post['requester_organization'] ?? null;
+        $excelFilePath = $post['excel_file_path'] ?? null;
+        $excelFileName = $post['excel_file_name'] ?? null;
         $jiraType = $post['type'];
         $endDate = date('Y-m-d', strtotime('+61 days'));
         
@@ -155,6 +158,25 @@ class TagRequestsController extends BaseController
             ];
 
             $requestId = $model->insert($data);
+
+            if ($excelFilePath && file_exists($excelFilePath)) {
+                $finalVendorName = $vendorName ?? 'Unknown';
+                $uploadPath = Constants::NEW_TAG_FILE_WRITE_PATH . $model->fileUploadPath($propertyId, $finalVendorName);
+                if (!is_dir($uploadPath)) {
+                    mkdir($uploadPath, 0777, true);
+                }
+                $finalFilePath = $uploadPath . '/' . $excelFileName;
+                if (rename($excelFilePath, $finalFilePath)) {
+                    $filesModel = new TagRequestFilesModel();
+                    $filesModel->insert([
+                        'file_name' => $excelFileName,
+                        'file_path' => $finalFilePath,
+                        'type' => Constants::ATTACHMENT_REQUEST_FORM,
+                        'request_id' => $requestId,
+                        'created_by' => session()->get('user_id') ?? 0,
+                    ]);
+                }
+            }
 
             return view('tag-requests/create', [
                 'tag_ids' => $tagIds,
@@ -473,7 +495,7 @@ class TagRequestsController extends BaseController
             $description .= '<li>' . $tagInfo['name'] . '</li>';
         }
 
-        $activityLogModel->insert([
+        $activityLogId = $activityLogModel->insert([
             'title' => $title . $vendor['name'],
             'description' => $description . '</ul></ol>',
             'subsidiary_id' => $property['subsidiary_id'],
@@ -486,6 +508,25 @@ class TagRequestsController extends BaseController
             'priority' => Constants::PRIORITY_MEDIUM,
             'created_by' => session()->get('user_id') ?? 0,
         ]);
+
+        if ($activityLogId) {
+            $filesModel = new TagRequestFilesModel();
+            $relatedFiles = $filesModel->where('request_id', $request['id'])
+                                       ->where('type', Constants::ATTACHMENT_REQUEST_FORM)
+                                       ->findAll();
+
+            if (!empty($relatedFiles)) {
+                $activityLogFilesModel = new ActivityLogFilesModel();
+                foreach ($relatedFiles as $file) {
+                    $activityLogFilesModel->insert([
+                        'file_name' => $file['file_name'],
+                        'file_path' => $file['file_path'],
+                        'log_id' => $activityLogId,
+                        'created_by' => session()->get('user_id') ?? 0,
+                    ]);
+                }
+            }
+        }
     }
 
     public function uploadExcel()
@@ -511,12 +552,28 @@ class TagRequestsController extends BaseController
 
         $rows = $xlsx->rows();
 
+        // Save the uploaded file temporarily so we can link it when the request is created
+        $tempFolder = WRITEPATH . 'uploads/temp';
+        if (!is_dir($tempFolder)) {
+            mkdir($tempFolder, 0777, true);
+        }
+        $originalName = $file->getClientName();
+        $tempFileName = uniqid() . '_' . $originalName;
+        $tempFilePath = $tempFolder . '/' . $tempFileName;
+        
+        $fileSaved = false;
+        if ($file->move($tempFolder, $tempFileName)) {
+            $fileSaved = true;
+        }
+
         $propertiesModel = new PropertiesModel();
         $properties = $propertiesModel->select('id, website')->findAll();
 
         $extractedData = [
             'property_id' => '',
             'default_tag' => '',
+            'excel_file_path' => $fileSaved ? $tempFilePath : '',
+            'excel_file_name' => $fileSaved ? $originalName : '',
             'vendor_name' => '',
             'validity' => '',
             'target_properties' => '',
@@ -572,7 +629,7 @@ class TagRequestsController extends BaseController
 
         $hasData = false;
         foreach ($extractedData as $field => $val) {
-            if ($field === 'property_id' || $field === 'default_tag') continue;
+            if ($field === 'property_id' || $field === 'default_tag' || $field === 'excel_file_path' || $field === 'excel_file_name') continue;
             if (trim((string) $val) !== '') {
                 $hasData = true;
                 break;
@@ -580,6 +637,9 @@ class TagRequestsController extends BaseController
         }
 
         if (!$hasData) {
+            if (!empty($extractedData['excel_file_path']) && file_exists($extractedData['excel_file_path'])) {
+                unlink($extractedData['excel_file_path']);
+            }
             return redirect()->back()->with('error', 'The uploaded Excel file does not contain any valid tag request data.');
         }
 

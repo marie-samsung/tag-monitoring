@@ -205,13 +205,13 @@ $hasNewRule = !empty($request['new_rule_ticket']);
                                 </span>
                             </td>
                             <td>
-                                <a href="<?= '/tag-monitoring/download.php?file=' . rawurlencode($file['file_path']) ?>" download="<?= $file['file_name'] ?>" rel="noopener" class="row">
+                                <a href="<?= base_url('download.php?file=' . rawurlencode($file['file_path'])) ?>" download="<?= $file['file_name'] ?>" rel="noopener" class="row">
                                     <?= $file['file_name'] ?>
                                 </a>
                                 <span class="row form-label-xs text-muted"><?= $file['created_at'] ?></span>
                             </td>
 <!--                            <td class="text-center">-->
-<!--                                <a href="--><?php //= '/tag-monitoring/download.php?file=' . rawurlencode($file['file_path']) ?><!--" download="--><?php //= $file['file_name'] ?><!--" class="btn btn-sm btn-primary">-->
+<!--                                <a href="--><?php //= base_url('download.php?file=' . rawurlencode($file['file_path'])) ?><!--" download="--><?php //= $file['file_name'] ?><!--" class="btn btn-sm btn-primary">-->
 <!--                                    Download-->
 <!--                                </a>-->
 <!--                            </td>-->

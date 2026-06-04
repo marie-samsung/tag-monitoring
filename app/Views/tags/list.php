@@ -6,6 +6,15 @@ Tag Monitoring System
 
 <?= $this->section('content') ?>
 
+<style>
+#tblTags tbody tr {
+    cursor: pointer;
+}
+.selected-row td {
+    background-color: rgba(0, 113, 227, 0.05) !important;
+}
+</style>
+
 <?php
     use App\Models\Constants;
     use App\Models\PropertiesModel;
@@ -28,7 +37,7 @@ Tag Monitoring System
 
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center">
-        <h2>Tag Inventory</h2>
+        <h2>Tag Inventory <span id="selectedCountBadge" class="badge bg-primary align-middle ms-2" style="display: none; font-size: 0.85rem; font-weight: 500; vertical-align: middle;">0 selected</span></h2>
         <div class="d-flex align-items-center gap-2">
             <a href="<?= site_url('tags/renew') ?>" title="Extend Expiry Date" class="apple-btn-primary btn-sm ms-auto px-3" id="btnRenew" style="display:none;">Extend Expiry Date</a>
             <a href="<?= site_url('tags/update-rule-request') ?>" title="Create update rule request" class="apple-btn-primary btn-sm ms-auto px-3" id="btnUpdateRule" style="display:none;">Create Update Rule Request</a>
@@ -152,7 +161,7 @@ Tag Monitoring System
             <thead>
                 <tr>
                     <th class="form-label-sm fw-semibold">#</th>
-                    <th></th>
+                    <th><input type="checkbox" id="selectAllTags" title="Select All" class="form-check-input"></th>
                     <th class="form-label-sm fw-semibold">Subsidiary</th>
                     <th class="form-label-sm fw-semibold">Property</th>
                     <th class="form-label-sm fw-semibold">Name</th>
@@ -177,7 +186,8 @@ Tag Monitoring System
                         <td>
                             <input type="checkbox"
                                 name="tag_ids[]"
-                                value="<?= htmlspecialchars($tag['id']) ?>">
+                                value="<?= htmlspecialchars($tag['id']) ?>"
+                                class="form-check-input">
                         </td>
                         <!-- Subsidiary -->
                         <td>
@@ -269,20 +279,79 @@ document.addEventListener('DOMContentLoaded', function () {
     const btnRenew = document.getElementById('btnRenew');
     const btnUpdateRule = document.getElementById('btnUpdateRule');
     const table = document.getElementById('tblTags');
+    const selectAllTags = document.getElementById('selectAllTags');
+    const selectedCountBadge = document.getElementById('selectedCountBadge');
+
+    const updateSelectAllState = () => {
+        if (!selectAllTags) return;
+        const total = table.querySelectorAll('input[name="tag_ids[]"]').length;
+        const checked = table.querySelectorAll('input[name="tag_ids[]"]:checked').length;
+        
+        selectAllTags.checked = (total > 0 && checked === total);
+        selectAllTags.indeterminate = (checked > 0 && checked < total);
+    };
 
     const toggleButton = () => {
-        const anyChecked = table.querySelectorAll('input[type="checkbox"]:checked').length > 0;
+        const checkedCount = table.querySelectorAll('input[name="tag_ids[]"]:checked').length;
+        const anyChecked = checkedCount > 0;
+        
         btnRenew.style.display = anyChecked ? 'inline-block' : 'none';
         btnUpdateRule.style.display = anyChecked ? 'inline-block' : 'none';
+        
+        if (selectedCountBadge) {
+            selectedCountBadge.textContent = `${checkedCount} selected`;
+            selectedCountBadge.style.display = anyChecked ? 'inline-block' : 'none';
+        }
+
+        // Highlight selected rows
+        table.querySelectorAll('input[name="tag_ids[]"]').forEach(cb => {
+            const row = cb.closest('tr');
+            if (row) {
+                if (cb.checked) {
+                    row.classList.add('selected-row');
+                } else {
+                    row.classList.remove('selected-row');
+                }
+            }
+        });
     };
 
     table.addEventListener('change', function (e) {
-        if (e.target && e.target.type === 'checkbox') {
+        if (e.target && e.target.name === 'tag_ids[]') {
             toggleButton();
+            updateSelectAllState();
         }
     });
 
+    table.addEventListener('click', function (e) {
+        // If clicking on an anchor tag, button, input (checkbox), or anything inside them, do not toggle selection
+        if (e.target.closest('a, button, input, select, label')) {
+            return;
+        }
+        
+        // Find the tr row
+        const row = e.target.closest('tr');
+        if (row && row.parentNode.tagName === 'TBODY') {
+            const cb = row.querySelector('input[name="tag_ids[]"]');
+            if (cb) {
+                cb.checked = !cb.checked;
+                // Dispatch change event so listener gets triggered
+                cb.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        }
+    });
+
+    if (selectAllTags) {
+        selectAllTags.addEventListener('change', function () {
+            table.querySelectorAll('input[name="tag_ids[]"]').forEach(cb => {
+                cb.checked = selectAllTags.checked;
+            });
+            toggleButton();
+        });
+    }
+
     toggleButton();
+    updateSelectAllState();
 
     btnRenew.addEventListener('click', function (e) {
         e.preventDefault();

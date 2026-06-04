@@ -45,6 +45,10 @@ Tag Request: Create
     </div>
     <form action="<?= site_url('tag-requests/create') ?>" method="post">
         <?= csrf_field() ?>
+        <?php if (!empty($extracted_data)): ?>
+            <input type="hidden" name="excel_file_path" value="<?= esc($extracted_data['excel_file_path'] ?? '') ?>">
+            <input type="hidden" name="excel_file_name" value="<?= esc($extracted_data['excel_file_name'] ?? '') ?>">
+        <?php endif; ?>
         <div class="container">
             <div class="card p-3 mt-3">
                 <div class="row mb-2">

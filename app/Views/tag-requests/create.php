@@ -60,6 +60,8 @@ Tag Request: Create
             <input type="hidden" name="q3" value="<?= esc($extracted_data['q3'] ?? '') ?>">
             <input type="hidden" name="q4" value="<?= esc($extracted_data['q4'] ?? '') ?>">
             <input type="hidden" name="q5" value="<?= esc($extracted_data['q5'] ?? '') ?>">
+            <input type="hidden" name="excel_file_path" value="<?= esc($extracted_data['excel_file_path'] ?? '') ?>">
+            <input type="hidden" name="excel_file_name" value="<?= esc($extracted_data['excel_file_name'] ?? '') ?>">
         <?php endif; ?>
         <div class="container">
             <div class="card p-3 mt-3">

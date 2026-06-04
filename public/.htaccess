@@ -26,6 +26,9 @@ Options -Indexes
 	RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
 	RewriteRule ^ http://%1%{REQUEST_URI} [R=301,L]
 
+	# Rewrite old tag-monitoring/download.php to download.php
+	RewriteRule ^tag-monitoring/download.php$ download.php [L,QSA]
+
 	# Checks to see if the user is attempting to access a valid file,
 	# such as an image or css document, if this isn't true it sends the
 	# request to the front controller, index.php

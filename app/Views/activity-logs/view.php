@@ -201,7 +201,7 @@
             <?php if (!empty($files)) : ?>
                 <?php foreach ($files as $file) : ?>
                     <p>
-                        <a href="<?= '/tag-monitoring/download.php?file=' . rawurlencode($file['file_path']) ?>" download="<?= $file['file_name'] ?>" rel="noopener" class="row">
+                        <a href="<?= base_url('download.php?file=' . rawurlencode($file['file_path'])) ?>" download="<?= $file['file_name'] ?>" rel="noopener" class="row">
                             <?= $file['file_name'] ?>
                         </a>
                         <span class="row form-label-xs text-muted"><?= $file['created_at'] ?></span>
