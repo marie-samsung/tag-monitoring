@@ -158,10 +158,24 @@ class TagsController extends BaseController
 
         $post = $this->request->getPost();
 
+        $name = trim($post['name']);
+        preg_match('/\((.*?)\)/', $name, $matches);
+        $vendorName = !empty($matches[1]) ? trim($matches[1]) : 'Unknown';
+
+        $vendorsModel = new VendorsModel();
+        $vendor = $vendorsModel->where('name', $vendorName)->first();
+        if (!$vendor) {
+            $vendorId = $vendorsModel->insert([
+                'name' => $vendorName,
+            ]);
+        } else {
+            $vendorId = $vendor['id'];
+        }
+
         $updateData = [
             'property_id' => (int)$post['property_id'],
-            'vendor_id' => (int)$post['vendor_id'],
-            'name'        => $post['name'],
+            'vendor_id' => (int)$vendorId,
+            'name'        => $name,
             'conditions'  => $post['conditions'],
             'status'      => $post['status'],
             'al_end_date' => $post['al_end_date'],
