@@ -14,13 +14,21 @@ class ActivityLogsController extends BaseController
     {
         $model = new ActivityLogsModel();
         $isAdmin = (session()->get('user_role') === Constants::USER_ROLE_ADMIN);
+        $assigneeFilter = $this->request->getGet('assignee');
+        
+        // If assignee is not set in query parameters (initial load or clear) and not admin,
+        // default the filter to the logged-in user's ID.
+        if (!$isAdmin && $assigneeFilter === null && session()->has('user_id')) {
+            $assigneeFilter = (string)session()->get('user_id');
+        }
+
         $filters = [
             'keyword' => $this->request->getGet('keyword'),
             'subsidiary_id' => $this->request->getGet('subsidiary_id'),
             'project_id' => $this->request->getGet('project_id'),
             'type' => $this->request->getGet('type'),
             'status' => $this->request->getGet('status'),
-            'assignee' => $isAdmin ? null : $this->request->getGet('assignee'),
+            'assignee' => $isAdmin ? null : $assigneeFilter,
         ];
         $data['logs'] = $model->filterLogs($filters);
         $data['filters'] = $filters;
@@ -240,6 +248,10 @@ class ActivityLogsController extends BaseController
         $logsModel = new ActivityLogsModel();
         $filters = $this->request->getGet();
         $isAdmin = (session()->get('user_role') === Constants::USER_ROLE_ADMIN);
+        
+        if (!$isAdmin && !isset($filters['assignee']) && session()->has('user_id')) {
+            $filters['assignee'] = (string)session()->get('user_id');
+        }
         if ($isAdmin) {
             $filters['assignee'] = null;
         }
