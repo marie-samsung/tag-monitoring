@@ -187,15 +187,38 @@ class ActivityLogsController extends BaseController
         $post = $this->request->getPost();
 
         if (!$post) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'No comment data provided.',
+                    'csrf_hash' => csrf_hash()
+                ]);
+            }
             return redirect()->back()->with('error', 'No comment data provided.');
         }
 
-        $commentsModel->insert([
+        $insertedId = $commentsModel->insert([
             'log_id' => $post['log_id'],
             'comment' => $post['comment'],
             'commented_by' => $post['commented_by'],
             'type' => Constants::COMMENT_TYPE_COMMENT,
         ]);
+
+        if ($this->request->isAJAX()) {
+            $insertedComment = $commentsModel->find($insertedId);
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => 'Update posted successfully.',
+                'csrf_hash' => csrf_hash(),
+                'comment' => [
+                    'comment' => $insertedComment['comment'],
+                    'commented_by' => $insertedComment['commented_by'],
+                    'created_at' => $insertedComment['created_at'],
+                    'user_label' => Constants::USERS[$insertedComment['commented_by']] ?? Constants::USER_SYSTEM_LABEL,
+                    'is_system' => ($insertedComment['commented_by'] == Constants::USER_SYSTEM)
+                ]
+            ]);
+        }
 
         return redirect()->back()->with('success', 'Update posted successfully.');
     }
