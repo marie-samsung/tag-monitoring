@@ -449,10 +449,11 @@ class TagsController extends BaseController
             'subsidiary_id' => $property['subsidiary_id'],
             'project_id' => Constants::PROJECT_MEDIA_TAGGING,
             'ticket_id' => $info['ticket_id'] ?? null,
-            'assignee' => Constants::USER_SYSTEM,
+            'assignee' => session()->get('user_id') ?? 0,
             'status' => Constants::STATUS_IMPLEMENTATION,
             'type' => Constants::ACTIVITY_TYPE_REQUEST,
             'size' => Constants::ACTIVITY_SIZE_M,
+            'created_by' => session()->get('user_id') ?? 0,
         ]);
     }
 
