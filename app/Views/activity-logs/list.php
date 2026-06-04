@@ -2,6 +2,24 @@
 
 use App\Models\SubsidiariesModel;
 
+function getSortUrl($field, $currentSortBy, $currentSortDir) {
+    $queryParams = $_GET;
+    $queryParams['sort_by'] = $field;
+    if ($currentSortBy === $field) {
+        $queryParams['sort_dir'] = ($currentSortDir === 'asc') ? 'desc' : 'asc';
+    } else {
+        $queryParams['sort_dir'] = 'asc';
+    }
+    return site_url('activity-logs') . '?' . http_build_query($queryParams);
+}
+
+function getSortIcon($field, $currentSortBy, $currentSortDir) {
+    if ($currentSortBy === $field) {
+        return $currentSortDir === 'asc' ? ' <i class="bi bi-arrow-up text-primary"></i>' : ' <i class="bi bi-arrow-down text-primary"></i>';
+    }
+    return ' <i class="bi bi-arrow-down-up text-muted" style="font-size: 0.75rem; opacity: 0.4;"></i>';
+}
+
 ?>
 <?= $this->extend('layouts/default') ?>
 
@@ -65,7 +83,6 @@ Activity Logs
                 </select>
             </div>
 
-            <?php if (!$isAdmin): ?>
             <div class="col">
                 <select name="assignee" class="form-select form-select-xs">
                     <option value="">All Assignee</option>
@@ -77,7 +94,6 @@ Activity Logs
                     <?php endforeach; ?>
                 </select>
             </div>
-            <?php endif; ?>
 
             <div class="col">
                 <select name="status" class="form-select form-select-xs">
@@ -115,6 +131,9 @@ Activity Logs
                 </select>
             </div>
 
+            <input type="hidden" name="sort_by" value="<?= esc($filters['sort_by'] ?? 'created_at') ?>">
+            <input type="hidden" name="sort_dir" value="<?= esc($filters['sort_dir'] ?? 'desc') ?>">
+
             <div class="col-md-2 d-flex align-items-center gap-2">
                 <button class="apple-btn-primary btn-sm w-100">Filter</button>
                 <a href="<?= site_url('activity-logs') ?>" class="apple-btn-secondary btn-sm w-100 text-center text-decoration-none">Clear</a>
@@ -132,19 +151,57 @@ Activity Logs
         <table class="table table-hover align-middle mb-0">
             <thead>
                 <tr>
-                <th class="form-label-sm fw-semibold">ID</th>
-                <th class="form-label-sm fw-semibold">Subsidiary</th>
-                <th class="form-label-sm fw-semibold">Project</th>
-                <th class="form-label-sm fw-semibold">Title</th>
-                <?php if (!$isAdmin): ?>
-                <th class="form-label-sm fw-semibold">Assignee</th>
-                <?php endif; ?>
-                <th class="form-label-sm fw-semibold">Status</th>
-                <th class="form-label-sm fw-semibold">Priority</th>
-                <th class="form-label-sm fw-semibold">Type</th>
-                <th class="form-label-sm fw-semibold">Size</th>
-                <th class="form-label-sm fw-semibold">Created At</th>
-                <th class="form-label-sm fw-semibold">Actions</th>
+                <th class="form-label-sm fw-semibold">
+                    <a href="<?= getSortUrl('id', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>" class="text-decoration-none text-dark d-inline-flex align-items-center gap-1">
+                        ID <?= getSortIcon('id', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>
+                    </a>
+                </th>
+                <th class="form-label-sm fw-semibold">
+                    <a href="<?= getSortUrl('subsidiary_id', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>" class="text-decoration-none text-dark d-inline-flex align-items-center gap-1">
+                        Subsidiary <?= getSortIcon('subsidiary_id', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>
+                    </a>
+                </th>
+                <th class="form-label-sm fw-semibold">
+                    <a href="<?= getSortUrl('project_id', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>" class="text-decoration-none text-dark d-inline-flex align-items-center gap-1">
+                        Project <?= getSortIcon('project_id', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>
+                    </a>
+                </th>
+                <th class="form-label-sm fw-semibold">
+                    <a href="<?= getSortUrl('title', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>" class="text-decoration-none text-dark d-inline-flex align-items-center gap-1">
+                        Title <?= getSortIcon('title', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>
+                    </a>
+                </th>
+                <th class="form-label-sm fw-semibold">
+                    <a href="<?= getSortUrl('assignee', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>" class="text-decoration-none text-dark d-inline-flex align-items-center gap-1">
+                        Assignee <?= getSortIcon('assignee', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>
+                    </a>
+                </th>
+                <th class="form-label-sm fw-semibold">
+                    <a href="<?= getSortUrl('status', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>" class="text-decoration-none text-dark d-inline-flex align-items-center gap-1">
+                        Status <?= getSortIcon('status', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>
+                    </a>
+                </th>
+                <th class="form-label-sm fw-semibold">
+                    <a href="<?= getSortUrl('priority', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>" class="text-decoration-none text-dark d-inline-flex align-items-center gap-1">
+                        Priority <?= getSortIcon('priority', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>
+                    </a>
+                </th>
+                <th class="form-label-sm fw-semibold">
+                    <a href="<?= getSortUrl('type', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>" class="text-decoration-none text-dark d-inline-flex align-items-center gap-1">
+                        Type <?= getSortIcon('type', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>
+                    </a>
+                </th>
+                <th class="form-label-sm fw-semibold">
+                    <a href="<?= getSortUrl('size', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>" class="text-decoration-none text-dark d-inline-flex align-items-center gap-1">
+                        Size <?= getSortIcon('size', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>
+                    </a>
+                </th>
+                <th class="form-label-sm fw-semibold">
+                    <a href="<?= getSortUrl('created_at', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>" class="text-decoration-none text-dark d-inline-flex align-items-center gap-1">
+                        Created At <?= getSortIcon('created_at', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>
+                    </a>
+                </th>
+                <th class="form-label-sm fw-semibold text-dark">Actions</th>
             </tr>
         </thead>
 
@@ -172,13 +229,11 @@ Activity Logs
                         </span>
                     </td>
                     <td><?= $log['title'] ?></td>
-                    <?php if (!$isAdmin): ?>
                     <td>
                         <span class="badge <?= assignee_class($log['assignee']) ?>">
                             <?= $assignee ?>
                         </span>
                     </td>
-                    <?php endif; ?>
                     <td>
                         <span class="badge <?= status_activity_logs_class($log['status']) ?>">
                             <?= Constants::ACTIVITY_LOGS_STATUS[$log['status']] ?? 'Unknown' ?>

@@ -66,10 +66,23 @@ class ActivityLogsModel extends Model
             $this->where('status', $filters['status']);
         }
 
-        $this->orderBy('status', 'ASC');
-        $this->orderBy('priority', 'DESC');
-        $this->orderBy('size', 'DESC');
-        $this->orderBy('created_at', 'DESC');
+        // Dynamic Sort options
+        $sortBy = $filters['sort_by'] ?? 'created_at';
+        $sortDir = $filters['sort_dir'] ?? 'desc';
+        
+        $allowedSortColumns = [
+            'id', 'subsidiary_id', 'project_id', 'title', 'assignee', 'status', 'priority', 'type', 'size', 'created_at'
+        ];
+        if (!in_array($sortBy, $allowedSortColumns)) {
+            $sortBy = 'created_at';
+        }
+        
+        $sortDir = (strtolower($sortDir) === 'asc') ? 'ASC' : 'DESC';
+        
+        $this->orderBy($sortBy, $sortDir);
+        if ($sortBy !== 'id') {
+            $this->orderBy('id', 'DESC'); // secondary sorting for stable pagination
+        }
 
         if ($paginate > 0) {
             return $this->paginate($paginate);
