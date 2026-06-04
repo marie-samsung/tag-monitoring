@@ -312,7 +312,7 @@
     <div class="glass-card">
         <div class="brand-logo">
             <i class="bi bi-shield-lock-fill text-primary"></i>
-            <span>TagMonitor</span>
+            <span>Martech Management System</span>
         </div>
         <div class="brand-subtitle">Enter your credentials to access the system</div>
 

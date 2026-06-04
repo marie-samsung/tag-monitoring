@@ -77,11 +77,12 @@ class TagsModel extends Model
         $this->orderBy(
                 '(CASE 
                     WHEN tags.al_end_date < CURDATE() AND tags.status = 1 THEN 0
-                    WHEN tags.al_end_date <= DATE_ADD(CURDATE(), INTERVAL 9 DAY) AND (tags.status IN (1,4,5)) THEN 1
-                    WHEN tags.al_end_date <= DATE_ADD(CURDATE(), INTERVAL 16 DAY) AND (tags.status IN (1,4,5)) THEN 2
-                    WHEN tags.status = 4 THEN 3
-                    WHEN tags.status = 1 THEN 4
-                    ELSE 5
+                    WHEN tags.al_end_date <= DATE_ADD(CURDATE(), INTERVAL 9 DAY) AND tags.status = 1 THEN 1
+                    WHEN tags.al_end_date <= DATE_ADD(CURDATE(), INTERVAL 9 DAY) AND (tags.status IN (4,5)) THEN 2
+                    WHEN tags.al_end_date <= DATE_ADD(CURDATE(), INTERVAL 16 DAY) AND (tags.status IN (1,4,5)) THEN 3
+                    WHEN tags.status = 4 THEN 4
+                    WHEN tags.status = 1 THEN 5
+                    ELSE 6
                 END)', 'ASC', false
             );
 
