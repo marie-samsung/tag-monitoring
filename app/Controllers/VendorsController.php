@@ -101,4 +101,45 @@ class VendorsController extends BaseController
         fclose($csv);
         exit;
     }
+
+    public function update($id)
+    {
+        $vendorsModel = new VendorsModel();
+        $vendor = $vendorsModel->find($id);
+
+        if (!$vendor) {
+            return redirect()
+                ->to('/vendors')
+                ->with('error', "Vendor with ID $id not found.");
+        }
+
+        $subsidiaryId = $this->request->getGet('subsidiary_id') ?? $this->request->getPost('subsidiary_id');
+
+        if ($this->request->getMethod() === 'GET') {
+            return view('vendors/update', [
+                'vendor' => $vendor,
+                'subsidiary_id' => $subsidiaryId,
+            ]);
+        }
+
+        $post = $this->request->getPost();
+
+        $updateData = [
+            'name'        => trim($post['name']),
+            'about'       => $post['about'],
+            'reason'      => $post['reason'],
+            'tag_purpose' => $post['tag_purpose'],
+        ];
+
+        $vendorsModel->update($id, $updateData);
+
+        $redirectUrl = '/vendors';
+        if (!empty($subsidiaryId)) {
+            $redirectUrl = '/vendors/view/' . $id . '?subsidiary_id=' . $subsidiaryId;
+        }
+
+        return redirect()
+            ->to($redirectUrl)
+            ->with('success', "Vendor '{$updateData['name']}' updated successfully.");
+    }
 }

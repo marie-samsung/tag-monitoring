@@ -11,6 +11,7 @@ class VendorsModel extends Model
     protected $allowedFields = [
         'name',
         'about', // RTE 
+        'reason',
         'tag_purpose', // RTE
         'collected_data', // RTE
         'updated_by', // Refer to 'Users' table

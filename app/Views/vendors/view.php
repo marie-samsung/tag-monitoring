@@ -18,29 +18,70 @@
     $properties = $propertiesModel->WebsiteLinks();
 ?>
 
-<?php if ($tags): ?>
-    <div class="container-fluid d-flex justify-content-between align-items-center">
-        <h3><?= "[" . $subsidiary . "] " . $vendor['name'] ?></h3>
-        <a href="<?= site_url('vendors/export/' . $vendor['id'] . '?' . http_build_query($_GET)) ?>" class="apple-btn-secondary btn-sm">
+<div class="container-fluid d-flex justify-content-between align-items-end mb-3">
+    <div>
+        <h7 class="text-danger fw-semibold"><?= esc($subsidiary) ?></h7>
+        <h3 class="mb-0"><?= esc($vendor['name']) ?></h3>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="<?= site_url('vendors/update/' . $vendor['id'] . '?' . http_build_query($_GET)) ?>" class="apple-btn-primary btn-sm text-decoration-none">
+            Update Vendor Info
+        </a>
+        <a href="<?= site_url('vendors/export/' . $vendor['id'] . '?' . http_build_query($_GET)) ?>" class="apple-btn-secondary btn-sm text-decoration-none">
             Export as CSV
         </a>
     </div>
+</div>
 
-    <?php if (!empty($vendor['reason']) || !empty($vendor['tag_purpose'])) : ?>
-        <div class="container-fluid justify-content-start mb-3">
+<?php if (!empty($vendor['about']) || !empty($vendor['reason']) || !empty($vendor['tag_purpose'])) : ?>
+    <div class="container-fluid mb-4">
+        <div class="row g-3">
+            <?php if (!empty($vendor['about'])) : ?>
+                <div class="col-md">
+                    <div class="card h-100 p-3 shadow-sm border-0 bg-white">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <i class="bi bi-info-circle text-primary fs-5"></i>
+                            <h6 class="m-0 fw-semibold text-secondary">About</h6>
+                        </div>
+                        <div class="text-secondary" style="font-size: 0.85rem; line-height: 1.6;">
+                            <?= $vendor['about'] ?>
+                        </div>
+                    </div>
+                </div>
+            <?php endif; ?>
+
             <?php if (!empty($vendor['reason'])) : ?>
-                <span class="fw-semibold form-label-xs">Business Reason: </span>
-                <span class="form-label-xs"><?= $vendor['reason'] ?></span>
+                <div class="col-md">
+                    <div class="card h-100 p-3 shadow-sm border-0 bg-white">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <i class="bi bi-lightbulb text-primary fs-5"></i>
+                            <h6 class="m-0 fw-semibold text-secondary">Business Reason</h6>
+                        </div>
+                        <div class="text-secondary" style="font-size: 0.85rem; line-height: 1.6;">
+                            <?= $vendor['reason'] ?>
+                        </div>
+                    </div>
+                </div>
             <?php endif; ?>
 
             <?php if (!empty($vendor['tag_purpose'])) : ?>
-                <br>
-                <span class="fw-semibold form-label-xs">Tag Purpose: </span>
-                <span class="form-label-xs"><?= $vendor['tag_purpose'] ?></span>
+                <div class="col-md">
+                    <div class="card h-100 p-3 shadow-sm border-0 bg-white">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <i class="bi bi-shield-check text-primary fs-5"></i>
+                            <h6 class="m-0 fw-semibold text-secondary">Tag Purpose</h6>
+                        </div>
+                        <div class="text-secondary" style="font-size: 0.85rem; line-height: 1.6;">
+                            <?= $vendor['tag_purpose'] ?>
+                        </div>
+                    </div>
+                </div>
             <?php endif; ?>
         </div>
-    <?php endif; ?>
+    </div>
+<?php endif; ?>
 
+<?php if ($tags): ?>
     <div class="container-fluid">
         <div class="apple-table-container">
             <div class="table-responsive">
