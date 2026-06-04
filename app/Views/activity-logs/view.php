@@ -237,18 +237,7 @@
                 </div>
                 <div class="d-flex gap-2 mt-2 align-items-center">
                     <input type="hidden" name="log_id" value="<?= $log['id'] ?>">
-                    <?php if ($isAdmin): ?>
-                        <input type="hidden" name="commented_by" value="<?= session()->get('user_id') ?>">
-                    <?php else: ?>
-                        <select name="commented_by" class="form-select form-select-xs w-auto flex-grow-1" required>
-                            <?php foreach (Constants::USERS as $value => $label): ?>
-                                <option value="<?= esc($value) ?>"
-                                    <?= session()->get('user_id') == $value ? 'selected' : '' ?>>
-                                    <?= esc($label) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    <?php endif; ?>
+                    <input type="hidden" name="commented_by" value="<?= session()->get('user_id') ?>">
                     <button type="submit" class="apple-btn-primary btn-sm px-3">Post</button>
                 </div>
             </form>
