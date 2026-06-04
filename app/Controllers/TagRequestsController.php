@@ -515,6 +515,7 @@ class TagRequestsController extends BaseController
 
         $extractedData = [
             'property_id' => '',
+            'default_tag' => '',
             'vendor_name' => '',
             'validity' => '',
             'target_properties' => '',
@@ -570,7 +571,7 @@ class TagRequestsController extends BaseController
 
         $hasData = false;
         foreach ($extractedData as $field => $val) {
-            if ($field === 'property_id') continue;
+            if ($field === 'property_id' || $field === 'default_tag') continue;
             if (trim((string) $val) !== '') {
                 $hasData = true;
                 break;
@@ -616,6 +617,24 @@ class TagRequestsController extends BaseController
                 }
             }
         }
+
+        // Generate default tag based on selected property type and vendor name with a random UUID
+        $shopOrAem = 'AEM'; // default fallback
+        if (!empty($extractedData['property_id'])) {
+            $matchedProperty = $propertiesModel->find($extractedData['property_id']);
+            if ($matchedProperty) {
+                $shopOrAem = ($matchedProperty['is_shop'] == Constants::YES) ? 'Shop' : 'AEM';
+            }
+        }
+        $vendorName = !empty($extractedData['vendor_name']) ? $extractedData['vendor_name'] : 'Vendor';
+        $uuid = sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+            mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0x0fff) | 0x4000,
+            mt_rand(0, 0x3fff) | 0x8000,
+            mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+        );
+        $extractedData['default_tag'] = "LC-{$shopOrAem}-AD({$vendorName})-CM-ALL-WL-SDSME_{$uuid}";
 
         return view('tag-requests/create', ['extracted_data' => $extractedData]);
     }

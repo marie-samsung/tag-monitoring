@@ -13,7 +13,7 @@ Tag Request: Create
     use App\Models\OrganizationsModel;
 
     $propertiesModel = new PropertiesModel();
-    $properties = $propertiesModel->Options();
+    $propertiesList = $propertiesModel->select('id, name, is_shop')->findAll();
 
     $vendorsModel = new VendorsModel();
     $vendors = $vendorsModel->Options();
@@ -51,10 +51,11 @@ Tag Request: Create
                     <div class="col mb-2">
                         <label class="form-label-xs text-primary">Property</label>
                         <select name="property_id" class="form-select searchable-select" required>
-                            <?php foreach ($properties as $value => $label): ?>
-                                <option value="<?= esc($value) ?>"
-                                    <?= old('property_id', $requests['property_id'] ?? ($extracted_data['property_id'] ?? '')) == $value ? 'selected' : '' ?>>
-                                    <?= esc($label) ?>
+                            <?php foreach ($propertiesList as $prop): ?>
+                                <option value="<?= esc($prop['id']) ?>"
+                                    data-is-shop="<?= $prop['is_shop'] == Constants::YES ? 'Shop' : 'AEM' ?>"
+                                    <?= old('property_id', $requests['property_id'] ?? ($extracted_data['property_id'] ?? '')) == $prop['id'] ? 'selected' : '' ?>>
+                                    <?= esc($prop['name']) ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
@@ -452,6 +453,42 @@ Tag Request: Create
                 return data.text;
             }
         });
+
+        $('select[name="property_id"]').on('change', function() {
+            var selectedOption = $(this).find('option:selected');
+            var isShop = selectedOption.data('is-shop') || 'AEM';
+            
+            var $searchField = $('.select2-search__field');
+            var val = $searchField.val() || '';
+            
+            if (val.startsWith('LC-')) {
+                var parts = val.split('-');
+                if (parts.length > 1 && (parts[1] === 'Shop' || parts[1] === 'AEM')) {
+                    parts[1] = isShop;
+                    $searchField.val(parts.join('-')).trigger('input');
+                }
+            }
+        });
+
+        var defaultTag = `<?= $extracted_data['default_tag'] ?? '' ?>`;
+        if (defaultTag) {
+            $('.select2-search__field').val(defaultTag).css('width', '100%');
+            
+            $('.advanced-select').on('select2:open', function() {
+                var $searchField = $('.select2-search__field');
+                if (!$searchField.val()) {
+                    var selectedOption = $('select[name="property_id"] option:selected');
+                    var isShop = selectedOption.data('is-shop') || 'AEM';
+                    var originalTag = defaultTag;
+                    var parts = originalTag.split('-');
+                    if (parts.length > 1 && (parts[1] === 'Shop' || parts[1] === 'AEM')) {
+                        parts[1] = isShop;
+                        originalTag = parts.join('-');
+                    }
+                    $searchField.val(originalTag).trigger('input');
+                }
+            });
+        }
 
         $(document).ready(function() {
             $('#details').summernote({
