@@ -40,56 +40,84 @@ use App\Models\TagsModel;
 
     <!-- #region | SEARCH FILTER -->
     <div class="apple-control-bar mb-4">
-        <form method="get" class="row g-2 w-100 m-0">
-            <div class="col">
-                <input 
-                    type="text" 
-                    name="keyword" 
-                    class="form-control form-select-xs" 
-                    placeholder="Search..."
-                    value="<?= esc($_GET['keyword'] ?? '') ?>"
-                >
-            </div>
+        <form method="get" class="m-0">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4 col-lg-3">
+                    <label class="form-label-xs fw-bold text-muted text-uppercase mb-1" style="letter-spacing: 0.5px; font-size: 0.65rem;">Search</label>
+                    <input 
+                        type="text" 
+                        name="keyword" 
+                        class="form-control form-select-xs" 
+                        placeholder="Ticket ID or keyword..."
+                        value="<?= esc($_GET['keyword'] ?? '') ?>"
+                    >
+                </div>
 
-            <div class="col">
-                <select name="subsidiary_id" class="form-select form-select-xs">
-                    <option value="">All Subsidiaries</option>
-                    <?php foreach ($subsidiaries as $value => $label): ?>
-                        <option value="<?= esc($value) ?>"
-                            <?= old('subsidiary_id', $filters['subsidiary_id'] ?? '') == $value ? 'selected' : '' ?>>
-                            <?= esc($label) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
+                <div class="col-md-4 col-lg-3">
+                    <label class="form-label-xs fw-bold text-muted text-uppercase mb-1" style="letter-spacing: 0.5px; font-size: 0.65rem;">Subsidiary</label>
+                    <select name="subsidiary_id" class="form-select form-select-xs">
+                        <option value="">All Subsidiaries</option>
+                        <?php foreach ($subsidiaries as $value => $label): ?>
+                            <option value="<?= esc($value) ?>"
+                                <?= old('subsidiary_id', $filters['subsidiary_id'] ?? '') == $value ? 'selected' : '' ?>>
+                                <?= esc($label) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
 
-            <div class="col">
-                <select name="property_id" class="form-select searchable-select">
-                    <option value="">All Properties</option>
-                    <?php foreach ($propertyOptions as $value => $label): ?>
-                        <option value="<?= esc($value) ?>"
-                            <?= old('property_id', $filters['property_id'] ?? '') == $value ? 'selected' : '' ?>>
-                            <?= esc($label) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
+                <div class="col-md-4 col-lg-3">
+                    <label class="form-label-xs fw-bold text-muted text-uppercase mb-1" style="letter-spacing: 0.5px; font-size: 0.65rem;">Property</label>
+                    <select name="property_id" class="form-select searchable-select">
+                        <option value="">All Properties</option>
+                        <?php foreach ($propertyOptions as $value => $label): ?>
+                            <option value="<?= esc($value) ?>"
+                                <?= old('property_id', $filters['property_id'] ?? '') == $value ? 'selected' : '' ?>>
+                                <?= esc($label) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
 
-            <div class="col">
-                <select name="ticket_type" class="form-select form-select-xs">
-                    <option value="">All Ticket Types</option>
-                    <?php foreach (Constants::JIRA_TICKET_TYPES as $value => $label): ?>
-                        <option value="<?= esc($value) ?>"
-                            <?= old('ticket_type', $filters['ticket_type'] ?? '') == $value ? 'selected' : '' ?>>
-                            <?= esc($label) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
+                <div class="col-md-4 col-lg-3">
+                    <label class="form-label-xs fw-bold text-muted text-uppercase mb-1" style="letter-spacing: 0.5px; font-size: 0.65rem;">Ticket Type</label>
+                    <select name="ticket_type" class="form-select form-select-xs">
+                        <option value="">All Ticket Types</option>
+                        <?php foreach (Constants::JIRA_TICKET_TYPES as $value => $label): ?>
+                            <option value="<?= esc($value) ?>"
+                                <?= old('ticket_type', $filters['ticket_type'] ?? '') == $value ? 'selected' : '' ?>>
+                                <?= esc($label) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
 
-            <div class="col-md-2 d-flex align-items-center gap-2">
-                <button class="apple-btn-primary btn-sm w-100">Filter</button>
-                <a href="<?= site_url('jira') ?>" class="apple-btn-secondary btn-sm w-100 text-center text-decoration-none">Clear</a>
+                <div class="col-md-4 col-lg-3">
+                    <label class="form-label-xs fw-bold text-muted text-uppercase mb-1" style="letter-spacing: 0.5px; font-size: 0.65rem;">Created From</label>
+                    <input 
+                        type="date" 
+                        name="created_at_from" 
+                        class="form-control form-select-xs" 
+                        value="<?= esc($_GET['created_at_from'] ?? '') ?>"
+                        title="Created At (From)"
+                    >
+                </div>
+
+                <div class="col-md-4 col-lg-3">
+                    <label class="form-label-xs fw-bold text-muted text-uppercase mb-1" style="letter-spacing: 0.5px; font-size: 0.65rem;">Created To</label>
+                    <input 
+                        type="date" 
+                        name="created_at_to" 
+                        class="form-control form-select-xs" 
+                        value="<?= esc($_GET['created_at_to'] ?? '') ?>"
+                        title="Created At (To)"
+                    >
+                </div>
+
+                <div class="col-md-12 col-lg-6 d-flex align-items-end justify-content-lg-end justify-content-start gap-2 mt-2 mt-lg-0">
+                    <button class="apple-btn-primary btn-sm px-4" style="height: 31px;">Apply Filters</button>
+                    <a href="<?= site_url('jira') ?>" class="apple-btn-secondary btn-sm px-4 text-center text-decoration-none d-flex align-items-center" style="height: 31px;">Clear</a>
+                </div>
             </div>
         </form>
     </div>

@@ -76,6 +76,14 @@ class JiraHistoryModel extends Model
             $this->where('subsidiary_id', $filters['subsidiary_id']);
         }
 
+        if (!empty($filters['created_at_from'])) {
+            $this->where('created_at >=', $filters['created_at_from'] . ' 00:00:00');
+        }
+
+        if (!empty($filters['created_at_to'])) {
+            $this->where('created_at <=', $filters['created_at_to'] . ' 23:59:59');
+        }
+
         // Use a subquery to fetch the latest entry per ticket_id without triggering ONLY_FULL_GROUP_BY
         $this->where('id IN (SELECT MAX(id) FROM jira_history GROUP BY ticket_id)', null, false);
         
