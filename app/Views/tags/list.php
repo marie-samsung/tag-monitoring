@@ -129,7 +129,7 @@ Martech TMS
     <div class="d-flex justify-content-between align-items-center">
         <h2>Tag Inventory <span id="selectedCountBadge" class="badge bg-primary align-middle ms-2" style="display: none; font-size: 0.85rem; font-weight: 500; vertical-align: middle;">0 selected</span></h2>
         <div class="d-flex align-items-center gap-2">
-            <a href="<?= site_url('tags/renew') ?>" title="Extend Expiry Date" class="apple-btn-primary btn-sm ms-auto px-3" id="btnRenew" style="display:none;">Extend Expiry Date</a>
+            <a href="<?= site_url('tags/renew') ?>" title="Date Extension" class="apple-btn-primary btn-sm ms-auto px-3" id="btnRenew" style="display:none;">Date Extension</a>
             <a href="<?= site_url('tags/update-rule-request') ?>" title="Create update rule request" class="apple-btn-primary btn-sm ms-auto px-3" id="btnUpdateRule" style="display:none;">Create Update Rule Request</a>
             <a href="<?= site_url('tags/create') ?>" title="Add Tag Information" class="apple-btn-primary btn-sm ms-auto px-3">Add Tag Information</a>
             <a href="<?= site_url('tags/export?' . http_build_query($_GET)) ?>" class="apple-btn-secondary btn-sm ms-auto px-3">Export as CSV</a>
@@ -362,12 +362,12 @@ Martech TMS
 <div id="floatingActionBar" class="floating-action-bar">
     <div class="floating-action-info">
         <span id="floatingSelectedCount" class="count-badge">0</span>
-        <span>tags selected</span>
+        <span>Tags selected</span>
     </div>
     <div class="floating-action-divider"></div>
-    <a href="#" id="floatingBtnRenew" class="floating-btn-renew" title="Extend Expiry Date">
+    <a href="#" id="floatingBtnRenew" class="floating-btn-renew" title="Date Extension">
         <i class="bi bi-calendar-check-fill"></i>
-        <span>Extend Expiry</span>
+        <span>Date Extension</span>
     </a>
     <a href="#" id="floatingBtnUpdateRule" class="floating-btn-secondary" title="Create Update Rule Request">
         <i class="bi bi-pencil-square"></i>

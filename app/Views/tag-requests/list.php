@@ -40,8 +40,8 @@ Tag: Requests (New Rule, New Tag)
     <div class="d-flex justify-content-between align-items-center">
         <h2>Tag Requests</h2>
         <div class="d-flex align-items-center gap-2">
-            <a href="<?= site_url('tag-requests/upload-excel') ?>" title="Upload Excel" class="apple-btn-secondary btn-sm ms-auto px-2">Upload Excel</a>
-            <a href="<?= site_url('tag-requests/create') ?>" title="Create a new request" class="apple-btn-primary btn-sm ms-auto px-2">Add Request</a>
+            <a href="<?= site_url('tag-requests/upload-excel') ?>" title="Upload Excel" class="apple-btn-primary btn-sm ms-auto px-2">Create New Request</a>
+            <!-- <a href="<?= site_url('tag-requests/create') ?>" title="Create a new request" class="apple-btn-primary btn-sm ms-auto px-2">Add Request</a> -->
             <a href="<?= site_url('tag-requests/export?' . http_build_query($_GET)) ?>" class="apple-btn-secondary btn-sm ms-auto px-2">Export as CSV</a>
         </div>
     </div>
