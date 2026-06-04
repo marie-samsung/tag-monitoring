@@ -323,9 +323,12 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    let lastChecked = null;
+
     table.addEventListener('click', function (e) {
-        // If clicking on an anchor tag, button, input (checkbox), or anything inside them, do not toggle selection
-        if (e.target.closest('a, button, input, select, label')) {
+        // If clicking on an anchor tag, button, select, label, or an input that is not our tag checkboxes, do not toggle selection
+        const isCheckbox = e.target.matches('input[name="tag_ids[]"]');
+        if (!isCheckbox && e.target.closest('a, button, select, label, input')) {
             return;
         }
         
@@ -334,9 +337,35 @@ document.addEventListener('DOMContentLoaded', function () {
         if (row && row.parentNode.tagName === 'TBODY') {
             const cb = row.querySelector('input[name="tag_ids[]"]');
             if (cb) {
-                cb.checked = !cb.checked;
-                // Dispatch change event so listener gets triggered
-                cb.dispatchEvent(new Event('change', { bubbles: true }));
+                // If they clicked the checkbox directly, it's already toggled by the browser's default action.
+                // If they clicked the row (not the checkbox), toggle the checkbox state.
+                if (!isCheckbox) {
+                    cb.checked = !cb.checked;
+                }
+                
+                // If shift key is held and we have a lastChecked checkbox
+                if (e.shiftKey && lastChecked && lastChecked !== cb) {
+                    const checkboxes = Array.from(table.querySelectorAll('input[name="tag_ids[]"]'));
+                    const start = checkboxes.indexOf(cb);
+                    const end = checkboxes.indexOf(lastChecked);
+                    
+                    if (start !== -1 && end !== -1) {
+                        const rangeStart = Math.min(start, end);
+                        const rangeEnd = Math.max(start, end);
+                        
+                        for (let i = rangeStart; i <= rangeEnd; i++) {
+                            checkboxes[i].checked = cb.checked;
+                        }
+                    }
+                }
+                
+                // Update lastChecked to the one just clicked
+                lastChecked = cb;
+                
+                // If we clicked the row, we need to dispatch the change event to update styles & buttons
+                if (!isCheckbox) {
+                    cb.dispatchEvent(new Event('change', { bubbles: true }));
+                }
             }
         }
     });
@@ -346,6 +375,7 @@ document.addEventListener('DOMContentLoaded', function () {
             table.querySelectorAll('input[name="tag_ids[]"]').forEach(cb => {
                 cb.checked = selectAllTags.checked;
             });
+            lastChecked = null;
             toggleButton();
         });
     }
