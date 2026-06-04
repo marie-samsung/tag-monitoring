@@ -1,7 +1,7 @@
 <?= $this->extend('layouts/default') ?>
 
 <?= $this->section('title') ?>
-Tag Monitoring System
+Martech TMS
 <?= $this->endSection() ?>
 
 <?= $this->section('content') ?>

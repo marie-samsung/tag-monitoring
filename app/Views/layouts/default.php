@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title><?= $this->renderSection('title') ?? 'Tag Monitoring System' ?></title>
+    <title><?= $this->renderSection('title') ?? 'Martech TMS' ?></title>
     <link href="<?= base_url('assets/bootstrap/css/bootstrap.min.css') ?>" rel="stylesheet">
     <link href="<?= base_url('assets/bootstrap-icons/bootstrap-icons.css') ?>" rel="stylesheet">
     <link href="<?= base_url('assets/select2/css/select2.min.css') ?>" rel="stylesheet">

@@ -27,7 +27,7 @@ $permissions = session()->get('permissions') ?? [];
     <div class="d-flex align-items-center gap-2" style="flex: 1; min-width: fit-content;">
         <a href="<?= site_url('/') ?>" class="fw-bold text-decoration-none apple-link-dark d-flex align-items-center gap-2" style="font-size: 1.1rem; letter-spacing: -0.5px;">
             <i class="bi bi-shield-lock-fill text-primary"></i>
-            <span>Martech Management System</span>
+            <span>Martech TMS</span>
         </a>
     </div>
 

@@ -1,7 +1,7 @@
 <?= $this->extend('layouts/default') ?>
 
 <?= $this->section('title') ?>
-Dashboard | Tag Monitoring System
+Dashboard | Martech TMS
 <?= $this->endSection() ?>
 
 <?= $this->section('content') ?>

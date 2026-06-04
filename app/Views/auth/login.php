@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | Tag Monitoring System</title>
+    <title>Login | Martech TMS</title>
     
     <!-- CSS Dependencies -->
     <link href="<?= base_url('assets/bootstrap/css/bootstrap.min.css') ?>" rel="stylesheet">
@@ -312,7 +312,7 @@
     <div class="glass-card">
         <div class="brand-logo">
             <i class="bi bi-shield-lock-fill text-primary"></i>
-            <span>Martech Management System</span>
+            <span>Martech TMS</span>
         </div>
         <div class="brand-subtitle">Enter your credentials to access the system</div>
 
