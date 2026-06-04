@@ -67,6 +67,14 @@ class TagRequestsModel extends Model
             }
         }
 
+        if (!empty($filters['created_at_from'])) {
+            $this->where('tag_requests.created_at >=', $filters['created_at_from'] . ' 00:00:00');
+        }
+
+        if (!empty($filters['created_at_to'])) {
+            $this->where('tag_requests.created_at <=', $filters['created_at_to'] . ' 23:59:59');
+        }
+
         $this->orderBy('tag_requests.created_at', 'DESC');
         
         if ($paginate > 0) {

@@ -28,6 +28,8 @@ class TagRequestsController extends BaseController
             'vendor_id' => $this->request->getGet('vendor_id'),
             'type' => $this->request->getGet('type'),
             'status' => $this->request->getGet('status'),
+            'created_at_from' => $this->request->getGet('created_at_from'),
+            'created_at_to' => $this->request->getGet('created_at_to'),
         ];
         $data['requests'] = $model->filterRequests($filters, 25);
         $data['pager'] = $model->pager;
