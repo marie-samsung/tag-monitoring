@@ -206,7 +206,7 @@
                                     <span class="fw-semibold text-primary" style="font-size: 0.8rem;">
                                         <?= esc(Constants::USERS[$comment['commented_by']] ?? 'Unknown') ?>
                                     </span>
-                                    <span class="text-muted" style="font-size: 0.75rem;"><?= esc($comment['created_at']) ?></span>
+                                    <span class="text-muted" style="font-size: 0.75rem;"><?= esc(format_comment_time($comment['created_at'])) ?></span>
                                 </div>
                                 <div style="font-size: 0.875rem; color: var(--color-text-base);"><?= $comment['comment'] ?></div>
                             </div>
@@ -216,7 +216,7 @@
                                     <span class="fw-semibold text-info" style="font-size: 0.8rem;">
                                         <?= esc(Constants::USER_SYSTEM_LABEL) ?>
                                     </span>
-                                    <span class="text-muted" style="font-size: 0.75rem;"><?= esc($comment['created_at']) ?></span>
+                                    <span class="text-muted" style="font-size: 0.75rem;"><?= esc(format_comment_time($comment['created_at'])) ?></span>
                                 </div>
                                 <div style="font-size: 0.875rem; color: var(--color-text-base);"><?= $comment['comment'] ?></div>
                             </div>
@@ -232,8 +232,9 @@
                 <div>
                     <label for="comment" class="form-label-xs text-primary fw-medium mb-2">Post an Update</label>
                     <textarea name="comment" id="comment"
-                               class="form-control"
-                               rows="4"><?= old('comment', $log['comment'] ?? '') ?></textarea>
+                               class="form-control apple-textarea"
+                               rows="3"
+                               placeholder="Write an update..."><?= old('comment', $log['comment'] ?? '') ?></textarea>
                 </div>
                 <div class="d-flex gap-2 mt-2 align-items-center">
                     <input type="hidden" name="log_id" value="<?= $log['id'] ?>">
@@ -249,23 +250,22 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         $(document).ready(function() {
-            $('#comment').summernote({
-                height: 200,
-                toolbar: [
-                    ['style', ['bold', 'italic', 'underline', 'clear']],
-                    ['para', ['ul', 'ol', 'paragraph']],
-                    ['table', ['table']],
-                    ['view', ['fullscreen', 'codeview', 'help']]
-                ]
-            });
+            // Auto-resize handler for modern textarea
+            var textarea = document.getElementById('comment');
+            if (textarea) {
+                textarea.addEventListener('input', function() {
+                    this.style.height = 'auto';
+                    this.style.height = (this.scrollHeight) + 'px';
+                });
+            }
 
             $('#comment-form').on('submit', function(e) {
                 e.preventDefault();
                 var form = $(this);
                 var url = form.attr('action');
                 
-                // Ensure summernote is not empty
-                if ($('#comment').summernote('isEmpty')) {
+                // Ensure textarea is not empty
+                if ($.trim($('#comment').val()) === '') {
                     alert('Please write an update before posting.');
                     return;
                 }
@@ -285,8 +285,11 @@
                         submitBtn.prop('disabled', false).text('Post');
                         
                         if (response.success) {
-                            // Reset Summernote editor
-                            $('#comment').summernote('reset');
+                            // Reset Textarea value and height back to default
+                            if (textarea) {
+                                textarea.value = '';
+                                textarea.style.height = 'auto';
+                            }
                             
                             // Hide empty states
                             $('#no-comments-alert').hide();

@@ -180,3 +180,40 @@ function date_ymd(string|null $date = null): string
 
     return date('Y-m-d', $timestamp);
 }
+
+function format_comment_time(string|null $datetime): string
+{
+    if (empty($datetime)) {
+        return '';
+    }
+
+    $timestamp = strtotime($datetime);
+    if ($timestamp === false) {
+        return esc($datetime);
+    }
+
+    $now = time();
+    $diff = $now - $timestamp;
+
+    // Guard against small future timezone/clock drift offsets
+    if ($diff < 0) {
+        $diff = 0;
+    }
+
+    if ($diff < 60) {
+        return 'Just now';
+    }
+
+    if ($diff < 3600) {
+        $minutes = floor($diff / 60);
+        return $minutes . ' ' . ($minutes == 1 ? 'minute' : 'minutes') . ' ago';
+    }
+
+    if ($diff < 86400) {
+        $hours = floor($diff / 3600);
+        return $hours . ' ' . ($hours == 1 ? 'hour' : 'hours') . ' ago';
+    }
+
+    return date('d-m-Y H:i', $timestamp);
+}
+
