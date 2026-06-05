@@ -37,6 +37,11 @@ class TagsController extends BaseController
             'status' => $status,
             'property_id' => $this->request->getGet('property_id'),
             'subsidiary_id' => $this->request->getGet('subsidiary_id'),
+            'vendor_id' => $this->request->getGet('vendor_id'),
+            'al_end_date_from' => $this->request->getGet('al_end_date_from'),
+            'al_end_date_to' => $this->request->getGet('al_end_date_to'),
+            'sort_by' => $this->request->getGet('sort_by'),
+            'sort_dir' => $this->request->getGet('sort_dir'),
         ];
         $data['tags'] = $tagModel->filterTags($filters, 25);
         $data['pager'] = $tagModel->pager;

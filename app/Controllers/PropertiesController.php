@@ -13,9 +13,14 @@ class PropertiesController extends BaseController
         $filters = [
             'keyword' => $this->request->getGet('keyword'),
             'subsidiary_id' => $this->request->getGet('subsidiary_id'),
+            'is_epp' => $this->request->getGet('is_epp'),
+            'is_shop' => $this->request->getGet('is_shop'),
+            'sort_by' => $this->request->getGet('sort_by'),
+            'sort_dir' => $this->request->getGet('sort_dir'),
         ];
 
-        $data['properties'] = $propertiesModel->filterProperties($filters);
+        $data['properties'] = $propertiesModel->filterProperties($filters, 25);
+        $data['pager'] = $propertiesModel->pager;
         $data['filters'] = $filters;
 
         return view('properties/list', $data);

@@ -21,6 +21,8 @@ class JiraController extends BaseController
             'subsidiary_id' => $this->request->getGet('subsidiary_id'),
             'created_at_from' => $this->request->getGet('created_at_from'),
             'created_at_to' => $this->request->getGet('created_at_to'),
+            'sort_by' => $this->request->getGet('sort_by'),
+            'sort_dir' => $this->request->getGet('sort_dir'),
         ];
 
         $data['jiraTickets'] = $jiraHistoryModel->filterJiraTickets($filters, 25);

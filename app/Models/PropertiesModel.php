@@ -74,19 +74,44 @@ class PropertiesModel extends Model
      * @param mixed $filters
      * @return array
      */
-    public function filterProperties($filters = [])
+    public function filterProperties($filters = [], $paginate = 0)
     {
-        $builder = $this->builder();
+        $this->select('properties.*');
 
         if (!empty($filters['keyword'])) {
-            $builder->like('name', $filters['keyword']);
+            $this->like('properties.name', $filters['keyword']);
         }
 
         if (!empty($filters['subsidiary_id'])) {
-            $builder->where('subsidiary_id', $filters['subsidiary_id']);
+            $this->where('properties.subsidiary_id', $filters['subsidiary_id']);
         }
 
-        return $builder->get()->getResultArray();
+        if (isset($filters['is_epp']) && $filters['is_epp'] !== '') {
+            $this->where('properties.is_epp', $filters['is_epp']);
+        }
+
+        if (isset($filters['is_shop']) && $filters['is_shop'] !== '') {
+            $this->where('properties.is_shop', $filters['is_shop']);
+        }
+
+        $sortBy = $filters['sort_by'] ?? 'name';
+        $sortDir = $filters['sort_dir'] ?? 'asc';
+        if (!in_array(strtolower($sortDir), ['asc', 'desc'])) {
+            $sortDir = 'asc';
+        }
+
+        $allowedColumns = ['id', 'subsidiary_id', 'name', 'is_epp', 'is_shop'];
+        if (in_array($sortBy, $allowedColumns)) {
+            $this->orderBy($sortBy, $sortDir);
+        } else {
+            $this->orderBy('name', 'ASC');
+        }
+
+        if ($paginate > 0) {
+            return $this->paginate($paginate);
+        }
+
+        return $this->findAll();
     }
 
     protected $beforeInsert = ['setCreatedBy'];

@@ -17,6 +17,8 @@ class VendorsController extends BaseController
         $filters = [
             'keyword' => $this->request->getGet('keyword'),
             'id' => $this->request->getGet('id'),
+            'sort_by' => $this->request->getGet('sort_by'),
+            'sort_dir' => $this->request->getGet('sort_dir'),
         ];
 
         $data['vendors'] = $vendorsModel->filterVendors($filters);

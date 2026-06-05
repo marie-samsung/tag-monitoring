@@ -1,3 +1,22 @@
+<?php
+function getSortUrl($field, $currentSortBy, $currentSortDir) {
+    $queryParams = $_GET;
+    $queryParams['sort_by'] = $field;
+    if ($currentSortBy === $field) {
+        $queryParams['sort_dir'] = ($currentSortDir === 'asc') ? 'desc' : 'asc';
+    } else {
+        $queryParams['sort_dir'] = 'asc';
+    }
+    return site_url('tags') . '?' . http_build_query($queryParams);
+}
+
+function getSortIcon($field, $currentSortBy, $currentSortDir) {
+    if ($currentSortBy === $field) {
+        return $currentSortDir === 'asc' ? ' <i class="bi bi-arrow-up text-primary"></i>' : ' <i class="bi bi-arrow-down text-primary"></i>';
+    }
+    return ' <i class="bi bi-arrow-down-up text-muted" style="font-size: 0.75rem; opacity: 0.4;"></i>';
+}
+?>
 <?= $this->extend('layouts/default') ?>
 
 <?= $this->section('title') ?>
@@ -120,16 +139,44 @@ Martech TMS
     $subsidiariesModel = new SubsidiariesModel();
     $subsidiaries = $subsidiariesModel->Options();
 
+    $vendorsModel = new \App\Models\VendorsModel();
+    $vendors = $vendorsModel->Options();
+
     $tagsModel = new TagsModel();
+
+    $activeFiltersCount = 0;
+    $advancedFilterKeys = ['subsidiary_id', 'property_id', 'vendor_id', 'status', 'al_end_date_from', 'al_end_date_to'];
+    foreach ($advancedFilterKeys as $key) {
+        if ($key === 'status') {
+            $statusVal = $_GET['status'] ?? null;
+            if (!empty($statusVal) && $statusVal !== 'all' && $statusVal !== '145') {
+                $activeFiltersCount++;
+            }
+        } else {
+            if (!empty($_GET[$key]) || (isset($_GET[$key]) && $_GET[$key] !== '')) {
+                $activeFiltersCount++;
+            }
+        }
+    }
+    $hasActiveFilters = ($activeFiltersCount > 0);
 ?>
 
 <?= csrf_field() ?>
 
 <div class="container-fluid px-0">
     <!-- Page Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom flex-wrap gap-3">
         <div>
-            <h2 class="mb-0 fw-bold">Tag Inventory<span id="selectedCountBadge" class="badge bg-primary align-middle ms-2" style="display: none; font-size: 0.85rem; font-weight: 500; vertical-align: middle;">0 selected</span></h2>
+            <?php $totalTags = isset($pager) ? $pager->getTotal() : count($tags); ?>
+            <h2 class="mb-0 fw-bold d-flex align-items-center gap-2">
+                <span>Tag Inventory</span>
+                <span class="badge bg-secondary text-secondary" style="font-size: 0.85rem; font-weight: 600; padding: 0.35em 0.7em; border-radius: 20px;">
+                    <?= $totalTags ?>
+                </span>
+                <span id="selectedCountBadge" class="badge bg-primary text-white" style="display: none; font-size: 0.85rem; font-weight: 500; padding: 0.35em 0.7em; border-radius: 20px;">
+                    0 selected
+                </span>
+            </h2>
             <p class="text-secondary small mb-0">Manage and monitor marketing tag configurations, Adobe Launch rules, and expiration schedules.</p>
         </div>
         <div class="d-flex align-items-center gap-2">
@@ -219,88 +266,275 @@ Martech TMS
     </div>
 
     <!-- #region | SEARCH FILTER -->
-    <div class="apple-control-bar mb-4">
-        <form method="get" class="row g-2 w-100 m-0">
-            <div class="col">
-                <input 
-                    type="text" 
-                    name="keyword" 
-                    class="form-control form-select-xs" 
-                    placeholder="Search..."
-                    value="<?= esc($_GET['keyword'] ?? '') ?>"
-                >
-            </div>
+    <form method="get" class="m-0" id="filterForm">
+        <!-- Primary Search Bar -->
+        <div class="apple-control-bar mb-3">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <!-- Search Input -->
+                <div class="position-relative flex-grow-1" style="min-width: 250px;">
+                    <i class="bi bi-search text-muted position-absolute" style="left: 14px; top: 50%; transform: translateY(-50%); font-size: 0.9rem;"></i>
+                    <input 
+                        type="text" 
+                        name="keyword" 
+                        class="form-control form-control-xs" 
+                        style="height: 36px; padding-left: 36px !important; border-radius: 20px;"
+                        placeholder="Search tags..."
+                        value="<?= esc($_GET['keyword'] ?? '') ?>"
+                    >
+                </div>
+                
+                <!-- Toggle Filters Button -->
+                <button type="button" class="apple-btn-secondary btn-sm d-inline-flex align-items-center gap-2" 
+                        style="height: 36px; border-radius: 20px; font-weight: 500;" 
+                        data-bs-toggle="collapse" 
+                        data-bs-target="#advancedFiltersCollapse" 
+                        aria-expanded="<?= $hasActiveFilters ? 'true' : 'false' ?>" 
+                        aria-controls="advancedFiltersCollapse">
+                    <i class="bi bi-funnel"></i>
+                    <span>Filters</span>
+                    <?php if ($activeFiltersCount > 0): ?>
+                        <span class="badge bg-primary text-white rounded-circle px-1.5 py-0.5" style="font-size: 0.75rem; min-width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center;">
+                            <?= $activeFiltersCount ?>
+                        </span>
+                    <?php endif; ?>
+                </button>
 
-            <div class="col">
-                <select name="subsidiary_id" class="form-select form-select-xs">
-                    <option value="">All Subsidiaries</option>
-                    <?php foreach ($subsidiaries as $value => $label): ?>
-                        <option value="<?= esc($value) ?>"
-                            <?= old('subsidiary_id', $filters['subsidiary_id'] ?? '') == $value ? 'selected' : '' ?>>
-                            <?= esc($label) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
+                <!-- Action Buttons -->
+                <button type="submit" class="apple-btn-primary btn-sm px-4" style="height: 36px; border-radius: 20px;">Apply</button>
+                <?php if (!empty($_GET)): ?>
+                    <a href="<?= site_url('tags') ?>" class="apple-btn-secondary btn-sm px-4 text-decoration-none d-inline-flex align-items-center justify-content-center" style="height: 36px; border-radius: 20px;">Clear</a>
+                <?php endif; ?>
             </div>
+        </div>
 
-            <div class="col">
-                <select name="property_id" class="form-select searchable-select">
-                    <option value="">All Properties</option>
-                    <?php foreach ($propertyOptions as $value => $label): ?>
-                        <option value="<?= esc($value) ?>"
-                            <?= old('property_id', $filters['property_id'] ?? '') == $value ? 'selected' : '' ?>>
-                            <?= esc($label) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
+        <!-- Collapsible Advanced Filters Panel -->
+        <div class="collapse <?= $hasActiveFilters ? 'show' : '' ?> mb-4" id="advancedFiltersCollapse">
+            <div class="apple-card" style="background-color: var(--color-bg-base); border: 1px solid rgba(0, 0, 0, 0.05); box-shadow: none; padding: 20px;">
+                <h5 class="fw-bold mb-3 text-secondary d-flex align-items-center gap-2" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">
+                    <i class="bi bi-sliders text-primary"></i> Advanced Filters
+                </h5>
+                <div class="row g-3">
+                    <!-- Subsidiary -->
+                    <div class="col-md-4 col-lg-3">
+                        <label class="form-label-xs fw-semibold text-secondary mb-1">Subsidiary</label>
+                        <select name="subsidiary_id" class="form-select form-select-xs" style="height: 34px; border-radius: 8px;">
+                            <option value="">All Subsidiaries</option>
+                            <?php foreach ($subsidiaries as $value => $label): ?>
+                                <option value="<?= esc($value) ?>"
+                                    <?= old('subsidiary_id', $filters['subsidiary_id'] ?? '') == $value ? 'selected' : '' ?>>
+                                    <?= esc($label) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <!-- Property -->
+                    <div class="col-md-4 col-lg-3">
+                        <label class="form-label-xs fw-semibold text-secondary mb-1">Property</label>
+                        <select name="property_id" class="form-select form-select-xs searchable-select">
+                            <option value="">All Properties</option>
+                            <?php foreach ($propertyOptions as $value => $label): ?>
+                                <option value="<?= esc($value) ?>"
+                                    <?= old('property_id', $filters['property_id'] ?? '') == $value ? 'selected' : '' ?>>
+                                    <?= esc($label) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <!-- Vendor -->
+                    <div class="col-md-4 col-lg-3">
+                        <label class="form-label-xs fw-semibold text-secondary mb-1">Vendor</label>
+                        <select name="vendor_id" class="form-select form-select-xs searchable-select-vendor">
+                            <option value="">All Vendors</option>
+                            <?php foreach ($vendors as $value => $label): ?>
+                                <option value="<?= esc($value) ?>"
+                                    <?= old('vendor_id', $filters['vendor_id'] ?? '') == $value ? 'selected' : '' ?>>
+                                    <?= esc($label) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <!-- Status -->
+                    <div class="col-md-4 col-lg-3">
+                        <label class="form-label-xs fw-semibold text-secondary mb-1">Status</label>
+                        <select name="status" class="form-select form-select-xs" style="height: 34px; border-radius: 8px;">
+                            <option value="<?= Constants::STATUS_ALL ?>" <?= (old('status', $filters['status'] ?? null) == Constants::STATUS_ALL || empty($filters['status']) || $filters['status'] == 145) ? 'selected' : '' ?>>All Statuses</option>
+                            <?php foreach (Constants::STATUS as $value => $label): ?>
+                                <option value="<?= esc($value) ?>"
+                                    <?= (old('status', $filters['status'] ?? null) == $value && $filters['status'] != 145) ? 'selected' : '' ?>>
+                                    <?= esc($label) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <!-- Expiry From -->
+                    <div class="col-md-4 col-lg-3">
+                        <label class="form-label-xs fw-semibold text-secondary mb-1">Expiry From</label>
+                        <div class="position-relative">
+                            <input 
+                                type="text" 
+                                name="al_end_date_from" 
+                                id="al_end_date_from"
+                                class="form-control form-select-xs pe-5" 
+                                style="height: 34px; border-radius: 8px;"
+                                value="<?= esc($_GET['al_end_date_from'] ?? '') ?>"
+                                placeholder="YYYY-MM-DD"
+                            >
+                            <i class="bi bi-calendar-event text-muted position-absolute" style="right: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; font-size: 0.875rem;"></i>
+                        </div>
+                    </div>
+
+                    <!-- Expiry To -->
+                    <div class="col-md-4 col-lg-3">
+                        <label class="form-label-xs fw-semibold text-secondary mb-1">Expiry To</label>
+                        <div class="position-relative">
+                            <input 
+                                type="text" 
+                                name="al_end_date_to" 
+                                id="al_end_date_to"
+                                class="form-control form-select-xs pe-5" 
+                                style="height: 34px; border-radius: 8px;"
+                                value="<?= esc($_GET['al_end_date_to'] ?? '') ?>"
+                                placeholder="YYYY-MM-DD"
+                            >
+                            <i class="bi bi-calendar-event text-muted position-absolute" style="right: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; font-size: 0.875rem;"></i>
+                        </div>
+                    </div>
+                </div>
             </div>
+        </div>
+        <input type="hidden" name="sort_by" value="<?= esc($filters['sort_by'] ?? '') ?>">
+        <input type="hidden" name="sort_dir" value="<?= esc($filters['sort_dir'] ?? 'desc') ?>">
+    </form>
 
-            <div class="col">
-                <select name="status" class="form-select form-select-xs">
-                    <option value="<?= Constants::STATUS_ALL ?>" <?= (old('status', $filters['status'] ?? null) == Constants::STATUS_ALL || empty($filters['status'])) ? 'selected' : '' ?>>All Status</option>
-                    <?php foreach (Constants::STATUS as $value => $label): ?>
-                        <option value="<?= esc($value) ?>"
-                            <?= old('status', $filters['status'] ?? null) == $value ? 'selected' : '' ?>>
-                            <?= esc($label) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-
-            <div class="col-md-2 d-flex align-items-center gap-2">
-                <button class="apple-btn-primary btn-sm w-100">Filter</button>
-                <a href="<?= site_url('tags') ?>" class="apple-btn-secondary btn-sm w-100 text-center text-decoration-none">Clear</a>
-            </div>
-
-        </form>
-    </div>
+    <!-- Active Filters Pills -->
+    <?php if ($activeFiltersCount > 0): ?>
+        <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
+            <span class="text-secondary small fw-medium">Active Filters:</span>
+            <?php
+            foreach ($advancedFilterKeys as $key) {
+                if ($key === 'status') {
+                    $val = $_GET['status'] ?? null;
+                    if (empty($val) || $val === 'all' || $val === '145') {
+                        continue;
+                    }
+                    $label = 'Status: ' . (Constants::STATUS[$val] ?? $val);
+                } elseif ($key === 'al_end_date_from') {
+                    $val = $_GET['al_end_date_from'] ?? null;
+                    if (empty($val)) continue;
+                    $label = 'Expiry From: ' . date('d-m-Y', strtotime($val));
+                } elseif ($key === 'al_end_date_to') {
+                    $val = $_GET['al_end_date_to'] ?? null;
+                    if (empty($val)) continue;
+                    $label = 'Expiry To: ' . date('d-m-Y', strtotime($val));
+                } else {
+                    if (empty($_GET[$key]) && (!isset($_GET[$key]) || $_GET[$key] === '')) {
+                        continue;
+                    }
+                    $val = $_GET[$key];
+                    if ($key === 'subsidiary_id') {
+                        $label = 'Subsidiary: ' . ($subsidiaries[$val] ?? $val);
+                    } elseif ($key === 'property_id') {
+                        $label = 'Property: ' . ($propertyOptions[$val] ?? $val);
+                    } elseif ($key === 'vendor_id') {
+                        $label = 'Vendor: ' . ($vendors[$val] ?? $val);
+                    }
+                }
+                
+                $tempParams = $_GET;
+                unset($tempParams[$key]);
+                $clearUrl = site_url('tags') . '?' . http_build_query($tempParams);
+                ?>
+                <a href="<?= $clearUrl ?>" class="badge bg-secondary text-decoration-none d-inline-flex align-items-center gap-1.5 py-1.5 px-2.5 rounded-pill border border-secondary" style="font-size: 0.8rem; font-weight: 500;">
+                    <span><?= esc($label) ?></span>
+                    <i class="bi bi-x-circle-fill text-muted" style="font-size: 0.75rem;"></i>
+                </a>
+                <?php
+            }
+            ?>
+        </div>
+    <?php endif; ?>
     <!-- #endregion -->
 
     <!-- #region | TAGS TABLE -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <span class="text-secondary small fw-medium">
+            Showing <?= count($tags) ?> of <?= $totalTags ?> results
+        </span>
+    </div>
+
     <div class="apple-table-container">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0" id="tblTags">
             <thead>
                 <tr>
-                    <th class="form-label-sm fw-semibold">#</th>
+                    <?php
+                    $currentSortBy = $filters['sort_by'] ?? '';
+                    $currentSortDir = $filters['sort_dir'] ?? 'desc';
+                    ?>
+                    <th class="form-label-sm fw-semibold">
+                        <a href="<?= getSortUrl('id', $currentSortBy, $currentSortDir) ?>" class="text-decoration-none text-dark d-inline-flex align-items-center">
+                            # <?= getSortIcon('id', $currentSortBy, $currentSortDir) ?>
+                        </a>
+                    </th>
                     <th><input type="checkbox" id="selectAllTags" title="Select All" class="form-check-input"></th>
-                    <th class="form-label-sm fw-semibold">Subsidiary</th>
-                    <th class="form-label-sm fw-semibold">Property</th>
-                    <th class="form-label-sm fw-semibold">Name</th>
-                    <th class="form-label-sm fw-semibold">Status</th>
-                    <th class="form-label-sm fw-semibold">Days</th>
-                    <th class="form-label-sm fw-semibold">End Date</th>
-                    <th class="form-label-sm fw-semibold">Updated</th>
-                    <th class="form-label-sm fw-semibold">Actions</th>
+                    <th class="form-label-sm fw-semibold">
+                        <a href="<?= getSortUrl('subsidiary_id', $currentSortBy, $currentSortDir) ?>" class="text-decoration-none text-dark d-inline-flex align-items-center">
+                            Subsidiary <?= getSortIcon('subsidiary_id', $currentSortBy, $currentSortDir) ?>
+                        </a>
+                    </th>
+                    <th class="form-label-sm fw-semibold">
+                        <a href="<?= getSortUrl('property_id', $currentSortBy, $currentSortDir) ?>" class="text-decoration-none text-dark d-inline-flex align-items-center">
+                            Property <?= getSortIcon('property_id', $currentSortBy, $currentSortDir) ?>
+                        </a>
+                    </th>
+                    <th class="form-label-sm fw-semibold">
+                        <a href="<?= getSortUrl('name', $currentSortBy, $currentSortDir) ?>" class="text-decoration-none text-dark d-inline-flex align-items-center">
+                            Name <?= getSortIcon('name', $currentSortBy, $currentSortDir) ?>
+                        </a>
+                    </th>
+                    <th class="form-label-sm fw-semibold">
+                        <a href="<?= getSortUrl('status', $currentSortBy, $currentSortDir) ?>" class="text-decoration-none text-dark d-inline-flex align-items-center">
+                            Status <?= getSortIcon('status', $currentSortBy, $currentSortDir) ?>
+                        </a>
+                    </th>
+                    <th class="form-label-sm fw-semibold">
+                        <a href="<?= getSortUrl('days', $currentSortBy, $currentSortDir) ?>" class="text-decoration-none text-dark d-inline-flex align-items-center">
+                            Days <?= getSortIcon('days', $currentSortBy, $currentSortDir) ?>
+                        </a>
+                    </th>
+                    <th class="form-label-sm fw-semibold">
+                        <a href="<?= getSortUrl('al_end_date', $currentSortBy, $currentSortDir) ?>" class="text-decoration-none text-dark d-inline-flex align-items-center">
+                            End Date <?= getSortIcon('al_end_date', $currentSortBy, $currentSortDir) ?>
+                        </a>
+                    </th>
+                    <th class="form-label-sm fw-semibold">
+                        <a href="<?= getSortUrl('updated_at', $currentSortBy, $currentSortDir) ?>" class="text-decoration-none text-dark d-inline-flex align-items-center">
+                            Updated <?= getSortIcon('updated_at', $currentSortBy, $currentSortDir) ?>
+                        </a>
+                    </th>
+                    <th class="form-label-sm fw-semibold text-dark">Actions</th>
                 </tr>
             </thead>
             <tbody>
-                <?php
-                    foreach ($tags as $tag): 
-                    $ticketId = (new JiraHistoryModel())->getLatestTag($tag['id'])['ticket_id'] ?? null;
-                    $subsidiaryId = $properties[$tag['property_id']]['subsidiary_id'];
-                    $subsidiary = $subsidiaries[$subsidiaryId];
-                ?>
+                <?php if (empty($tags)): ?>
+                    <tr>
+                        <td colspan="10" class="text-center py-5 text-muted">
+                            <i class="bi bi-inbox fs-2 mb-2 d-block text-secondary" style="opacity: 0.5;"></i>
+                            <span class="fw-semibold">No tags found</span>
+                            <p class="small text-secondary mb-0">Try adjusting your filters or search keywords.</p>
+                        </td>
+                    </tr>
+                <?php else: ?>
+                    <?php
+                        foreach ($tags as $tag): 
+                        $ticketId = (new JiraHistoryModel())->getLatestTag($tag['id'])['ticket_id'] ?? null;
+                        $subsidiaryId = $properties[$tag['property_id']]['subsidiary_id'];
+                        $subsidiary = $subsidiaries[$subsidiaryId];
+                    ?>
                     <tr>
                         <!-- ID -->
                         <td><?= $tag['id'] ?></td>
@@ -378,6 +612,7 @@ Martech TMS
                         </td>
                     </tr>
                 <?php endforeach; ?>
+                <?php endif; ?>
             </tbody>
         </table>
         </div>
@@ -407,11 +642,24 @@ Martech TMS
     </a>
 </div>
 
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    flatpickr("#al_end_date_from, #al_end_date_to", {
+        dateFormat: "Y-m-d",
+        disableMobile: "true"
+    });
+
     $('.searchable-select').select2({
         width: '100%',
         placeholder: "All Properties",
+        allowClear: true
+    });
+
+    $('.searchable-select-vendor').select2({
+        width: '100%',
+        placeholder: "All Vendors",
         allowClear: true
     });
 
@@ -490,26 +738,20 @@ document.addEventListener('DOMContentLoaded', function () {
     let lastChecked = null;
 
     table.addEventListener('click', function (e) {
-        // If clicking on an anchor tag, button, select, label, or an input that is not our tag checkboxes, do not toggle selection
         const isCheckbox = e.target.matches('input[name="tag_ids[]"]');
         if (!isCheckbox && e.target.closest('a, button, select, label, input')) {
             return;
         }
         
-        // Find the tr row
         const row = e.target.closest('tr');
         if (row && row.parentNode.tagName === 'TBODY') {
             const cb = row.querySelector('input[name="tag_ids[]"]');
             if (cb) {
-                // If they clicked the checkbox directly, it's already toggled by the browser's default action.
-                // If they clicked the row (not the checkbox), toggle the checkbox state.
                 if (!isCheckbox) {
                     cb.checked = !cb.checked;
                 }
                 
-                // If shift key is held and we have a lastChecked checkbox
                 if (e.shiftKey && lastChecked && lastChecked !== cb) {
-                    // Clear any text selection that may have occurred
                     window.getSelection().removeAllRanges();
                     
                     const checkboxes = Array.from(table.querySelectorAll('input[name="tag_ids[]"]'));
@@ -526,10 +768,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 }
                 
-                // Update lastChecked to the one just clicked
                 lastChecked = cb;
                 
-                // If we clicked the row, we need to dispatch the change event to update styles & buttons
                 if (!isCheckbox) {
                     cb.dispatchEvent(new Event('change', { bubbles: true }));
                 }
@@ -579,27 +819,19 @@ document.addEventListener('DOMContentLoaded', function () {
     window.copyTagName = function(text, el) {
         const temp = document.createElement('textarea');
         temp.value = text;
-
         temp.style.position = 'fixed';
         temp.style.left = '-9999px';
-
         document.body.appendChild(temp);
-
         temp.focus();
         temp.select();
-
         document.execCommand('copy');
-
         document.body.removeChild(temp);
 
         el.innerHTML = '<i class="bi bi-check-lg text-success fs-7"></i>';
-
         setTimeout(() => {
             el.innerHTML = '<i class="bi bi-copy text-secondary fs-7"></i>';
         }, 1200);
     };
 });
-
 </script>
-
 <?= $this->endSection() ?>

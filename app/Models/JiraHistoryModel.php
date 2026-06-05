@@ -87,7 +87,22 @@ class JiraHistoryModel extends Model
         // Use a subquery to fetch the latest entry per ticket_id without triggering ONLY_FULL_GROUP_BY
         $this->where('id IN (SELECT MAX(id) FROM jira_history GROUP BY ticket_id)', null, false);
         
-        $this->orderBy('created_at', 'DESC');
+        $sortBy = $filters['sort_by'] ?? null;
+        $sortDir = $filters['sort_dir'] ?? 'desc';
+        if (!in_array(strtolower($sortDir), ['asc', 'desc'])) {
+            $sortDir = 'desc';
+        }
+
+        if (!empty($sortBy)) {
+            $allowedColumns = ['id', 'subsidiary_id', 'property_id', 'ticket_id', 'type', 'created_at'];
+            if (in_array($sortBy, $allowedColumns)) {
+                $this->orderBy($sortBy, $sortDir);
+            } else {
+                $this->orderBy('created_at', 'DESC');
+            }
+        } else {
+            $this->orderBy('created_at', 'DESC');
+        }
 
         if ($paginate > 0) {
             return $this->paginate($paginate);

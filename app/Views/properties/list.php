@@ -1,3 +1,22 @@
+<?php
+function getSortUrl($field, $currentSortBy, $currentSortDir) {
+    $queryParams = $_GET;
+    $queryParams['sort_by'] = $field;
+    if ($currentSortBy === $field) {
+        $queryParams['sort_dir'] = ($currentSortDir === 'asc') ? 'desc' : 'asc';
+    } else {
+        $queryParams['sort_dir'] = 'asc';
+    }
+    return site_url('properties') . '?' . http_build_query($queryParams);
+}
+
+function getSortIcon($field, $currentSortBy, $currentSortDir) {
+    if ($currentSortBy === $field) {
+        return $currentSortDir === 'asc' ? ' <i class="bi bi-arrow-up text-primary"></i>' : ' <i class="bi bi-arrow-down text-primary"></i>';
+    }
+    return ' <i class="bi bi-arrow-down-up text-muted" style="font-size: 0.75rem; opacity: 0.4;"></i>';
+}
+?>
 <?= $this->extend('layouts/default') ?>
 
 <?= $this->section('title') ?>
@@ -13,106 +32,253 @@ Properties List
     $subsidiaryOptions = $subsidiariesModel->Options();
 
     helper('custom_functions');
+
+    $activeFiltersCount = 0;
+    $advancedFilterKeys = ['subsidiary_id', 'is_epp', 'is_shop'];
+    foreach ($advancedFilterKeys as $key) {
+        if (isset($_GET[$key]) && $_GET[$key] !== '') {
+            $activeFiltersCount++;
+        }
+    }
+    $hasActiveFilters = ($activeFiltersCount > 0);
 ?>
 
 <?= csrf_field() ?>
 
 <div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center">
-        <h2>Properties</h2>
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+        <div>
+            <?php $totalProperties = isset($pager) ? $pager->getTotal() : count($properties); ?>
+            <h2 class="mb-0 fw-bold d-flex align-items-center gap-2">
+                <span>Properties</span>
+                <span class="badge bg-secondary text-secondary" style="font-size: 0.85rem; font-weight: 600; padding: 0.35em 0.7em; border-radius: 20px;">
+                    <?= $totalProperties ?>
+                </span>
+            </h2>
+            <p class="text-secondary small mb-0">Overview of property domains, platforms, AEM configuration refs, and shops.</p>
+        </div>
         <div class="d-flex align-items-center gap-2">
-            <a href="<?= site_url('properties/create') ?>" title="Add a new property" class="apple-btn-primary btn-sm ms-auto px-3">Create New</a>
+            <a href="<?= site_url('properties/create') ?>" title="Add a new property" class="apple-btn-primary btn-sm px-3">Create New</a>
         </div>
     </div>
 
     <!-- #region | SEARCH FILTER -->
-    <div class="apple-control-bar mb-4">
-        <form method="get" class="row g-2 w-100 m-0">
+    <form method="get" class="m-0" id="filterForm">
+        <!-- Primary Search Bar -->
+        <div class="apple-control-bar mb-3">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <!-- Search Input -->
+                <div class="position-relative flex-grow-1" style="min-width: 250px;">
+                    <i class="bi bi-search text-muted position-absolute" style="left: 14px; top: 50%; transform: translateY(-50%); font-size: 0.9rem;"></i>
+                    <input 
+                        type="text" 
+                        name="keyword" 
+                        class="form-control form-control-xs" 
+                        style="height: 36px; padding-left: 36px !important; border-radius: 20px;"
+                        placeholder="Search properties..."
+                        value="<?= esc($_GET['keyword'] ?? '') ?>"
+                    >
+                </div>
+                
+                <!-- Toggle Filters Button -->
+                <button type="button" class="apple-btn-secondary btn-sm d-inline-flex align-items-center gap-2" 
+                        style="height: 36px; border-radius: 20px; font-weight: 500;" 
+                        data-bs-toggle="collapse" 
+                        data-bs-target="#advancedFiltersCollapse" 
+                        aria-expanded="<?= $hasActiveFilters ? 'true' : 'false' ?>" 
+                        aria-controls="advancedFiltersCollapse">
+                    <i class="bi bi-funnel"></i>
+                    <span>Filters</span>
+                    <?php if ($activeFiltersCount > 0): ?>
+                        <span class="badge bg-primary text-white rounded-circle px-1.5 py-0.5" style="font-size: 0.75rem; min-width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center;">
+                            <?= $activeFiltersCount ?>
+                        </span>
+                    <?php endif; ?>
+                </button>
 
-            <div class="col">
-                <input 
-                    type="text" 
-                    name="keyword" 
-                    class="form-control form-control-xs" 
-                    placeholder="Search..."
-                    value="<?= esc($_GET['keyword'] ?? '') ?>"
-                >
+                <!-- Action Buttons -->
+                <button type="submit" class="apple-btn-primary btn-sm px-4" style="height: 36px; border-radius: 20px;">Apply</button>
+                <?php if (!empty($_GET)): ?>
+                    <a href="<?= site_url('properties') ?>" class="apple-btn-secondary btn-sm px-4 text-decoration-none d-inline-flex align-items-center justify-content-center" style="height: 36px; border-radius: 20px;">Clear</a>
+                <?php endif; ?>
             </div>
+        </div>
 
-            <div class="col">
-                <select name="subsidiary_id" class="form-select form-select-xs">
-                    <option value="">All Subsidiaries</option>
-                    <?php foreach ($subsidiaryOptions as $value => $label): ?>
-                        <option value="<?= esc($value) ?>"
-                            <?= old('subsidiary_id', $filters['subsidiary_id'] ?? null) == $value ? 'selected' : '' ?>>
-                            <?= esc($label) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
+        <!-- Collapsible Advanced Filters Panel -->
+        <div class="collapse <?= $hasActiveFilters ? 'show' : '' ?> mb-4" id="advancedFiltersCollapse">
+            <div class="apple-card" style="background-color: var(--color-bg-base); border: 1px solid rgba(0, 0, 0, 0.05); box-shadow: none; padding: 20px;">
+                <h5 class="fw-bold mb-3 text-secondary d-flex align-items-center gap-2" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">
+                    <i class="bi bi-sliders text-primary"></i> Advanced Filters
+                </h5>
+                <div class="row g-3">
+                    <!-- Subsidiary -->
+                    <div class="col-md-4 col-lg-3">
+                        <label class="form-label-xs fw-semibold text-secondary mb-1">Subsidiary</label>
+                        <select name="subsidiary_id" class="form-select form-select-xs" style="height: 34px; border-radius: 8px;">
+                            <option value="">All Subsidiaries</option>
+                            <?php foreach ($subsidiaryOptions as $value => $label): ?>
+                                <option value="<?= esc($value) ?>"
+                                    <?= old('subsidiary_id', $filters['subsidiary_id'] ?? '') == $value ? 'selected' : '' ?>>
+                                    <?= esc($label) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
 
-            <div class="col-md-2 d-flex align-items-center gap-2">
-                <button class="apple-btn-primary btn-sm w-100">Filter</button>
-                <a href="<?= site_url('properties') ?>" class="apple-btn-secondary btn-sm w-100 text-center text-decoration-none">Clear</a>
+                    <!-- Is EPP? -->
+                    <div class="col-md-4 col-lg-3">
+                        <label class="form-label-xs fw-semibold text-secondary mb-1">Is EPP?</label>
+                        <select name="is_epp" class="form-select form-select-xs" style="height: 34px; border-radius: 8px;">
+                            <option value="">All</option>
+                            <option value="1" <?= (isset($_GET['is_epp']) && $_GET['is_epp'] === '1') ? 'selected' : '' ?>>Yes</option>
+                            <option value="0" <?= (isset($_GET['is_epp']) && $_GET['is_epp'] === '0') ? 'selected' : '' ?>>No</option>
+                        </select>
+                    </div>
+
+                    <!-- Is Shop? -->
+                    <div class="col-md-4 col-lg-3">
+                        <label class="form-label-xs fw-semibold text-secondary mb-1">Is Shop?</label>
+                        <select name="is_shop" class="form-select form-select-xs" style="height: 34px; border-radius: 8px;">
+                            <option value="">All</option>
+                            <option value="1" <?= (isset($_GET['is_shop']) && $_GET['is_shop'] === '1') ? 'selected' : '' ?>>Yes</option>
+                            <option value="0" <?= (isset($_GET['is_shop']) && $_GET['is_shop'] === '0') ? 'selected' : '' ?>>No</option>
+                        </select>
+                    </div>
+                </div>
             </div>
-        </form>
-    </div>
+        </div>
+        <input type="hidden" name="sort_by" value="<?= esc($filters['sort_by'] ?? '') ?>">
+        <input type="hidden" name="sort_dir" value="<?= esc($filters['sort_dir'] ?? 'asc') ?>">
+    </form>
+
+    <!-- Active Filters Pills -->
+    <?php if ($activeFiltersCount > 0): ?>
+        <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
+            <span class="text-secondary small fw-medium">Active Filters:</span>
+            <?php
+            foreach ($advancedFilterKeys as $key) {
+                if (isset($_GET[$key]) && $_GET[$key] !== '') {
+                    $val = $_GET[$key];
+                    $label = '';
+                    if ($key === 'subsidiary_id') {
+                        $label = 'Subsidiary: ' . ($subsidiaryOptions[$val] ?? $val);
+                    } elseif ($key === 'is_epp') {
+                        $label = 'EPP: ' . ($val === '1' ? 'Yes' : 'No');
+                    } elseif ($key === 'is_shop') {
+                        $label = 'Shop: ' . ($val === '1' ? 'Yes' : 'No');
+                    }
+                    
+                    $tempParams = $_GET;
+                    unset($tempParams[$key]);
+                    $clearUrl = site_url('properties') . '?' . http_build_query($tempParams);
+                    ?>
+                    <a href="<?= $clearUrl ?>" class="badge bg-secondary text-decoration-none d-inline-flex align-items-center gap-1.5 py-1.5 px-2.5 rounded-pill border border-secondary" style="font-size: 0.8rem; font-weight: 500;">
+                        <span><?= esc($label) ?></span>
+                        <i class="bi bi-x-circle-fill text-muted" style="font-size: 0.75rem;"></i>
+                    </a>
+                    <?php
+                }
+            }
+            ?>
+        </div>
+    <?php endif; ?>
     <!-- #endregion -->
 
     <!-- #region | PROPERTIES TABLE -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <span class="text-secondary small fw-medium">
+            Showing <?= count($properties) ?> of <?= $totalProperties ?> results
+        </span>
+    </div>
+
     <div class="apple-table-container">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0" id="tblProperties">
                 <thead>
                     <tr>
-                        <th class="form-label-sm fw-semibold">#</th>
-                        <th class="form-label-sm fw-semibold">Subsidiary</th>
-                        <th class="form-label-sm fw-semibold">Property</th>
-                        <th class="form-label-sm fw-semibold">Is EPP?</th>
-                        <th class="form-label-sm fw-semibold">Is AEM?</th>
-                        <th class="form-label-sm fw-semibold">Is Shop?</th>
-                        <!-- <th></th> -->
+                        <?php
+                        $currentSortBy = $filters['sort_by'] ?? '';
+                        $currentSortDir = $filters['sort_dir'] ?? 'asc';
+                        ?>
+                        <th class="form-label-sm fw-semibold">
+                            <a href="<?= getSortUrl('id', $currentSortBy, $currentSortDir) ?>" class="text-decoration-none text-dark d-inline-flex align-items-center">
+                                # <?= getSortIcon('id', $currentSortBy, $currentSortDir) ?>
+                            </a>
+                        </th>
+                        <th class="form-label-sm fw-semibold">
+                            <a href="<?= getSortUrl('subsidiary_id', $currentSortBy, $currentSortDir) ?>" class="text-decoration-none text-dark d-inline-flex align-items-center">
+                                Subsidiary <?= getSortIcon('subsidiary_id', $currentSortBy, $currentSortDir) ?>
+                            </a>
+                        </th>
+                        <th class="form-label-sm fw-semibold">
+                            <a href="<?= getSortUrl('name', $currentSortBy, $currentSortDir) ?>" class="text-decoration-none text-dark d-inline-flex align-items-center">
+                                Property <?= getSortIcon('name', $currentSortBy, $currentSortDir) ?>
+                            </a>
+                        </th>
+                        <th class="form-label-sm fw-semibold">
+                            <a href="<?= getSortUrl('is_epp', $currentSortBy, $currentSortDir) ?>" class="text-decoration-none text-dark d-inline-flex align-items-center">
+                                Is EPP? <?= getSortIcon('is_epp', $currentSortBy, $currentSortDir) ?>
+                            </a>
+                        </th>
+                        <th class="form-label-sm fw-semibold text-dark">Is AEM?</th>
+                        <th class="form-label-sm fw-semibold">
+                            <a href="<?= getSortUrl('is_shop', $currentSortBy, $currentSortDir) ?>" class="text-decoration-none text-dark d-inline-flex align-items-center">
+                                Is Shop? <?= getSortIcon('is_shop', $currentSortBy, $currentSortDir) ?>
+                            </a>
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($properties as $property): ?>
+                    <?php if (empty($properties)): ?>
                         <tr>
-                            <td><?= $property['id'] ?></td>
-                            <td><?= $subsidiaryOptions[$property['subsidiary_id']] ?? 'Unknown' ?></td>
-                            <td class="form-label-sm">
-                                <span class="group-hover-container align-items-center">
-                                    <a href="<?= $property['ref_link'] ?>" class="apple-link-dark form-label-sm ms-1">
-                                        <?= $property['name'] ?>
-                                    </a>
-                                    <a href="javascript:void(0)" onclick="copyName('<?= esc($property['name']) ?>', this)" title="Copy property name" class="text-muted ms-2" style="transition: color 0.2s; text-decoration: none; line-height: 1;">
-                                        <i class="bi bi-copy" style="font-size: 0.85rem;"></i>
-                                    </a>
-                                </span>
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                <i class="bi bi-inbox fs-2 mb-2 d-block text-secondary" style="opacity: 0.5;"></i>
+                                <span class="fw-semibold">No properties found</span>
+                                <p class="small text-secondary mb-0">Try adjusting your filters or search keywords.</p>
                             </td>
-                            <td>
-                                <span class="badge <?= bool_class($property['is_epp']) ?>">
-                                    <?= esc(bool_label($property['is_epp'])) ?>
-                                </span>
-                            </td>
-                            <td>
-                                <span class="badge <?= bool_class(!$property['is_shop']) ?>">
-                                    <?= esc(bool_label(!$property['is_shop'])) ?>
-                                </span>
-                            </td>
-                            <td>
-                                <span class="badge <?= bool_class($property['is_shop']) ?>">
-                                    <?= esc(bool_label($property['is_shop'])) ?>
-                                </span>
-                            </td>
-                            <!-- <td class="gap-2">
-                                <a href="<?= site_url('properties/view/'.$property['id']) ?>" title="View property details" class="apple-btn-secondary btn-sm">View</a>
-                                <a href="<?= site_url('properties/update/'.$property['id']) ?>" title="Update property details" class="apple-btn-primary btn-sm">Update</a>
-                            </td> -->
                         </tr>
-                    <?php endforeach; ?>
+                    <?php else: ?>
+                        <?php foreach ($properties as $property): ?>
+                            <tr>
+                                <td><?= $property['id'] ?></td>
+                                <td><?= $subsidiaryOptions[$property['subsidiary_id']] ?? 'Unknown' ?></td>
+                                <td class="form-label-sm">
+                                    <span class="group-hover-container align-items-center">
+                                        <a href="<?= $property['ref_link'] ?>" class="apple-link-dark form-label-sm ms-1">
+                                            <?= $property['name'] ?>
+                                        </a>
+                                        <a href="javascript:void(0)" onclick="copyName('<?= esc($property['name']) ?>', this)" title="Copy property name" class="text-muted ms-2" style="transition: color 0.2s; text-decoration: none; line-height: 1;">
+                                            <i class="bi bi-copy" style="font-size: 0.85rem;"></i>
+                                        </a>
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge <?= bool_class($property['is_epp']) ?>">
+                                        <?= esc(bool_label($property['is_epp'])) ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge <?= bool_class(!$property['is_shop']) ?>">
+                                        <?= esc(bool_label(!$property['is_shop'])) ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge <?= bool_class($property['is_shop']) ?>">
+                                        <?= esc(bool_label($property['is_shop'])) ?>
+                                    </span>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </tbody>
             </table>
         </div>
+        <?php if (isset($pager) && $pager->getPageCount() > 1): ?>
+            <div class="mt-4 d-flex justify-content-center">
+                <?= $pager->links('default', 'apple_full') ?>
+            </div>
+        <?php endif; ?>
     </div>
     <!-- #endregion -->
 </div>

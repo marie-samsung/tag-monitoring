@@ -67,6 +67,19 @@ class VendorsModel extends Model
             $builder->where('id', $filters['id']);
         }
 
+        $sortBy = $filters['sort_by'] ?? 'name';
+        $sortDir = $filters['sort_dir'] ?? 'asc';
+        if (!in_array(strtolower($sortDir), ['asc', 'desc'])) {
+            $sortDir = 'asc';
+        }
+
+        $allowedColumns = ['id', 'name'];
+        if (in_array($sortBy, $allowedColumns)) {
+            $builder->orderBy($sortBy, $sortDir);
+        } else {
+            $builder->orderBy('name', 'ASC');
+        }
+
         return $builder->get()->getResultArray();
     }
 

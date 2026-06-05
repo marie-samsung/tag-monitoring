@@ -1,3 +1,22 @@
+<?php
+function getSortUrl($field, $currentSortBy, $currentSortDir) {
+    $queryParams = $_GET;
+    $queryParams['sort_by'] = $field;
+    if ($currentSortBy === $field) {
+        $queryParams['sort_dir'] = ($currentSortDir === 'asc') ? 'desc' : 'asc';
+    } else {
+        $queryParams['sort_dir'] = 'asc';
+    }
+    return site_url('vendors') . '?' . http_build_query($queryParams);
+}
+
+function getSortIcon($field, $currentSortBy, $currentSortDir) {
+    if ($currentSortBy === $field) {
+        return $currentSortDir === 'asc' ? ' <i class="bi bi-arrow-up text-primary"></i>' : ' <i class="bi bi-arrow-down text-primary"></i>';
+    }
+    return ' <i class="bi bi-arrow-down-up text-muted" style="font-size: 0.75rem; opacity: 0.4;"></i>';
+}
+?>
 <?= $this->extend('layouts/default') ?>
 
 <?= $this->section('title') ?>
@@ -14,6 +33,15 @@ Vendors List
     $vendorOptions = $vendorsModel->Options();
 
     helper('custom_functions');
+
+    $activeFiltersCount = 0;
+    $advancedFilterKeys = ['id'];
+    foreach ($advancedFilterKeys as $key) {
+        if (!empty($_GET[$key]) || (isset($_GET[$key]) && $_GET[$key] !== '')) {
+            $activeFiltersCount++;
+        }
+    }
+    $hasActiveFilters = ($activeFiltersCount > 0);
 ?>
 
 <style>
@@ -90,46 +118,113 @@ Vendors List
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
         <div>
-            <h2 class="mb-0 fw-bold">Vendors</h2>
+            <?php $totalVendors = count($vendors); ?>
+            <h2 class="mb-0 fw-bold d-flex align-items-center gap-2">
+                <span>Vendors</span>
+                <span class="badge bg-secondary text-secondary" style="font-size: 0.85rem; font-weight: 600; padding: 0.35em 0.7em; border-radius: 20px;">
+                    <?= $totalVendors ?>
+                </span>
+            </h2>
             <p class="text-secondary small mb-0">Overview of vendors and their tag count across different subsidiaries.</p>
         </div>
     </div>
 
     <!-- #region | SEARCH FILTER -->
-    <div class="apple-control-bar mb-4">
-        <form method="get" class="m-0">
-            <div class="row g-3 align-items-end">
-                <div class="col-md-5">
-                    <label class="form-label-xs fw-bold text-muted text-uppercase mb-1" style="letter-spacing: 0.5px; font-size: 0.65rem;">Search</label>
+    <form method="get" class="m-0" id="filterForm">
+        <!-- Primary Search Bar -->
+        <div class="apple-control-bar mb-3">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <!-- Search Input -->
+                <div class="position-relative flex-grow-1" style="min-width: 250px;">
+                    <i class="bi bi-search text-muted position-absolute" style="left: 14px; top: 50%; transform: translateY(-50%); font-size: 0.9rem;"></i>
                     <input 
                         type="text" 
                         name="keyword" 
-                        class="form-control form-select-xs" 
-                        placeholder="Search..."
+                        class="form-control form-control-xs" 
+                        style="height: 36px; padding-left: 36px !important; border-radius: 20px;"
+                        placeholder="Search vendors..."
                         value="<?= esc($_GET['keyword'] ?? '') ?>"
                     >
                 </div>
+                
+                <!-- Toggle Filters Button -->
+                <button type="button" class="apple-btn-secondary btn-sm d-inline-flex align-items-center gap-2" 
+                        style="height: 36px; border-radius: 20px; font-weight: 500;" 
+                        data-bs-toggle="collapse" 
+                        data-bs-target="#advancedFiltersCollapse" 
+                        aria-expanded="<?= $hasActiveFilters ? 'true' : 'false' ?>" 
+                        aria-controls="advancedFiltersCollapse">
+                    <i class="bi bi-funnel"></i>
+                    <span>Filters</span>
+                    <?php if ($activeFiltersCount > 0): ?>
+                        <span class="badge bg-primary text-white rounded-circle px-1.5 py-0.5" style="font-size: 0.75rem; min-width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center;">
+                            <?= $activeFiltersCount ?>
+                        </span>
+                    <?php endif; ?>
+                </button>
 
-                <div class="col-md-5">
-                    <label class="form-label-xs fw-bold text-muted text-uppercase mb-1" style="letter-spacing: 0.5px; font-size: 0.65rem;">Vendor</label>
-                    <select name="id" class="form-select searchable-select">
-                        <option value="">All Vendors</option>
-                        <?php foreach ($vendorOptions as $value => $label): ?>
-                            <option value="<?= esc($value) ?>"
-                                <?= old('id', $filters['id'] ?? null) == $value ? 'selected' : '' ?>>
-                                <?= esc($label) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
+                <!-- Action Buttons -->
+                <button type="submit" class="apple-btn-primary btn-sm px-4" style="height: 36px; border-radius: 20px;">Apply</button>
+                <?php if (!empty($_GET)): ?>
+                    <a href="<?= site_url('vendors') ?>" class="apple-btn-secondary btn-sm px-4 text-decoration-none d-inline-flex align-items-center justify-content-center" style="height: 36px; border-radius: 20px;">Clear</a>
+                <?php endif; ?>
+            </div>
+        </div>
 
-                <div class="col-md-2 d-flex align-items-center gap-2">
-                    <button class="apple-btn-primary btn-sm w-100" style="height: 31px;">Filter</button>
-                    <a href="<?= site_url('vendors') ?>" class="apple-btn-secondary btn-sm w-100 text-center text-decoration-none d-flex align-items-center justify-content-center" style="height: 31px;">Clear</a>
+        <!-- Collapsible Advanced Filters Panel -->
+        <div class="collapse <?= $hasActiveFilters ? 'show' : '' ?> mb-4" id="advancedFiltersCollapse">
+            <div class="apple-card" style="background-color: var(--color-bg-base); border: 1px solid rgba(0, 0, 0, 0.05); box-shadow: none; padding: 20px;">
+                <h5 class="fw-bold mb-3 text-secondary d-flex align-items-center gap-2" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">
+                    <i class="bi bi-sliders text-primary"></i> Advanced Filters
+                </h5>
+                <div class="row g-3">
+                    <!-- Vendor Option -->
+                    <div class="col-md-6 col-lg-4">
+                        <label class="form-label-xs fw-semibold text-secondary mb-1">Vendor</label>
+                        <select name="id" class="form-select form-select-xs searchable-select">
+                            <option value="">All Vendors</option>
+                            <?php foreach ($vendorOptions as $value => $label): ?>
+                                <option value="<?= esc($value) ?>"
+                                    <?= old('id', $filters['id'] ?? null) == $value ? 'selected' : '' ?>>
+                                    <?= esc($label) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
                 </div>
             </div>
-        </form>
-    </div>
+        </div>
+        <input type="hidden" name="sort_by" value="<?= esc($filters['sort_by'] ?? '') ?>">
+        <input type="hidden" name="sort_dir" value="<?= esc($filters['sort_dir'] ?? 'asc') ?>">
+    </form>
+
+    <!-- Active Filters Pills -->
+    <?php if ($activeFiltersCount > 0): ?>
+        <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
+            <span class="text-secondary small fw-medium">Active Filters:</span>
+            <?php
+            foreach ($advancedFilterKeys as $key) {
+                if (!empty($_GET[$key]) || (isset($_GET[$key]) && $_GET[$key] !== '')) {
+                    $val = $_GET[$key];
+                    $label = '';
+                    if ($key === 'id') {
+                        $label = 'Vendor: ' . ($vendorOptions[$val] ?? $val);
+                    }
+                    
+                    $tempParams = $_GET;
+                    unset($tempParams[$key]);
+                    $clearUrl = site_url('vendors') . '?' . http_build_query($tempParams);
+                    ?>
+                    <a href="<?= $clearUrl ?>" class="badge bg-secondary text-decoration-none d-inline-flex align-items-center gap-1.5 py-1.5 px-2.5 rounded-pill border border-secondary" style="font-size: 0.8rem; font-weight: 500;">
+                        <span><?= esc($label) ?></span>
+                        <i class="bi bi-x-circle-fill text-muted" style="font-size: 0.75rem;"></i>
+                    </a>
+                    <?php
+                }
+            }
+            ?>
+        </div>
+    <?php endif; ?>
     <!-- #endregion -->
 
     <!-- Legend -->
@@ -150,29 +245,49 @@ Vendors List
     </div>
 
     <!-- #region | PROPERTIES TABLE -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <span class="text-secondary small fw-medium">
+            Showing <?= count($vendors) ?> of <?= $totalVendors ?> results
+        </span>
+    </div>
+
     <div class="apple-table-container">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0" id="tblProperties">
                 <thead>
                     <tr>
-                        <th class="text-center" style="width: 60px;">#</th>
-                        <th>Vendor</th>
-                        <th class="text-center"><?= Constants::SUBSIDIARIES[Constants::SUBSIDIARY_SGE] ?></th>
-                        <th class="text-center"><?= Constants::SUBSIDIARIES[Constants::SUBSIDIARY_SESAR] ?></th>
-                        <th class="text-center"><?= Constants::SUBSIDIARIES[Constants::SUBSIDIARY_SETK] ?></th>
-                        <th class="text-center"><?= Constants::SUBSIDIARIES[Constants::SUBSIDIARY_SEIL] ?></th>
-                        <th class="text-center"><?= Constants::SUBSIDIARIES[Constants::SUBSIDIARY_SEILPS] ?></th>
-                        <th class="text-center"><?= Constants::SUBSIDIARIES[Constants::SUBSIDIARY_SELV] ?></th>
-                        <th class="text-center"><?= Constants::SUBSIDIARIES[Constants::SUBSIDIARY_SEEG] ?></th>
-                        <th class="text-center"><?= Constants::SUBSIDIARIES[Constants::SUBSIDIARY_SEMAG] ?></th>
-                        <th class="text-center"><?= Constants::SUBSIDIARIES[Constants::SUBSIDIARY_SEPAK] ?></th>
+                        <?php
+                        $currentSortBy = $filters['sort_by'] ?? '';
+                        $currentSortDir = $filters['sort_dir'] ?? 'asc';
+                        ?>
+                        <th class="text-center" style="width: 60px;">
+                            <a href="<?= getSortUrl('id', $currentSortBy, $currentSortDir) ?>" class="text-decoration-none text-dark d-inline-flex align-items-center">
+                                # <?= getSortIcon('id', $currentSortBy, $currentSortDir) ?>
+                            </a>
+                        </th>
+                        <th>
+                            <a href="<?= getSortUrl('name', $currentSortBy, $currentSortDir) ?>" class="text-decoration-none text-dark d-inline-flex align-items-center">
+                                Vendor <?= getSortIcon('name', $currentSortBy, $currentSortDir) ?>
+                            </a>
+                        </th>
+                        <th class="text-center text-dark"><?= Constants::SUBSIDIARIES[Constants::SUBSIDIARY_SGE] ?></th>
+                        <th class="text-center text-dark"><?= Constants::SUBSIDIARIES[Constants::SUBSIDIARY_SESAR] ?></th>
+                        <th class="text-center text-dark"><?= Constants::SUBSIDIARIES[Constants::SUBSIDIARY_SETK] ?></th>
+                        <th class="text-center text-dark"><?= Constants::SUBSIDIARIES[Constants::SUBSIDIARY_SEIL] ?></th>
+                        <th class="text-center text-dark"><?= Constants::SUBSIDIARIES[Constants::SUBSIDIARY_SEILPS] ?></th>
+                        <th class="text-center text-dark"><?= Constants::SUBSIDIARIES[Constants::SUBSIDIARY_SELV] ?></th>
+                        <th class="text-center text-dark"><?= Constants::SUBSIDIARIES[Constants::SUBSIDIARY_SEEG] ?></th>
+                        <th class="text-center text-dark"><?= Constants::SUBSIDIARIES[Constants::SUBSIDIARY_SEMAG] ?></th>
+                        <th class="text-center text-dark"><?= Constants::SUBSIDIARIES[Constants::SUBSIDIARY_SEPAK] ?></th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if (empty($vendors)): ?>
                         <tr>
-                            <td colspan="11" class="text-center py-5 text-muted fw-medium">
-                                No vendors found.
+                            <td colspan="11" class="text-center py-5 text-muted">
+                                <i class="bi bi-inbox fs-2 mb-2 d-block text-secondary" style="opacity: 0.5;"></i>
+                                <span class="fw-semibold">No vendors found</span>
+                                <p class="small text-secondary mb-0">Try adjusting your filters or search keywords.</p>
                             </td>
                         </tr>
                     <?php else: ?>

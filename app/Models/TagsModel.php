@@ -69,12 +69,42 @@ class TagsModel extends Model
             $this->where('properties.subsidiary_id', $filters['subsidiary_id']);
         }
 
-        // echo "<pre>";
-        // echo $builder->getCompiledSelect();
-        // echo "</pre>";
-        // die();
+        if (!empty($filters['vendor_id'])) {
+            $this->where('tags.vendor_id', $filters['vendor_id']);
+        }
 
-        $this->orderBy(
+        if (!empty($filters['al_end_date_from'])) {
+            $this->where('tags.al_end_date >=', $filters['al_end_date_from']);
+        }
+
+        if (!empty($filters['al_end_date_to'])) {
+            $this->where('tags.al_end_date <=', $filters['al_end_date_to']);
+        }
+
+        $sortBy = $filters['sort_by'] ?? null;
+        $sortDir = $filters['sort_dir'] ?? 'desc';
+        if (!in_array(strtolower($sortDir), ['asc', 'desc'])) {
+            $sortDir = 'desc';
+        }
+
+        if (!empty($sortBy)) {
+            if ($sortBy === 'id') {
+                $this->orderBy('tags.id', $sortDir);
+            } elseif ($sortBy === 'subsidiary_id') {
+                $this->orderBy('properties.subsidiary_id', $sortDir);
+            } elseif ($sortBy === 'property_id') {
+                $this->orderBy('properties.name', $sortDir);
+            } elseif ($sortBy === 'name') {
+                $this->orderBy('tags.name', $sortDir);
+            } elseif ($sortBy === 'status') {
+                $this->orderBy('tags.status', $sortDir);
+            } elseif ($sortBy === 'al_end_date' || $sortBy === 'days') {
+                $this->orderBy('tags.al_end_date', $sortDir);
+            } elseif ($sortBy === 'updated_at') {
+                $this->orderBy('tags.updated_at', $sortDir);
+            }
+        } else {
+            $this->orderBy(
                 '(CASE 
                     WHEN tags.al_end_date < CURDATE() AND tags.status = 1 THEN 0
                     WHEN tags.al_end_date <= DATE_ADD(CURDATE(), INTERVAL 9 DAY) AND tags.status = 1 THEN 1
@@ -85,8 +115,8 @@ class TagsModel extends Model
                     ELSE 6
                 END)', 'ASC', false
             );
-
-        $this->orderBy('properties.id', 'ASC');
+            $this->orderBy('properties.id', 'ASC');
+        }
 
         if ($paginate > 0) {
             return $this->paginate($paginate);
