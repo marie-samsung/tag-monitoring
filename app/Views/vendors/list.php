@@ -17,63 +17,6 @@ Vendors List
 ?>
 
 <style>
-    /* Premium Table Design Only */
-    .premium-table-wrapper {
-        background: #ffffff;
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-        border: 1px solid rgba(0,0,0,0.05);
-        overflow: hidden;
-    }
-
-    .premium-table {
-        margin-bottom: 0;
-        width: 100%;
-        border-collapse: separate !important;
-        border-spacing: 0 !important;
-    }
-
-    .premium-table thead {
-        background: linear-gradient(90deg, #f8f9fa 0%, #f1f3f5 100%);
-    }
-
-    .premium-table th {
-        font-weight: 600 !important;
-        color: #49494D !important;
-        text-transform: uppercase;
-        font-size: 0.75rem;
-        letter-spacing: 0.5px;
-        padding: 14px 12px !important;
-        border-bottom: 2px solid rgba(0,0,0,0.03) !important;
-        border-top: none !important;
-    }
-
-    .premium-table td {
-        padding: 14px 12px !important;
-        vertical-align: middle;
-        color: #1D1D1F;
-        border-bottom: 1px solid rgba(0,0,0,0.02) !important;
-        border-top: none !important;
-        transition: all 0.3s ease;
-        font-size: 0.875rem;
-    }
-
-    .premium-table tbody tr {
-        transition: all 0.3s ease;
-    }
-
-    .premium-table tbody tr:hover {
-        background: rgba(0, 113, 227, 0.02) !important;
-        transform: scale(1.001);
-        box-shadow: 0 4px 10px rgba(0,0,0,0.02);
-        position: relative;
-        z-index: 10;
-    }
-    
-    .premium-table tbody tr:last-child td {
-        border-bottom: none !important;
-    }
-
     /* Badge/Count Style */
     .premium-count-badge {
         display: inline-flex;
@@ -81,21 +24,22 @@ Vendors List
         justify-content: center;
         width: 30px;
         height: 30px;
-        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-        color: #0071E3;
+        background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+        color: #1b5e20;
         border-radius: 50%;
         font-weight: 600;
         font-size: 0.85rem;
         text-decoration: none;
         transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        box-shadow: 0 2px 4px rgba(0, 113, 227, 0.15);
+        box-shadow: 0 2px 4px rgba(27, 94, 32, 0.15);
+        border: 1px solid rgba(27, 94, 32, 0.1);
     }
 
     .premium-count-badge:hover {
-        background: linear-gradient(135deg, #0071E3 0%, #005bb5 100%);
+        background: linear-gradient(135deg, #1b5e20 0%, #123e15 100%);
         color: #ffffff !important;
         transform: scale(1.1) rotate(5deg);
-        box-shadow: 0 4px 10px rgba(0, 113, 227, 0.3);
+        box-shadow: 0 4px 10px rgba(27, 94, 32, 0.3);
     }
 
     .premium-count-empty {
@@ -106,58 +50,62 @@ Vendors List
     .vendor-name {
         font-size: 0.95rem;
         font-weight: 500;
-        color: #1e3c72;
+        color: var(--color-text-base);
     }
 </style>
 
 <?= csrf_field() ?>
 
-<div class="container-fluid">
-    <div class="d-flex justify-content-between">
-        <h2>Vendors</h2>
-        <!-- <div>
-            <a href="<?= site_url('vendors/create') ?>" title="Add a new vendor" class="apple-btn-primary btn-sm ms-auto px-2">Create New</a>
-        </div> -->
+<div class="container-fluid px-0">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+        <div>
+            <h2 class="mb-0 fw-bold">Vendors</h2>
+            <p class="text-secondary small mb-0">Overview of vendors and their tag count across different subsidiaries.</p>
+        </div>
     </div>
 
     <!-- #region | SEARCH FILTER -->
     <div class="apple-control-bar mb-4">
-        <form method="get" class="row g-2 w-100 m-0">
+        <form method="get" class="m-0">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-5">
+                    <label class="form-label-xs fw-bold text-muted text-uppercase mb-1" style="letter-spacing: 0.5px; font-size: 0.65rem;">Search</label>
+                    <input 
+                        type="text" 
+                        name="keyword" 
+                        class="form-control form-select-xs" 
+                        placeholder="Search..."
+                        value="<?= esc($_GET['keyword'] ?? '') ?>"
+                    >
+                </div>
 
-            <div class="col">
-                <input 
-                    type="text" 
-                    name="keyword" 
-                    class="form-control form-control-xs" 
-                    placeholder="Search..."
-                    value="<?= esc($_GET['keyword'] ?? '') ?>"
-                >
-            </div>
+                <div class="col-md-5">
+                    <label class="form-label-xs fw-bold text-muted text-uppercase mb-1" style="letter-spacing: 0.5px; font-size: 0.65rem;">Vendor</label>
+                    <select name="id" class="form-select searchable-select">
+                        <option value="">All Vendors</option>
+                        <?php foreach ($vendorOptions as $value => $label): ?>
+                            <option value="<?= esc($value) ?>"
+                                <?= old('id', $filters['id'] ?? null) == $value ? 'selected' : '' ?>>
+                                <?= esc($label) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
 
-            <div class="col">
-                <select name="id" class="form-select form-select-xs">
-                    <option value="">All Vendors</option>
-                    <?php foreach ($vendorOptions as $value => $label): ?>
-                        <option value="<?= esc($value) ?>"
-                            <?= old('id', $filters['id'] ?? null) == $value ? 'selected' : '' ?>>
-                            <?= esc($label) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-
-            <div class="col-md-2 d-flex align-items-center gap-2">
-                <button class="apple-btn-primary btn-sm w-100">Filter</button>
-                <a href="<?= site_url('vendors') ?>" class="apple-btn-secondary btn-sm w-100 text-center text-decoration-none">Clear</a>
+                <div class="col-md-2 d-flex align-items-center gap-2">
+                    <button class="apple-btn-primary btn-sm w-100" style="height: 31px;">Filter</button>
+                    <a href="<?= site_url('vendors') ?>" class="apple-btn-secondary btn-sm w-100 text-center text-decoration-none d-flex align-items-center justify-content-center" style="height: 31px;">Clear</a>
+                </div>
             </div>
         </form>
     </div>
     <!-- #endregion -->
 
     <!-- #region | PROPERTIES TABLE -->
-    <div class="premium-table-wrapper">
+    <div class="apple-table-container">
         <div class="table-responsive">
-            <table class="table premium-table" id="tblProperties">
+            <table class="table table-hover align-middle mb-0" id="tblProperties">
                 <thead>
                     <tr>
                         <th class="text-center" style="width: 60px;">#</th>
@@ -198,7 +146,7 @@ Vendors List
                                             <span class="premium-count-empty">-</span>
                                         <?php endif; ?>
                                     </td>
-                                <?php endforeach; ?>
+                                    <?php endforeach; ?>
                             </tr>
                         <?php endforeach; ?>
                     <?php endif; ?>
@@ -208,5 +156,16 @@ Vendors List
     </div>
     <!-- #endregion -->
 </div>
+<?= $this->endSection() ?>
 
+<?= $this->section('scripts') ?>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    $('.searchable-select').select2({
+        width: '100%',
+        placeholder: "All Vendors",
+        allowClear: true
+    });
+});
+</script>
 <?= $this->endSection() ?>
