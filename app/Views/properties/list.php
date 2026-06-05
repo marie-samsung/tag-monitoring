@@ -245,7 +245,7 @@ Properties List
                                 <td><?= $subsidiaryOptions[$property['subsidiary_id']] ?? 'Unknown' ?></td>
                                 <td class="form-label-sm">
                                     <span class="group-hover-container align-items-center">
-                                        <a href="<?= $property['ref_link'] ?>" class="apple-link-dark form-label-sm ms-1">
+                                        <a href="<?= $property['ref_link'] ?>" target="_blank" rel="noopener" class="apple-link-dark form-label-sm ms-1">
                                             <?= $property['name'] ?>
                                         </a>
                                         <a href="javascript:void(0)" onclick="copyName('<?= esc($property['name']) ?>', this)" title="Copy property name" class="text-muted ms-2" style="transition: color 0.2s; text-decoration: none; line-height: 1;">

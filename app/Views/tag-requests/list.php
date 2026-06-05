@@ -59,9 +59,27 @@ Tag: Requests (New Rule, New Tag)
             <p class="text-secondary small mb-0">Manage and track rules and new vendor tag implementation requests across properties.</p>
         </div>
         <div class="d-flex align-items-center gap-2">
-            <a href="<?= site_url('tag-requests/upload-excel') ?>" title="Upload Excel" class="apple-btn-primary btn-sm ms-auto px-2">Upload Request Form</a>
-            <a href="<?= site_url('tag-requests/create') ?>" title="Create a new request" class="apple-btn-primary btn-sm ms-auto px-2">Create New Request</a>
-            <a href="<?= site_url('tag-requests/export?' . http_build_query($_GET)) ?>" class="apple-btn-secondary btn-sm ms-auto px-2">Export as CSV</a>
+            <a href="<?= site_url('tag-requests/create') ?>" title="Create a new request" class="apple-btn-primary btn-sm px-3 text-decoration-none">
+                <i class="bi bi-plus-lg me-1"></i> Create New Request
+            </a>
+            
+            <div class="dropdown">
+                <button class="apple-btn-secondary btn-sm dropdown-toggle px-3 d-flex align-items-center gap-1" type="button" id="headerActionsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-three-dots-vertical"></i> Actions
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="headerActionsDropdown" style="border-radius: 10px; border: 1px solid var(--color-border-input);">
+                    <li>
+                        <a class="dropdown-item py-2" href="<?= site_url('tag-requests/upload-excel') ?>" style="font-size: 0.9rem;">
+                            <i class="bi bi-file-earmark-excel-fill text-success me-2"></i>Upload Request Form
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item py-2" href="<?= site_url('tag-requests/export?' . http_build_query($_GET)) ?>" style="font-size: 0.9rem;">
+                            <i class="bi bi-file-earmark-arrow-down-fill text-secondary me-2"></i>Export as CSV
+                        </a>
+                    </li>
+                </ul>
+            </div>
         </div>
     </div>
 
@@ -326,19 +344,19 @@ Tag: Requests (New Rule, New Tag)
                             <!-- Property -->
                             <td>
                                 <i class="bi bi-tag-fill" style="<?= random_text_style($property['name']) ?>"></i>
-                                <a href="<?= $property['ref_link'] ?>" class="apple-link-dark form-label-sm ms-1">
+                                <a href="<?= $property['ref_link'] ?>" target="_blank" rel="noopener" class="apple-link-dark form-label-sm ms-1">
                                     <?= $property['name'] ?>
                                 </a>
                             </td>
                             <td>
-                                <a href="<?= Constants::JIRA_LINK . $request[$ticketColumn] ?>" class="apple-link">
+                                <a href="<?= Constants::JIRA_LINK . $request[$ticketColumn] ?>" target="_blank" rel="noopener" class="apple-link">
                                     <?= $request[$ticketColumn] ?>
                                 </a>
                                 <span class="text-muted ms-1" style="font-size: 0.8rem;">(<?= $vendors[$request['vendor_id']] ?? '' ?>)</span>
                                 <?php if ($type == Constants::JIRA_TYPE_NEW_TAG && !empty($request['new_rule_ticket'])) : ?>
                                     <br/>
                                     <small class="text-muted" style="font-size: 0.75rem;">New Rule:</small>
-                                    <a href="<?= Constants::JIRA_LINK . $request['new_rule_ticket'] ?>" class="apple-link" style="font-size: 0.85rem;">
+                                    <a href="<?= Constants::JIRA_LINK . $request['new_rule_ticket'] ?>" target="_blank" rel="noopener" class="apple-link" style="font-size: 0.85rem;">
                                         <?= $request['new_rule_ticket'] ?>
                                     </a>
                                 <?php endif; ?>
@@ -354,8 +372,36 @@ Tag: Requests (New Rule, New Tag)
                             <td class="form-label-sm" style="width:max-content; white-space:nowrap;"><?= esc(date('d-m-Y', strtotime($request['created_at']))) ?></td>
                             <!-- Actions -->
                             <td class="text-nowrap">
-                                <a href="<?= site_url('tag-requests/view/'.$request['id']) ?>" title="View tag details" class="apple-btn-secondary btn-sm">View</a>
-<!--                            <a href="--><?php //= site_url('tag-requests/update/'.$request['id']) ?><!--" title="Update tag details" class="apple-btn-primary btn-sm">Update</a>-->
+                                <div class="dropdown">
+                                    <button class="apple-btn-secondary btn-sm dropdown-toggle px-2.5 py-1 d-inline-flex align-items-center gap-1" type="button" id="actionsDropdown_<?= $request['id'] ?>" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.8rem; border-radius: 9999px;">
+                                        Actions
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="actionsDropdown_<?= $request['id'] ?>" style="border-radius: 10px; border: 1px solid var(--color-border-input); z-index: 1050;">
+                                        <li>
+                                            <a class="dropdown-item py-2" href="<?= site_url('tag-requests/view/'.$request['id']) ?>" style="font-size: 0.85rem;">
+                                                <i class="bi bi-eye text-primary me-2"></i>View Details
+                                            </a>
+                                        </li>
+                                        <?php if (!empty($request['new_rule_ticket'])): ?>
+                                            <li>
+                                                <a class="dropdown-item py-2" href="<?= site_url('tag-requests/new-rule-request/' . $request['id']) ?>" style="font-size: 0.85rem;">
+                                                    <i class="bi bi-file-earmark-text text-info me-2"></i>View Rule Request
+                                                </a>
+                                            </li>
+                                        <?php endif; ?>
+                                        <?php if ($request['status'] == Constants::STATUS_REQUEST_NEW_RULE_REQUEST_SUBMITTED ||
+                                                ($request['status'] == Constants::STATUS_REQUEST_HQ_REVIEW && $request['type'] == Constants::JIRA_TYPE_NEW_RULE)): ?>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <a class="dropdown-item py-2 text-success" href="<?= site_url('tag-requests/request-approved/' . $request['id']) ?>"
+                                                   onclick="return confirm('Confirm that the tags are published live? (This will set tags to ENABLED status)');"
+                                                   style="font-size: 0.85rem; font-weight: 500;">
+                                                    <i class="bi bi-check-circle-fill text-success me-2"></i>Publish Tags
+                                                </a>
+                                            </li>
+                                        <?php endif; ?>
+                                    </ul>
+                                </div>
                             </td>
                         </tr>
                     <?php endforeach; ?>

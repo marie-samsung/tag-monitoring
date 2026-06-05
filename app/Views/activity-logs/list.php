@@ -60,11 +60,27 @@ Activity Logs
             <p class="text-secondary small mb-0">Record and track project management activities, support tasks, and campaign tag updates.</p>
         </div>
         <div class="d-flex align-items-center gap-2">
-            <button type="button" class="apple-btn-secondary btn-sm px-3" data-bs-toggle="collapse" data-bs-target="#sizeLegendCollapse" aria-expanded="false" aria-controls="sizeLegendCollapse">
-                <i class="bi bi-info-circle me-1"></i> Size Legend
-            </button>
-            <a href="<?= site_url('activity-logs/export?' . http_build_query($_GET)) ?>" class="apple-btn-secondary btn-sm px-3">Export as CSV</a>
-            <a href="<?= site_url('activity-logs/create') ?>" title="Create a new log" class="apple-btn-primary btn-sm px-3">Log Activity</a>
+            <a href="<?= site_url('activity-logs/create') ?>" title="Create a new log" class="apple-btn-primary btn-sm px-3 text-decoration-none">
+                <i class="bi bi-plus-lg me-1"></i> Log Activity
+            </a>
+            
+            <div class="dropdown">
+                <button class="apple-btn-secondary btn-sm dropdown-toggle px-3 d-flex align-items-center gap-1" type="button" id="headerActionsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-three-dots-vertical"></i> Actions
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="headerActionsDropdown" style="border-radius: 10px; border: 1px solid var(--color-border-input);">
+                    <li>
+                        <a class="dropdown-item py-2" href="#" data-bs-toggle="collapse" data-bs-target="#sizeLegendCollapse" style="font-size: 0.9rem;">
+                            <i class="bi bi-info-circle-fill text-primary me-2"></i>Size Legend
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item py-2" href="<?= site_url('activity-logs/export?' . http_build_query($_GET)) ?>" style="font-size: 0.9rem;">
+                            <i class="bi bi-file-earmark-arrow-down-fill text-secondary me-2"></i>Export as CSV
+                        </a>
+                    </li>
+                </ul>
+            </div>
         </div>
     </div>
 
@@ -414,8 +430,23 @@ Activity Logs
                         </td>
                         <td class="form-label-sm" style="width:max-content; white-space:nowrap;"><?= esc(date('d-m-Y', strtotime($log['created_at']))) ?></td>
                         <td class="text-nowrap align-middle">
-                            <a href="<?= site_url('activity-logs/view/' . $log['id']) ?>" class="apple-btn-secondary btn-sm">Details</a>
-                            <a href="<?= site_url('activity-logs/update/' . $log['id']) ?>" class="apple-btn-primary btn-sm">Update</a>
+                            <div class="dropdown">
+                                <button class="apple-btn-secondary btn-sm dropdown-toggle px-2.5 py-1 d-inline-flex align-items-center gap-1" type="button" id="actionsDropdown_<?= $log['id'] ?>" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.8rem; border-radius: 9999px;">
+                                    Actions
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="actionsDropdown_<?= $log['id'] ?>" style="border-radius: 10px; border: 1px solid var(--color-border-input); z-index: 1050;">
+                                    <li>
+                                        <a class="dropdown-item py-2" href="<?= site_url('activity-logs/view/' . $log['id']) ?>" style="font-size: 0.85rem;">
+                                            <i class="bi bi-eye text-primary me-2"></i>View Details
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item py-2" href="<?= site_url('activity-logs/update/' . $log['id']) ?>" style="font-size: 0.85rem;">
+                                            <i class="bi bi-pencil-square text-warning me-2"></i>Update Log
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
                         </td>
                     </tr>
                 <?php endforeach; ?>

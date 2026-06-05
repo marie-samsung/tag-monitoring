@@ -554,14 +554,14 @@ Martech TMS
                         <!-- Property -->
                         <td>
                             <i class="bi bi-tag-fill" style="<?= random_text_style($tag['property_id']) ?>"></i>
-                            <a href="<?= $properties[$tag['property_id']]['ref_link'] ?>" class="apple-link-dark form-label-sm ms-1">
+                            <a href="<?= $properties[$tag['property_id']]['ref_link'] ?>" target="_blank" rel="noopener" class="apple-link-dark form-label-sm ms-1">
                                 <?= $properties[$tag['property_id']]['name'] ?>
                             </a>
                         </td>
                         <!-- Name -->
                         <td class="form-label-sm">
                             <span class="group-hover-container align-items-center">
-                                <a href="<?= $tag['ref_link'] ?>" class="apple-link-dark">
+                                <a href="<?= $tag['ref_link'] ?>" target="_blank" rel="noopener" class="apple-link-dark">
                                     <?= esc($tag['name']) ?>
                                 </a>
                                 <a href="javascript:void(0)" onclick="copyTagName('<?= esc($tag['name']) ?>', this)" title="Copy tag name" class="text-muted ms-2" style="transition: color 0.2s; text-decoration: none; line-height: 1;">
@@ -576,13 +576,8 @@ Martech TMS
                             </span>
                             <?php if ($tag['status'] == Constants::STATUS_PENDING_VERIFICATION): ?>
                                 <br>
-                                <a href="<?= Constants::JIRA_LINK . $ticketId ?>" class="apple-link ms-1" style="font-size: 0.8rem;">
+                                <a href="<?= Constants::JIRA_LINK . $ticketId ?>" target="_blank" rel="noopener" class="apple-link ms-1" style="font-size: 0.8rem;">
                                     <?= $ticketId ?>
-                                </a>
-                                <a href="<?= site_url('tags/verify/' . $tag['id']) ?>"
-                                   class="badge bg-primary text-decoration-none"
-                                   onclick="return confirm('Have you verified the end date matches in AL?');">
-                                    Verify
                                 </a>
                             <?php endif; ?>
                         </td>
@@ -607,8 +602,33 @@ Martech TMS
                         <!-- <td><?= esc($tag['updated_by']) ?></td> -->
                         <!-- Actions -->
                         <td class="text-nowrap">
-                            <a href="<?= site_url('tags/view/'.$tag['id']) ?>" title="View tag details" class="apple-btn-secondary btn-sm text-decoration-none">View</a>
-                            <a href="<?= site_url('tags/update/'.$tag['id']) ?>" title="Update tag details" class="apple-btn-primary btn-sm text-decoration-none">Update</a>
+                            <div class="dropdown">
+                                <button class="apple-btn-secondary btn-sm dropdown-toggle px-2.5 py-1 d-inline-flex align-items-center gap-1" type="button" id="actionsDropdown_<?= $tag['id'] ?>" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.8rem; border-radius: 9999px;">
+                                    Actions
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="actionsDropdown_<?= $tag['id'] ?>" style="border-radius: 10px; border: 1px solid var(--color-border-input); z-index: 1050;">
+                                    <li>
+                                        <a class="dropdown-item py-2" href="<?= site_url('tags/view/'.$tag['id']) ?>" style="font-size: 0.85rem;">
+                                            <i class="bi bi-eye text-primary me-2"></i>View Details
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item py-2" href="<?= site_url('tags/update/'.$tag['id']) ?>" style="font-size: 0.85rem;">
+                                            <i class="bi bi-pencil-square text-warning me-2"></i>Update Details
+                                        </a>
+                                    </li>
+                                    <?php if ($tag['status'] == Constants::STATUS_PENDING_VERIFICATION): ?>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <a class="dropdown-item py-2 text-success" href="<?= site_url('tags/verify/' . $tag['id']) ?>"
+                                               onclick="return confirm('Have you verified the end date matches in AL?');"
+                                               style="font-size: 0.85rem; font-weight: 500;">
+                                                <i class="bi bi-check-circle-fill text-success me-2"></i>Verify Tag
+                                            </a>
+                                        </li>
+                                    <?php endif; ?>
+                                </ul>
+                            </div>
                         </td>
                     </tr>
                 <?php endforeach; ?>

@@ -338,7 +338,7 @@ $hasActiveFilters = ($activeFiltersCount > 0);
                                 </td>
                                 <td>
                                     <?php if ($property): ?>
-                                    <a href="<?= $property['ref_link'] ?>" class="apple-link-dark form-label-sm">
+                                    <a href="<?= $property['ref_link'] ?>" target="_blank" rel="noopener" class="apple-link-dark form-label-sm">
                                         <?= esc($property['name']) ?>
                                     </a>
                                     <?php else: ?>
@@ -346,7 +346,7 @@ $hasActiveFilters = ($activeFiltersCount > 0);
                                     <?php endif; ?>
                                 </td>
                                 <td>
-                                    <a href="<?= Constants::JIRA_LINK . $ticket['ticket_id'] ?>" class="apple-link form-label-sm">
+                                    <a href="<?= Constants::JIRA_LINK . $ticket['ticket_id'] ?>" target="_blank" rel="noopener" class="apple-link form-label-sm">
                                         <?= $ticket['ticket_id'] ?>
                                     </a>
                                 </td>
