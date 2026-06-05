@@ -6,16 +6,16 @@ Dashboard | Martech TMS
 
 <?= $this->section('content') ?>
 
-<div class="container-fluid py-3">
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom flex-wrap gap-3">
         <div>
-            <h2 class="mb-1">Dashboard</h2>
+            <h2 class="mb-0 fw-bold">Dashboard</h2>
             <p class="text-secondary small mb-0">System status and activity overview for the last 30 days</p>
         </div>
         <div>
-            <span class="badge bg-secondary p-2">
-                <i class="bi bi-clock-history"></i> Last updated: <?= date('d M Y, h:i A') ?>
+            <span class="badge bg-secondary text-secondary" style="font-size: 0.85rem; font-weight: 600; padding: 0.5em 1em; border-radius: 20px;">
+                <i class="bi bi-clock-history me-1"></i> Last updated: <?= date('d M Y, h:i A') ?>
             </span>
         </div>
     </div>

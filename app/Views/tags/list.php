@@ -163,7 +163,7 @@ Martech TMS
 
 <?= csrf_field() ?>
 
-<div class="container-fluid px-0">
+<div class="container-fluid">
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom flex-wrap gap-3">
         <div>
