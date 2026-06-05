@@ -114,16 +114,12 @@ class TagRequestsModel extends Model
 
     public function countNewTags()
     {
-        return $this->where('new_tag_ticket IS NOT NULL')
-                    ->where('type', Constants::JIRA_TYPE_NEW_TAG)
-                    ->countAllResults();
+        return $this->where('new_tag_ticket IS NOT NULL')->countAllResults();
     }
 
     public function countNewRules()
     {
-        return $this->where('new_rule_ticket IS NOT NULL')
-                    ->where('type', Constants::JIRA_TYPE_NEW_RULE)
-                    ->countAllResults();
+        return $this->where('new_rule_ticket IS NOT NULL')->countAllResults();
     }
 
     public function countAllRequests()
