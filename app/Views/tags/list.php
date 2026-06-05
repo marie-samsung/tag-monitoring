@@ -125,15 +125,46 @@ Martech TMS
 
 <?= csrf_field() ?>
 
-<div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center">
-        <h2>Tag Inventory <span id="selectedCountBadge" class="badge bg-primary align-middle ms-2" style="display: none; font-size: 0.85rem; font-weight: 500; vertical-align: middle;">0 selected</span></h2>
+<div class="container-fluid px-0">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+        <div>
+            <h2 class="mb-0 fw-bold">Tag Inventory<span id="selectedCountBadge" class="badge bg-primary align-middle ms-2" style="display: none; font-size: 0.85rem; font-weight: 500; vertical-align: middle;">0 selected</span></h2>
+            <p class="text-secondary small mb-0">Manage and monitor marketing tag configurations, Adobe Launch rules, and expiration schedules.</p>
+        </div>
         <div class="d-flex align-items-center gap-2">
-            <a href="<?= site_url('tags/renew') ?>" title="Date Extension" class="apple-btn-primary btn-sm ms-auto px-3" id="btnRenew" style="display:none;">Date Extension</a>
-            <a href="<?= site_url('tags/update-rule-request') ?>" title="Create update rule request" class="apple-btn-primary btn-sm ms-auto px-3" id="btnUpdateRule" style="display:none;">Create Update Rule Request</a>
-            <a href="<?= site_url('tags/create') ?>" title="Add Tag Information" class="apple-btn-primary btn-sm ms-auto px-3">Add Tag Information</a>
-            <a href="<?= site_url('tags/upload-renewal-justifications') ?>" title="Update Renewal Justifications" class="apple-btn-primary btn-sm ms-auto px-3" style="background-color: #dc3545; border-color: #dc3545;">Update Renewal Justifications</a>
-            <a href="<?= site_url('tags/export?' . http_build_query($_GET)) ?>" class="apple-btn-secondary btn-sm ms-auto px-3">Export as CSV</a>
+            <a href="<?= site_url('tags/create') ?>" title="Add Tag Information" class="apple-btn-primary btn-sm px-3 text-decoration-none">
+                <i class="bi bi-plus-lg me-1"></i> Add Tag
+            </a>
+            
+            <div class="dropdown">
+                <button class="apple-btn-secondary btn-sm dropdown-toggle px-3 d-flex align-items-center gap-1" type="button" id="headerActionsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-three-dots-vertical"></i> Actions
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="headerActionsDropdown" style="border-radius: 10px; border: 1px solid var(--color-border-input);">
+                    <li>
+                        <a class="dropdown-item py-2" href="#" id="btnRenew" style="display: none; font-size: 0.9rem;">
+                            <i class="bi bi-calendar-check-fill text-primary me-2"></i>Date Extension
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item py-2" href="#" id="btnUpdateRule" style="display: none; font-size: 0.9rem;">
+                            <i class="bi bi-pencil-square text-primary me-2"></i>Update Rule
+                        </a>
+                    </li>
+                    <li id="menuBulkDivider" style="display: none;"><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item py-2" href="<?= site_url('tags/upload-renewal-justifications') ?>" style="font-size: 0.9rem;">
+                            <i class="bi bi-file-earmark-excel-fill text-danger me-2"></i>Update Renewal Justifications
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item py-2" href="<?= site_url('tags/export?' . http_build_query($_GET)) ?>" style="font-size: 0.9rem;">
+                            <i class="bi bi-file-earmark-arrow-down-fill text-secondary me-2"></i>Export as CSV
+                        </a>
+                    </li>
+                </ul>
+            </div>
         </div>
     </div>
 
@@ -403,8 +434,13 @@ document.addEventListener('DOMContentLoaded', function () {
         const checkedCount = table.querySelectorAll('input[name="tag_ids[]"]:checked').length;
         const anyChecked = checkedCount > 0;
         
-        if (btnRenew) btnRenew.style.display = anyChecked ? 'inline-block' : 'none';
-        if (btnUpdateRule) btnUpdateRule.style.display = anyChecked ? 'inline-block' : 'none';
+        if (btnRenew) btnRenew.style.display = anyChecked ? 'block' : 'none';
+        if (btnUpdateRule) btnUpdateRule.style.display = anyChecked ? 'block' : 'none';
+        
+        const menuBulkDivider = document.getElementById('menuBulkDivider');
+        if (menuBulkDivider) {
+            menuBulkDivider.style.display = anyChecked ? 'block' : 'none';
+        }
         
         if (selectedCountBadge) {
             selectedCountBadge.textContent = `${checkedCount} selected`;

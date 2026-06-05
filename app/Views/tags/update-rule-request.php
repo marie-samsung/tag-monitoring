@@ -1,5 +1,9 @@
 <?= $this->extend('layouts/default') ?>
 
+<?= $this->section('title') ?>
+<?= ($ticket_id) ? "Update Rule" : "Tag: Update Rule Request" ?>
+<?= $this->endSection() ?>
+
 <?= $this->section('content') ?>
 
 <?php
@@ -71,13 +75,17 @@
     $htmlTitle = ($ticket_id) ? "Update Rule" : "Tag: Update Rule Request";
 ?>
 
-<?= $this->section('title') ?>
-<?= $htmlTitle ?>
-<?= $this->endSection() ?>
-
-    <h6 class="text-danger container"><b><span id="ticket-id-header"><?= esc($ticket_id) ?></span></b></h6>
-<h4 class="container"><?= $htmlTitle ?></h4>
-<hr/>
+<div class="container-fluid px-0">
+    <!-- Page Header -->
+    <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
+        <a href="<?= site_url('tags') ?>" class="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; padding: 0;" title="Back to Inventory">
+            <i class="bi bi-arrow-left fs-5"></i>
+        </a>
+        <div>
+            <h2 class="mb-0 fw-bold"><?= esc($htmlTitle) ?></h2>
+            <p class="text-danger small mb-0 fw-semibold"><span id="ticket-id-header"><?= esc($ticket_id) ?></span></p>
+        </div>
+    </div>
 
 <?php
     $propertyListHtml = "";
@@ -168,97 +176,125 @@
 ?>
 
 <form action="<?= site_url('tags/update-rule/confirm') ?>" method="post">
-    <div class="container mt-3">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-            <h4 class="text-primary d-flex align-items-center gap-2">
-                <span id="jiraTitle"><?= esc($jiraTitle) ?></span>
-                <a href="javascript:void(0)" onclick="copyJiraTitle()">
-                    <i class="bi bi-copy text-primary fs-5"></i>
-                </a>
-                <span id="copyStatus" style="opacity:0; transition: opacity .6s; font-size:10px; color:green;">
-                    Copied!
-                </span>
-            </h4>
-        </div>
-
-        <textarea id="details"></textarea>
-        <div class="d-flex justify-content-between align-items-center mt-2 gap-2">
-            <div class="d-flex gap-2 align-items-start align-items-center">
-                <div>
-                    <input type="text" name="ticket_id" id="ticket_id"
-                        class="form-control"
-                        value="<?= old('ticket_id', $old['ticket_id'] ?? '') ?>"
-                        required>
+    <div class="mt-3">
+        <!-- Section 1: JIRA Ticket Information -->
+        <div class="apple-card mb-4" style="background-color: var(--color-bg-base); border: 1px solid rgba(0, 0, 0, 0.05); box-shadow: none;">
+            <h5 class="mb-3 text-primary d-flex align-items-center gap-2 fw-bold">
+                <i class="bi bi-jira"></i>
+                <span>JIRA Ticket Information</span>
+            </h5>
+            
+            <div class="mb-3">
+                <label class="form-label-sm fw-semibold text-secondary mb-1">Proposed JIRA Title</label>
+                <div class="d-flex align-items-center gap-2">
+                    <span id="jiraTitle" class="fw-bold text-dark fs-6"><?= esc($jiraTitle) ?></span>
+                    <a href="javascript:void(0)" onclick="copyJiraTitle()" class="text-primary text-decoration-none">
+                        <i class="bi bi-copy fs-6"></i>
+                    </a>
+                    <span id="copyStatus" class="badge bg-success" style="opacity:0; transition: opacity .6s; font-size:10px;">
+                        Copied!
+                    </span>
                 </div>
-                <a href="<?= Constants::JIRA_CREATE_ISSUE ?>" title="Create Issue in JIRA" class="btn btn-outline-primary btn-sm" target="_blank">
-                    Create JIRA Ticket
-                </a>
             </div>
 
-            <div>
-                <span id="copyDetailsStatus" style="opacity:0; transition: opacity .6s; font-size:10px; color:green;">
-                    Copied!
-                </span>
-                <a href="javascript:void(0)" onclick="copyDetails()">
-                    <i class="bi bi-copy text-primary fs-5"></i>
-                </a>
+            <div class="row align-items-end g-3">
+                <div class="col-md-6">
+                    <label for="ticket_id" class="form-label-sm fw-semibold text-secondary mb-1">JIRA Ticket ID</label>
+                    <div class="d-flex gap-2">
+                        <input type="text" name="ticket_id" id="ticket_id"
+                            class="form-control form-control-xs"
+                            value="<?= old('ticket_id', $old['ticket_id'] ?? '') ?>"
+                            placeholder="GTA-XXXXX"
+                            required>
+                        <a href="<?= Constants::JIRA_CREATE_ISSUE ?>" title="Create Issue in JIRA" class="apple-btn-secondary px-3 text-decoration-none btn-sm d-flex align-items-center justify-content-center text-nowrap" target="_blank">
+                            Create JIRA Ticket
+                        </a>
+                    </div>
+                    <small class="form-text text-muted" style="font-size: 0.75rem;">
+                        Format: GTA-XXXXX
+                    </small>
+                </div>
             </div>
         </div>
-        <small class="form-label-xs text-muted">
-            JIRA ticket ID, GTA-XXXXX
-        </small>
 
-        <hr/>
-        <!-- #region | TAGS -->
-        <h4 class="mt-3 text-primary">Tags List</h4>
-        <div class="table-responsive">
-            <table class="table table-hover table-bordered table-striped">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Property</th>
-                        <th>Name</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($tags as $tag): ?>
-                        <tr>
-                            <td><?= esc($tag['id']) ?></td>
-                            <td>
-                                <a href="<?= esc($properties[$tag['property_id']]['ref_link']) ?>" target="_blank">
-                                    <?= esc($properties[$tag['property_id']]['name'] ?? 'Unknown') ?>
-                                </a>
-                            </td>
-                            <td>
-                                <a href="<?= esc($tag['ref_link']) ?>" target="_blank">
-                                    <?= $tag['name'] ?>
-                                </a>
-                            </td>
-
-                            <input type="hidden" name="tags[<?= $tag['id'] ?>][id]" value="<?= $tag['id'] ?>">
-                            <input type="hidden" name="tags[<?= $tag['id'] ?>][library_name]" class="library-name-input" value="<?= $libraryName ?>">
-                            <input type="hidden" name="tags[<?= $tag['id'] ?>][property_id]" value="<?= $tag['property_id'] ?>">
-                            <input type="hidden" name="tags[<?= $tag['id'] ?>][vendor_id]" value="<?= $tag['vendor_id'] ?>">
-                        </tr>
-                    <?php endforeach; ?>
-
-                    <input type="hidden" name="info[ticket_id]" id="info_ticket_id" value="<?= $ticket_id ?>">
-                    <input type="hidden" name="info[library_name]" class="library-name-input" value="<?= $libraryName ?>">
-                </tbody>
-            </table>
+        <!-- Section 2: Ticket Description (Summernote) -->
+        <div class="apple-card mb-4" style="background-color: var(--color-bg-base); border: 1px solid rgba(0, 0, 0, 0.05); box-shadow: none;">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0 text-primary d-flex align-items-center gap-2 fw-bold">
+                    <i class="bi bi-file-earmark-text-fill"></i>
+                    <span>Ticket Description (HTML)</span>
+                </h5>
+                <div>
+                    <span id="copyDetailsStatus" class="badge bg-success me-2" style="opacity:0; transition: opacity .6s; font-size:10px;">
+                        Copied!
+                    </span>
+                    <a href="javascript:void(0)" onclick="copyDetails()" class="apple-btn-secondary btn-sm px-3 text-decoration-none">
+                        <i class="bi bi-copy me-1"></i> Copy HTML
+                    </a>
+                </div>
+            </div>
+            <textarea id="details"></textarea>
         </div>
-        <!-- #endregion | TAGS -->
 
-        <div>
-            <a href="<?= site_url('tags') ?>" title="Cancel" class="btn btn-secondary btn-sm">Cancel</a>
-            <button type="submit"
-                    class="btn btn-success btn-sm"
-                    onclick="return confirm('Are you sure the information is correct?');">
+        <!-- Section 3: Tags List Table -->
+        <div class="mb-4">
+            <h5 class="mb-3 text-primary d-flex align-items-center gap-2 fw-bold">
+                <i class="bi bi-tags-fill"></i>
+                <span>Tags List</span>
+            </h5>
+            
+            <div class="apple-table-container">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 apple-table">
+                        <thead>
+                            <tr>
+                                <th class="form-label-sm fw-semibold">ID</th>
+                                <th class="form-label-sm fw-semibold">Property</th>
+                                <th class="form-label-sm fw-semibold">Name</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($tags as $tag): ?>
+                                <tr>
+                                    <td><?= esc($tag['id']) ?></td>
+                                    <td>
+                                        <a href="<?= esc($properties[$tag['property_id']]['ref_link'] ?? '#') ?>" target="_blank" class="apple-link-dark text-decoration-none fw-semibold">
+                                            <?= esc($properties[$tag['property_id']]['name'] ?? 'Unknown') ?>
+                                        </a>
+                                    </td>
+                                    <td class="form-label-sm">
+                                        <a href="<?= esc($tag['ref_link'] ?? '#') ?>" target="_blank" class="apple-link-dark text-decoration-none fw-semibold">
+                                            <?= esc($tag['name']) ?>
+                                        </a>
+                                    </td>
+
+                                    <input type="hidden" name="tags[<?= $tag['id'] ?>][id]" value="<?= $tag['id'] ?>">
+                                    <input type="hidden" name="tags[<?= $tag['id'] ?>][library_name]" class="library-name-input" value="<?= $libraryName ?>">
+                                    <input type="hidden" name="tags[<?= $tag['id'] ?>][property_id]" value="<?= $tag['property_id'] ?>">
+                                    <input type="hidden" name="tags[<?= $tag['id'] ?>][vendor_id]" value="<?= $tag['vendor_id'] ?>">
+                                </tr>
+                            <?php endforeach; ?>
+
+                            <input type="hidden" name="info[ticket_id]" id="info_ticket_id" value="<?= $ticket_id ?>">
+                            <input type="hidden" name="info[library_name]" class="library-name-input" value="<?= $libraryName ?>">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top mb-5">
+            <a href="<?= site_url('tags') ?>" title="Cancel" class="apple-btn-secondary px-4 text-decoration-none">Cancel</a>
+            <button type="submit" 
+                class="apple-btn-primary px-4"
+                onclick="return confirm('Are you sure the information is correct?');">
                 Create Update Rule Request
             </button>
         </div>
     </div>
 </form>
+</div>
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
