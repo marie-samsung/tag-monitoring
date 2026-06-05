@@ -32,7 +32,7 @@ $tagRequestsModel = new TagRequestsModel();
 <div class="container-fluid px-0">
     <!-- Page Header -->
     <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
-        <a href="<?= site_url('tags') ?>" class="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; padding: 0;" title="Back to Inventory">
+        <a href="<?= site_url('tags') ?>" onclick="if (document.referrer) { window.history.back(); return false; }" class="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; padding: 0;" title="Back to Inventory">
             <i class="bi bi-arrow-left fs-5"></i>
         </a>
         <div>
@@ -140,7 +140,7 @@ $tagRequestsModel = new TagRequestsModel();
                 </div>
 
                 <div class="d-flex align-items-center gap-2 mt-4 pt-3 border-top">
-                    <a href="<?= site_url('tags') ?>" class="apple-btn-secondary btn-sm px-3 text-decoration-none">Back</a>
+                    <a href="<?= site_url('tags') ?>" onclick="if (document.referrer) { window.history.back(); return false; }" class="apple-btn-secondary btn-sm px-3 text-decoration-none">Back</a>
                     <a href="<?= site_url('tags/update/' . $tag['id']) ?>" class="apple-btn-primary btn-sm px-3 text-decoration-none ms-auto">Edit Details</a>
                 </div>
             </div>
