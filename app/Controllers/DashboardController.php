@@ -102,6 +102,7 @@ class DashboardController extends BaseController
 
         // Setup 30-day bucket
         $dates = [];
+        $datesFull = [];
         $tagsData = [];
         $requestsData = [];
         $activitiesData = [];
@@ -111,6 +112,7 @@ class DashboardController extends BaseController
         for ($i = 29; $i >= 0; $i--) {
             $dateStr = date('Y-m-d', strtotime("-$i days"));
             $dates[] = date('d M', strtotime($dateStr));
+            $datesFull[] = $dateStr;
             $tagsData[$dateStr] = 0;
             $requestsData[$dateStr] = 0;
             $activitiesData[$dateStr] = 0;
@@ -145,6 +147,7 @@ class DashboardController extends BaseController
         }
 
         $data['chart_labels'] = $dates;
+        $data['chart_labels_full'] = $datesFull;
         $data['chart_tags'] = array_values($tagsData);
         $data['chart_requests'] = array_values($requestsData);
         $data['chart_activities'] = array_values($activitiesData);
@@ -215,10 +218,12 @@ class DashboardController extends BaseController
 
         // 6. Tag Expiration Forecast (Next 45 Days)
         $forecastDates = [];
+        $forecastDatesFull = [];
         $forecastData = [];
         for ($i = 0; $i < 45; $i++) {
             $dateStr = date('Y-m-d', strtotime("+$i days"));
             $forecastDates[] = date('d M', strtotime($dateStr));
+            $forecastDatesFull[] = $dateStr;
             $forecastData[$dateStr] = 0;
         }
 
@@ -243,6 +248,7 @@ class DashboardController extends BaseController
         }
 
         $data['forecast_labels'] = $forecastDates;
+        $data['forecast_labels_full'] = $forecastDatesFull;
         $data['forecast_data'] = array_values($forecastData);
 
         // 7. Tag Requests Status Distribution
@@ -324,5 +330,318 @@ class DashboardController extends BaseController
         $data['activity_project_distribution'] = $activityProjectDistribution;
 
         return view('dashboard/index', $data);
+    }
+
+    public function getActivityTags()
+    {
+        helper('custom_functions');
+
+        $date = $this->request->getGet('date');
+        $category = $this->request->getGet('category');
+
+        if (empty($date) || empty($category)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Missing date or category parameter.'
+            ]);
+        }
+
+        $db = \Config\Database::connect();
+        $tags = [];
+        $activities = [];
+
+        switch ($category) {
+            case 'new_requests':
+                $requests = $db->table('tag_requests')
+                    ->select('tag_requests.tags, tag_requests.new_tag_ticket as ticket_id')
+                    ->join('(SELECT ticket_id, MIN(created_at) as created_at FROM jira_history GROUP BY ticket_id) jh', 'jh.ticket_id = tag_requests.new_tag_ticket', 'left')
+                    ->where('tag_requests.new_tag_ticket IS NOT NULL')
+                    ->where('tag_requests.new_tag_ticket !=', '')
+                    ->where('tag_requests.tags !=', '')
+                    ->where('DATE(COALESCE(jh.created_at, tag_requests.created_at))', $date)
+                    ->where('tag_requests.deleted_at', null)
+                    ->get()
+                    ->getResultArray();
+                break;
+
+            case 'new_implementations':
+                $requests = $db->table('tag_requests')
+                    ->select('tag_requests.tags, tag_requests.new_rule_ticket as ticket_id')
+                    ->join('(SELECT ticket_id, MIN(created_at) as created_at FROM jira_history GROUP BY ticket_id) jh', 'jh.ticket_id = tag_requests.new_rule_ticket', 'left')
+                    ->where('tag_requests.new_rule_ticket IS NOT NULL')
+                    ->where('tag_requests.new_rule_ticket !=', '')
+                    ->where('tag_requests.tags !=', '')
+                    ->where('DATE(COALESCE(jh.created_at, tag_requests.created_at))', $date)
+                    ->where('tag_requests.deleted_at', null)
+                    ->get()
+                    ->getResultArray();
+                break;
+
+            case 'pending_requests':
+                $requests = $db->table('tag_requests')
+                    ->select('tags, new_tag_ticket as ticket_id')
+                    ->where('new_tag_ticket IS NOT NULL')
+                    ->where('new_tag_ticket !=', '')
+                    ->groupStart()
+                        ->where('new_rule_ticket', null)
+                        ->orWhere('new_rule_ticket', '')
+                    ->groupEnd()
+                    ->where('tags !=', '')
+                    ->where('DATE(created_at)', $date)
+                    ->where('deleted_at', null)
+                    ->get()
+                    ->getResultArray();
+                break;
+
+            case 'date_extensions':
+                $extensions = $db->table('jira_history')
+                    ->select('jira_history.tag_id, jira_history.ticket_id')
+                    ->join('tags', 'tags.id = jira_history.tag_id', 'inner')
+                    ->where('jira_history.type', Constants::JIRA_TYPE_DATE_EXTENSION_RULE)
+                    ->where('DATE(jira_history.created_at)', $date)
+                    ->where('tags.deleted_at', null)
+                    ->get()
+                    ->getResultArray();
+
+                $tagIds = [];
+                $ticketMap = [];
+                foreach ($extensions as $ext) {
+                    $tagIds[] = (int)$ext['tag_id'];
+                    $ticketMap[$ext['tag_id']] = $ext['ticket_id'];
+                }
+                $tagIds = array_unique($tagIds);
+                break;
+
+            case 'expiring_tags':
+                $expiringQuery = $db->table('tags')
+                    ->select('id')
+                    ->whereIn('status', [
+                        Constants::STATUS_ENABLED,
+                        Constants::STATUS_PENDING_VERIFICATION,
+                        Constants::STATUS_UPDATED_IN_AL
+                    ])
+                    ->where('al_end_date', $date)
+                    ->where('deleted_at', null)
+                    ->get()
+                    ->getResultArray();
+
+                $tagIds = [];
+                $ticketMap = [];
+                foreach ($expiringQuery as $eq) {
+                    $tagIds[] = (int)$eq['id'];
+                }
+                break;
+
+            case 'activities':
+                $logs = $db->table('activity_logs')
+                    ->select('id, title, ticket_id, status, priority, created_at')
+                    ->where('DATE(created_at)', $date)
+                    ->where('deleted_at', null)
+                    ->get()
+                    ->getResultArray();
+
+                $ticketIds = [];
+                foreach ($logs as $log) {
+                    if (!empty($log['ticket_id'])) {
+                        $ticketIds[] = $log['ticket_id'];
+                    }
+                }
+                $ticketIds = array_unique($ticketIds);
+
+                $ticketToTags = [];
+                $tagIds = [];
+
+                if (!empty($ticketIds)) {
+                    // Fetch tag requests matching tickets
+                    $trTags = $db->table('tag_requests')
+                        ->select('tags, new_tag_ticket, new_rule_ticket')
+                        ->groupStart()
+                            ->whereIn('new_tag_ticket', $ticketIds)
+                            ->orWhereIn('new_rule_ticket', $ticketIds)
+                        ->groupEnd()
+                        ->where('deleted_at', null)
+                        ->get()
+                        ->getResultArray();
+
+                    foreach ($trTags as $tr) {
+                        $ids = explode(',', $tr['tags']);
+                        foreach ($ids as $id) {
+                            $id = (int)trim($id);
+                            if ($id > 0) {
+                                $tagIds[] = $id;
+                                if (!empty($tr['new_tag_ticket'])) {
+                                    $ticketToTags[$tr['new_tag_ticket']][] = $id;
+                                }
+                                if (!empty($tr['new_rule_ticket'])) {
+                                    $ticketToTags[$tr['new_rule_ticket']][] = $id;
+                                }
+                            }
+                        }
+                    }
+
+                    // Fetch jira history matching tickets
+                    $jhTags = $db->table('jira_history')
+                        ->select('tag_id, ticket_id')
+                        ->whereIn('ticket_id', $ticketIds)
+                        ->get()
+                        ->getResultArray();
+
+                    foreach ($jhTags as $jh) {
+                        $id = (int)$jh['tag_id'];
+                        if ($id > 0) {
+                            $tagIds[] = $id;
+                            $ticketToTags[$jh['ticket_id']][] = $id;
+                        }
+                    }
+                }
+
+                $tagIds = array_unique($tagIds);
+                $tagsDetail = [];
+                if (!empty($tagIds)) {
+                    $tagsQuery = $db->table('tags')
+                        ->select('tags.id, tags.name, tags.al_end_date, tags.status, properties.name as property_name, properties.subsidiary_id, vendors.name as vendor_name')
+                        ->join('properties', 'properties.id = tags.property_id', 'left')
+                        ->join('vendors', 'vendors.id = tags.vendor_id', 'left')
+                        ->whereIn('tags.id', $tagIds)
+                        ->where('tags.deleted_at', null)
+                        ->get()
+                        ->getResultArray();
+
+                    foreach ($tagsQuery as $t) {
+                        $t['status_label'] = Constants::STATUS[$t['status']] ?? 'Unknown';
+                        $t['status_class'] = status_class($t['status']);
+                        $t['subsidiary'] = Constants::SUBSIDIARIES[$t['subsidiary_id']] ?? 'Unknown';
+                        $t['jira_link'] = null;
+                        $tagsDetail[$t['id']] = $t;
+                    }
+                }
+
+                foreach ($logs as $log) {
+                    $logTags = [];
+                    if (!empty($log['ticket_id']) && isset($ticketToTags[$log['ticket_id']])) {
+                        $uniqueLogTagIds = array_unique($ticketToTags[$log['ticket_id']]);
+                        foreach ($uniqueLogTagIds as $tId) {
+                            if (isset($tagsDetail[$tId])) {
+                                $tagInfo = $tagsDetail[$tId];
+                                $tagInfo['ticket_id'] = $log['ticket_id'];
+                                $tagInfo['jira_link'] = Constants::JIRA_LINK . $log['ticket_id'];
+                                $logTags[] = $tagInfo;
+                            }
+                        }
+                    }
+                    $activities[] = [
+                        'id' => $log['id'],
+                        'title' => $log['title'],
+                        'ticket_id' => $log['ticket_id'],
+                        'jira_link' => $log['ticket_id'] ? Constants::JIRA_LINK . $log['ticket_id'] : null,
+                        'status' => Constants::ACTIVITY_LOGS_STATUS[$log['status']] ?? 'Unknown',
+                        'status_class' => status_activity_logs_class($log['status']),
+                        'priority' => Constants::PRIORITIES[$log['priority']] ?? 'Unknown',
+                        'priority_class' => priority_class($log['priority']),
+                        'tags' => $logTags
+                    ];
+                }
+                break;
+        }
+
+        // For requests, collect tags
+        if (isset($requests)) {
+            $tagIds = [];
+            $ticketMap = [];
+            foreach ($requests as $r) {
+                if (!empty($r['tags'])) {
+                    $ids = explode(',', $r['tags']);
+                    foreach ($ids as $id) {
+                        $id = (int)trim($id);
+                        if ($id > 0) {
+                            $tagIds[] = $id;
+                            if (!empty($r['ticket_id'])) {
+                                $ticketMap[$id] = $r['ticket_id'];
+                            }
+                        }
+                    }
+                }
+            }
+            $tagIds = array_unique($tagIds);
+        }
+
+        // Fill in missing ticket mappings from jira_history or tag_requests
+        if (!empty($tagIds)) {
+            $missingIds = [];
+            foreach ($tagIds as $tid) {
+                if (empty($ticketMap[$tid])) {
+                    $missingIds[] = $tid;
+                }
+            }
+            
+            if (!empty($missingIds)) {
+                // Try from jira_history (e.g. most recent rule extension/new tag ticket)
+                $jhTickets = $db->table('jira_history')
+                    ->select('tag_id, ticket_id')
+                    ->whereIn('tag_id', $missingIds)
+                    ->orderBy('id', 'DESC')
+                    ->get()
+                    ->getResultArray();
+                foreach ($jhTickets as $jh) {
+                    if (empty($ticketMap[$jh['tag_id']])) {
+                        $ticketMap[$jh['tag_id']] = $jh['ticket_id'];
+                    }
+                }
+            }
+            
+            $missingIds = [];
+            foreach ($tagIds as $tid) {
+                if (empty($ticketMap[$tid])) {
+                    $missingIds[] = $tid;
+                }
+            }
+            
+            if (!empty($missingIds)) {
+                // Try from tag_requests
+                foreach ($missingIds as $tid) {
+                    $tr = $db->table('tag_requests')
+                        ->select('new_rule_ticket, new_tag_ticket')
+                        ->groupStart()
+                            ->where("FIND_IN_SET('{$tid}', tags) > 0")
+                        ->groupEnd()
+                        ->where('deleted_at', null)
+                        ->orderBy('id', 'DESC')
+                        ->limit(1)
+                        ->get()
+                        ->getRowArray();
+                    if ($tr) {
+                        $ticketMap[$tid] = $tr['new_rule_ticket'] ?: $tr['new_tag_ticket'];
+                    }
+                }
+            }
+        }
+
+        if ($category !== 'activities' && !empty($tagIds)) {
+            $tagsQuery = $db->table('tags')
+                ->select('tags.id, tags.name, tags.al_end_date, tags.status, properties.name as property_name, properties.subsidiary_id, vendors.name as vendor_name')
+                ->join('properties', 'properties.id = tags.property_id', 'left')
+                ->join('vendors', 'vendors.id = tags.vendor_id', 'left')
+                ->whereIn('tags.id', $tagIds)
+                ->where('tags.deleted_at', null)
+                ->get()
+                ->getResultArray();
+
+            foreach ($tagsQuery as $t) {
+                $t['ticket_id'] = $ticketMap[$t['id']] ?? null;
+                $t['jira_link'] = $t['ticket_id'] ? Constants::JIRA_LINK . $t['ticket_id'] : null;
+                $t['status_label'] = Constants::STATUS[$t['status']] ?? 'Unknown';
+                $t['status_class'] = status_class($t['status']);
+                $t['subsidiary'] = Constants::SUBSIDIARIES[$t['subsidiary_id']] ?? 'Unknown';
+                $tags[] = $t;
+            }
+        }
+
+        return $this->response->setJSON([
+            'success' => true,
+            'date' => date('d M Y', strtotime($date)),
+            'category' => $category,
+            'tags' => $tags,
+            'activities' => $activities
+        ]);
     }
 }
