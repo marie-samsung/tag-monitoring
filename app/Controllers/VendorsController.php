@@ -12,6 +12,7 @@ class VendorsController extends BaseController
     public function index()
     {
         $vendorsModel = new VendorsModel();
+        $tagsModel = new \App\Models\TagsModel();
         
         $filters = [
             'keyword' => $this->request->getGet('keyword'),
@@ -20,6 +21,21 @@ class VendorsController extends BaseController
 
         $data['vendors'] = $vendorsModel->filterVendors($filters);
         $data['filters'] = $filters;
+
+        // Pre-fetch tags to avoid N+1 query problem and support dynamic bubble coloring
+        $allTags = $tagsModel->select('tags.id, tags.vendor_id, tags.status, tags.al_end_date, properties.subsidiary_id')
+            ->join('properties', 'properties.id = tags.property_id', 'left')
+            ->findAll();
+
+        $tagsByVendorAndSub = [];
+        foreach ($allTags as $tag) {
+            $vId = $tag['vendor_id'];
+            $sId = $tag['subsidiary_id'];
+            if ($vId && $sId) {
+                $tagsByVendorAndSub[$vId][$sId][] = $tag;
+            }
+        }
+        $data['tagsByVendorAndSub'] = $tagsByVendorAndSub;
 
         return view('vendors/list', $data);
     }

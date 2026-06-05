@@ -17,29 +17,59 @@ Vendors List
 ?>
 
 <style>
-    /* Badge/Count Style */
+    /* Badge/Count Styles */
     .premium-count-badge {
         display: inline-flex;
         align-items: center;
         justify-content: center;
         width: 30px;
         height: 30px;
-        background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
-        color: #1b5e20;
         border-radius: 50%;
         font-weight: 600;
         font-size: 0.85rem;
         text-decoration: none;
         transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        box-shadow: 0 2px 4px rgba(27, 94, 32, 0.15);
-        border: 1px solid rgba(27, 94, 32, 0.1);
     }
 
     .premium-count-badge:hover {
-        background: linear-gradient(135deg, #1b5e20 0%, #123e15 100%);
         color: #ffffff !important;
         transform: scale(1.1) rotate(5deg);
+    }
+
+    /* Green (Default) bubble */
+    .premium-count-badge.bubble-green {
+        background: linear-gradient(135deg, var(--color-badge-green-bg) 0%, var(--color-badge-green-border) 100%);
+        color: var(--color-badge-green-text);
+        border: 1px solid var(--color-badge-green-border);
+        box-shadow: 0 2px 4px rgba(27, 94, 32, 0.15);
+    }
+    .premium-count-badge.bubble-green:hover {
+        background: linear-gradient(135deg, var(--color-badge-green-text) 0%, #123e15 100%);
         box-shadow: 0 4px 10px rgba(27, 94, 32, 0.3);
+    }
+
+    /* Red (Expiring) bubble */
+    .premium-count-badge.bubble-red {
+        background: linear-gradient(135deg, var(--color-badge-danger-bg) 0%, var(--color-badge-danger-border) 100%);
+        color: var(--color-badge-danger-text);
+        border: 1px solid var(--color-badge-danger-border);
+        box-shadow: 0 2px 4px rgba(198, 40, 40, 0.15);
+    }
+    .premium-count-badge.bubble-red:hover {
+        background: linear-gradient(135deg, var(--color-badge-danger-text) 0%, #b71c1c 100%);
+        box-shadow: 0 4px 10px rgba(198, 40, 40, 0.3);
+    }
+
+    /* Amber (Pending) bubble */
+    .premium-count-badge.bubble-amber {
+        background: linear-gradient(135deg, var(--color-badge-warning-bg) 0%, var(--color-badge-warning-border) 100%);
+        color: var(--color-badge-warning-text);
+        border: 1px solid var(--color-badge-warning-border);
+        box-shadow: 0 2px 4px rgba(245, 127, 23, 0.15);
+    }
+    .premium-count-badge.bubble-amber:hover {
+        background: linear-gradient(135deg, var(--color-badge-warning-text) 0%, #e65100 100%);
+        box-shadow: 0 4px 10px rgba(245, 127, 23, 0.3);
     }
 
     .premium-count-empty {
@@ -102,6 +132,23 @@ Vendors List
     </div>
     <!-- #endregion -->
 
+    <!-- Legend -->
+    <div class="d-flex flex-wrap gap-3 align-items-center mb-3 px-1" style="font-size: 0.8rem; font-weight: 500;">
+        <span class="text-secondary text-uppercase fw-bold" style="letter-spacing: 0.5px; font-size: 0.65rem; margin-right: 4px;">Legend:</span>
+        <span class="d-flex align-items-center gap-2">
+            <span class="premium-count-badge bubble-green" style="width: 14px; height: 14px; font-size: 0; pointer-events: none; box-shadow: none;"></span>
+            <span class="text-secondary">Active / Normal</span>
+        </span>
+        <span class="d-flex align-items-center gap-2">
+            <span class="premium-count-badge bubble-amber" style="width: 14px; height: 14px; font-size: 0; pointer-events: none; box-shadow: none;"></span>
+            <span class="text-secondary">Pending Action</span>
+        </span>
+        <span class="d-flex align-items-center gap-2">
+            <span class="premium-count-badge bubble-red" style="width: 14px; height: 14px; font-size: 0; pointer-events: none; box-shadow: none;"></span>
+            <span class="text-secondary">Expiring Soon (&lt; 15 days)</span>
+        </span>
+    </div>
+
     <!-- #region | PROPERTIES TABLE -->
     <div class="apple-table-container">
         <div class="table-responsive">
@@ -135,11 +182,41 @@ Vendors List
                                 <td class="vendor-name fw-medium"><?= esc($vendor['name']) ?></td>
 
                                 <?php foreach (Constants::SUBSIDIARIES as $id => $sub): ?>
-                                    <?php $count = $vendorsModel->getTags($vendor['id'], $id); ?>
+                                    <?php 
+                                        $vendorTags = ($tagsByVendorAndSub ?? [])[$vendor['id']][$id] ?? [];
+                                        $count = count($vendorTags);
+                                        
+                                        $hasExpiring = false;
+                                        $hasPending = false;
+                                        $today = date('Y-m-d');
+                                        $expiringDate = date('Y-m-d', strtotime('+15 days'));
+                                        
+                                        foreach ($vendorTags as $tag) {
+                                            if (in_array((int)$tag['status'], [Constants::STATUS_ENABLED, Constants::STATUS_PENDING_VERIFICATION, Constants::STATUS_UPDATED_IN_AL])) {
+                                                if (!empty($tag['al_end_date']) && $tag['al_end_date'] <= $expiringDate) {
+                                                    $hasExpiring = true;
+                                                }
+                                            }
+                                            if (in_array((int)$tag['status'], [
+                                                Constants::STATUS_PENDING_VERIFICATION,
+                                                Constants::STATUS_NEW_TAG_SUBMITTED,
+                                                Constants::STATUS_NEW_RULE_SUBMITTED
+                                            ])) {
+                                                $hasPending = true;
+                                            }
+                                        }
+                                        
+                                        $badgeClass = 'bubble-green';
+                                        if ($hasExpiring) {
+                                            $badgeClass = 'bubble-red';
+                                        } elseif ($hasPending) {
+                                            $badgeClass = 'bubble-amber';
+                                        }
+                                    ?>
 
                                     <td class="text-center">
                                         <?php if ($count > 0): ?>
-                                            <a href="<?= site_url('vendors/view/'.$vendor['id'].'?subsidiary_id='.$id) ?>" class="premium-count-badge">
+                                            <a href="<?= site_url('vendors/view/'.$vendor['id'].'?subsidiary_id='.$id) ?>" class="premium-count-badge <?= $badgeClass ?>">
                                                 <?= $count ?>
                                             </a>
                                         <?php else: ?>
