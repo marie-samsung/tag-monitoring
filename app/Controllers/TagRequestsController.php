@@ -310,6 +310,26 @@ class TagRequestsController extends BaseController
             ->with('error', "Tag Request was not updated.");
     }
 
+    public function newRuleRequest($id)
+    {
+        $model = new TagRequestsModel();
+        $request = $model->find($id);
+
+        if (!$request) {
+            throw new \CodeIgniter\Exceptions\PageNotFoundException("Tag request with ID $id not found.");
+        }
+
+        return view('tag-requests/create', [
+            'request_id' => $request['id'],
+            'request_type' => Constants::JIRA_TYPE_NEW_RULE,
+            'property_id' => $request['property_id'],
+            'vendor_id' => $request['vendor_id'],
+            'ticket_id' => $request['new_rule_ticket'],
+            'al_end_date' => null, // @TODO: Get from tags
+            'tag_ids' => $request['tags'],
+        ]);
+    }
+
     public function requestApproved($id)
     {
         $model = new TagRequestsModel();

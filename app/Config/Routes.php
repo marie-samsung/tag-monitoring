@@ -38,6 +38,7 @@ $routes->group('tag-requests', function ($routes) {
     $routes->get('request-approved/(:num)', 'TagRequestsController::requestApproved/$1');
     $routes->post('add-new-tag', 'TagRequestsController::addNewTag');
     $routes->post('add-new-rule', 'TagRequestsController::addNewRule');
+    $routes->get('new-rule-request/(:num)', 'TagRequestsController::newRuleRequest/$1');
     $routes->post('upload', 'TagRequestsController::uploadFile');
     $routes->post('create/confirm', 'TagRequestsController::createConfirm');
     $routes->match(['get', 'post'], 'create', 'TagRequestsController::create');
