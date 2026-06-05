@@ -660,6 +660,10 @@ Martech TMS
         <i class="bi bi-pencil-square"></i>
         <span>Update Rule</span>
     </a>
+    <a href="#" id="floatingBtnDeselect" class="floating-btn-secondary" title="Deselect All">
+        <i class="bi bi-x-circle"></i>
+        <span>Deselect All</span>
+    </a>
 </div>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -835,6 +839,22 @@ document.addEventListener('DOMContentLoaded', function () {
     const floatingBtnUpdateRule = document.getElementById('floatingBtnUpdateRule');
     if (floatingBtnRenew) floatingBtnRenew.addEventListener('click', handleRenew);
     if (floatingBtnUpdateRule) floatingBtnUpdateRule.addEventListener('click', handleUpdateRule);
+
+    const floatingBtnDeselect = document.getElementById('floatingBtnDeselect');
+    if (floatingBtnDeselect) {
+        floatingBtnDeselect.addEventListener('click', function(e) {
+            e.preventDefault();
+            table.querySelectorAll('input[name="tag_ids[]"]').forEach(cb => {
+                cb.checked = false;
+            });
+            if (selectAllTags) {
+                selectAllTags.checked = false;
+                selectAllTags.indeterminate = false;
+            }
+            toggleButton();
+            updateSelectAllState();
+        });
+    }
 
     window.copyTagName = function(text, el) {
         const temp = document.createElement('textarea');
