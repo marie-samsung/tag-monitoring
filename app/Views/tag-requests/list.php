@@ -59,8 +59,9 @@ Tag: Requests (New Rule, New Tag)
             <p class="text-secondary small mb-0">Manage and track rules and new vendor tag implementation requests across properties.</p>
         </div>
         <div class="d-flex align-items-center gap-2">
-            <a href="<?= site_url('tag-requests/export?' . http_build_query($_GET)) ?>" class="apple-btn-secondary btn-sm px-3">Export as CSV</a>
-            <a href="<?= site_url('tag-requests/upload-excel') ?>" title="Upload Excel" class="apple-btn-primary btn-sm px-3">Create New Request</a>
+            <a href="<?= site_url('tag-requests/upload-excel') ?>" title="Upload Excel" class="apple-btn-primary btn-sm ms-auto px-2">Upload Request Form</a>
+            <a href="<?= site_url('tag-requests/create') ?>" title="Create a new request" class="apple-btn-primary btn-sm ms-auto px-2">Create New Request</a>
+            <a href="<?= site_url('tag-requests/export?' . http_build_query($_GET)) ?>" class="apple-btn-secondary btn-sm ms-auto px-2">Export as CSV</a>
         </div>
     </div>
 

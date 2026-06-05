@@ -47,6 +47,7 @@ class Constants
     public const STATUS_UPDATED_IN_AL = 5;
     public const STATUS_NEW_TAG_SUBMITTED = 6;
     public const STATUS_NEW_RULE_SUBMITTED = 7;
+    public const STATUS_ENDED = 8;
     public const STATUS_DEFAULT = 145;
     public const STATUS_ALL = 999;
     public const STATUS = [
@@ -58,6 +59,7 @@ class Constants
         self::STATUS_UPDATED_IN_AL => 'Updated in AL',
         self::STATUS_NEW_TAG_SUBMITTED => 'New Tag Request Submitted',
         self::STATUS_NEW_RULE_SUBMITTED => 'New Rule Request Submitted',
+        self::STATUS_ENDED => 'Ended',
     ];
 
     public const STATUS_REQUEST_HQ_REVIEW = 1;

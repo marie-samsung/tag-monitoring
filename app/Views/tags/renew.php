@@ -402,31 +402,27 @@ Renewal: <?= esc($ticket_id) ?>
     }
 
     function copyComment() {
-        const comment = document.getElementById('comment');
-        const status  = document.getElementById('copyCommentStatus');
+        const html = $('#comment').summernote('code');
 
-        const html = comment.innerHTML;
-
-        const text = html
-            .replace(/<br\s*\/?>/gi, '\n')
-            .replace(/<a[^>]*href="([^"]+)"[^>]*>(.*?)<\/a>/gi, (_, url, txt) => `  ( )`)
-            .replace(/<[^>]+>/g, '')
-            .trim();
-
-        const temp = document.createElement('textarea');
-        temp.value = text;
-
+        const temp = document.createElement('div');
         temp.style.position = 'fixed';
         temp.style.left = '-9999px';
+        temp.style.whiteSpace = 'pre-wrap';
+        temp.innerHTML = html;
         document.body.appendChild(temp);
 
-        temp.focus();
-        temp.select();
+        const range = document.createRange();
+        range.selectNodeContents(temp);
+
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
 
         document.execCommand('copy');
 
         document.body.removeChild(temp);
 
+        const status = document.getElementById('copyCommentStatus');
         status.style.opacity = 1;
         setTimeout(() => status.style.opacity = 0, 1000);
     }
