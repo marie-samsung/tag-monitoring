@@ -122,6 +122,201 @@ Martech TMS
 .floating-btn-secondary:active {
     transform: scale(0.98);
 }
+
+/* Action Dropdown Style Experiment */
+.actions-cell {
+    position: relative;
+    width: 90px;
+    min-width: 90px;
+    text-align: center;
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+}
+
+#tblTags tbody td.actions-cell,
+#tblTags tbody td:not(.actions-cell):has(a:not([onclick]):not(.text-muted)) {
+    cursor: pointer;
+}
+
+#tblTags tbody td:not(.actions-cell):has(a:not([onclick]):not(.text-muted)):hover a:not([onclick]):not(.text-muted) {
+    color: var(--color-primary) !important;
+}
+
+.action-style-original-wrapper,
+.action-style-glassmorphic-wrapper,
+.action-style-hover-inline-wrapper {
+    display: none;
+}
+
+#tblTags.style-original .action-style-original-wrapper {
+    display: block;
+}
+
+#tblTags.style-glassmorphic .action-style-glassmorphic-wrapper {
+    display: block;
+}
+
+#tblTags.style-hover-inline .action-style-hover-inline-wrapper {
+    display: flex;
+    justify-content: center;
+}
+
+/* 1. Sleek Minimalist Dot Trigger Styling */
+.action-trigger-dot {
+    background: transparent;
+    border: none;
+    color: var(--color-text-muted);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.action-trigger-dot:hover, 
+.action-trigger-dot[aria-expanded="true"] {
+    background-color: var(--color-secondary-bg);
+    color: var(--color-text-base);
+    transform: scale(1.05);
+}
+.action-trigger-dot:active {
+    transform: scale(0.95);
+}
+
+/* 2. Glassmorphic Dropdown Styling */
+.glassmorphic-menu {
+    background: rgba(255, 255, 255, 0.82) !important;
+    backdrop-filter: blur(12px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(12px) saturate(180%) !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1) !important;
+    border-radius: 12px !important;
+    padding: 6px !important;
+    transform-origin: top right;
+    animation: dropdownFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes dropdownFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.96) translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.glassmorphic-menu .dropdown-item {
+    border-radius: 8px !important;
+    padding: 6px 12px !important;
+    font-size: 0.85rem !important;
+    font-weight: 500 !important;
+    transition: background-color 0.15s ease, color 0.15s ease !important;
+    color: var(--color-text-base) !important;
+}
+
+.glassmorphic-menu .dropdown-item:hover {
+    background-color: var(--color-primary) !important;
+    color: #ffffff !important;
+}
+/* Ensure standard Bootstrap icons inside dropdown inherit color changes */
+.glassmorphic-menu .dropdown-item:hover i {
+    color: #ffffff !important;
+}
+
+/* 3. Hover-Revealed Inline Action Buttons Styling */
+.hover-actions-container {
+    opacity: 0;
+    transform: translateX(6px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* When the table row is hovered, show the actions */
+#tblTags tr:hover .hover-actions-container {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Also show them if select check is active or focus is inside */
+#tblTags tr:focus-within .hover-actions-container,
+#tblTags tr.selected-row .hover-actions-container {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.hover-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    color: var(--color-text-muted);
+    background-color: var(--color-secondary-bg);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    text-decoration: none !important;
+    font-size: 0.75rem;
+}
+
+.hover-action-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.hover-action-btn:active {
+    transform: scale(0.95);
+}
+
+.hover-action-btn.btn-view:hover {
+    background-color: var(--color-badge-primary-bg) !important;
+    color: var(--color-badge-primary-text) !important;
+}
+
+.hover-action-btn.btn-update:hover {
+    background-color: var(--color-badge-warning-bg) !important;
+    color: var(--color-badge-warning-text) !important;
+}
+
+.hover-action-btn.btn-verify:hover {
+    background-color: var(--color-badge-success-bg) !important;
+    color: var(--color-badge-success-text) !important;
+}
+
+/* Micro Segmented Control Styling */
+.micro-segmented-control {
+    background-color: var(--color-secondary-bg);
+    border-radius: 20px;
+    padding: 3px;
+    display: inline-flex;
+    gap: 2px;
+    border: 1px solid rgba(0, 0, 0, 0.03);
+}
+
+.micro-segmented-control button {
+    border: none;
+    background: transparent;
+    padding: 4px 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    border-radius: 15px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    outline: none;
+}
+
+.micro-segmented-control button:hover {
+    color: var(--color-text-base);
+}
+
+.micro-segmented-control button.active {
+    background-color: var(--color-card-bg);
+    color: var(--color-text-base);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
 </style>
 
 <?php
@@ -460,15 +655,25 @@ Martech TMS
     <!-- #endregion -->
 
     <!-- #region | TAGS TABLE -->
-    <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
         <span class="text-secondary small fw-medium">
             Showing <?= count($tags) ?> of <?= $totalTags ?> results
         </span>
+        
+        <!-- Action Style Switcher -->
+        <div class="d-flex align-items-center gap-2">
+            <span class="text-secondary" style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.8;">Action Style:</span>
+            <div class="micro-segmented-control" id="actionStyleControl">
+                <button type="button" data-style="original">Original</button>
+                <button type="button" data-style="glassmorphic">Glassmorphic</button>
+                <button type="button" data-style="hover-inline">Hover Inline</button>
+            </div>
+        </div>
     </div>
 
     <div class="apple-table-container">
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0" id="tblTags">
+            <table class="table table-hover align-middle mb-0 style-glassmorphic" id="tblTags">
             <thead>
                 <tr>
                     <?php
@@ -516,7 +721,7 @@ Martech TMS
                             Updated <?= getSortIcon('updated_at', $currentSortBy, $currentSortDir) ?>
                         </a>
                     </th>
-                    <th class="form-label-sm fw-semibold text-dark">Actions</th>
+                    <th class="form-label-sm fw-semibold text-dark text-center">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -601,33 +806,84 @@ Martech TMS
                         <td class="form-label-sm" style="width:max-content; white-space:nowrap;"><?= esc(date('d-m-Y', strtotime($tag['updated_at']))) ?></td>
                         <!-- <td><?= esc($tag['updated_by']) ?></td> -->
                         <!-- Actions -->
-                        <td class="text-nowrap">
-                            <div class="dropdown">
-                                <button class="apple-btn-secondary btn-sm dropdown-toggle px-2.5 py-1 d-inline-flex align-items-center gap-1" type="button" id="actionsDropdown_<?= $tag['id'] ?>" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.8rem; border-radius: 9999px;">
-                                    Actions
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="actionsDropdown_<?= $tag['id'] ?>" style="border-radius: 10px; border: 1px solid var(--color-border-input); z-index: 1050;">
-                                    <li>
-                                        <a class="dropdown-item py-2" href="<?= site_url('tags/view/'.$tag['id']) ?>" style="font-size: 0.85rem;">
-                                            <i class="bi bi-eye text-primary me-2"></i>View Details
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item py-2" href="<?= site_url('tags/update/'.$tag['id']) ?>" style="font-size: 0.85rem;">
-                                            <i class="bi bi-pencil-square text-warning me-2"></i>Update Details
-                                        </a>
-                                    </li>
-                                    <?php if ($tag['status'] == Constants::STATUS_PENDING_VERIFICATION): ?>
-                                        <li><hr class="dropdown-divider"></li>
+                        <td class="text-nowrap actions-cell">
+                            <!-- Original Style -->
+                            <div class="action-style-original-wrapper">
+                                <div class="dropdown">
+                                    <button class="apple-btn-secondary btn-sm dropdown-toggle px-2.5 py-1 d-inline-flex align-items-center gap-1" type="button" id="actionsDropdown_<?= $tag['id'] ?>" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.8rem; border-radius: 9999px;">
+                                        Actions
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="actionsDropdown_<?= $tag['id'] ?>" style="border-radius: 10px; border: 1px solid var(--color-border-input); z-index: 1050;">
                                         <li>
-                                            <a class="dropdown-item py-2 text-success" href="<?= site_url('tags/verify/' . $tag['id']) ?>"
-                                               onclick="return confirm('Have you verified the end date matches in AL?');"
-                                               style="font-size: 0.85rem; font-weight: 500;">
-                                                <i class="bi bi-check-circle-fill text-success me-2"></i>Verify Tag
+                                            <a class="dropdown-item py-2" href="<?= site_url('tags/view/'.$tag['id']) ?>" style="font-size: 0.85rem;">
+                                                <i class="bi bi-eye text-primary me-2"></i>View Details
                                             </a>
                                         </li>
+                                        <li>
+                                            <a class="dropdown-item py-2" href="<?= site_url('tags/update/'.$tag['id']) ?>" style="font-size: 0.85rem;">
+                                                <i class="bi bi-pencil-square text-warning me-2"></i>Update Details
+                                            </a>
+                                        </li>
+                                        <?php if ($tag['status'] == Constants::STATUS_PENDING_VERIFICATION): ?>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <a class="dropdown-item py-2 text-success" href="<?= site_url('tags/verify/' . $tag['id']) ?>"
+                                                   onclick="return confirm('Have you verified the end date matches in AL?');"
+                                                   style="font-size: 0.85rem; font-weight: 500;">
+                                                    <i class="bi bi-check-circle-fill text-success me-2"></i>Verify Tag
+                                                </a>
+                                            </li>
+                                        <?php endif; ?>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Style A: Glassmorphic Dropdown -->
+                            <div class="action-style-glassmorphic-wrapper">
+                                <div class="dropdown">
+                                    <button class="action-trigger-dot d-inline-flex align-items-center justify-content-center" type="button" id="actionsDropdownA_<?= $tag['id'] ?>" data-bs-toggle="dropdown" aria-expanded="false" title="Actions">
+                                        <i class="bi bi-three-dots"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end glassmorphic-menu shadow" aria-labelledby="actionsDropdownA_<?= $tag['id'] ?>" style="z-index: 1050;">
+                                        <li>
+                                            <a class="dropdown-item py-2" href="<?= site_url('tags/view/'.$tag['id']) ?>">
+                                                <i class="bi bi-eye text-primary me-2"></i>View Details
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item py-2" href="<?= site_url('tags/update/'.$tag['id']) ?>">
+                                                <i class="bi bi-pencil-square text-warning me-2"></i>Update Details
+                                            </a>
+                                        </li>
+                                        <?php if ($tag['status'] == Constants::STATUS_PENDING_VERIFICATION): ?>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <a class="dropdown-item py-2 text-success" href="<?= site_url('tags/verify/' . $tag['id']) ?>"
+                                                   onclick="return confirm('Have you verified the end date matches in AL?');"
+                                                   style="font-weight: 500;">
+                                                    <i class="bi bi-check-circle-fill text-success me-2"></i>Verify Tag
+                                                </a>
+                                            </li>
+                                        <?php endif; ?>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Style B: Hover-Revealed Inline Actions -->
+                            <div class="action-style-hover-inline-wrapper">
+                                <div class="hover-actions-container d-inline-flex align-items-center gap-1">
+                                    <a href="<?= site_url('tags/view/'.$tag['id']) ?>" class="hover-action-btn btn-view" data-bs-toggle="tooltip" data-bs-placement="top" title="View Details">
+                                        <i class="bi bi-eye-fill"></i>
+                                    </a>
+                                    <a href="<?= site_url('tags/update/'.$tag['id']) ?>" class="hover-action-btn btn-update" data-bs-toggle="tooltip" data-bs-placement="top" title="Update Details">
+                                        <i class="bi bi-pencil-fill"></i>
+                                    </a>
+                                    <?php if ($tag['status'] == Constants::STATUS_PENDING_VERIFICATION): ?>
+                                        <a href="<?= site_url('tags/verify/' . $tag['id']) ?>" class="hover-action-btn btn-verify" data-bs-toggle="tooltip" data-bs-placement="top" title="Verify Tag" onclick="return confirm('Have you verified the end date matches in AL?');">
+                                            <i class="bi bi-check-circle-fill"></i>
+                                        </a>
                                     <?php endif; ?>
-                                </ul>
+                                </div>
                             </div>
                         </td>
                     </tr>
@@ -763,8 +1019,52 @@ document.addEventListener('DOMContentLoaded', function () {
 
     table.addEventListener('click', function (e) {
         const isCheckbox = e.target.matches('input[name="tag_ids[]"]');
-        if (!isCheckbox && e.target.closest('a, button, select, label, input')) {
-            return;
+        if (isCheckbox) return;
+
+        const td = e.target.closest('td');
+        if (td) {
+            const clickedLinkOrBtn = e.target.closest('a, button, select, label, input');
+            
+            // Redirect Actions Column cell clicks to target buttons
+            if (td.classList.contains('actions-cell')) {
+                if (!clickedLinkOrBtn) {
+                    let activeStyle = 'glassmorphic';
+                    if (table.classList.contains('style-original')) {
+                        activeStyle = 'original';
+                    } else if (table.classList.contains('style-hover-inline')) {
+                        activeStyle = 'hover-inline';
+                    }
+                    
+                    const wrapper = td.querySelector(`.action-style-${activeStyle}-wrapper`);
+                    if (wrapper) {
+                        const toggleBtn = wrapper.querySelector('[data-bs-toggle="dropdown"]');
+                        if (toggleBtn) {
+                            toggleBtn.click();
+                        } else {
+                            const viewBtn = wrapper.querySelector('.hover-action-btn.btn-view');
+                            if (viewBtn) viewBtn.click();
+                        }
+                    }
+                }
+                return;
+            }
+
+            // Redirect clicks inside cells containing primary links (Name, Property, etc.)
+            const primaryLink = td.querySelector('a:not([onclick]):not(.text-muted)');
+            if (primaryLink) {
+                if (!clickedLinkOrBtn) {
+                    if (primaryLink.target === '_blank') {
+                        window.open(primaryLink.href, '_blank');
+                    } else {
+                        primaryLink.click();
+                    }
+                }
+                return;
+            }
+
+            if (clickedLinkOrBtn) {
+                return;
+            }
         }
         
         const row = e.target.closest('tr');
@@ -872,6 +1172,37 @@ document.addEventListener('DOMContentLoaded', function () {
             el.innerHTML = '<i class="bi bi-copy text-secondary fs-7"></i>';
         }, 1200);
     };
+
+    // Action Style Switcher logic
+    const actionStyleControl = document.getElementById('actionStyleControl');
+    const tblTags = document.getElementById('tblTags');
+    if (actionStyleControl && tblTags) {
+        const savedStyle = localStorage.getItem('tag_action_style') || 'glassmorphic';
+        tblTags.classList.remove('style-original', 'style-glassmorphic', 'style-hover-inline');
+        tblTags.classList.add(`style-${savedStyle}`);
+        
+        actionStyleControl.querySelectorAll('button').forEach(btn => {
+            if (btn.dataset.style === savedStyle) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+        
+        actionStyleControl.addEventListener('click', function (e) {
+            const btn = e.target.closest('button[data-style]');
+            if (!btn) return;
+            
+            const selectedStyle = btn.dataset.style;
+            actionStyleControl.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            tblTags.classList.remove('style-original', 'style-glassmorphic', 'style-hover-inline');
+            tblTags.classList.add(`style-${selectedStyle}`);
+            
+            localStorage.setItem('tag_action_style', selectedStyle);
+        });
+    }
 });
 </script>
 <?= $this->endSection() ?>
