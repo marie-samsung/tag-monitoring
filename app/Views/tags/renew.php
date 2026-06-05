@@ -132,29 +132,30 @@ Renewal: <?= esc($ticket_id) ?>
 ?>
 
 <form action="<?= site_url('tags/renew/confirm') ?>" method="post">
-    <div class="mt-3">
-        <!-- Section 1: JIRA Ticket Information -->
-        <div class="apple-card mb-4" style="background-color: var(--color-bg-base); border: 1px solid rgba(0, 0, 0, 0.05); box-shadow: none;">
-            <h5 class="mb-3 text-primary d-flex align-items-center gap-2 fw-bold">
-                <i class="bi bi-jira"></i>
-                <span>JIRA Ticket Information</span>
-            </h5>
-            
-            <div class="mb-3">
-                <label class="form-label-sm fw-semibold text-secondary mb-1">Proposed JIRA Title</label>
-                <div class="d-flex align-items-center gap-2">
-                    <span id="jiraTitle" class="fw-bold text-dark fs-6"><?= esc($jiraTitle) ?></span>
-                    <a href="javascript:void(0)" onclick="copyJiraTitle()" class="text-primary text-decoration-none">
-                        <i class="bi bi-copy fs-6"></i>
-                    </a>
-                    <span id="copyStatus" class="badge bg-success" style="opacity:0; transition: opacity .6s; font-size:10px;">
-                        Copied!
-                    </span>
+    <div class="row g-4 mt-1">
+        <!-- Left Column: JIRA Info & Tags List -->
+        <div class="col-lg-5 d-flex flex-column">
+            <!-- JIRA Ticket Information -->
+            <div class="apple-card mb-4">
+                <h5 class="mb-3 text-primary d-flex align-items-center gap-2 fw-bold">
+                    <i class="bi bi-jira"></i>
+                    <span>JIRA Ticket Information</span>
+                </h5>
+                
+                <div class="mb-3">
+                    <label class="form-label-sm fw-semibold text-secondary mb-1">Proposed JIRA Title</label>
+                    <div class="d-flex align-items-center gap-2">
+                        <span id="jiraTitle" class="fw-bold text-dark fs-6"><?= esc($jiraTitle) ?></span>
+                        <a href="javascript:void(0)" onclick="copyJiraTitle()" class="text-primary text-decoration-none">
+                            <i class="bi bi-copy fs-6"></i>
+                        </a>
+                        <span id="copyStatus" class="badge bg-success" style="opacity:0; transition: opacity .6s; font-size:10px;">
+                            Copied!
+                        </span>
+                    </div>
                 </div>
-            </div>
 
-            <div class="row align-items-end g-3">
-                <div class="col-md-6">
+                <div class="mb-2">
                     <label for="ticket_id" class="form-label-sm fw-semibold text-secondary mb-1">JIRA Ticket ID</label>
                     <div class="d-flex gap-2">
                         <input type="text" name="ticket_id" id="ticket_id"
@@ -166,136 +167,139 @@ Renewal: <?= esc($ticket_id) ?>
                             Create JIRA Ticket
                         </a>
                     </div>
-                    <small class="form-text text-muted" style="font-size: 0.75rem;">
+                    <small class="form-text text-muted mt-1 d-block" style="font-size: 0.75rem;">
                         Format: GTA-XXXXX
                     </small>
                 </div>
             </div>
-        </div>
 
-        <!-- Section 2: Ticket Description (Summernote) -->
-        <div class="apple-card mb-4" style="background-color: var(--color-bg-base); border: 1px solid rgba(0, 0, 0, 0.05); box-shadow: none;">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="mb-0 text-primary d-flex align-items-center gap-2 fw-bold">
-                    <i class="bi bi-file-earmark-text-fill"></i>
-                    <span>Ticket Description (HTML)</span>
+            <!-- Tags List Table -->
+            <div class="d-flex flex-column flex-grow-1">
+                <h5 class="mb-3 text-primary d-flex align-items-center gap-2 fw-bold">
+                    <i class="bi bi-tags-fill"></i>
+                    <span>Tags List</span>
                 </h5>
-                <div>
-                    <span id="copyDetailsStatus" class="badge bg-success me-2" style="opacity:0; transition: opacity .6s; font-size:10px;">
-                        Copied!
-                    </span>
-                    <a href="javascript:void(0)" onclick="copyDetails()" class="apple-btn-secondary btn-sm px-3 text-decoration-none">
-                        <i class="bi bi-copy me-1"></i> Copy HTML
-                    </a>
-                </div>
-            </div>
-            <textarea id="details"></textarea>
-        </div>
-
-        <!-- Section 3: Tags List Table -->
-        <div class="mb-4">
-            <h5 class="mb-3 text-primary d-flex align-items-center gap-2 fw-bold">
-                <i class="bi bi-tags-fill"></i>
-                <span>Tags List</span>
-            </h5>
-            
-            <div class="apple-table-container">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0 apple-table">
-                        <thead>
-                            <tr>
-                                <th class="form-label-sm fw-semibold">#</th>
-                                <th class="form-label-sm fw-semibold">ID</th>
-                                <th class="form-label-sm fw-semibold">Property</th>
-                                <th class="form-label-sm fw-semibold">Name</th>
-                                <th class="form-label-sm fw-semibold text-center">Updated in AL?</th>
-                                <th class="form-label-sm fw-semibold">Next End Date</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($tags as $tag): $count++; ?>
+                
+                <div class="apple-table-container mb-4 flex-grow-1">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0 apple-table">
+                            <thead>
                                 <tr>
-                                    <td class="fw-semibold"><?= $count ?></td>
-                                    <td><?= esc($tag['id']) ?></td>
-                                    <td>
-                                        <a href="<?= esc($properties[$tag['property_id']]['ref_link'] ?? '#') ?>" target="_blank" class="apple-link-dark text-decoration-none fw-semibold">
-                                            <?= esc($properties[$tag['property_id']]['name'] ?? 'Unknown') ?>
-                                        </a>
-                                    </td>
-                                    <td class="form-label-sm">
-                                        <span class="group-hover-container align-items-center">
-                                            <a href="<?= esc($tag['ref_link'] ?? '#') ?>" target="_blank" class="apple-link-dark">
-                                                <?= esc($tag['name']) ?>
-                                            </a>
-                                            <a href="javascript:void(0)" onclick="copyTagName('<?= esc($tag['name']) ?>', this)" title="Copy tag name" class="text-muted ms-2" style="transition: color 0.2s; text-decoration: none; line-height: 1;">
-                                                <i class="bi bi-copy" style="font-size: 0.85rem;"></i>
-                                            </a>
-                                        </span>
-                                    </td>
-                                    <td class="text-center">
-                                        <?php if ($tag['status'] != Constants::STATUS_UPDATED_IN_AL): ?>
-                                            <button 
-                                                type="button" 
-                                                class="apple-btn-primary btn-sm save-btn px-3" 
-                                                data-tag-id="<?= $tag['id'] ?>"
-                                            >
-                                                Done
-                                            </button>
-                                            <span class="text-success small updated-label" style="display:none;">
-                                                <i class="bi bi-check-circle-fill"></i> Updated
-                                            </span>
-                                        <?php else: ?>
-                                             <span class="text-success small updated-label">
-                                                <i class="bi bi-check-circle-fill"></i> Updated
-                                            </span>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td><?= esc($nextExpDate) ?></td>
-
-                                    <input type="hidden" name="tags[<?= $tag['id'] ?>][id]" value="<?= $tag['id'] ?>">
-                                    <input type="hidden" name="tags[<?= $tag['id'] ?>][library_name]" class="library-name-input" value="<?= $libraryName ?>">
-                                    <input type="hidden" name="tags[<?= $tag['id'] ?>][property_id]" value="<?= $tag['property_id'] ?>">
-                                    <input type="hidden" name="tags[<?= $tag['id'] ?>][vendor_id]" value="<?= $tag['vendor_id'] ?>">
-                                    <input type="hidden" name="tags[<?= $tag['id'] ?>][next_end_date]" value="<?= $nextExpDate ?>">
+                                    <th class="form-label-sm fw-semibold">#</th>
+                                    <th class="form-label-sm fw-semibold">ID</th>
+                                    <th class="form-label-sm fw-semibold">Property</th>
+                                    <th class="form-label-sm fw-semibold">Name</th>
+                                    <th class="form-label-sm fw-semibold text-center">Updated in AL?</th>
+                                    <th class="form-label-sm fw-semibold">Next End Date</th>
                                 </tr>
-                            <?php endforeach; ?>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($tags as $tag): $count++; ?>
+                                    <tr>
+                                        <td class="fw-semibold"><?= $count ?></td>
+                                        <td><?= esc($tag['id']) ?></td>
+                                        <td>
+                                            <a href="<?= esc($properties[$tag['property_id']]['ref_link'] ?? '#') ?>" target="_blank" class="apple-link-dark text-decoration-none fw-semibold">
+                                                <?= esc($properties[$tag['property_id']]['name'] ?? 'Unknown') ?>
+                                            </a>
+                                        </td>
+                                        <td class="form-label-sm">
+                                            <span class="group-hover-container align-items-center">
+                                                <a href="<?= esc($tag['ref_link'] ?? '#') ?>" target="_blank" class="apple-link-dark">
+                                                    <?= esc($tag['name']) ?>
+                                                </a>
+                                                <a href="javascript:void(0)" onclick="copyTagName('<?= esc($tag['name']) ?>', this)" title="Copy tag name" class="text-muted ms-2" style="transition: color 0.2s; text-decoration: none; line-height: 1;">
+                                                    <i class="bi bi-copy" style="font-size: 0.85rem;"></i>
+                                                </a>
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            <?php if ($tag['status'] != Constants::STATUS_UPDATED_IN_AL): ?>
+                                                <button 
+                                                    type="button" 
+                                                    class="apple-btn-primary btn-sm save-btn px-3" 
+                                                    data-tag-id="<?= $tag['id'] ?>"
+                                                >
+                                                    Done
+                                                </button>
+                                                <span class="text-success small updated-label" style="display:none;">
+                                                    <i class="bi bi-check-circle-fill"></i> Updated
+                                                </span>
+                                            <?php else: ?>
+                                                 <span class="text-success small updated-label">
+                                                    <i class="bi bi-check-circle-fill"></i> Updated
+                                                </span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td><?= esc($nextExpDate) ?></td>
 
-                            <input type="hidden" name="info[ticket_id]" id="info_ticket_id" value="<?= $ticket_id ?>">
-                            <input type="hidden" name="info[al_end_date]" value="<?= $nextExpDate ?>">
-                            <input type="hidden" name="info[library_name]" class="library-name-input" value="<?= $libraryName ?>">
-                        </tbody>
-                    </table>
+                                        <input type="hidden" name="tags[<?= $tag['id'] ?>][id]" value="<?= $tag['id'] ?>">
+                                        <input type="hidden" name="tags[<?= $tag['id'] ?>][library_name]" class="library-name-input" value="<?= $libraryName ?>">
+                                        <input type="hidden" name="tags[<?= $tag['id'] ?>][property_id]" value="<?= $tag['property_id'] ?>">
+                                        <input type="hidden" name="tags[<?= $tag['id'] ?>][vendor_id]" value="<?= $tag['vendor_id'] ?>">
+                                        <input type="hidden" name="tags[<?= $tag['id'] ?>][next_end_date]" value="<?= $nextExpDate ?>">
+                                    </tr>
+                                <?php endforeach; ?>
+
+                                <input type="hidden" name="info[ticket_id]" id="info_ticket_id" value="<?= $ticket_id ?>">
+                                <input type="hidden" name="info[al_end_date]" value="<?= $nextExpDate ?>">
+                                <input type="hidden" name="info[library_name]" class="library-name-input" value="<?= $libraryName ?>">
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Section 4: JIRA Comments (Summernote) -->
-        <div class="apple-card mb-4" style="background-color: var(--color-bg-base); border: 1px solid rgba(0, 0, 0, 0.05); box-shadow: none;">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="mb-0 text-primary d-flex align-items-center gap-2 fw-bold">
-                    <i class="bi bi-chat-left-text-fill"></i>
-                    <span>JIRA Comment</span>
-                </h5>
-                <div>
-                    <span id="copyCommentStatus" class="badge bg-success me-2" style="opacity:0; transition: opacity .6s; font-size:10px;">
-                        Copied!
-                    </span>
-                    <a href="javascript:void(0)" onclick="copyComment()" class="apple-btn-secondary btn-sm px-3 text-decoration-none">
-                        <i class="bi bi-copy me-1"></i> Copy Comment
-                    </a>
+        <!-- Right Column: Editors -->
+        <div class="col-lg-7 d-flex flex-column">
+            <!-- Ticket Description (Summernote) -->
+            <div class="apple-card mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0 text-primary d-flex align-items-center gap-2 fw-bold">
+                        <i class="bi bi-file-earmark-text-fill"></i>
+                        <span>Ticket Description (HTML)</span>
+                    </h5>
+                    <div>
+                        <span id="copyDetailsStatus" class="badge bg-success me-2" style="opacity:0; transition: opacity .6s; font-size:10px;">
+                            Copied!
+                        </span>
+                        <a href="javascript:void(0)" onclick="copyDetails()" class="apple-btn-secondary btn-sm px-3 text-decoration-none">
+                            <i class="bi bi-copy me-1"></i> Copy HTML
+                        </a>
+                    </div>
                 </div>
+                <textarea id="details"></textarea>
             </div>
-            <textarea id="comment"></textarea>
-        </div>
 
-        <!-- Form Actions -->
-        <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top mb-5">
-            <a href="<?= site_url('tags') ?>" title="Cancel" class="apple-btn-secondary px-4 text-decoration-none">Cancel</a>
-            <button type="submit" 
-                class="apple-btn-primary px-4"
-                onclick="return confirm('Are you sure you want to renew these tags?');">
-                Renew Tags
-            </button>
+            <!-- JIRA Comments (Summernote) -->
+            <div class="apple-card mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0 text-primary d-flex align-items-center gap-2 fw-bold">
+                        <i class="bi bi-chat-left-text-fill"></i>
+                        <span>JIRA Comment</span>
+                    </h5>
+                    <div>
+                        <span id="copyCommentStatus" class="badge bg-success me-2" style="opacity:0; transition: opacity .6s; font-size:10px;">
+                            Copied!
+                        </span>
+                        <a href="javascript:void(0)" onclick="copyComment()" class="apple-btn-secondary btn-sm px-3 text-decoration-none">
+                            <i class="bi bi-copy me-1"></i> Copy Comment
+                        </a>
+                    </div>
+                </div>
+                <textarea id="comment"></textarea>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="d-flex justify-content-end gap-2 mt-auto pt-3 border-top mb-5">
+                <a href="<?= site_url('tags') ?>" title="Cancel" class="apple-btn-secondary px-4 text-decoration-none">Cancel</a>
+                <button type="submit" 
+                    class="apple-btn-primary px-4"
+                    onclick="return confirm('Are you sure you want to renew these tags?');">
+                    Renew Tags
+                </button>
+            </div>
         </div>
     </div>
 </form>
@@ -307,7 +311,7 @@ Renewal: <?= esc($ticket_id) ?>
 <script>
     $(document).ready(function() {
         $('#details').summernote({
-            height: 300,
+            height: 360,
             toolbar: [
                 ['style', ['bold', 'italic', 'underline', 'clear']],
                 // ['font', ['strikethrough', 'superscript', 'subscript']],

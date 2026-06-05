@@ -766,3 +766,87 @@ table.file-table th:nth-child(3) {
     border-color: var(--color-primary) !important;
     box-shadow: 0 0 0 3px var(--color-primary-focus-shadow) !important;
 }
+
+/* Summernote Editor Custom Theme (Apple-like styling) */
+.note-editor.note-frame {
+    border: 1px solid var(--color-border-input) !important;
+    border-radius: 12px !important;
+    background-color: var(--color-card-bg) !important;
+    overflow: hidden !important;
+    box-shadow: none !important;
+}
+
+.note-editor .note-toolbar {
+    background-color: var(--color-bg-base) !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+    padding: 8px 12px !important;
+}
+
+.note-editor .note-btn {
+    background-color: var(--color-card-bg) !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    border-radius: 6px !important;
+    color: var(--color-text-secondary) !important;
+    font-size: 0.85rem !important;
+    padding: 4px 8px !important;
+    box-shadow: none !important;
+    transition: background-color var(--transition-fast) !important;
+}
+
+.note-editor .note-btn:hover {
+    background-color: var(--color-secondary-bg) !important;
+    color: var(--color-text-base) !important;
+}
+
+.note-editor .note-btn.active {
+    background-color: var(--color-primary) !important;
+    border-color: var(--color-primary) !important;
+    color: white !important;
+}
+
+.note-editor .note-editable {
+    background-color: var(--color-card-bg) !important;
+    color: var(--color-text-base) !important;
+    font-family: var(--font-sans) !important;
+    font-size: 0.9rem !important;
+    padding: 16px !important;
+    line-height: 1.6 !important;
+}
+
+.note-editor .note-editable a {
+    color: var(--color-primary) !important;
+    text-decoration: underline !important;
+}
+
+.note-editor .note-placeholder {
+    padding: 16px !important;
+    font-family: var(--font-sans) !important;
+    font-size: 0.9rem !important;
+    color: var(--color-text-muted) !important;
+}
+
+.note-editor .note-statusbar {
+    background-color: var(--color-bg-base) !important;
+    border-top: 1px solid rgba(0, 0, 0, 0.05) !important;
+}
+
+.note-editor .note-statusbar .note-resizebar {
+    padding-top: 4px !important;
+}
+
+.note-editor .note-dropdown-menu {
+    border: 1px solid var(--color-border-input) !important;
+    border-radius: 8px !important;
+    box-shadow: var(--shadow-popover) !important;
+    overflow: hidden !important;
+}
+
+.note-editor .note-dropdown-item {
+    font-size: 0.875rem !important;
+    padding: 6px 12px !important;
+    transition: background-color var(--transition-fast) !important;
+}
+
+.note-editor .note-dropdown-item:hover {
+    background-color: var(--color-secondary-bg) !important;
+}

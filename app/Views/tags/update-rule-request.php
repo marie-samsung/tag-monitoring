@@ -100,49 +100,49 @@
     }
 
     $detailsHtml = "
-        <b style='color:#337ab7;'>1) Target Property :</b>
-        <ul>
+        <b style='color:#0071E3; font-size:15px; font-family:-apple-system,BlinkMacSystemFont,sans-serif;'>1) Target Property :</b>
+        <ul style='font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:14px; color:#1D1D1F;'>
             " . $propertyListHtml . "
             <li>Library Name : <span id='library-name-display'>". $libraryName ."</span></li>
         </ul>
 
-        <b style='color:#337ab7;'>2) Target Page(s) :</b>
-        <ul>
+        <b style='color:#0071E3; font-size:15px; font-family:-apple-system,BlinkMacSystemFont,sans-serif;'>2) Target Page(s) :</b>
+        <ul style='font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:14px; color:#1D1D1F;'>
             " . $pagesListHtml . "
         </ul>
 
-        <b style='color:#337ab7;'>2.2) Reason when the Target Page is for all :</b>
-        <p>". $reason ."</p>
+        <b style='color:#0071E3; font-size:15px; font-family:-apple-system,BlinkMacSystemFont,sans-serif;'>2.2) Reason when the Target Page is for all :</b>
+        <p style='font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:14px; color:#1D1D1F; padding-left:12px;'>". $reason ."</p>
 
-        <b style='color:#337ab7;'>3) Expiration Date (to-be) : </b>". $expDateStr ." <br/><br/>
+        <b style='color:#0071E3; font-size:15px; font-family:-apple-system,BlinkMacSystemFont,sans-serif;'>3) Expiration Date (to-be) : </b><span style='font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:14px; color:#1D1D1F;'>". $expDateStr ."</span> <br/><br/>
 
-        <b style='color:#337ab7;'>4) Status (to-be) :</b>
-        <p><i>Insert Local Rule Monitoring File screenshots here...</i></p>
+        <b style='color:#0071E3; font-size:15px; font-family:-apple-system,BlinkMacSystemFont,sans-serif;'>4) Status (to-be) :</b>
+        <p style='font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:14px; color:#86868B; font-style:italic; padding-left:12px;'>Insert Local Rule Monitoring File screenshots here...</p>
         
-        <b style='color:#337ab7;'>5) Purpose & Goal :</b>
-        <p>". $purpose ."</p>
+        <b style='color:#0071E3; font-size:15px; font-family:-apple-system,BlinkMacSystemFont,sans-serif;'>5) Purpose & Goal :</b>
+        <p style='font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:14px; color:#1D1D1F; padding-left:12px;'>". $purpose ."</p>
         
-        <b style='color:#337ab7;'>6) ssGTM</b>
-        <p>
+        <b style='color:#0071E3; font-size:15px; font-family:-apple-system,BlinkMacSystemFont,sans-serif;'>6) ssGTM</b>
+        <p style='font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:14px; color:#1D1D1F; padding-left:12px;'>
             For ssGTM requests, please refer to this ticket: 
-            <a href='". $ssGTM ."' target='_blank'> ssGTM </a> 
+            <a href='". $ssGTM ."' target='_blank' style='color:#0071E3; text-decoration:none;'> ssGTM </a> 
         </p>
         
-        <b style='color:#337ab7;'>7) Required Attachment</b>
-        <p><b>① Test Result Screenshot image file(s)</b></p>
-        <p><i>Insert QA screenshots here...</i></p>
+        <b style='color:#0071E3; font-size:15px; font-family:-apple-system,BlinkMacSystemFont,sans-serif;'>7) Required Attachment</b>
+        <p style='font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:14px; color:#1D1D1F; padding-left:12px;'><b>① Test Result Screenshot image file(s)</b></p>
+        <p style='font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:14px; color:#86868B; font-style:italic; padding-left:24px;'>Insert QA screenshots here...</p>
         
         <br/>
         
-        <p><b>② Integration Result: Fill in the checklist below to make sure the new tags aren't affecting your site's operation.</b></p>
-        <table border='1' cellpadding='6' cellspacing='0' style='border-collapse:collapse; width:100%;'>
+        <p style='font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:14px; color:#1D1D1F;'><b>② Integration Result: Fill in the checklist below to make sure the new tags aren't affecting your site's operation.</b></p>
+        <table cellpadding='8' cellspacing='0' style='border-collapse:collapse; width:100%; border:1px solid #e8e8ed; font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:14px; margin-bottom:16px;'>
             <tbody>";
 
     foreach (Constants::INTEGRATION_RESULT_PAGE_LOAD as $question => $value) {
         $detailsHtml .= "
-                <tr>
-                    <td style='width:50%;'>". $question ."</td>
-                    <td>". $value ."</td>
+                <tr style='border-bottom:1px solid #e8e8ed;'>
+                    <td style='width:50%; color:#49494D; font-weight:500; border-right:1px solid #e8e8ed; padding:8px 12px;'>". $question ."</td>
+                    <td style='color:#1D1D1F; padding:8px 12px;'>". $value ."</td>
                 </tr>
             ";
     }
@@ -151,16 +151,16 @@
             </tbody>
         </table>
         
-        </br>
+        <br/>
         
-        <table border='1' cellpadding='6' cellspacing='0' style='border-collapse:collapse; width:100%;'>
+        <table cellpadding='8' cellspacing='0' style='border-collapse:collapse; width:100%; border:1px solid #e8e8ed; font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:14px; margin-bottom:16px;'>
             <tbody>";
 
     foreach (Constants::INTEGRATION_RESULT_EVENT_CLICK as $question => $value) {
         $detailsHtml .= "
-                <tr>
-                    <td style='width:50%;'>". $question ."</td>
-                    <td>". $value ."</td>
+                <tr style='border-bottom:1px solid #e8e8ed;'>
+                    <td style='width:50%; color:#49494D; font-weight:500; border-right:1px solid #e8e8ed; padding:8px 12px;'>". $question ."</td>
+                    <td style='color:#1D1D1F; padding:8px 12px;'>". $value ."</td>
                 </tr>
             ";
     }
@@ -169,36 +169,37 @@
                     </tbody>
                 </table>
                 
-                </br>
+                <br/>
                 
-        <p><b>③ Local Rule Monitoring Excel file [Local Rule Monitoring Excel file_v1.0_Subsidiary_sitecode_YYMMDD_general.xlsx]</b></p>
+        <p style='font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:14px; color:#1D1D1F;'><b>③ Local Rule Monitoring Excel file [Local Rule Monitoring Excel file_v1.0_Subsidiary_sitecode_YYMMDD_general.xlsx]</b></p>
         ";
 ?>
 
 <form action="<?= site_url('tags/update-rule/confirm') ?>" method="post">
-    <div class="mt-3">
-        <!-- Section 1: JIRA Ticket Information -->
-        <div class="apple-card mb-4" style="background-color: var(--color-bg-base); border: 1px solid rgba(0, 0, 0, 0.05); box-shadow: none;">
-            <h5 class="mb-3 text-primary d-flex align-items-center gap-2 fw-bold">
-                <i class="bi bi-jira"></i>
-                <span>JIRA Ticket Information</span>
-            </h5>
-            
-            <div class="mb-3">
-                <label class="form-label-sm fw-semibold text-secondary mb-1">Proposed JIRA Title</label>
-                <div class="d-flex align-items-center gap-2">
-                    <span id="jiraTitle" class="fw-bold text-dark fs-6"><?= esc($jiraTitle) ?></span>
-                    <a href="javascript:void(0)" onclick="copyJiraTitle()" class="text-primary text-decoration-none">
-                        <i class="bi bi-copy fs-6"></i>
-                    </a>
-                    <span id="copyStatus" class="badge bg-success" style="opacity:0; transition: opacity .6s; font-size:10px;">
-                        Copied!
-                    </span>
+    <div class="row g-4 mt-1">
+        <!-- Left Column: JIRA Info & Tags List -->
+        <div class="col-lg-5 d-flex flex-column">
+            <!-- JIRA Ticket Information -->
+            <div class="apple-card mb-4">
+                <h5 class="mb-3 text-primary d-flex align-items-center gap-2 fw-bold">
+                    <i class="bi bi-jira"></i>
+                    <span>JIRA Ticket Information</span>
+                </h5>
+                
+                <div class="mb-3">
+                    <label class="form-label-sm fw-semibold text-secondary mb-1">Proposed JIRA Title</label>
+                    <div class="d-flex align-items-start gap-2">
+                        <span id="jiraTitle" class="fw-bold text-dark fs-6" style="word-break: break-word;"><?= esc($jiraTitle) ?></span>
+                        <a href="javascript:void(0)" onclick="copyJiraTitle()" class="text-primary text-decoration-none pt-1">
+                            <i class="bi bi-copy fs-6"></i>
+                        </a>
+                        <span id="copyStatus" class="badge bg-success" style="opacity:0; transition: opacity .6s; font-size:10px;">
+                            Copied!
+                        </span>
+                    </div>
                 </div>
-            </div>
 
-            <div class="row align-items-end g-3">
-                <div class="col-md-6">
+                <div class="mb-2">
                     <label for="ticket_id" class="form-label-sm fw-semibold text-secondary mb-1">JIRA Ticket ID</label>
                     <div class="d-flex gap-2">
                         <input type="text" name="ticket_id" id="ticket_id"
@@ -210,87 +211,86 @@
                             Create JIRA Ticket
                         </a>
                     </div>
-                    <small class="form-text text-muted" style="font-size: 0.75rem;">
+                    <small class="form-text text-muted mt-1 d-block" style="font-size: 0.75rem;">
                         Format: GTA-XXXXX
                     </small>
                 </div>
             </div>
-        </div>
 
-        <!-- Section 2: Ticket Description (Summernote) -->
-        <div class="apple-card mb-4" style="background-color: var(--color-bg-base); border: 1px solid rgba(0, 0, 0, 0.05); box-shadow: none;">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="mb-0 text-primary d-flex align-items-center gap-2 fw-bold">
-                    <i class="bi bi-file-earmark-text-fill"></i>
-                    <span>Ticket Description (HTML)</span>
+            <!-- Tags List Table -->
+            <div class="d-flex flex-column flex-grow-1">
+                <h5 class="mb-3 text-primary d-flex align-items-center gap-2 fw-bold">
+                    <i class="bi bi-tags-fill"></i>
+                    <span>Tags List</span>
                 </h5>
-                <div>
-                    <span id="copyDetailsStatus" class="badge bg-success me-2" style="opacity:0; transition: opacity .6s; font-size:10px;">
-                        Copied!
-                    </span>
-                    <a href="javascript:void(0)" onclick="copyDetails()" class="apple-btn-secondary btn-sm px-3 text-decoration-none">
-                        <i class="bi bi-copy me-1"></i> Copy HTML
-                    </a>
-                </div>
-            </div>
-            <textarea id="details"></textarea>
-        </div>
-
-        <!-- Section 3: Tags List Table -->
-        <div class="mb-4">
-            <h5 class="mb-3 text-primary d-flex align-items-center gap-2 fw-bold">
-                <i class="bi bi-tags-fill"></i>
-                <span>Tags List</span>
-            </h5>
-            
-            <div class="apple-table-container">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0 apple-table">
-                        <thead>
-                            <tr>
-                                <th class="form-label-sm fw-semibold">ID</th>
-                                <th class="form-label-sm fw-semibold">Property</th>
-                                <th class="form-label-sm fw-semibold">Name</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($tags as $tag): ?>
+                <div class="apple-table-container mb-4 flex-grow-1">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0 apple-table">
+                            <thead>
                                 <tr>
-                                    <td><?= esc($tag['id']) ?></td>
-                                    <td>
-                                        <a href="<?= esc($properties[$tag['property_id']]['ref_link'] ?? '#') ?>" target="_blank" class="apple-link-dark text-decoration-none fw-semibold">
-                                            <?= esc($properties[$tag['property_id']]['name'] ?? 'Unknown') ?>
-                                        </a>
-                                    </td>
-                                    <td class="form-label-sm">
-                                        <a href="<?= esc($tag['ref_link'] ?? '#') ?>" target="_blank" class="apple-link-dark text-decoration-none fw-semibold">
-                                            <?= esc($tag['name']) ?>
-                                        </a>
-                                    </td>
-
-                                    <input type="hidden" name="tags[<?= $tag['id'] ?>][id]" value="<?= $tag['id'] ?>">
-                                    <input type="hidden" name="tags[<?= $tag['id'] ?>][library_name]" class="library-name-input" value="<?= $libraryName ?>">
-                                    <input type="hidden" name="tags[<?= $tag['id'] ?>][property_id]" value="<?= $tag['property_id'] ?>">
-                                    <input type="hidden" name="tags[<?= $tag['id'] ?>][vendor_id]" value="<?= $tag['vendor_id'] ?>">
+                                    <th class="form-label-sm fw-semibold">ID</th>
+                                    <th class="form-label-sm fw-semibold">Property</th>
+                                    <th class="form-label-sm fw-semibold">Name</th>
                                 </tr>
-                            <?php endforeach; ?>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($tags as $tag): ?>
+                                    <tr>
+                                        <td><?= esc($tag['id']) ?></td>
+                                        <td>
+                                            <a href="<?= esc($properties[$tag['property_id']]['ref_link'] ?? '#') ?>" target="_blank" class="apple-link-dark text-decoration-none fw-semibold">
+                                                <?= esc($properties[$tag['property_id']]['name'] ?? 'Unknown') ?>
+                                            </a>
+                                        </td>
+                                        <td class="form-label-sm">
+                                            <a href="<?= esc($tag['ref_link'] ?? '#') ?>" target="_blank" class="apple-link-dark text-decoration-none fw-semibold">
+                                                <?= esc($tag['name']) ?>
+                                            </a>
+                                        </td>
 
-                            <input type="hidden" name="info[ticket_id]" id="info_ticket_id" value="<?= $ticket_id ?>">
-                            <input type="hidden" name="info[library_name]" class="library-name-input" value="<?= $libraryName ?>">
-                        </tbody>
-                    </table>
+                                        <input type="hidden" name="tags[<?= $tag['id'] ?>][id]" value="<?= $tag['id'] ?>">
+                                        <input type="hidden" name="tags[<?= $tag['id'] ?>][library_name]" class="library-name-input" value="<?= $libraryName ?>">
+                                        <input type="hidden" name="tags[<?= $tag['id'] ?>][property_id]" value="<?= $tag['property_id'] ?>">
+                                        <input type="hidden" name="tags[<?= $tag['id'] ?>][vendor_id]" value="<?= $tag['vendor_id'] ?>">
+                                    </tr>
+                                <?php endforeach; ?>
+
+                                <input type="hidden" name="info[ticket_id]" id="info_ticket_id" value="<?= $ticket_id ?>">
+                                <input type="hidden" name="info[library_name]" class="library-name-input" value="<?= $libraryName ?>">
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Form Actions -->
-        <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top mb-5">
-            <a href="<?= site_url('tags') ?>" title="Cancel" class="apple-btn-secondary px-4 text-decoration-none">Cancel</a>
-            <button type="submit" 
-                class="apple-btn-primary px-4"
-                onclick="return confirm('Are you sure the information is correct?');">
-                Create Update Rule Request
-            </button>
+        <!-- Right Column: Ticket Description Editor -->
+        <div class="col-lg-7 d-flex flex-column">
+            <div class="apple-card flex-grow-1 d-flex flex-column mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0 text-primary d-flex align-items-center gap-2 fw-bold">
+                        <i class="bi bi-file-earmark-text-fill"></i>
+                        <span>Ticket Description (HTML)</span>
+                    </h5>
+                    <div>
+                        <span id="copyDetailsStatus" class="badge bg-success me-2" style="opacity:0; transition: opacity .6s; font-size:10px;">
+                            Copied!
+                        </span>
+                        <a href="javascript:void(0)" onclick="copyDetails()" class="apple-btn-secondary btn-sm px-3 text-decoration-none">
+                            <i class="bi bi-copy me-1"></i> Copy HTML
+                        </a>
+                    </div>
+                </div>
+                <div class="flex-grow-1 mb-3">
+                    <textarea id="details"></textarea>
+                </div>
+                
+                <!-- Action Buttons aligned inside the card bottom -->
+                <div class="d-flex justify-content-end gap-2 mt-auto pt-3 border-top">
+                    <a href="<?= site_url('tags') ?>" title="Cancel" class="apple-btn-secondary px-4 text-decoration-none">Cancel</a>
+                    <button type="submit" class="apple-btn-primary px-4">Create Update Rule Request</button>
+                </div>
+            </div>
         </div>
     </div>
 </form>
@@ -301,7 +301,7 @@
 <script>
     $(document).ready(function() {
         $('#details').summernote({
-            height: 300,
+            height: 520,
             toolbar: [
                 ['style', ['bold', 'italic', 'underline', 'clear']],
                 // ['font', ['strikethrough', 'superscript', 'subscript']],
