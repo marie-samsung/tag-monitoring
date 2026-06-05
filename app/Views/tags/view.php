@@ -1,7 +1,7 @@
 <?= $this->extend('layouts/default') ?>
 
 <?= $this->section('title') ?>
-<?= $tag['name'] ?> : Details
+<?= esc($tag['name']) ?> : Details
 <?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
@@ -29,206 +29,224 @@ $tagModel = new TagsModel();
 $tagRequestsModel = new TagRequestsModel();
 ?>
 
-<h3 class="container"><?= $tag['name'] ?></h3>
-
-<div class="container d-flex my-3 gap-3">
-    <!-- #region | TAG DETAILS -->
-    <div class="w-25 p-4 card">
-        <div class="mb-2">
-            <label class="form-label-xs">Property</label>
-            <div class="form-control-plaintext p-0 ms-2">
-                <a href="<?= esc($properties[$tag['property_id']]['ref_link'] ?? '#') ?>" target="_blank">
-                    <?= esc($properties[$tag['property_id']]['name'] ?? '—') ?>
-                </a>
-            </div>
+<div class="container-fluid px-0">
+    <!-- Page Header -->
+    <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
+        <a href="<?= site_url('tags') ?>" class="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; padding: 0;" title="Back to Inventory">
+            <i class="bi bi-arrow-left fs-5"></i>
+        </a>
+        <div>
+            <h2 class="mb-0 fw-bold">Tag Details</h2>
+            <p class="text-secondary small mb-0"><?= esc($tag['name']) ?></p>
         </div>
+    </div>
 
-        <div class="mb-2">
-            <label class="form-label-xs">Vendor</label>
-            <div class="form-control-plaintext p-0 ms-2">
-                <?= esc($vendors[$tag['vendor_id']] ?? '—') ?>
-            </div>
-        </div>
+    <div class="row g-4">
+        <!-- Tag Details Card -->
+        <div class="col-lg-4">
+            <div class="apple-card" style="background-color: var(--color-bg-base); border: 1px solid rgba(0, 0, 0, 0.05); box-shadow: none;">
+                <h5 class="mb-4 text-primary d-flex align-items-center gap-2 fw-bold">
+                    <i class="bi bi-info-circle-fill"></i>
+                    <span>Specifications</span>
+                </h5>
 
-        <div class="mb-2">
-            <label class="form-label-xs">Tag Name</label>
-            <span class="form-control-plaintext p-0 ms-2">
-                <a href="<?= esc($tag['ref_link'] ?? '#') ?>" target="_blank">
-                    <?= esc($tag['name']) ?>
-                </a>
-            </span>
-        </div>
-
-        <div class="mb-2">
-            <label class="form-label-xs">Conditions</label>
-            <div class="form-control-plaintext p-0 ms-2">
-                <?= esc($tag['conditions'] ?: '—') ?>
-            </div>
-        </div>
-
-        <div class="mb-2">
-            <label class="form-label-xs">Status</label>
-            <div class="d-flex gap-2">
-                <div class="col form-control-plaintext p-0 ms-2">
-                    <span class="badge <?= status_class($tag['status']) ?>">
-                        <?= esc(Constants::STATUS[$tag['status']] ?? 'Unknown') ?>
+                <div class="mb-3">
+                    <label class="form-label-xs fw-semibold text-secondary mb-1 d-block">Property</label>
+                    <span class="fw-medium text-dark ms-1" style="font-size: 0.9rem;">
+                        <a href="<?= esc($properties[$tag['property_id']]['ref_link'] ?? '#') ?>" target="_blank" class="apple-link-dark text-decoration-none fw-semibold">
+                            <i class="bi bi-tag-fill text-muted me-1"></i>
+                            <?= esc($properties[$tag['property_id']]['name'] ?? '—') ?>
+                        </a>
                     </span>
                 </div>
-                <?php if ($tag['status'] == Constants::STATUS_PENDING_VERIFICATION): ?>
-                    <div class="col">
-                        <a href="<?= site_url('tags/verify/' . $tag['id']) ?>" 
-                            class="badge bg-primary text-decoration-none"
-                            onclick="return confirm('Have you verified the end date matches in AL?');">
-                            Verify
+
+                <div class="mb-3">
+                    <label class="form-label-xs fw-semibold text-secondary mb-1 d-block">Vendor</label>
+                    <span class="fw-medium text-dark ms-1" style="font-size: 0.9rem;">
+                        <?= esc($vendors[$tag['vendor_id']] ?? '—') ?>
+                    </span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label-xs fw-semibold text-secondary mb-1 d-block">Tag Name</label>
+                    <span class="fw-medium text-dark ms-1" style="font-size: 0.9rem;">
+                        <a href="<?= esc($tag['ref_link'] ?? '#') ?>" target="_blank" class="apple-link text-decoration-none fw-semibold">
+                            <?= esc($tag['name']) ?>
                         </a>
+                    </span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label-xs fw-semibold text-secondary mb-1 d-block">Conditions</label>
+                    <span class="fw-medium text-dark ms-1" style="font-size: 0.9rem;">
+                        <code><?= esc($tag['conditions'] ?: '—') ?></code>
+                    </span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label-xs fw-semibold text-secondary mb-1 d-block">Status</label>
+                    <div class="d-flex align-items-center gap-2 ms-1">
+                        <span class="badge <?= status_class($tag['status']) ?>">
+                            <?= esc(Constants::STATUS[$tag['status']] ?? 'Unknown') ?>
+                        </span>
+                        <?php if ($tag['status'] == Constants::STATUS_PENDING_VERIFICATION): ?>
+                            <a href="<?= site_url('tags/verify/' . $tag['id']) ?>" 
+                                class="badge bg-primary text-decoration-none"
+                                onclick="return confirm('Have you verified the end date matches in AL?');">
+                                Verify
+                            </a>
+                        <?php endif; ?>
                     </div>
-                <?php endif; ?>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label-xs fw-semibold text-secondary mb-1 d-block">Adobe Launch End Date</label>
+                    <span class="fw-medium ms-1 <?= date_class($tag['al_end_date'], $tag['status']) ?>" style="font-size: 0.9rem;">
+                        <?= esc($tag['al_end_date'] ?: '—') ?>
+                        <?php if ($tag['requested_date']) : ?>
+                            <small class="text-muted ms-1">[<?= esc($tag['requested_date']) ?>]</small>
+                        <?php endif; ?>
+                    </span>
+                </div>
+
+                <!-- Requester Details Sub-Section -->
+                <h6 class="fw-bold mt-4 mb-3 text-secondary border-top pt-3">Requester Details</h6>
+
+                <div class="mb-3">
+                    <label class="form-label-xs fw-semibold text-secondary mb-1 d-block">Name</label>
+                    <span class="fw-medium text-dark ms-1" style="font-size: 0.9rem;">
+                        <?= esc($tag['requester_name'] ?? '—') ?>
+                    </span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label-xs fw-semibold text-secondary mb-1 d-block">Email Address</label>
+                    <span class="fw-medium text-dark ms-1" style="font-size: 0.9rem;">
+                        <?php if (!empty($tag['requester_email'])): ?>
+                            <a href="mailto:<?= esc($tag['requester_email']) ?>" class="apple-link text-decoration-none">
+                                <?= esc($tag['requester_email']) ?>
+                            </a>
+                        <?php else: ?>
+                            —
+                        <?php endif; ?>
+                    </span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label-xs fw-semibold text-secondary mb-1 d-block">Organization</label>
+                    <span class="fw-medium text-dark ms-1" style="font-size: 0.9rem;">
+                        <?= esc($organizations[$tag['requester_organization']] ?? '—') ?>
+                    </span>
+                </div>
+
+                <div class="d-flex align-items-center gap-2 mt-4 pt-3 border-top">
+                    <a href="<?= site_url('tags') ?>" class="apple-btn-secondary btn-sm px-3 text-decoration-none">Back</a>
+                    <a href="<?= site_url('tags/update/' . $tag['id']) ?>" class="apple-btn-primary btn-sm px-3 text-decoration-none ms-auto">Edit Details</a>
+                </div>
             </div>
         </div>
 
-        <div class="mb-2">
-            <label class="form-label-xs">Adobe Launch End Date</label>
-            <div class="form-control-plaintext p-0 ms-2 <?= date_class($tag['al_end_date'], $tag['status']) ?>">
-                <?= esc($tag['al_end_date'] ?: '—') ?>
-                <?php if ($tag['requested_date']) : ?>
-                    <small class="text-muted">[<?= $tag['requested_date'] ?>]</small>
-                <?php endif; ?>
+        <!-- JIRA References Section -->
+        <div class="col-lg-8">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="mb-0 text-primary d-flex align-items-center gap-2 fw-bold">
+                    <i class="bi bi-jira"></i>
+                    <span>JIRA References</span>
+                </h4>
+                <a href="<?= site_url('jira/add-entry?tag_id='.$tag['id']) ?>" target="_blank" title="Add a new JIRA ticket" class="apple-btn-primary btn-sm px-3 text-decoration-none">
+                    <i class="bi bi-plus-lg me-1"></i> Add Entry
+                </a>
             </div>
-        </div>
+            
+            <div class="apple-table-container">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th class="form-label-sm fw-semibold">#</th>
+                                <th class="form-label-sm fw-semibold">Ticket ID</th>
+                                <th class="form-label-sm fw-semibold">Type</th>
+                                <th class="form-label-sm fw-semibold">Comments</th>
+                            </tr>
+                        </thead>
 
-        <label class="form-label m-0 fw-semibold mt-2">Requester Details</label>
-        <div class="mb-2">
-            <label class="form-label-xs">Name</label>
-            <div class="form-control-plaintext p-0 ms-2">
-                <?= esc($tag['requester_name'] ?? '—') ?>
-            </div>
-        </div>
-
-        <div class="mb-2">
-            <label class="form-label-xs">Email Address</label>
-            <div class="form-control-plaintext p-0 ms-2">
-                <?= esc($tag['requester_email'] ?? '—') ?>
-            </div>
-        </div>
-
-        <div class="mb-2">
-            <label class="form-label-xs">Organization</label>
-            <div class="form-control-plaintext p-0 ms-2">
-                <?= esc($organizations[$tag['requester_organization']] ?? '—') ?>
-            </div>
-        </div>
-
-        <hr>
-
-        <div class="d-flex align-items-center gap-1">
-            <a href="<?= site_url('tags') ?>" class="apple-btn-secondary btn-sm px-2">Back</a>
-            <a href="<?= site_url('tags/update/' . $tag['id']) ?>" class="apple-btn-primary btn-sm">Edit</a>
-        </div>
-    </div>
-    <!-- #endregion -->
-
-    <!-- #region | JIRA HISTORY DETAILS -->
-    <div class="w-75">
-        <div class="d-flex justify-content-between mb-3">
-            <h5>JIRA References</h5>
-            <div>
-                <a href="<?= site_url('jira/add-entry?tag_id='.$tag['id']) ?>" target="_blank" title="Add a new JIRA ticket" class="apple-btn-primary btn-sm ms-auto px-2">Add Entry</a>
-            </div>
-        </div>
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Ticket ID</th>
-                        <th>Type</th>
-                        <th>Comments</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    <?php 
-                        foreach ($jiraTickets as $jira):
-                            $ticketTagsList = [];
-                            $type = $jira['type'];
-                            if ($type == Constants::JIRA_TYPE_DATE_EXTENSION_RULE ||
-                                    $type == Constants::JIRA_TYPE_NEW_TAG ||
-                                    $type == Constants::JIRA_TYPE_NEW_RULE ||
-                                    $type == Constants::JIRA_TYPE_UPDATE_RULE) {
-                                $ticketTags = explode(',', $jira['comments']);
-                                
-                                foreach ($ticketTags as $tagId) {
-                                    $tagInfo = $tagModel->find($tagId);
-                                    if ($tagInfo) {
-                                        $ticketTagsList[$tagInfo['name']] = $tagInfo['ref_link']; // If you want to direct at AL
-                                        // $ticketTagsList[$tagInfo['id']] = $tagInfo['name'];
+                        <tbody>
+                            <?php 
+                                foreach ($jiraTickets as $jira):
+                                    $ticketTagsList = [];
+                                    $type = $jira['type'];
+                                    if ($type == Constants::JIRA_TYPE_DATE_EXTENSION_RULE ||
+                                            $type == Constants::JIRA_TYPE_NEW_TAG ||
+                                            $type == Constants::JIRA_TYPE_NEW_RULE ||
+                                            $type == Constants::JIRA_TYPE_UPDATE_RULE) {
+                                        $ticketTags = explode(',', $jira['comments']);
+                                        
+                                        foreach ($ticketTags as $tagId) {
+                                            $tagInfo = $tagModel->find($tagId);
+                                            if ($tagInfo) {
+                                                $ticketTagsList[$tagInfo['name']] = $tagInfo['ref_link'];
+                                            }
+                                        }
                                     }
-                                }
-                            }
-                    ?>
-                        <tr>
-                            <td><?= $jira['id'] ?: '-' ?></td>
-                            <td>
-                                <a href="<?= Constants::JIRA_LINK ?><?= $jira['ticket_id'] ?: '#' ?>" target="_blank">
-                                    <?= $jira['ticket_id'] ?: '-' ?>
-                                </a>
-                            </td>
-                            <!-- TYPE -->
-                            <td>
-                                <?php
-                                    if ($type == Constants::JIRA_TYPE_NEW_TAG || $type == Constants::JIRA_TYPE_NEW_RULE) {
-                                        $request_id = $tagRequestsModel->getRequestByTicketId($jira['ticket_id']);
-
-                                        if ($request_id) {
-                                ?>
-                                            <a href="<?= site_url('/tag-requests/view/' . $request_id) ?>" target="_blank">
-                                                <?= Constants::JIRA_TICKET_TYPES[$type] ?>
-                                            </a>
-                                    <?php } else { ?>
-                                        <?= Constants::JIRA_TICKET_TYPES[$type] ?>
-                                    <?php } ?>
-
-                                <?php
-                                    } elseif ($type == Constants::JIRA_TYPE_UPDATE_RULE) {
-                                        $activityLogsModel = new ActivityLogsModel();
-                                        $activityLog = $activityLogsModel->where('ticket_id', $jira['ticket_id'])->first();
-
-                                        if ($activityLog) {
-                                ?>
-                                        <a href="<?= site_url('/activity-logs/view/' . $activityLog['id']) ?>" target="_blank">
-                                            <?= Constants::JIRA_TICKET_TYPES[$type] ?>
+                            ?>
+                                <tr>
+                                    <td class="fw-semibold"><?= $jira['id'] ?: '-' ?></td>
+                                    <td>
+                                        <a href="<?= Constants::JIRA_LINK ?><?= $jira['ticket_id'] ?: '#' ?>" target="_blank" class="apple-link text-decoration-none fw-semibold">
+                                            <?= $jira['ticket_id'] ?: '-' ?>
                                         </a>
+                                    </td>
+                                    <!-- TYPE -->
+                                    <td>
+                                        <?php
+                                            if ($type == Constants::JIRA_TYPE_NEW_TAG || $type == Constants::JIRA_TYPE_NEW_RULE) {
+                                                $request_id = $tagRequestsModel->getRequestByTicketId($jira['ticket_id']);
 
-                                        <?php } else { ?>
+                                                if ($request_id) {
+                                        ?>
+                                                    <a href="<?= site_url('/tag-requests/view/' . $request_id) ?>" target="_blank" class="apple-link-dark text-decoration-none fw-semibold">
+                                                        <?= Constants::JIRA_TICKET_TYPES[$type] ?>
+                                                    </a>
+                                            <?php } else { ?>
+                                                <?= Constants::JIRA_TICKET_TYPES[$type] ?>
+                                            <?php } ?>
+
+                                        <?php
+                                            } elseif ($type == Constants::JIRA_TYPE_UPDATE_RULE) {
+                                                $activityLogsModel = new ActivityLogsModel();
+                                                $activityLog = $activityLogsModel->where('ticket_id', $jira['ticket_id'])->first();
+
+                                                if ($activityLog) {
+                                        ?>
+                                                <a href="<?= site_url('/activity-logs/view/' . $activityLog['id']) ?>" target="_blank" class="apple-link-dark text-decoration-none fw-semibold">
+                                                    <?= Constants::JIRA_TICKET_TYPES[$type] ?>
+                                                </a>
+
+                                                <?php } else { ?>
+                                                    <?= Constants::JIRA_TICKET_TYPES[$type] ?>
+
+                                        <?php }} else { ?>
                                             <?= Constants::JIRA_TICKET_TYPES[$type] ?>
-
-                                <?php }} else { ?>
-                                    <?= Constants::JIRA_TICKET_TYPES[$type] ?>
-                                <?php } ?>
-                            </td>
-                            <!-- COMMENTS -->
-                            <td>
-                                <?php if ($ticketTagsList): ?>
-
-                                    <!-- <?php foreach ($ticketTagsList as $id => $name): ?>
-                                        <a href="<?= site_url('tags/view/' . $id) ?>" target="_blank"><?= esc($name) ?></a><br>
-                                    <?php endforeach; ?> -->
-
-                                    <!-- If you want to direct at AL, use the below code -->
-                                    <?php foreach ($ticketTagsList as $name => $link): ?>
-                                        <a href="<?= $link ?>" target="_blank"><?= esc($name) ?></a><br>
-                                    <?php endforeach; ?>
-                                <?php else: ?>
-                                    <?= esc($jira['comments']) ?>
-                                <?php endif; ?>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+                                        <?php } ?>
+                                    </td>
+                                    <!-- COMMENTS -->
+                                    <td>
+                                        <?php if ($ticketTagsList): ?>
+                                            <?php foreach ($ticketTagsList as $name => $link): ?>
+                                                <a href="<?= $link ?>" target="_blank" class="apple-link text-decoration-none"><?= esc($name) ?></a><br>
+                                            <?php endforeach; ?>
+                                        <?php else: ?>
+                                            <span class="text-secondary"><?= esc($jira['comments']) ?></span>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
-    <!-- #endregion -->
 </div>
 
 <?= $this->endSection() ?>

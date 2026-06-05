@@ -6,40 +6,55 @@ Tag: Create
 
 <?= $this->section('content') ?>
 
-<div class="container">
-    <h2>Add Tag Information</h2>
-</div>
-
-<?php 
-    use App\Models\Constants;
-    use App\Models\PropertiesModel;
-    use App\Models\VendorsModel;
-    use App\Models\OrganizationsModel;
-
-    $propertiesModel = new PropertiesModel();
-    $properties = $propertiesModel->Options();
-
-    $vendorsModel = new VendorsModel();
-    $vendors = $vendorsModel->Options();
-
-    $organizationsModel = new OrganizationsModel();
-    $organizations = $organizationsModel->Options();
-?>
-
-<?php if (session()->getFlashdata('error')): ?>
-    <div class="container alert alert-danger">
-        <?= session()->getFlashdata('error') ?>
+<div class="container-fluid px-0">
+    <!-- Page Header -->
+    <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
+        <a href="<?= site_url('tags') ?>" class="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; padding: 0;" title="Back to Inventory">
+            <i class="bi bi-arrow-left fs-5"></i>
+        </a>
+        <div>
+            <h2 class="mb-0 fw-bold">Add Tag Information</h2>
+            <p class="text-secondary small mb-0">Register a new tag and assign property and organization details.</p>
+        </div>
     </div>
-<?php endif; ?>
 
-<form action="<?= site_url('tags/create') ?>" method="post">
-    <?= csrf_field() ?>
-    <div class="container-fluid" style="max-width: 800px; margin-left: 0;">
-        <div class="apple-card mb-4">
-            <h5 class="mb-4">Tag Details</h5>
-            <div class="row mb-3">
-                <div class="col-md-6 mb-3 mb-md-0">
-                    <label class="form-label-sm fw-semibold text-dark mb-1">Property</label>
+    <?php 
+        use App\Models\Constants;
+        use App\Models\PropertiesModel;
+        use App\Models\VendorsModel;
+        use App\Models\OrganizationsModel;
+
+        $propertiesModel = new PropertiesModel();
+        $properties = $propertiesModel->Options();
+
+        $vendorsModel = new VendorsModel();
+        $vendors = $vendorsModel->Options();
+
+        $organizationsModel = new OrganizationsModel();
+        $organizations = $organizationsModel->Options();
+    ?>
+
+    <?php if (session()->getFlashdata('error')): ?>
+        <div class="alert alert-danger mb-4">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <?= session()->getFlashdata('error') ?>
+        </div>
+    <?php endif; ?>
+
+    <form action="<?= site_url('tags/create') ?>" method="post" style="max-width: 800px;">
+        <?= csrf_field() ?>
+        
+        <!-- Tag Details Section -->
+        <div class="apple-card mb-4" style="background-color: var(--color-bg-base); border: 1px solid rgba(0, 0, 0, 0.05); box-shadow: none;">
+            <h5 class="mb-4 text-primary d-flex align-items-center gap-2 fw-bold">
+                <i class="bi bi-tag-fill"></i>
+                <span>Tag Details</span>
+            </h5>
+            
+            <div class="row g-3">
+                <!-- Property -->
+                <div class="col-md-6">
+                    <label class="form-label-sm fw-semibold text-secondary mb-1">Property</label>
                     <select name="property_id" class="form-select searchable-select" required>
                         <?php foreach ($properties as $value => $label): ?>
                             <option value="<?= esc($value) ?>"
@@ -50,32 +65,35 @@ Tag: Create
                     </select>
                 </div>
 
+                <!-- Tag Name -->
                 <div class="col-md-6">
-                    <label for="name" class="form-label-sm fw-semibold text-dark mb-1">Tag Name</label>
+                    <label for="name" class="form-label-sm fw-semibold text-secondary mb-1">Tag Name</label>
                     <input type="text" name="name" id="name"
                         class="form-control form-control-xs"
                         value="<?= old('name', $old['name'] ?? '') ?>"
+                        placeholder="LC-XXXX"
                         required>
                     <small class="form-text text-muted" style="font-size: 0.75rem;">
-                        Tag should start with LC-
-                    </small>
-                </div>
-            </div>
-            
-            <div class="row mb-3">
-                <div class="col-md-6 mb-3 mb-md-0">
-                    <label for="conditions" class="form-label-sm fw-semibold text-dark mb-1">Conditions</label>
-                    <input type="text" name="conditions" id="conditions"
-                        class="form-control form-control-xs"
-                        value="<?= old('conditions', $old['conditions'] ?? '') ?>"
-                        required>
-                    <small class="form-text text-muted" style="font-size: 0.75rem;">
-                        e.g. (.*)
+                        Tag should start with <strong>LC-</strong>
                     </small>
                 </div>
 
+                <!-- Conditions -->
                 <div class="col-md-6">
-                    <label class="form-label-sm fw-semibold text-dark mb-1">Status</label>
+                    <label for="conditions" class="form-label-sm fw-semibold text-secondary mb-1">Conditions</label>
+                    <input type="text" name="conditions" id="conditions"
+                        class="form-control form-control-xs"
+                        value="<?= old('conditions', $old['conditions'] ?? '') ?>"
+                        placeholder="e.g. (.*)"
+                        required>
+                    <small class="form-text text-muted" style="font-size: 0.75rem;">
+                        RegEx or condition string (e.g. <code>(.*)</code>)
+                    </small>
+                </div>
+
+                <!-- Status -->
+                <div class="col-md-6">
+                    <label class="form-label-sm fw-semibold text-secondary mb-1">Status</label>
                     <select name="status" class="form-select form-select-xs" required>
                         <?php foreach (Constants::STATUS as $value => $label): ?>
                             <option value="<?= esc($value) ?>"
@@ -85,11 +103,10 @@ Tag: Create
                         <?php endforeach; ?>
                     </select>
                 </div>
-            </div>
 
-            <div class="row">
-                <div class="col-md-6 mb-3 mb-md-0">
-                    <label class="form-label-sm fw-semibold text-dark mb-1" for="al_end_date">Launch Expiry Date</label>
+                <!-- Launch Expiry Date -->
+                <div class="col-md-6">
+                    <label class="form-label-sm fw-semibold text-secondary mb-1" for="al_end_date">Launch Expiry Date</label>
                     <div class="position-relative">
                         <input type="text"
                             name="al_end_date"
@@ -101,25 +118,32 @@ Tag: Create
                     </div>
                 </div>
 
+                <!-- Launch Link -->
                 <div class="col-md-6">
-                    <label for="ref_link" class="form-label-sm fw-semibold text-dark mb-1">Launch Link</label>
+                    <label for="ref_link" class="form-label-sm fw-semibold text-secondary mb-1">Launch Link</label>
                     <input type="text" name="ref_link" id="ref_link"
                         class="form-control form-control-xs"
                         value="<?= old('ref_link', $old['ref_link'] ?? '') ?>"
+                        placeholder="https://..."
                         required>
                     <small class="form-text text-muted" style="font-size: 0.75rem;">
-                        https://
+                        Must start with <strong>https://</strong>
                     </small>
                 </div>
             </div>
         </div>
 
-        <!-- #region | REQUESTER DETAILS -->
-        <div class="apple-card mb-4">
-            <h5 class="mb-4">Requester Details</h5>
-            <div class="row">
-                <div class="col-md-4 mb-3 mb-md-0">
-                    <label class="form-label-sm fw-semibold text-dark mb-1">Organization</label>
+        <!-- Requester Details Section -->
+        <div class="apple-card mb-4" style="background-color: var(--color-bg-base); border: 1px solid rgba(0, 0, 0, 0.05); box-shadow: none;">
+            <h5 class="mb-4 text-primary d-flex align-items-center gap-2 fw-bold">
+                <i class="bi bi-person-fill"></i>
+                <span>Requester Details</span>
+            </h5>
+            
+            <div class="row g-3">
+                <!-- Organization -->
+                <div class="col-md-4">
+                    <label class="form-label-sm fw-semibold text-secondary mb-1">Organization</label>
                     <select name="requester_organization" class="form-select advanced-select">
                         <option value="">-Select-</option>
                         <?php foreach ($organizations as $value => $label): ?>
@@ -131,29 +155,33 @@ Tag: Create
                     </select>
                 </div>
 
-                <div class="col-md-4 mb-3 mb-md-0">
-                    <label class="form-label-sm fw-semibold text-dark mb-1">Name</label>
+                <!-- Name -->
+                <div class="col-md-4">
+                    <label class="form-label-sm fw-semibold text-secondary mb-1" for="requester_name">Name</label>
                     <input type="text" name="requester_name" id="requester_name"
                         class="form-control form-control-xs"
-                        value="<?= old('requester_name', $old['requester_name'] ?? '') ?>">
+                        value="<?= old('requester_name', $old['requester_name'] ?? '') ?>"
+                        placeholder="Requester Name">
                 </div>
 
+                <!-- Email Address -->
                 <div class="col-md-4">
-                    <label class="form-label-sm fw-semibold text-dark mb-1">Email Address</label>
-                    <input type="text" name="requester_email" id="requester_email"
+                    <label class="form-label-sm fw-semibold text-secondary mb-1" for="requester_email">Email Address</label>
+                    <input type="email" name="requester_email" id="requester_email"
                         class="form-control form-control-xs"
-                        value="<?= old('requester_email', $old['requester_email'] ?? '') ?>">
+                        value="<?= old('requester_email', $old['requester_email'] ?? '') ?>"
+                        placeholder="email@example.com">
                 </div>
             </div>
         </div>
 
-        <div class="d-flex justify-content-end gap-2 mt-4">
-            <a href="<?= site_url('tags') ?>" title="Cancel" class="apple-btn-secondary px-4">Cancel</a>
-            <button type="submit" class="apple-btn-primary px-4">Submit</button>
+        <!-- Form Actions -->
+        <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+            <a href="<?= site_url('tags') ?>" title="Cancel" class="apple-btn-secondary px-4 text-decoration-none">Cancel</a>
+            <button type="submit" class="apple-btn-primary px-4">Create Tag</button>
         </div>
-        <!-- #endregion -->
-    </div>
-</form>
+    </form>
+</div>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
