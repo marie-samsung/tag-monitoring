@@ -38,11 +38,59 @@ Activity Logs
 <?= csrf_field() ?>
 
 <div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center">
-        <h2>Activity Logs</h2>
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom flex-wrap gap-3">
+        <div>
+            <h2 class="mb-0 fw-bold">Activity Logs</h2>
+            <p class="text-secondary small mb-0">Record and track project management activities, support tasks, and campaign tag updates.</p>
+        </div>
         <div class="d-flex align-items-center gap-2">
-             <a href="<?= site_url('activity-logs/export?' . http_build_query($_GET)) ?>" class="apple-btn-secondary btn-sm ms-auto px-3">Export as CSV</a>
-            <a href="<?= site_url('activity-logs/create') ?>" title="Create a new log" class="apple-btn-primary btn-sm ms-auto px-3">Log Activity</a>
+            <button type="button" class="apple-btn-secondary btn-sm px-3" data-bs-toggle="collapse" data-bs-target="#sizeLegendCollapse" aria-expanded="false" aria-controls="sizeLegendCollapse">
+                <i class="bi bi-info-circle me-1"></i> Size Legend
+            </button>
+            <a href="<?= site_url('activity-logs/export?' . http_build_query($_GET)) ?>" class="apple-btn-secondary btn-sm px-3">Export as CSV</a>
+            <a href="<?= site_url('activity-logs/create') ?>" title="Create a new log" class="apple-btn-primary btn-sm px-3">Log Activity</a>
+        </div>
+    </div>
+
+    <!-- Size Legend Collapse Panel -->
+    <div class="collapse" id="sizeLegendCollapse">
+        <div class="apple-card mb-4 bg-white">
+            <h5 class="fw-bold mb-3 text-secondary d-flex align-items-center gap-2" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;">
+                <i class="bi bi-info-circle-fill text-primary"></i> T-Shirt Size Legend (Project Management)
+            </h5>
+            <div class="row g-3">
+                <div class="col-md col-sm-6">
+                    <div class="p-2 rounded border border-light bg-light h-100">
+                        <span class="badge bg-secondary text-white mb-1">S</span>
+                        <p class="small mb-0 text-muted"><strong>Small:</strong> Minor tasks, quick fixes, basic configs (effort &lt; 2 hours).</p>
+                    </div>
+                </div>
+                <div class="col-md col-sm-6">
+                    <div class="p-2 rounded border border-light bg-light h-100">
+                        <span class="badge bg-warning text-dark mb-1">M</span>
+                        <p class="small mb-0 text-muted"><strong>Medium:</strong> Standard setups, simple troubleshooting, standard tracking (effort 2-5 hours).</p>
+                    </div>
+                </div>
+                <div class="col-md col-sm-6">
+                    <div class="p-2 rounded border border-light bg-light h-100">
+                        <span class="badge bg-danger text-white mb-1">L</span>
+                        <p class="small mb-0 text-muted"><strong>Large:</strong> New tag integrations, complex tracking rules, multi-page setups (effort 1-2 days).</p>
+                    </div>
+                </div>
+                <div class="col-md col-sm-6">
+                    <div class="p-2 rounded border border-light bg-light h-100">
+                        <span class="badge bg-danger text-white mb-1">XL</span>
+                        <p class="small mb-0 text-muted"><strong>Extra Large:</strong> Major property setups, migrations, complex custom JS (effort 3-5 days).</p>
+                    </div>
+                </div>
+                <div class="col-md col-sm-6">
+                    <div class="p-2 rounded border border-light bg-light h-100">
+                        <span class="badge bg-danger text-white mb-1">Sprint</span>
+                        <p class="small mb-0 text-muted"><strong>Sprint:</strong> Massive undertakings, complex migrations, multi-system integration (effort 1-2 weeks).</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -250,7 +298,7 @@ Activity Logs
                         </span>
                     </td>
                     <td>
-                        <span class="badge <?= size_class($log['size']) ?>">
+                        <span class="badge <?= size_class($log['size']) ?>" data-bs-toggle="tooltip" data-bs-placement="top" title="<?= esc(size_description($log['size'])) ?>" style="cursor: help;">
                             <?= $size ?>
                         </span>
                     </td>

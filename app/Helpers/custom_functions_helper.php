@@ -80,6 +80,37 @@ function size_class(int $id): string
     };
 }
 
+function size_description(int|null $id): string
+{
+    if (empty($id)) {
+        return 'Unknown size';
+    }
+    return match ($id) {
+        Constants::ACTIVITY_SIZE_S => 'S (Small): Minor tasks / quick fixes (effort < 2 hours)',
+        Constants::ACTIVITY_SIZE_M => 'M (Medium): Standard tag setups / simple troubleshooting (effort: 2-5 hours)',
+        Constants::ACTIVITY_SIZE_L => 'L (Large): New tag integrations / complex tracking rules (effort: 1-2 days)',
+        Constants::ACTIVITY_SIZE_XL => 'XL (Extra Large): Major property setups / migrations / custom JS (effort: 3-5 days)',
+        Constants::ACTIVITY_SIZE_SPRINT => 'Sprint: Massive undertakings / entire sprint effort (effort: 1-2 weeks)',
+        default => 'Unknown size',
+    };
+}
+
+function size_tooltip(int|null $id): string
+{
+    if (empty($id)) {
+        return 'T-Shirt Size';
+    }
+    return match ($id) {
+        Constants::ACTIVITY_SIZE_S => 'S: Small task (effort < 2h)',
+        Constants::ACTIVITY_SIZE_M => 'M: Medium task (effort 2-5h)',
+        Constants::ACTIVITY_SIZE_L => 'L: Large task (effort 1-2d)',
+        Constants::ACTIVITY_SIZE_XL => 'XL: Extra Large task (effort 3-5d)',
+        Constants::ACTIVITY_SIZE_SPRINT => 'Sprint: Sprint-level effort (effort 1-2w)',
+        default => 'T-Shirt Size',
+    };
+}
+
+
 function bool_label(int $value): string
 {
     return $value === Constants::YES ? 'Yes' : 'No';

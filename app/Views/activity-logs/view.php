@@ -20,24 +20,31 @@
     $isAdmin = (session()->get('user_role') === Constants::USER_ROLE_ADMIN);
 ?>
 
-<div class="container-fluid mb-4 pb-3 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-3">
-    <div>
-        <h3 class="mb-1 fw-bold"><?= esc($log['title']) ?></h3>
-        <div class="d-flex gap-2 justify-content-start align-items-center flex-wrap mt-2">
-            <span class="badge" style="<?= random_bg_style($subsidiary) ?>" title="Subsidiary"><?= $subsidiary ?></span>
-            <span class="badge" style="<?= random_bg_style($project) ?>" title="Project"><?= $project ?></span>
-            <span class="badge" style="<?= random_bg_style($type) ?>" title="Activity Log Type"><?= $type ?></span>
-            <?php if (!$isAdmin): ?>
-            <span class="badge <?= assignee_class($log['assignee']) ?>" title="Assigned To"><?= $assignee ?></span>
-            <?php endif; ?>
-            <span class="badge <?= size_class($log['size']) ?>" title="Size"><?= $size ?></span>
-            <span class="badge <?= priority_class($log['priority']) ?>" title="Priority"><?= $priority ?></span>
-            <span class="badge <?= status_activity_logs_class($log['status']) ?>" title="Status"><?= $status ?></span>
+<div class="container-fluid px-0">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom flex-wrap gap-3">
+        <div class="d-flex align-items-center gap-3">
+            <a href="<?= site_url('activity-logs') ?>" onclick="if (document.referrer) { window.history.back(); return false; }" class="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; padding: 0; display: inline-flex;" title="Back to Logs">
+                <i class="bi bi-arrow-left fs-5"></i>
+            </a>
+            <div>
+                <h2 class="mb-0 fw-bold"><?= esc($log['title']) ?></h2>
+                <div class="d-flex gap-2 justify-content-start align-items-center flex-wrap mt-2">
+                    <span class="badge" style="<?= random_bg_style($subsidiary) ?>" title="Subsidiary"><?= $subsidiary ?></span>
+                    <span class="badge" style="<?= random_bg_style($project) ?>" title="Project"><?= $project ?></span>
+                    <span class="badge" style="<?= random_bg_style($type) ?>" title="Activity Log Type"><?= $type ?></span>
+                    <?php if (!$isAdmin): ?>
+                    <span class="badge <?= assignee_class($log['assignee']) ?>" title="Assigned To"><?= $assignee ?></span>
+                    <?php endif; ?>
+                    <span class="badge <?= size_class($log['size']) ?>" data-bs-toggle="tooltip" data-bs-placement="top" title="<?= esc(size_description($log['size'])) ?>" style="cursor: help;"><?= $size ?></span>
+                    <span class="badge <?= priority_class($log['priority']) ?>" title="Priority"><?= $priority ?></span>
+                    <span class="badge <?= status_activity_logs_class($log['status']) ?>" title="Status"><?= $status ?></span>
+                </div>
+            </div>
         </div>
-    </div>
-    <div class="d-flex gap-2">
-        <a href="<?= site_url('activity-logs') ?>" class="apple-btn-secondary btn-sm px-3">Back</a>
-        <a href="<?= site_url('activity-logs/update/' . $log['id']) ?>" class="apple-btn-primary btn-sm px-3">Edit</a>
+        <div class="d-flex gap-2">
+            <a href="<?= site_url('activity-logs/update/' . $log['id']) ?>" class="apple-btn-primary btn-sm px-3">Edit</a>
+        </div>
     </div>
 </div>
 

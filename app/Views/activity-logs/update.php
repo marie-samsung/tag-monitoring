@@ -6,227 +6,301 @@
 
 <?= $this->section('content') ?>
 
-<div class="container mb-2">
-    <h7 class="text-danger fw-semibold">Update Activity Log</h7>
-    <h3><?= $log['title'] ?></h3>
-</div>
-
 <?php
     use App\Models\Constants;
     $isAdmin = (session()->get('user_role') === Constants::USER_ROLE_ADMIN);
 ?>
 
-<?php if (isset($validation)): ?>
-    <div class="alert alert-danger">
-        <?= $validation->listErrors() ?>
+<div class="container-fluid px-0">
+    <!-- Page Header -->
+    <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
+        <a href="<?= site_url('activity-logs') ?>" onclick="if (document.referrer) { window.history.back(); return false; }" class="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; padding: 0; display: inline-flex;" title="Back to Logs">
+            <i class="bi bi-arrow-left fs-5"></i>
+        </a>
+        <div>
+            <h2 class="mb-0 fw-bold">Update Activity Log</h2>
+            <p class="text-secondary small mb-0"><?= esc($log['title']) ?></p>
+        </div>
     </div>
-<?php endif; ?>
 
-<form action="<?= site_url("activity-logs/update/{$log['id']}") ?>" method="post">
-    <?= csrf_field() ?>
+    <?php if (isset($validation)): ?>
+        <div class="alert alert-danger mb-4">
+            <?= $validation->listErrors() ?>
+        </div>
+    <?php endif; ?>
 
-    <div class="container">
-        <div class="card p-3">
-            <div class="row mb-2">
-                <div class="<?= $isAdmin ? 'col' : 'col-10' ?>">
-                    <label for="title" class="form-label-xs text-primary">Title</label>
-                    <input type="text" name="title" id="title"
-                        class="form-control"
-                        value="<?= $log['title'] ?>"
-                        required>
+    <form action="<?= site_url("activity-logs/update/{$log['id']}") ?>" method="post">
+        <?= csrf_field() ?>
+
+        <div class="row g-4">
+            <!-- Left Column: Title, Description & Requester/Campaign Details -->
+            <div class="col-lg-8 col-md-7">
+                <!-- Card 1: Title & Description -->
+                <div class="apple-card mb-4" style="background-color: var(--color-bg-base); border: 1px solid rgba(0, 0, 0, 0.05); box-shadow: none;">
+                    <h5 class="mb-3 text-primary d-flex align-items-center gap-2 fw-bold" style="font-size: 1rem;">
+                        <i class="bi bi-file-earmark-text-fill"></i>
+                        <span>General Information</span>
+                    </h5>
+
+                    <!-- Title -->
+                    <div class="mb-4">
+                        <label for="title" class="form-label-sm fw-semibold text-secondary mb-1">Title</label>
+                        <input type="text" name="title" id="title"
+                            class="form-control fw-semibold"
+                            style="font-size: 1.15rem; border-radius: 8px;"
+                            value="<?= esc($log['title']) ?>"
+                            placeholder="Enter a descriptive title..."
+                            required>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-4">
+                        <label for="description" class="form-label-sm fw-semibold text-secondary mb-1">Description</label>
+                        <textarea name="description" id="description"
+                            class="form-control"
+                            rows="12"><?= esc($log['description']) ?></textarea>
+                    </div>
                 </div>
 
-                <?php if (!$isAdmin): ?>
-                <div class="col-2">
-                    <label class="form-label-xs text-primary">Assignee</label>
-                    <select name="assignee" class="form-select" required>
-                        <?php foreach (Constants::USERS as $value => $label): ?>
-                            <option value="<?= esc($value) ?>"
-                                    <?= ($log['assignee'] == $value) ? 'selected' : '' ?>>
-                                <?= esc($label) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <?php endif; ?>
-            </div>
+                <!-- Card 2: Requester & Campaign details (Horizontal Grid) -->
+                <div class="apple-card mb-4" style="background-color: var(--color-bg-base); border: 1px solid rgba(0, 0, 0, 0.05); box-shadow: none;">
+                    <h5 class="mb-3 text-primary d-flex align-items-center gap-2 fw-bold" style="font-size: 1rem;">
+                        <i class="bi bi-person-fill"></i>
+                        <span>Requester & Campaign</span>
+                    </h5>
+                    
+                    <div class="row g-3">
+                        <!-- Requested By -->
+                        <div class="col-md-4">
+                            <label for="requested_by" class="form-label-sm fw-semibold text-secondary mb-1">Requested By</label>
+                            <input type="text" name="requested_by" id="requested_by"
+                                class="form-control form-control-xs"
+                                value="<?= old('requested_by', $log['requested_by'] ?? '') ?>">
+                        </div>
 
-            <div class="row mb-2">
-                <div class="col">
-                    <label for="description" class="form-label-xs text-primary">Description</label>
-                    <textarea name="description" id="description"
-                        class="form-control"
-                        rows="4"><?= $log['description'] ?></textarea>
-                </div>
-            </div>
+                        <!-- Requested Date -->
+                        <div class="col-md-4">
+                            <label for="requested_date" class="form-label-sm fw-semibold text-secondary mb-1">Requested Date</label>
+                            <div class="position-relative">
+                                <input type="text" name="requested_date" id="requested_date"
+                                    class="form-control form-control-xs pe-5"
+                                    value="<?= !empty($log['requested_date']) ? date('Y-m-d', strtotime($log['requested_date'])) : '' ?>">
+                                <i class="bi bi-calendar-event text-muted position-absolute" style="right: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; font-size: 0.875rem;"></i>
+                            </div>
+                        </div>
 
-            <div class="row mb-2">
-                <div class="col">
-                    <label class="form-label-xs text-primary">Subsidiary</label>
-                    <select name="subsidiary_id" class="form-select searchable-select" required>
-                        <?php foreach (Constants::ACTIVITY_LOG_SUBSIDIARIES as $value => $label): ?>
-                            <option value="<?= esc($value) ?>"
-                                <?= ($log['subsidiary_id'] == $value) ? 'selected' : '' ?>>
-                                <?= esc($label) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
+                        <!-- Department -->
+                        <div class="col-md-4">
+                            <label class="form-label-sm fw-semibold text-secondary mb-1">Department</label>
+                            <select name="department_id" class="form-select form-select-xs">
+                                <option value="">-Select-</option>
+                                <?php foreach (Constants::DWF_DEPARTMENTS as $value => $label): ?>
+                                    <option value="<?= esc($value) ?>"
+                                            <?= ($log['department_id'] == $value) ? 'selected' : '' ?>>
+                                        <?= esc($label) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
 
-                <div class="col">
-                    <label class="form-label-xs text-primary">Project</label>
-                    <select name="project_id" class="form-select" required>
-                        <?php foreach (Constants::PROJECTS as $value => $label): ?>
-                            <option value="<?= esc($value) ?>"
-                                <?= ($log['project_id'] == $value) ? 'selected' : '' ?>>
-                                <?= esc($label) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
+                        <!-- Campaign Status -->
+                        <div class="col-md-4">
+                            <label class="form-label-sm fw-semibold text-secondary mb-1">Campaign Status</label>
+                            <select name="campaign_status" class="form-select form-select-xs">
+                                <option value="">-Select-</option>
+                                <?php foreach (Constants::CAMPAIGN_STATUS as $value => $label): ?>
+                                    <option value="<?= esc($value) ?>"
+                                        <?= ($log['campaign_status'] == $value) ? 'selected' : '' ?>>
+                                        <?= esc($label) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
 
-                <div class="col">
-                    <label class="form-label-xs text-primary">Type</label>
-                    <select name="type" class="form-select" required>
-                        <option value="">-Select-</option>
-                        <?php foreach (Constants::ACTIVITY_TYPES as $value => $label): ?>
-                            <option value="<?= esc($value) ?>"
-                                <?= ($log['type'] == $value) ? 'selected' : '' ?>>
-                                <?= esc($label) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-            </div>
-
-            <div class="row mb-2">
-                <div class="col">
-                    <label for="ticket_id" class="form-label-xs text-primary">Ticket ID</label>
-                    <input type="text" name="ticket_id" id="ticket_id"
-                        class="form-control"
-                        value="<?= $log['ticket_id'] ?>">
+                        <!-- Campaign ID -->
+                        <div class="col-md-4">
+                            <label for="campaign_id" class="form-label-sm fw-semibold text-secondary mb-1">Campaign ID</label>
+                            <input type="text" name="campaign_id" id="campaign_id"
+                                class="form-control form-control-xs"
+                                value="<?= old('campaign_id', $log['campaign_id'] ?? '') ?>">
+                        </div>
+                    </div>
                 </div>
 
-                <div class="col">
-                    <label class="form-label-xs text-primary">Size</label>
-                    <select name="size" class="form-select" required>
-                        <option value="">-Select-</option>
-                        <?php foreach (Constants::ACTIVITY_SIZES as $value => $label): ?>
-                            <option value="<?= esc($value) ?>"
-                                <?= ($log['size'] == $value) ? 'selected' : '' ?>>
-                                <?= esc($label) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-
-                <div class="col">
-                    <label class="form-label-xs text-primary">Priority</label>
-                    <select name="priority" class="form-select" required>
-                        <option value="">-Select-</option>
-                        <?php foreach (Constants::PRIORITIES as $value => $label): ?>
-                            <option value="<?= esc($value) ?>"
-                                    <?= ($log['priority'] == $value) ? 'selected' : '' ?>>
-                                <?= esc($label) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
+                <!-- Form Action Buttons -->
+                <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                    <a href="<?= site_url('activity-logs') ?>" onclick="if (document.referrer) { window.history.back(); return false; }" title="Cancel" class="apple-btn-secondary btn-sm px-4 text-decoration-none">Cancel</a>
+                    <button type="submit" class="apple-btn-primary btn-sm px-4">Update</button>
                 </div>
             </div>
 
-            <div class="row mb-2">
-                <div class="col">
-                    <label class="form-label-xs text-primary">Status</label>
-                    <select name="status" class="form-select" required>
-                        <?php foreach (Constants::ACTIVITY_LOGS_STATUS as $value => $label): ?>
-                            <option value="<?= esc($value) ?>"
-                                    <?= ($log['status'] == $value) ? 'selected' : '' ?>>
-                                <?= esc($label) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
+            <!-- Right Sidebar (Activity Settings) -->
+            <div class="col-lg-4 col-md-5">
+                <!-- Card 1: Activity settings -->
+                <div class="apple-card mb-4" style="background-color: var(--color-bg-base); border: 1px solid rgba(0, 0, 0, 0.05); box-shadow: none;">
+                    <h5 class="mb-3 text-primary d-flex align-items-center gap-2 fw-bold" style="font-size: 1rem;">
+                        <i class="bi bi-gear-fill"></i>
+                        <span>Activity Settings</span>
+                    </h5>
+                    
+                    <div class="row g-3">
+                        <!-- Status -->
+                        <div class="col-12">
+                            <label class="form-label-sm fw-semibold text-secondary mb-1">Status</label>
+                            <select name="status" class="form-select form-select-xs" required>
+                                <?php foreach (Constants::ACTIVITY_LOGS_STATUS as $value => $label): ?>
+                                    <option value="<?= esc($value) ?>"
+                                            <?= ($log['status'] == $value) ? 'selected' : '' ?>>
+                                        <?= esc($label) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
 
-                <div class="col">
-                    <label for="requested_by" class="form-label-xs text-primary">Requested By</label>
-                    <input type="text" name="requested_by" id="requested_by"
-                        class="form-control"
-                        value="<?= old('requested_by', $log['requested_by'] ?? '') ?>">
-                </div>
+                        <!-- Priority -->
+                        <div class="col-12">
+                            <label class="form-label-sm fw-semibold text-secondary mb-1">Priority</label>
+                            <select name="priority" class="form-select form-select-xs" required>
+                                <option value="">-Select-</option>
+                                <?php foreach (Constants::PRIORITIES as $value => $label): ?>
+                                    <option value="<?= esc($value) ?>"
+                                            <?= ($log['priority'] == $value) ? 'selected' : '' ?>>
+                                        <?= esc($label) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
 
-                <div class="col">
-                    <label for="requested_date" class="form-label-xs text-primary">Requested Date</label>
-                    <input type="date" name="requested_date" id="requested_date"
-                        class="form-control"
-                        value="<?= !empty($log['requested_date']) ? date('Y-m-d', strtotime($log['requested_date'])) : '' ?>">
+                        <!-- Size -->
+                        <div class="col-12">
+                            <label for="size-select" class="form-label-sm fw-semibold text-secondary mb-1 d-flex align-items-center gap-1">
+                                Size
+                                <i class="bi bi-question-circle-fill text-muted" style="cursor: help;" title="T-Shirt Size Guide: Represents the project management estimation size. Hover or select a size for more details."></i>
+                            </label>
+                            <select name="size" id="size-select" class="form-select form-select-xs" required>
+                                <option value="">-Select-</option>
+                                <?php foreach (Constants::ACTIVITY_SIZES as $value => $label): ?>
+                                    <option value="<?= esc($value) ?>"
+                                        <?= ($log['size'] == $value) ? 'selected' : '' ?>>
+                                        <?= esc($label) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                            <div id="size-help" class="form-text mt-1 text-muted fw-medium" style="font-size: 0.75rem; min-height: 1.25rem;">
+                                Select a size to view its estimated effort and description.
+                            </div>
+                        </div>
+
+                        <!-- Assignee -->
+                        <?php if (!$isAdmin): ?>
+                        <div class="col-12">
+                            <label class="form-label-sm fw-semibold text-secondary mb-1">Assignee</label>
+                            <select name="assignee" class="form-select form-select-xs" required>
+                                <?php foreach (Constants::USERS as $value => $label): ?>
+                                    <option value="<?= esc($value) ?>"
+                                            <?= ($log['assignee'] == $value) ? 'selected' : '' ?>>
+                                        <?= esc($label) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <?php endif; ?>
+
+                        <!-- Subsidiary -->
+                        <div class="col-12">
+                            <label class="form-label-sm fw-semibold text-secondary mb-1">Subsidiary</label>
+                            <select name="subsidiary_id" class="form-select form-select-xs searchable-select" required>
+                                <?php foreach (Constants::ACTIVITY_LOG_SUBSIDIARIES as $value => $label): ?>
+                                    <option value="<?= esc($value) ?>"
+                                        <?= ($log['subsidiary_id'] == $value) ? 'selected' : '' ?>>
+                                        <?= esc($label) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+
+                        <!-- Project -->
+                        <div class="col-12">
+                            <label class="form-label-sm fw-semibold text-secondary mb-1">Project</label>
+                            <select name="project_id" class="form-select form-select-xs" required>
+                                <?php foreach (Constants::PROJECTS as $value => $label): ?>
+                                    <option value="<?= esc($value) ?>"
+                                        <?= ($log['project_id'] == $value) ? 'selected' : '' ?>>
+                                        <?= esc($label) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+
+                        <!-- Type -->
+                        <div class="col-12">
+                            <label class="form-label-sm fw-semibold text-secondary mb-1">Type</label>
+                            <select name="type" class="form-select form-select-xs" required>
+                                <option value="">-Select-</option>
+                                <?php foreach (Constants::ACTIVITY_TYPES as $value => $label): ?>
+                                    <option value="<?= esc($value) ?>"
+                                        <?= ($log['type'] == $value) ? 'selected' : '' ?>>
+                                        <?= esc($label) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+
+                        <!-- Ticket ID -->
+                        <div class="col-12">
+                            <label for="ticket_id" class="form-label-sm fw-semibold text-secondary mb-1">Ticket ID</label>
+                            <input type="text" name="ticket_id" id="ticket_id"
+                                class="form-control form-control-xs"
+                                value="<?= esc($log['ticket_id']) ?>">
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
+    </form>
+</div>
 
-        <!-- #region | CAMPAIGN DETAILS -->
-        <h5 class="mt-3">Campaign Details</h5>
-        <div class="card p-3">
-            <div class="row mb-2">
-                <div class="col">
-                    <label class="form-label-xs text-primary">Department</label>
-                    <select name="department_id" class="form-select">
-                        <option value="">-Select-</option>
-                        <?php foreach (Constants::DWF_DEPARTMENTS as $value => $label): ?>
-                            <option value="<?= esc($value) ?>"
-                                    <?= ($log['department_id'] == $value) ? 'selected' : '' ?>>
-                                <?= esc($label) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-
-                <div class="col">
-                    <label class="form-label-xs text-primary">Campaign Status</label>
-                    <select name="campaign_status" class="form-select">
-                        <option value="">-Select-</option>
-                        <?php foreach (Constants::CAMPAIGN_STATUS as $value => $label): ?>
-                            <option value="<?= esc($value) ?>"
-                                <?= ($log['campaign_status'] == $value) ? 'selected' : '' ?>>
-                                <?= esc($label) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-
-                <div class="col">
-                    <label for="campaign_id" class="form-label-xs text-primary">Campaign ID</label>
-                    <input type="text" name="campaign_id" id="campaign_id"
-                        class="form-control"
-                        value="<?= old('campaign_id', $log['campaign_id'] ?? '') ?>">
-                </div>
-            </div>
-        </div>
-
-        <div class="d-flex justify-content-end gap-2 mt-3">
-            <a href="<?= site_url('activity-logs') ?>" title="Cancel" class="btn btn-secondary btn-sm">Cancel</a>
-            <button type="submit" class="btn btn-success btn-sm">Update</button>
-        </div>
-        <!-- #endregion -->
-    </div>
-</form>
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        flatpickr("#requested_date", {
+            dateFormat: "Y-m-d",
+            disableMobile: "true",
+            defaultDate: "<?= !empty($log['requested_date']) ? date('Y-m-d', strtotime($log['requested_date'])) : '' ?>"
+        });
+
         $('.searchable-select').select2({
             width: '100%',
         });
+
+        const sizeDescriptions = {
+            '1': 'S (Small): Minor tasks / quick fixes (estimated effort < 2 hours)',
+            '2': 'M (Medium): Standard tag setups / simple troubleshooting (estimated effort: 2-5 hours)',
+            '3': 'L (Large): New tag integrations / complex tracking rules (estimated effort: 1-2 days)',
+            '4': 'XL (Extra Large): Major property setups / migrations / custom JS (estimated effort: 3-5 days)',
+            '5': 'Sprint: Massive undertakings / entire sprint effort (estimated effort: 1-2 weeks)'
+        };
+
+        const sizeSelect = document.getElementById('size-select');
+        const sizeHelp = document.getElementById('size-help');
+
+        if (sizeSelect && sizeHelp) {
+            const updateSizeHelp = () => {
+                const val = sizeSelect.value;
+                sizeHelp.innerHTML = val ? `<i class="bi bi-info-circle-fill text-primary"></i> ${sizeDescriptions[val]}` : 'Select a size to view its estimated effort and description.';
+            };
+            sizeSelect.addEventListener('change', updateSizeHelp);
+            updateSizeHelp(); // Initial run
+        }
 
         $(document).ready(function() {
             $('#description').summernote({
                 height: 300,
                 toolbar: [
                     ['style', ['bold', 'italic', 'underline', 'clear']],
-                    // ['font', ['strikethrough', 'superscript', 'subscript']],
-                    // ['fontsize', ['fontsize']],
-                    // ['color', ['color']],
                     ['para', ['ul', 'ol', 'paragraph']],
                     ['table', ['table']],
-                    // ['insert', ['link', 'picture', 'video']],
                     ['view', ['fullscreen', 'codeview', 'help']]
                 ]
             });

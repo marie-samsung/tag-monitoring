@@ -44,6 +44,14 @@
     <script src=<?= base_url('assets/bootstrap/js/bootstrap.bundle.min.js') ?>></script>
     <script src=<?= base_url('assets/select2/js/select2.min.js') ?>></script>
     <script src="<?= base_url('assets/summernote/summernote-lite.js') ?>"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+    </script>
 
     <?= $this->renderSection('scripts') ?>
 
