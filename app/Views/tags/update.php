@@ -23,6 +23,7 @@
         use App\Models\PropertiesModel;
         use App\Models\VendorsModel;
         use App\Models\OrganizationsModel;
+        use App\Models\TagsModel;
 
         $propertiesModel = new PropertiesModel();
         $properties = $propertiesModel->Options();
@@ -32,6 +33,9 @@
 
         $organizationsModel = new OrganizationsModel();
         $organizations = $organizationsModel->Options();
+
+        $tagsModel = new TagsModel();
+        $conditionsList = array_column($tagsModel->select('conditions')->distinct()->where('conditions !=', '')->where('conditions IS NOT NULL')->orderBy('conditions', 'ASC')->findAll(), 'conditions');
     ?>
 
     <?php if (isset($validation)): ?>
@@ -84,9 +88,15 @@
                     <label for="conditions" class="form-label-sm fw-semibold text-secondary mb-1">Conditions</label>
                     <input type="text" name="conditions" id="conditions"
                         class="form-control form-control-xs"
+                        list="conditions-list"
                         value="<?= esc($tag['conditions']) ?>"
                         placeholder="e.g. (.*)"
                         required>
+                    <datalist id="conditions-list">
+                        <?php foreach ($conditionsList as $cond): ?>
+                            <option value="<?= esc($cond) ?>"></option>
+                        <?php endforeach; ?>
+                    </datalist>
                     <small class="form-text text-muted" style="font-size: 0.75rem;">
                         RegEx or condition string (e.g. <code>(.*)</code>)
                     </small>
@@ -145,15 +155,20 @@
                 <!-- Organization -->
                 <div class="col-md-4">
                     <label class="form-label-sm fw-semibold text-secondary mb-1">Organization</label>
-                    <select name="requester_organization" class="form-select advanced-select">
-                        <option value="">-Select-</option>
+                    <?php 
+                        $orgId = $tag['requester_organization'] ?? '';
+                        $orgName = $orgId && isset($organizations[$orgId]) ? $organizations[$orgId] : $orgId;
+                    ?>
+                    <input type="text" name="requester_organization" id="requester_organization"
+                        class="form-control form-control-xs"
+                        list="organization-list"
+                        value="<?= esc(old('requester_organization', $orgName)) ?>"
+                        placeholder="-Select-">
+                    <datalist id="organization-list">
                         <?php foreach ($organizations as $value => $label): ?>
-                            <option value="<?= esc($value) ?>"
-                                <?= old('requester_organization', $tag['requester_organization'] ?? '') == $value ? 'selected' : '' ?>>
-                                <?= esc($label) ?>
-                            </option>
+                            <option value="<?= esc($label) ?>"></option>
                         <?php endforeach; ?>
-                    </select>
+                    </datalist>
                 </div>
 
                 <!-- Name -->

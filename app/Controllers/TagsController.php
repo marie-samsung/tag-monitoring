@@ -99,11 +99,17 @@ class TagsController extends BaseController
 
         if ($reqOrg) {
             $organizationInput = trim($reqOrg);
-            $organization = $organizationsModel->where('id', $organizationInput)->first();
+            $organization = $organizationsModel->where('name', $organizationInput)->first();
             if (!$organization) {
-                $organizationId = $organizationsModel->insert([
-                    'name' => $organizationInput,
-                ]);
+                // If not found by name, it could be a numeric ID passed from old select, let's check
+                $organizationById = is_numeric($organizationInput) ? $organizationsModel->where('id', $organizationInput)->first() : null;
+                if ($organizationById) {
+                    $organizationId = $organizationById['id'];
+                } else {
+                    $organizationId = $organizationsModel->insert([
+                        'name' => $organizationInput,
+                    ]);
+                }
             } else {
                 $organizationId = $organization['id'];
             }
@@ -177,6 +183,26 @@ class TagsController extends BaseController
             $vendorId = $vendor['id'];
         }
 
+        $reqOrg = $post['requester_organization'] ?? null;
+        $organizationId = null;
+        if ($reqOrg) {
+            $organizationsModel = new \App\Models\OrganizationsModel();
+            $organizationInput = trim($reqOrg);
+            $organization = $organizationsModel->where('name', $organizationInput)->first();
+            if (!$organization) {
+                $organizationById = is_numeric($organizationInput) ? $organizationsModel->where('id', $organizationInput)->first() : null;
+                if ($organizationById) {
+                    $organizationId = $organizationById['id'];
+                } else {
+                    $organizationId = $organizationsModel->insert([
+                        'name' => $organizationInput,
+                    ]);
+                }
+            } else {
+                $organizationId = $organization['id'];
+            }
+        }
+
         $updateData = [
             'property_id' => (int) $post['property_id'],
             'vendor_id' => (int) $vendorId,
@@ -187,7 +213,7 @@ class TagsController extends BaseController
             'ref_link' => $post['ref_link'],
             'requester_name' => $post['requester_name'],
             'requester_email' => $post['requester_email'],
-            'requester_organization' => $post['requester_organization'],
+            'requester_organization' => $organizationId,
         ];
 
         $model->update($id, $updateData);
