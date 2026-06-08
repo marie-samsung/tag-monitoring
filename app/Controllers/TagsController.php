@@ -319,9 +319,9 @@ class TagsController extends BaseController
         $activityLog = $activityLogModel->where('ticket_id', $jiraTicket[0]['ticket_id'])->first();
 
         if ($activityLog) {
-            if ($activityLog['status'] != Constants::STATUS_COMPLETED) {
+            if ($activityLog['status'] != Constants::ACTIVITY_LOGS_STATUS_COMPLETED) {
                 $from = Constants::ACTIVITY_LOGS_STATUS[$activityLog['status']];
-                $to = Constants::ACTIVITY_LOGS_STATUS[Constants::STATUS_COMPLETED];
+                $to = Constants::ACTIVITY_LOGS_STATUS[Constants::ACTIVITY_LOGS_STATUS_COMPLETED];
 
                 $commentsModel->insert([
                     'log_id' => $activityLog['id'],
@@ -331,7 +331,7 @@ class TagsController extends BaseController
                 ]);
 
                 $activityLogModel->update($activityLog['id'], [
-                    'status' => Constants::STATUS_COMPLETED,
+                    'status' => Constants::ACTIVITY_LOGS_STATUS_COMPLETED,
                 ]);
             }
         }
@@ -342,9 +342,13 @@ class TagsController extends BaseController
             'requested_date' => null,
         ]);
 
+//        return redirect()
+//            ->to('/tags/view/' . $id)
+//            ->with('success', 'Tag renewal has been verified.');
+
         return redirect()
-            ->to('/tags/view/' . $id)
-            ->with('success', 'Tag renewal has been verified.');
+            ->to('/tags')
+            ->with('success', "Tag renewal [{$tag['id']}] [{$tag['name']}] has been verified.");
     }
 
     /**
@@ -486,7 +490,7 @@ class TagsController extends BaseController
             'project_id' => Constants::PROJECT_MEDIA_TAGGING,
             'ticket_id' => $info['ticket_id'] ?? null,
             'assignee' => session()->get('user_id') ?? 0,
-            'status' => Constants::STATUS_IMPLEMENTATION,
+            'status' => Constants::ACTIVITY_LOGS_STATUS_IMPLEMENTATION,
             'type' => Constants::ACTIVITY_TYPE_REQUEST,
             'size' => Constants::ACTIVITY_SIZE_M,
             'created_by' => session()->get('user_id') ?? 0,

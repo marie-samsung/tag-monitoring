@@ -121,7 +121,7 @@ class ActivityLogsController extends BaseController
                 'type' => Constants::COMMENT_TYPE_UPDATE,
             ]);
 
-            if ($post['status'] == Constants::STATUS_COMPLETED) {
+            if ($post['status'] == Constants::ACTIVITY_LOGS_STATUS_COMPLETED) {
                 $post['finished_date'] = date_ymd();
             }
         }

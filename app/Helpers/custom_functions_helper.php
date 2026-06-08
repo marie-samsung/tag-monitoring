@@ -12,6 +12,7 @@ function status_label(int $id): string
         Constants::STATUS_UPDATED_IN_AL => 'Updated in AL',
         Constants::STATUS_NEW_TAG_SUBMITTED => 'New Tag Request Submitted',
         Constants::STATUS_NEW_RULE_SUBMITTED => 'New Rule Request Submitted',
+        Constants::STATUS_ON_HOLD => 'On-Hold / Blocked',
     ];
     return $map[$id] ?? 'Unknown';
 }
@@ -20,7 +21,7 @@ function status_class(int $id): string
 {
     return match ($id) {
         Constants::STATUS_ENABLED => 'bg-success text-white',
-        Constants::STATUS_DISABLED => 'bg-danger text-white',
+        Constants::STATUS_DISABLED, Constants::STATUS_ON_HOLD => 'bg-danger text-white',
         Constants::STATUS_EXPIRED, Constants::STATUS_NEW_RULE_SUBMITTED => 'bg-secondary text-white',
         Constants::STATUS_PENDING_VERIFICATION, Constants::STATUS_NEW_TAG_SUBMITTED => 'bg-warning text-dark',
         Constants::STATUS_UPDATED_IN_AL => 'bg-info text-dark',
@@ -31,11 +32,11 @@ function status_class(int $id): string
 function status_activity_logs_class(int $id): string
 {
     return match ($id) {
-        Constants::STATUS_TO_DO => 'bg-secondary text-white',
-        Constants::STATUS_INVESTIGATION, Constants::STATUS_IMPLEMENTATION, Constants::STATUS_REVIEW => 'bg-warning text-dark',
-        Constants::STATUS_QA => 'bg-info text-dark',
-        Constants::STATUS_COMPLETED => 'bg-success text-white',
-        Constants::STATUS_BLOCKED => 'bg-danger text-white',
+        Constants::ACTIVITY_LOGS_STATUS_TO_DO => 'bg-secondary text-white',
+        Constants::ACTIVITY_LOGS_STATUS_INVESTIGATION, Constants::ACTIVITY_LOGS_STATUS_IMPLEMENTATION, Constants::ACTIVITY_LOGS_STATUS_REVIEW => 'bg-warning text-dark',
+        Constants::ACTIVITY_LOGS_STATUS_QA => 'bg-info text-dark',
+        Constants::ACTIVITY_LOGS_STATUS_COMPLETED => 'bg-success text-white',
+        Constants::ACTIVITY_LOGS_STATUS_BLOCKED => 'bg-danger text-white',
     };
 }
 

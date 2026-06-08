@@ -48,6 +48,7 @@ class Constants
     public const STATUS_NEW_TAG_SUBMITTED = 6;
     public const STATUS_NEW_RULE_SUBMITTED = 7;
     public const STATUS_ENDED = 8;
+    public const STATUS_ON_HOLD = 9;
     public const STATUS_DEFAULT = 145;
     public const STATUS_ALL = 999;
     public const STATUS = [
@@ -60,6 +61,7 @@ class Constants
         self::STATUS_NEW_TAG_SUBMITTED => 'New Tag Request Submitted',
         self::STATUS_NEW_RULE_SUBMITTED => 'New Rule Request Submitted',
         self::STATUS_ENDED => 'Ended',
+        self::STATUS_ON_HOLD => 'On-Hold / Blocked',
     ];
 
     public const STATUS_REQUEST_HQ_REVIEW = 1;
@@ -264,21 +266,21 @@ class Constants
         ],
     ];
 
-    public const STATUS_TO_DO = 1;
-    public const STATUS_INVESTIGATION = 2;
-    public const STATUS_IMPLEMENTATION = 3;
-    public const STATUS_QA = 4;
-    public const STATUS_REVIEW = 5;
-    public const STATUS_COMPLETED = 6;
-    public const STATUS_BLOCKED = 7;
+    public const ACTIVITY_LOGS_STATUS_TO_DO = 1;
+    public const ACTIVITY_LOGS_STATUS_INVESTIGATION = 2;
+    public const ACTIVITY_LOGS_STATUS_IMPLEMENTATION = 3;
+    public const ACTIVITY_LOGS_STATUS_QA = 4;
+    public const ACTIVITY_LOGS_STATUS_REVIEW = 5;
+    public const ACTIVITY_LOGS_STATUS_COMPLETED = 6;
+    public const ACTIVITY_LOGS_STATUS_BLOCKED = 7;
     public const ACTIVITY_LOGS_STATUS = [
-        self::STATUS_TO_DO => 'Not yet started',
-        self::STATUS_INVESTIGATION => 'In Progress - Investigation',
-        self::STATUS_IMPLEMENTATION => 'In Progress - Implementation',
-        self::STATUS_QA => 'Testing - QA',
-        self::STATUS_REVIEW => 'Pending Review',
-        self::STATUS_COMPLETED => 'Completed',
-        self::STATUS_BLOCKED => 'Blocked/On Hold',
+        self::ACTIVITY_LOGS_STATUS_TO_DO => 'Not yet started',
+        self::ACTIVITY_LOGS_STATUS_INVESTIGATION => 'In Progress - Investigation',
+        self::ACTIVITY_LOGS_STATUS_IMPLEMENTATION => 'In Progress - Implementation',
+        self::ACTIVITY_LOGS_STATUS_QA => 'Testing - QA',
+        self::ACTIVITY_LOGS_STATUS_REVIEW => 'Pending Review',
+        self::ACTIVITY_LOGS_STATUS_COMPLETED => 'Completed',
+        self::ACTIVITY_LOGS_STATUS_BLOCKED => 'Blocked/On Hold',
     ];
 
     public const ACTIVITY_TYPE_TASK = 1;

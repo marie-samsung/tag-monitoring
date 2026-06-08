@@ -75,8 +75,9 @@ class TagRequestsModel extends Model
             $this->where('tag_requests.created_at <=', $filters['created_at_to'] . ' 23:59:59');
         }
 
+        $this->orderBy('tag_requests.status', 'ASC');
         $this->orderBy('tag_requests.created_at', 'DESC');
-        
+
         if ($paginate > 0) {
             return $this->paginate($paginate);
         }

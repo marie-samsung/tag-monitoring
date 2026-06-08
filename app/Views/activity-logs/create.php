@@ -151,7 +151,7 @@ Activity Log: Create
                             <select name="status" class="form-select form-select-xs" required>
                                 <?php foreach (Constants::ACTIVITY_LOGS_STATUS as $value => $label): ?>
                                     <option value="<?= esc($value) ?>"
-                                            <?= old('status', $log['status'] ?? Constants::STATUS_TO_DO) == $value ? 'selected' : '' ?>>
+                                            <?= old('status', $log['status'] ?? Constants::ACTIVITY_LOGS_STATUS_TO_DO) == $value ? 'selected' : '' ?>>
                                         <?= esc($label) ?>
                                     </option>
                                 <?php endforeach; ?>

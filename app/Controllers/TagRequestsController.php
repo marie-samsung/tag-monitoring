@@ -356,16 +356,16 @@ class TagRequestsController extends BaseController
         $activityLog = $activityLogModel->where('ticket_id', $ticketId)->first();
 
         if ($activityLog) {
-            if ($activityLog['status'] != Constants::STATUS_COMPLETED) {
+            if ($activityLog['status'] != Constants::ACTIVITY_LOGS_STATUS_COMPLETED) {
                 $commentsModel->insert([
                     'log_id' => $activityLog['id'],
-                    'comment' => "Status updated from [{$activityLog['status']}] to [". Constants::STATUS_COMPLETED ."]",
+                    'comment' => "Status updated from [{$activityLog['status']}] to [". Constants::ACTIVITY_LOGS_STATUS_COMPLETED ."]",
                     'commented_by' => Constants::USER_SYSTEM,
                     'type' => Constants::COMMENT_TYPE_UPDATE,
                 ]);
 
                 $activityLogModel->update($activityLog['id'], [
-                    'status' => Constants::STATUS_COMPLETED,
+                    'status' => Constants::ACTIVITY_LOGS_STATUS_COMPLETED,
                 ]);
             }
         }
@@ -524,7 +524,7 @@ class TagRequestsController extends BaseController
             'project_id' => Constants::PROJECT_MEDIA_TAGGING,
             'ticket_id' => $ticketId ?? null,
             'assignee' => session()->get('user_id') ?? 0,
-            'status' => Constants::STATUS_IMPLEMENTATION,
+            'status' => Constants::ACTIVITY_LOGS_STATUS_IMPLEMENTATION,
             'type' => Constants::ACTIVITY_TYPE_REQUEST,
             'size' => Constants::ACTIVITY_SIZE_M,
             'priority' => Constants::PRIORITY_MEDIUM,
