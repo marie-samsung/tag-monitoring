@@ -226,6 +226,10 @@ class Database extends Config
         // we don't overwrite live data on accident.
         if (ENVIRONMENT === 'testing') {
             $this->defaultGroup = 'tests';
+        } elseif (ENVIRONMENT === 'development') {
+            $this->defaultGroup = 'development';
+        } else {
+            $this->defaultGroup = 'default';
         }
     }
 }

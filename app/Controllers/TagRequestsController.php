@@ -357,9 +357,12 @@ class TagRequestsController extends BaseController
 
         if ($activityLog) {
             if ($activityLog['status'] != Constants::ACTIVITY_LOGS_STATUS_COMPLETED) {
+                $from = Constants::ACTIVITY_LOGS_STATUS[$activityLog['status']];
+                $to = Constants::ACTIVITY_LOGS_STATUS[Constants::ACTIVITY_LOGS_STATUS_COMPLETED];
+
                 $commentsModel->insert([
                     'log_id' => $activityLog['id'],
-                    'comment' => "Status updated from [{$activityLog['status']}] to [". Constants::ACTIVITY_LOGS_STATUS_COMPLETED ."]",
+                    'comment' => "Status updated from [{$from}] to [{$to}]",
                     'commented_by' => Constants::USER_SYSTEM,
                     'type' => Constants::COMMENT_TYPE_UPDATE,
                 ]);

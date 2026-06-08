@@ -202,19 +202,21 @@ Activity Logs
                         </select>
                     </div>
 
-                    <!-- Assignee -->
-                    <div class="col-md-4 col-lg-3">
-                        <label class="form-label-xs fw-semibold text-secondary mb-1">Assignee</label>
-                        <select name="assignee" class="form-select form-select-xs" style="height: 34px; border-radius: 8px;">
-                            <option value="">All Assignees</option>
-                            <?php foreach (Constants::USERS as $value => $label): ?>
-                                <option value="<?= esc($value) ?>"
-                                    <?= old('assignee', $filters['assignee'] ?? '') == $value ? 'selected' : '' ?>>
-                                    <?= esc($label) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
+                    <?php if (!$isAdmin): ?>
+                        <!-- Assignee -->
+                        <div class="col-md-4 col-lg-3">
+                            <label class="form-label-xs fw-semibold text-secondary mb-1">Assignee</label>
+                            <select name="assignee" class="form-select form-select-xs" style="height: 34px; border-radius: 8px;">
+                                <option value="">All Assignees</option>
+                                <?php foreach (Constants::USERS as $value => $label): ?>
+                                    <option value="<?= esc($value) ?>"
+                                        <?= old('assignee', $filters['assignee'] ?? '') == $value ? 'selected' : '' ?>>
+                                        <?= esc($label) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    <?php endif; ?>
 
                     <!-- Status -->
                     <div class="col-md-4 col-lg-3">
@@ -336,11 +338,13 @@ Activity Logs
                         Title <?= getSortIcon('title', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>
                     </a>
                 </th>
-                <th class="form-label-sm fw-semibold">
-                    <a href="<?= getSortUrl('assignee', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>" class="text-decoration-none text-dark d-inline-flex align-items-center gap-1">
-                        Assignee <?= getSortIcon('assignee', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>
-                    </a>
-                </th>
+                <?php if (!$isAdmin): ?>
+                    <th class="form-label-sm fw-semibold">
+                        <a href="<?= getSortUrl('assignee', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>" class="text-decoration-none text-dark d-inline-flex align-items-center gap-1">
+                            Assignee <?= getSortIcon('assignee', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>
+                        </a>
+                    </th>
+                <?php endif; ?>
                 <th class="form-label-sm fw-semibold">
                     <a href="<?= getSortUrl('status', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>" class="text-decoration-none text-dark d-inline-flex align-items-center gap-1">
                         Status <?= getSortIcon('status', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>
@@ -403,11 +407,13 @@ Activity Logs
                             </span>
                         </td>
                         <td><?= $log['title'] ?></td>
-                        <td>
-                            <span class="badge <?= assignee_class($log['assignee']) ?>">
-                                <?= $assignee ?>
-                            </span>
-                        </td>
+                        <?php if (!$isAdmin): ?>
+                            <td>
+                                <span class="badge <?= assignee_class($log['assignee']) ?>">
+                                    <?= $assignee ?>
+                                </span>
+                            </td>
+                        <?php endif; ?>
                         <td>
                             <span class="badge <?= status_activity_logs_class($log['status']) ?>">
                                 <?= Constants::ACTIVITY_LOGS_STATUS[$log['status']] ?? 'Unknown' ?>
