@@ -71,7 +71,7 @@ class ActivityLogsModel extends Model
         $sortDir = $filters['sort_dir'] ?? 'desc';
         
         $allowedSortColumns = [
-            'id', 'subsidiary_id', 'project_id', 'title', 'assignee', 'status', 'priority', 'type', 'size', 'created_at'
+            'id', 'subsidiary_id', 'project_id', 'title', 'ticket_id', 'assignee', 'status', 'priority', 'type', 'size', 'created_at'
         ];
         if (!in_array($sortBy, $allowedSortColumns)) {
             $sortBy = 'created_at';

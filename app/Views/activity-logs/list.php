@@ -338,6 +338,11 @@ Activity Logs
                         Title <?= getSortIcon('title', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>
                     </a>
                 </th>
+                <th class="form-label-sm fw-semibold">
+                    <a href="<?= getSortUrl('ticket_id', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>" class="text-decoration-none text-dark d-inline-flex align-items-center gap-1">
+                        Ticket ID <?= getSortIcon('ticket_id', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>
+                    </a>
+                </th>
                 <?php if (!$isAdmin): ?>
                     <th class="form-label-sm fw-semibold">
                         <a href="<?= getSortUrl('assignee', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>" class="text-decoration-none text-dark d-inline-flex align-items-center gap-1">
@@ -377,7 +382,7 @@ Activity Logs
         <tbody>
             <?php if (empty($logs)): ?>
                 <tr>
-                    <td colspan="11" class="text-center py-5 text-muted">
+                    <td colspan="<?= !$isAdmin ? 12 : 11 ?>" class="text-center py-5 text-muted">
                         <i class="bi bi-inbox fs-2 mb-2 d-block text-secondary" style="opacity: 0.5;"></i>
                         <span class="fw-semibold">No activity logs found</span>
                         <p class="small text-secondary mb-0">Try adjusting your filters or search keywords.</p>
@@ -407,6 +412,15 @@ Activity Logs
                             </span>
                         </td>
                         <td><?= $log['title'] ?></td>
+                        <td>
+                            <?php if (!empty($log['ticket_id'])) : ?>
+                                <a href="<?= Constants::JIRA_LINK . $log['ticket_id'] ?>" target="_blank" class="apple-link fw-bold">
+                                    <?= esc($log['ticket_id']) ?>
+                                </a>
+                            <?php else: ?>
+                                <span class="text-secondary small">—</span>
+                            <?php endif; ?>
+                        </td>
                         <?php if (!$isAdmin): ?>
                             <td>
                                 <span class="badge <?= assignee_class($log['assignee']) ?>">

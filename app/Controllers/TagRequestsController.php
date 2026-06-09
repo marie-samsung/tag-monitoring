@@ -384,8 +384,8 @@ class TagRequestsController extends BaseController
         ]);
 
         return redirect()
-            ->to('/tag-requests/view/' . $id)
-            ->with('success', "Tag Request approved, and associated tags are now enabled.");
+            ->to('/tag-requests/')
+            ->with('success', "[{$ticketId}] Tag Request approved, and associated tags are now enabled.");
     }
 
     public function exportAsCSV()
