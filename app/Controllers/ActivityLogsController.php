@@ -377,7 +377,7 @@ class ActivityLogsController extends BaseController
             $from = Constants::ACTIVITY_LOGS_STATUS[$log['status']] ?? 'Unknown';
             $to = Constants::ACTIVITY_LOGS_STATUS[$status] ?? 'Unknown';
 
-            $commentsModel->insert([
+            $insertedId = $commentsModel->insert([
                 'log_id' => $id,
                 'comment' => "Status updated from [{$from}] to [{$to}]",
                 'commented_by' => Constants::USER_SYSTEM,
@@ -394,12 +394,22 @@ class ActivityLogsController extends BaseController
 
             $model->update($id, $updateData);
 
+            $insertedComment = $commentsModel->find($insertedId);
+            $commentData = [
+                'comment' => $insertedComment['comment'],
+                'commented_by' => $insertedComment['commented_by'],
+                'created_at' => $insertedComment['created_at'],
+                'user_label' => Constants::USERS[$insertedComment['commented_by']] ?? Constants::USER_SYSTEM_LABEL,
+                'is_system' => ($insertedComment['commented_by'] == Constants::USER_SYSTEM)
+            ];
+
             helper('custom_functions');
             return $this->response->setJSON([
                 'success' => true,
                 'message' => "Status updated to '{$to}' successfully.",
                 'status_class' => status_activity_logs_class($status),
-                'csrf_hash' => csrf_hash()
+                'csrf_hash' => csrf_hash(),
+                'comment' => $commentData
             ]);
         }
 
@@ -442,7 +452,7 @@ class ActivityLogsController extends BaseController
                 ? Constants::USER_SYSTEM_LABEL
                 : Constants::USERS[$assigneeId] ?? 'Unknown';
 
-            $commentsModel->insert([
+            $insertedId = $commentsModel->insert([
                 'log_id' => $id,
                 'comment' => "Assignee changed from [{$from}] to [{$to}]",
                 'commented_by' => Constants::USER_SYSTEM,
@@ -453,12 +463,22 @@ class ActivityLogsController extends BaseController
                 'assignee' => $assigneeId,
             ]);
 
+            $insertedComment = $commentsModel->find($insertedId);
+            $commentData = [
+                'comment' => $insertedComment['comment'],
+                'commented_by' => $insertedComment['commented_by'],
+                'created_at' => $insertedComment['created_at'],
+                'user_label' => Constants::USERS[$insertedComment['commented_by']] ?? Constants::USER_SYSTEM_LABEL,
+                'is_system' => ($insertedComment['commented_by'] == Constants::USER_SYSTEM)
+            ];
+
             helper('custom_functions');
             return $this->response->setJSON([
                 'success' => true,
                 'message' => "Assignee changed to '{$to}' successfully.",
                 'status_class' => assignee_class($assigneeId),
-                'csrf_hash' => csrf_hash()
+                'csrf_hash' => csrf_hash(),
+                'comment' => $commentData
             ]);
         }
 
@@ -496,7 +516,7 @@ class ActivityLogsController extends BaseController
             $from = Constants::PRIORITIES[$log['priority']] ?? 'Unknown';
             $to = Constants::PRIORITIES[$priority] ?? 'Unknown';
 
-            $commentsModel->insert([
+            $insertedId = $commentsModel->insert([
                 'log_id' => $id,
                 'comment' => "Priority updated from [{$from}] to [{$to}]",
                 'commented_by' => Constants::USER_SYSTEM,
@@ -507,12 +527,22 @@ class ActivityLogsController extends BaseController
                 'priority' => $priority,
             ]);
 
+            $insertedComment = $commentsModel->find($insertedId);
+            $commentData = [
+                'comment' => $insertedComment['comment'],
+                'commented_by' => $insertedComment['commented_by'],
+                'created_at' => $insertedComment['created_at'],
+                'user_label' => Constants::USERS[$insertedComment['commented_by']] ?? Constants::USER_SYSTEM_LABEL,
+                'is_system' => ($insertedComment['commented_by'] == Constants::USER_SYSTEM)
+            ];
+
             helper('custom_functions');
             return $this->response->setJSON([
                 'success' => true,
                 'message' => "Priority updated to '{$to}' successfully.",
                 'status_class' => priority_class($priority),
-                'csrf_hash' => csrf_hash()
+                'csrf_hash' => csrf_hash(),
+                'comment' => $commentData
             ]);
         }
 
