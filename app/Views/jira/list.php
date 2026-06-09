@@ -338,6 +338,7 @@ $hasActiveFilters = ($activeFiltersCount > 0);
                                 </td>
                                 <td>
                                     <?php if ($property): ?>
+                                    <i class="bi bi-tag-fill" style="<?= random_text_style($property['id']) ?>"></i>
                                     <a href="<?= $property['ref_link'] ?>" target="_blank" rel="noopener" class="apple-link-dark form-label-sm">
                                         <?= esc($property['name']) ?>
                                     </a>
