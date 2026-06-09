@@ -423,20 +423,32 @@ Activity Logs
                         </td>
                         <?php if (!$isAdmin): ?>
                             <td>
-                                <span class="badge <?= assignee_class($log['assignee']) ?>">
-                                    <?= $assignee ?>
-                                </span>
+                                <select class="badge status-select-badge <?= assignee_class($log['assignee']) ?> assignee-select" data-log-id="<?= $log['id'] ?>">
+                                    <?php foreach (Constants::USERS as $val => $lbl): ?>
+                                        <option value="<?= $val ?>" <?= $log['assignee'] == $val ? 'selected' : '' ?> class="bg-white text-dark text-start">
+                                            <?= esc($lbl) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
                             </td>
                         <?php endif; ?>
                         <td>
-                            <span class="badge <?= status_activity_logs_class($log['status']) ?>">
-                                <?= Constants::ACTIVITY_LOGS_STATUS[$log['status']] ?? 'Unknown' ?>
-                            </span>
+                            <select class="badge status-select-badge <?= status_activity_logs_class($log['status']) ?>" data-log-id="<?= $log['id'] ?>">
+                                <?php foreach (Constants::ACTIVITY_LOGS_STATUS as $val => $lbl): ?>
+                                    <option value="<?= $val ?>" <?= $log['status'] == $val ? 'selected' : '' ?> class="bg-white text-dark text-start">
+                                        <?= esc($lbl) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
                         </td>
                         <td>
-                            <span class="badge <?= priority_class($log['priority']) ?>">
-                                <?= Constants::PRIORITIES[$log['priority']] ?? 'Unknown' ?>
-                            </span>
+                            <select class="badge status-select-badge <?= priority_class($log['priority']) ?> priority-select" data-log-id="<?= $log['id'] ?>">
+                                <?php foreach (Constants::PRIORITIES as $val => $lbl): ?>
+                                    <option value="<?= $val ?>" <?= $log['priority'] == $val ? 'selected' : '' ?> class="bg-white text-dark text-start">
+                                        <?= esc($lbl) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
                         </td>
                         <td>
                             <span class="badge" style="<?= random_bg_style($type) ?>">
@@ -482,4 +494,223 @@ Activity Logs
 </div>
 <!-- #endregion -->
 
+<style>
+.status-select-badge {
+    display: inline-block;
+    padding: 0.3em 1.6em 0.3em 0.6em !important;
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    line-height: 1.25 !important;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    border-radius: 6px !important;
+    cursor: pointer;
+    width: auto !important;
+    height: auto !important;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-repeat: no-repeat;
+    background-position: right 0.45rem center;
+    background-size: 8px 10px;
+    transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.status-select-badge:focus {
+    outline: none;
+    box-shadow: 0 0 0 0.15rem rgba(0, 123, 255, 0.25) !important;
+}
+
+/* Specific theme styles for Status and Priority */
+.status-select-badge.bg-success {
+    background-color: var(--color-badge-success-bg) !important;
+    color: var(--color-badge-success-text) !important;
+    border: 1px solid var(--color-badge-success-border) !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%232E7D32' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+}
+
+.status-select-badge.bg-danger {
+    background-color: var(--color-badge-danger-bg) !important;
+    color: var(--color-badge-danger-text) !important;
+    border: 1px solid var(--color-badge-danger-border) !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23C62828' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+}
+
+.status-select-badge.bg-warning {
+    background-color: var(--color-badge-warning-bg) !important;
+    color: var(--color-badge-warning-text) !important;
+    border: 1px solid var(--color-badge-warning-border) !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23F57F17' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+}
+
+.status-select-badge.bg-secondary {
+    background-color: var(--color-badge-secondary-bg) !important;
+    color: var(--color-badge-secondary-text) !important;
+    border: 1px solid var(--color-badge-secondary-border) !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%2349494D' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+}
+
+.status-select-badge.bg-info {
+    background-color: var(--color-badge-primary-bg) !important;
+    color: var(--color-badge-primary-text) !important;
+    border: 1px solid var(--color-badge-primary-border) !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%231565C0' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+}
+
+/* Specific theme styles for Assignee users */
+.status-select-badge.bg-purple {
+    background-color: var(--color-badge-purple-bg) !important;
+    color: var(--color-badge-purple-text) !important;
+    border: 1px solid var(--color-badge-purple-border) !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%237B1FA2' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+}
+
+.status-select-badge.bg-pink {
+    background-color: var(--color-badge-pink-bg) !important;
+    color: var(--color-badge-pink-text) !important;
+    border: 1px solid var(--color-badge-pink-border) !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23C2185B' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+}
+
+.status-select-badge.bg-green {
+    background-color: var(--color-badge-green-bg) !important;
+    color: var(--color-badge-green-text) !important;
+    border: 1px solid var(--color-badge-green-border) !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%231B5E20' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+}
+
+.status-select-badge.bg-blue {
+    background-color: var(--color-badge-blue-bg) !important;
+    color: var(--color-badge-blue-text) !important;
+    border: 1px solid var(--color-badge-blue-border) !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%230071E3' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+}
+
+.status-select-badge.bg-orange {
+    background-color: var(--color-badge-orange-bg) !important;
+    color: var(--color-badge-orange-text) !important;
+    border: 1px solid var(--color-badge-orange-border) !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23E65100' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+}
+</style>
+
+<!-- Custom Toast Notification -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1100;">
+    <div id="toastNotification" class="toast align-items-center border-0 text-white" role="alert" aria-live="assertive" aria-atomic="true" style="display: none; min-width: 280px; border-radius: 12px; backdrop-filter: blur(10px); box-shadow: 0 8px 32px rgba(0,0,0,0.15); transition: opacity 0.3s ease;">
+        <div class="d-flex p-3 align-items-center">
+            <div class="me-2" id="toastIcon">
+                <!-- Icon will be set dynamically -->
+            </div>
+            <div class="toast-body flex-grow-1 fw-medium" id="toastMessage" style="font-size: 0.9rem;">
+                <!-- Message will be set dynamically -->
+            </div>
+            <button type="button" class="btn-close btn-close-white ms-auto" style="box-shadow: none;" onclick="$('#toastNotification').fadeOut(300);"></button>
+        </div>
+    </div>
+</div>
+
+<?= $this->endSection() ?>
+
+<?= $this->section('scripts') ?>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        $(document).ready(function() {
+            let previousValue = '';
+
+            // Cache previous status value when dropdown is focused
+            $('.status-select-badge').on('focus', function() {
+                previousValue = $(this).val();
+            }).on('change', function() {
+                const dropdown = $(this);
+                const logId = dropdown.data('log-id');
+                const newValue = dropdown.val();
+                const csrfToken = $('input[name="csrf_test_name"]').val();
+
+                let url = '';
+                let postData = { csrf_test_name: csrfToken };
+
+                if (dropdown.hasClass('assignee-select')) {
+                    url = '<?= site_url("activity-logs/update-assignee") ?>/' + logId;
+                    postData.assignee = newValue;
+                } else if (dropdown.hasClass('priority-select')) {
+                    url = '<?= site_url("activity-logs/update-priority") ?>/' + logId;
+                    postData.priority = newValue;
+                } else {
+                    url = '<?= site_url("activity-logs/update-status") ?>/' + logId;
+                    postData.status = newValue;
+                }
+
+                // Low opacity to indicate loading state
+                dropdown.css('opacity', '0.6');
+
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    data: postData,
+                    dataType: 'json',
+                    success: function(response) {
+                        dropdown.css('opacity', '1');
+                        if (response.success) {
+                            // Clear old status badge classes and apply new one
+                            dropdown.removeClass('bg-secondary bg-warning bg-info bg-success bg-danger bg-purple bg-pink bg-green bg-blue bg-orange text-white text-dark');
+                            dropdown.addClass(response.status_class);
+                            
+                            // Success toast notification
+                            showToast('success', response.message);
+                            previousValue = newValue; // update cached previous value
+                        } else {
+                            // Revert to previous value
+                            dropdown.val(previousValue);
+                            showToast('error', response.message || 'Failed to update.');
+                        }
+
+                        // Update CSRF token in the document
+                        if (response.csrf_hash) {
+                            $('input[name="csrf_test_name"]').val(response.csrf_hash);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        dropdown.css('opacity', '1');
+                        dropdown.val(previousValue);
+                        showToast('error', 'An error occurred while updating.');
+                    }
+                });
+            });
+
+            // Reusable Premium Toast Notification function
+            function showToast(type, message) {
+                const toast = $('#toastNotification');
+                const messageEl = $('#toastMessage');
+                const iconEl = $('#toastIcon');
+
+                messageEl.text(message);
+
+                toast.removeClass('bg-success bg-danger bg-warning text-dark text-white');
+                toast.find('.btn-close').removeClass('btn-close-white btn-close-dark').addClass('btn-close-white');
+
+                if (type === 'success') {
+                    toast.addClass('bg-success text-white');
+                    iconEl.html('<i class="bi bi-check-circle-fill fs-5 text-white"></i>');
+                } else if (type === 'error') {
+                    toast.addClass('bg-danger text-white');
+                    iconEl.html('<i class="bi bi-exclamation-triangle-fill fs-5 text-white"></i>');
+                } else {
+                    toast.addClass('bg-warning text-dark');
+                    toast.find('.btn-close').addClass('btn-close-dark');
+                    iconEl.html('<i class="bi bi-exclamation-circle-fill fs-5 text-dark"></i>');
+                }
+
+                toast.fadeIn(300);
+
+                if (window.toastTimeout) {
+                    clearTimeout(window.toastTimeout);
+                }
+                window.toastTimeout = setTimeout(function() {
+                    toast.fadeOut(300);
+                }, 4000);
+            }
+        });
+    });
+</script>
 <?= $this->endSection() ?>

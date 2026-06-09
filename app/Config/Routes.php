@@ -79,4 +79,7 @@ $routes->group('activity-logs', function ($routes) {
     $routes->post('upload', 'ActivityLogsController::uploadFile');
     $routes->match(['get', 'post'], 'create', 'ActivityLogsController::create');
     $routes->match(['get', 'post'], 'update/(:num)', 'ActivityLogsController::update/$1');
+    $routes->post('update-status/(:num)', 'ActivityLogsController::updateStatus/$1');
+    $routes->post('update-assignee/(:num)', 'ActivityLogsController::updateAssignee/$1');
+    $routes->post('update-priority/(:num)', 'ActivityLogsController::updatePriority/$1');
 });

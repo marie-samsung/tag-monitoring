@@ -349,4 +349,177 @@ class ActivityLogsController extends BaseController
         fclose($csv);
         exit;
     }
+
+    public function updateStatus($id)
+    {
+        $model = new ActivityLogsModel();
+        $commentsModel = new ActivityLogCommentsModel();
+        
+        $log = $model->find($id);
+        if (!$log) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Activity log not found.',
+                'csrf_hash' => csrf_hash()
+            ]);
+        }
+
+        $status = (int)$this->request->getPost('status');
+        if (!array_key_exists($status, Constants::ACTIVITY_LOGS_STATUS)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Invalid status value.',
+                'csrf_hash' => csrf_hash()
+            ]);
+        }
+
+        if ((int)$log['status'] !== $status) {
+            $from = Constants::ACTIVITY_LOGS_STATUS[$log['status']] ?? 'Unknown';
+            $to = Constants::ACTIVITY_LOGS_STATUS[$status] ?? 'Unknown';
+
+            $commentsModel->insert([
+                'log_id' => $id,
+                'comment' => "Status updated from [{$from}] to [{$to}]",
+                'commented_by' => Constants::USER_SYSTEM,
+                'type' => Constants::COMMENT_TYPE_UPDATE,
+            ]);
+
+            $updateData = [
+                'status' => $status,
+            ];
+
+            if ($status == Constants::ACTIVITY_LOGS_STATUS_COMPLETED) {
+                $updateData['finished_date'] = date('Y-m-d');
+            }
+
+            $model->update($id, $updateData);
+
+            helper('custom_functions');
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => "Status updated to '{$to}' successfully.",
+                'status_class' => status_activity_logs_class($status),
+                'csrf_hash' => csrf_hash()
+            ]);
+        }
+
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => 'Status remains unchanged.',
+            'csrf_hash' => csrf_hash()
+        ]);
+    }
+
+    public function updateAssignee($id)
+    {
+        $model = new ActivityLogsModel();
+        $commentsModel = new ActivityLogCommentsModel();
+        
+        $log = $model->find($id);
+        if (!$log) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Activity log not found.',
+                'csrf_hash' => csrf_hash()
+            ]);
+        }
+
+        $assigneeId = (int)$this->request->getPost('assignee');
+        if (!array_key_exists($assigneeId, Constants::USERS) && $assigneeId !== Constants::USER_SYSTEM) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Invalid assignee value.',
+                'csrf_hash' => csrf_hash()
+            ]);
+        }
+
+        if ((int)$log['assignee'] !== $assigneeId) {
+            $from = $log['assignee'] == Constants::USER_SYSTEM
+                ? Constants::USER_SYSTEM_LABEL
+                : Constants::USERS[$log['assignee']] ?? 'Unknown';
+
+            $to = $assigneeId == Constants::USER_SYSTEM
+                ? Constants::USER_SYSTEM_LABEL
+                : Constants::USERS[$assigneeId] ?? 'Unknown';
+
+            $commentsModel->insert([
+                'log_id' => $id,
+                'comment' => "Assignee changed from [{$from}] to [{$to}]",
+                'commented_by' => Constants::USER_SYSTEM,
+                'type' => Constants::COMMENT_TYPE_UPDATE,
+            ]);
+
+            $model->update($id, [
+                'assignee' => $assigneeId,
+            ]);
+
+            helper('custom_functions');
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => "Assignee changed to '{$to}' successfully.",
+                'status_class' => assignee_class($assigneeId),
+                'csrf_hash' => csrf_hash()
+            ]);
+        }
+
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => 'Assignee remains unchanged.',
+            'csrf_hash' => csrf_hash()
+        ]);
+    }
+
+    public function updatePriority($id)
+    {
+        $model = new ActivityLogsModel();
+        $commentsModel = new ActivityLogCommentsModel();
+        
+        $log = $model->find($id);
+        if (!$log) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Activity log not found.',
+                'csrf_hash' => csrf_hash()
+            ]);
+        }
+
+        $priority = (int)$this->request->getPost('priority');
+        if (!array_key_exists($priority, Constants::PRIORITIES)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Invalid priority value.',
+                'csrf_hash' => csrf_hash()
+            ]);
+        }
+
+        if ((int)$log['priority'] !== $priority) {
+            $from = Constants::PRIORITIES[$log['priority']] ?? 'Unknown';
+            $to = Constants::PRIORITIES[$priority] ?? 'Unknown';
+
+            $commentsModel->insert([
+                'log_id' => $id,
+                'comment' => "Priority updated from [{$from}] to [{$to}]",
+                'commented_by' => Constants::USER_SYSTEM,
+                'type' => Constants::COMMENT_TYPE_UPDATE,
+            ]);
+
+            $model->update($id, [
+                'priority' => $priority,
+            ]);
+
+            helper('custom_functions');
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => "Priority updated to '{$to}' successfully.",
+                'status_class' => priority_class($priority),
+                'csrf_hash' => csrf_hash()
+            ]);
+        }
+
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => 'Priority remains unchanged.',
+            'csrf_hash' => csrf_hash()
+        ]);
+    }
 }
