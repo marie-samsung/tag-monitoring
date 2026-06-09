@@ -117,7 +117,7 @@ Activity Logs
 
             <!-- Me Mode Toggle Button -->
             <a href="<?= getMeModeUrl() ?>" class="<?= $isMeMode ? 'apple-btn-primary' : 'apple-btn-secondary' ?> btn-sm px-3 text-decoration-none">
-                <i class="bi <?= $isMeMode ? 'bi-person-fill' : 'bi-person' ?> me-1"></i> Me Mode
+                <i class="bi <?= $isMeMode ? 'bi-person-fill' : 'bi-person' ?> me-1"></i> Assigned To Me
             </a>
             
             <div class="dropdown">
@@ -421,7 +421,7 @@ Activity Logs
                     } elseif ($key === 'type') {
                         $label = 'Type: ' . (Constants::ACTIVITY_TYPES[$val] ?? $val);
                     } elseif ($key === 'me_mode') {
-                        $label = 'Me Mode: Enabled';
+                        $label = 'Assigned To Me: Enabled';
                     }
                     
                     $tempParams = $_GET;

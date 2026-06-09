@@ -72,6 +72,7 @@ class TagRequestsController extends BaseController
         $post = $this->request->getPost();
 
         $propertyId = $post['property_id'];
+        $property = $propertiesModel->find($propertyId);
         $reqName = $post['requester_name'] ?? null;
         $reqEmail = $post['requester_email'] ?? null;
         $reqOrg = $post['requester_organization'] ?? null;
@@ -123,7 +124,6 @@ class TagRequestsController extends BaseController
                     ->first();
 
                 if ($match) {
-                    $property = $propertiesModel->find($propertyId);
                     return redirect()
                         ->to('/tag-requests/create')
                         ->with('error', "An existing tag with the name [{$name}] on the selected property [{$property['name']}] was found.");
@@ -137,7 +137,7 @@ class TagRequestsController extends BaseController
                     'name' => $tag,
                     'status' => $jiraType == Constants::JIRA_TYPE_NEW_TAG ? Constants::STATUS_NEW_TAG_SUBMITTED : Constants::STATUS_NEW_RULE_SUBMITTED,
                     'al_end_date' => $endDate,
-                    'ref_link' => 'https://www.samsung.com/',
+                    'ref_link' => $property['ref_link'] . Constants::AL_RULES_SEARCH_PARAMETER . $tag,
                     'requester_name' => $reqName,
                     'requester_email' => $reqEmail,
                     'requester_organization' => $organizationId,

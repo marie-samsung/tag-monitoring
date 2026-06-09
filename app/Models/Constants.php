@@ -9,6 +9,9 @@ class Constants
     public const JIRA_CREATE_ISSUE = 'https://jira.secext.samsung.net/secure/CreateIssue!default.jspa';
     public const JIRA_SSGTM_TICKET = 'https://jira.secext.samsung.net/browse/GTA-31005';
     public const JIRA_TAGGING_SUPPORT = 'https://jira.secext.samsung.net/secure/ViewProfile.jspa?name=tagging.jira%40concentrix.com';
+
+    // https://experience.adobe.com/#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PR508988f4e47a4b0f9064de57454b604d/rules?filter%5Bname%5D=CONTAINS+LC-Shop-AD%28Meta%29-CM-WL-SDSME_1240253317108112&page%5Bnumber%5D=1
+    public const AL_RULES_SEARCH_PARAMETER = 'rules?filter%5Bname%5D=CONTAINS+';
     public const LP_WRITE_PATH = WRITEPATH . 'uploads/lp/';
     public const LP_PATH = 'uploads/lp/';
     public const NEW_TAG_FILE_WRITE_PATH = WRITEPATH . 'uploads/new_tag_requests/';

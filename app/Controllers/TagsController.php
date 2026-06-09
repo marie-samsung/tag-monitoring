@@ -529,6 +529,7 @@ class TagsController extends BaseController
 
         // CSV column headers
         fputcsv($csv, [
+//            'Tag ID',
             'Subsidiary',
             'Property Name',
             'Tag Name',
@@ -548,6 +549,7 @@ class TagsController extends BaseController
             $subsidiary = $subsidiariesModel->find($property['subsidiary_id'] ?? 0);
 
             fputcsv($csv, [
+//                $tag['id'],
                 $subsidiary['name'] ?? 'N/A',
                 $property['name'] ?? 'N/A',
                 $tag['name'],
