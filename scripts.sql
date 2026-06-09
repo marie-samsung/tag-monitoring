@@ -107,3 +107,5 @@ CREATE TABLE `tag_monitoring`.`renewal_justification` (
     `updated_by` INT NOT NULL DEFAULT '0' , 
     `updated_at` DATETIME NOT NULL , 
     PRIMARY KEY (`id`)) ENGINE = InnoDB;
+
+ALTER TABLE `activity_logs` ADD `start_date` DATETIME NULL DEFAULT NULL AFTER `requested_date`;

@@ -90,6 +90,18 @@ Activity Log: Create
                             </div>
                         </div>
 
+                        <!-- Start Date -->
+                        <div class="col-md-4">
+                            <label for="start_date" class="form-label-sm fw-semibold text-secondary mb-1">Start Date</label>
+                            <div class="position-relative">
+                                <input type="text" name="start_date" id="start_date"
+                                       class="form-control form-control-xs pe-5"
+                                       value="<?= old('start_date', $log['start_date'] ?? '') ?>"
+                                       required>
+                                <i class="bi bi-calendar-event text-muted position-absolute" style="right: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; font-size: 0.875rem;"></i>
+                            </div>
+                        </div>
+
                         <!-- Department -->
                         <div class="col-md-4">
                             <label class="form-label-sm fw-semibold text-secondary mb-1">Department</label>
@@ -272,6 +284,12 @@ Activity Log: Create
             dateFormat: "Y-m-d",
             disableMobile: "true",
             defaultDate: "<?= old('requested_date', $log['requested_date'] ?? date('Y-m-d')) ?>"
+        });
+
+        flatpickr("#start_date", {
+            dateFormat: "Y-m-d",
+            disableMobile: "true",
+            defaultDate: "<?= old('start_date', $log['start_date'] ?? date('Y-m-d')) ?>"
         });
 
         $('.searchable-select').select2({

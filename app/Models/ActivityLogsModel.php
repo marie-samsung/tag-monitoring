@@ -22,6 +22,7 @@ class ActivityLogsModel extends Model
         'size',
         'priority',
         'requested_date',
+        'start_date',
         'finished_date',
         'created_by',
         'updated_by',

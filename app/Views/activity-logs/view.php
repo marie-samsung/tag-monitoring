@@ -223,6 +223,13 @@
             </div>
 
             <div class="mb-3 pb-2 border-bottom border-light">
+                <span class="d-block text-muted fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Start Date</span>
+                <div class="mt-1" style="font-size: 0.9rem; color: var(--color-text-base);">
+                    <?= esc($log['start_date'] ?: '—') ?>
+                </div>
+            </div>
+
+            <div class="mb-3 pb-2 border-bottom border-light">
                 <span class="d-block text-muted fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Finished Date</span>
                 <div class="mt-1" id="finished-date-value" style="font-size: 0.9rem; color: var(--color-text-base);">
                     <?= esc($log['finished_date'] ?: '—') ?>
