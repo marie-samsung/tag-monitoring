@@ -326,7 +326,7 @@ class TagsController extends BaseController
                 $commentsModel->insert([
                     'log_id' => $activityLog['id'],
                     'comment' => "Status updated from [{$from}] to [{$to}]",
-                    'commented_by' => Constants::USER_SYSTEM,
+                    'commented_by' => session()->get('user_id'),
                     'type' => Constants::COMMENT_TYPE_UPDATE,
                 ]);
 

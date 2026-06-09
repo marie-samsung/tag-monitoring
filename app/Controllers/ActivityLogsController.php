@@ -132,7 +132,7 @@ class ActivityLogsController extends BaseController
             $commentsModel->insert([
                 'log_id' => $id,
                 'comment' => "Status updated from [{$from}] to [{$to}]",
-                'commented_by' => Constants::USER_SYSTEM,
+                'commented_by' => session()->get('user_id'),
                 'type' => Constants::COMMENT_TYPE_UPDATE,
             ]);
 
@@ -153,7 +153,7 @@ class ActivityLogsController extends BaseController
             $commentsModel->insert([
                 'log_id' => $id,
                 'comment' => "Assignee changed from [{$from}] to [{$to}]",
-                'commented_by' => Constants::USER_SYSTEM,
+                'commented_by' => session()->get('user_id'),
                 'type' => Constants::COMMENT_TYPE_UPDATE,
             ]);
         }
@@ -165,7 +165,7 @@ class ActivityLogsController extends BaseController
             $commentsModel->insert([
                 'log_id' => $id,
                 'comment' => "Priority updated from [{$from}] to [{$to}]",
-                'commented_by' => Constants::USER_SYSTEM,
+                'commented_by' => session()->get('user_id'),
                 'type' => Constants::COMMENT_TYPE_UPDATE,
             ]);
         }
@@ -405,7 +405,7 @@ class ActivityLogsController extends BaseController
             $insertedId = $commentsModel->insert([
                 'log_id' => $id,
                 'comment' => "Status updated from [{$from}] to [{$to}]",
-                'commented_by' => Constants::USER_SYSTEM,
+                'commented_by' => session()->get('user_id'),
                 'type' => Constants::COMMENT_TYPE_UPDATE,
             ]);
 
@@ -480,7 +480,7 @@ class ActivityLogsController extends BaseController
             $insertedId = $commentsModel->insert([
                 'log_id' => $id,
                 'comment' => "Assignee changed from [{$from}] to [{$to}]",
-                'commented_by' => Constants::USER_SYSTEM,
+                'commented_by' => session()->get('user_id'),
                 'type' => Constants::COMMENT_TYPE_UPDATE,
             ]);
 
@@ -544,7 +544,7 @@ class ActivityLogsController extends BaseController
             $insertedId = $commentsModel->insert([
                 'log_id' => $id,
                 'comment' => "Priority updated from [{$from}] to [{$to}]",
-                'commented_by' => Constants::USER_SYSTEM,
+                'commented_by' => session()->get('user_id'),
                 'type' => Constants::COMMENT_TYPE_UPDATE,
             ]);
 
