@@ -23,37 +23,166 @@ Upload Tag Request Form
         </div>
     <?php endif; ?>
 
-    <div class="apple-card" style="background-color: var(--color-bg-base); border: 1px solid rgba(0, 0, 0, 0.05); box-shadow: none;">
-        <form action="<?= site_url('tag-requests/parse-excel') ?>" method="post" enctype="multipart/form-data" id="uploadForm">
-            <?= csrf_field() ?>
+    <?php if (!empty($extracted_data)): ?>
+        <!-- Preview of Extracted Data -->
+        <div class="alert alert-info mb-4">
+            <i class="bi bi-info-circle-fill me-2"></i>
+            <strong>Data Extracted Successfully!</strong> Please review the table below before creating the request.
+        </div>
+
+        <div class="apple-card mb-4" style="background-color: #ffffff; border: 1px solid rgba(0, 0, 0, 0.05); box-shadow: var(--shadow-sm);">
+            <h5 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                <i class="bi bi-file-earmark-excel text-success fs-4"></i>
+                <span>Extracted Excel Data</span>
+            </h5>
             
-            <!-- Drag & Drop Zone -->
-            <div class="upload-zone p-5 text-center mb-4 border border-2 border-dashed rounded-3 bg-white" id="uploadZone" style="cursor: pointer; transition: all var(--transition-fast); border-color: rgba(0, 0, 0, 0.15) !important;">
-                <div class="upload-icon-wrapper mb-3 d-inline-flex align-items-center justify-content-center rounded-circle" style="width: 80px; height: 80px; background-color: var(--color-badge-primary-bg);">
-                    <i class="bi bi-file-earmark-excel text-primary" style="font-size: 2.5rem;"></i>
-                </div>
-                <h5 class="mt-2 fw-bold">Upload Tag Request Excel</h5>
-                <p class="text-secondary small mb-3">Drag & drop your <strong>.xlsx</strong> file here, or click to browse files</p>
-                <input type="file" id="excel_file" name="excel_file" accept=".xlsx" required style="display: none;">
-                <button type="button" class="apple-btn-secondary btn-sm px-4" id="browseButton">
-                    Choose File
-                </button>
-                <div class="form-text mt-3 text-muted">Only Excel template files (.xlsx) are accepted.</div>
-                
-                <!-- Selected File Display -->
-                <div class="mt-3 p-2 bg-light border rounded-3 d-inline-flex align-items-center gap-2 d-none" id="fileSelectedDisplay">
-                    <i class="bi bi-check-circle-fill text-success fs-5"></i>
-                    <span class="fw-semibold text-dark small" id="fileSelectedName"></span>
-                    <button type="button" class="btn btn-sm btn-link text-danger p-0 ms-2 text-decoration-none fw-bold" id="btnRemoveFile" style="font-size: 1.1rem; line-height: 1;" title="Remove file">&times;</button>
-                </div>
+            <div class="apple-table-container">
+                <table class="table table-hover apple-table mb-0 align-middle">
+                    <thead>
+                        <tr class="bg-light">
+                            <th style="width: 30%; font-weight: 600; padding: 12px 16px;">Field</th>
+                            <th style="font-weight: 600; padding: 12px 16px;">Extracted Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="fw-bold text-secondary" style="padding: 12px 16px;">Partner/Vendor</td>
+                            <td style="padding: 12px 16px;"><span class="badge bg-primary fs-7"><?= esc($extracted_data['vendor_name']) ?></span></td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold text-secondary" style="padding: 12px 16px;">Validity of the Tags</td>
+                            <td style="padding: 12px 16px;"><?= esc($extracted_data['validity'] ?: '—') ?></td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold text-secondary" style="padding: 12px 16px;">Target Property/Sites</td>
+                            <td style="padding: 12px 16px;"><?= esc($extracted_data['target_properties'] ?: '—') ?></td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold text-secondary" style="padding: 12px 16px;">Target Page(s)</td>
+                            <td style="padding: 12px 16px;"><?= esc($extracted_data['target_pages'] ?: '—') ?></td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold text-secondary" style="padding: 12px 16px;">Events to Capture</td>
+                            <td style="padding: 12px 16px;"><?= esc($extracted_data['events'] ?: '—') ?></td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold text-secondary" style="padding: 12px 16px;">Requestor Name</td>
+                            <td style="padding: 12px 16px;"><?= esc($extracted_data['requester_name'] ?: '—') ?></td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold text-secondary" style="padding: 12px 16px;">Requestor Email</td>
+                            <td style="padding: 12px 16px;"><?= esc($extracted_data['requester_email'] ?: '—') ?></td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold text-secondary" style="padding: 12px 16px;">Background</td>
+                            <td style="padding: 12px 16px;"><?= nl2br(esc($extracted_data['background'] ?: '—')) ?></td>
+                        </tr>
+                        
+                        <!-- Answers to the 5 standard questions -->
+                        <?php 
+                        $questions = \App\Models\Constants::PURPOSE_GOAL_NEW_TAG;
+                        for ($i = 1; $i <= 5; $i++): 
+                            $qText = $questions[$i - 1] ?? '';
+                            $qAns = $extracted_data['q' . $i] ?? '';
+                        ?>
+                            <tr>
+                                <td class="fw-bold text-secondary" style="padding: 12px 16px; font-size: 0.85rem; max-width: 250px; line-height: 1.3;"><?= esc($qText) ?></td>
+                                <td style="padding: 12px 16px; font-style: italic; color: var(--color-text-secondary);"><?= esc($qAns ?: '—') ?></td>
+                            </tr>
+                        <?php endfor; ?>
+
+                        <tr>
+                            <td class="fw-bold text-secondary" style="padding: 12px 16px; vertical-align: top;">Tag Script</td>
+                            <td style="padding: 12px 16px;">
+                                <?php if (!empty($extracted_data['tag_script'])): ?>
+                                    <div class="position-relative">
+                                        <pre class="bg-light p-3 rounded text-dark overflow-auto mb-0" style="max-height: 200px; font-family: monospace; font-size: 0.85rem; border: 1px solid rgba(0,0,0,0.05);"><code id="extractedTagScript"><?= esc($extracted_data['tag_script']) ?></code></pre>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary position-absolute top-0 end-0 m-2" onclick="copyExtractedScript()" title="Copy Script">
+                                            <i class="bi bi-copy"></i>
+                                        </button>
+                                    </div>
+                                <?php else: ?>
+                                    <span class="text-muted">No script provided in Excel</span>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
-            
+        </div>
+
+        <form action="<?= site_url('tag-requests/prefill') ?>" method="post">
+            <?= csrf_field() ?>
+            <input type="hidden" name="vendor_name" value="<?= esc($extracted_data['vendor_name'] ?? '') ?>">
+            <input type="hidden" name="validity" value="<?= esc($extracted_data['validity'] ?? '') ?>">
+            <input type="hidden" name="target_properties" value="<?= esc($extracted_data['target_properties'] ?? '') ?>">
+            <input type="hidden" name="target_pages" value="<?= esc($extracted_data['target_pages'] ?? '') ?>">
+            <input type="hidden" name="events" value="<?= esc($extracted_data['events'] ?? '') ?>">
+            <input type="hidden" name="requester_name" value="<?= esc($extracted_data['requester_name'] ?? '') ?>">
+            <input type="hidden" name="requester_email" value="<?= esc($extracted_data['requester_email'] ?? '') ?>">
+            <input type="hidden" name="tag_script" value="<?= esc($extracted_data['tag_script'] ?? '') ?>">
+            <input type="hidden" name="background" value="<?= esc($extracted_data['background'] ?? '') ?>">
+            <input type="hidden" name="q1" value="<?= esc($extracted_data['q1'] ?? '') ?>">
+            <input type="hidden" name="q2" value="<?= esc($extracted_data['q2'] ?? '') ?>">
+            <input type="hidden" name="q3" value="<?= esc($extracted_data['q3'] ?? '') ?>">
+            <input type="hidden" name="q4" value="<?= esc($extracted_data['q4'] ?? '') ?>">
+            <input type="hidden" name="q5" value="<?= esc($extracted_data['q5'] ?? '') ?>">
+            <input type="hidden" name="property_id" value="<?= esc($extracted_data['property_id'] ?? '') ?>">
+            <input type="hidden" name="default_tag" value="<?= esc($extracted_data['default_tag'] ?? '') ?>">
+            <input type="hidden" name="excel_file_path" value="<?= esc($extracted_data['excel_file_path'] ?? '') ?>">
+            <input type="hidden" name="excel_file_name" value="<?= esc($extracted_data['excel_file_name'] ?? '') ?>">
+
             <div class="d-flex justify-content-end gap-2">
-                <a href="<?= site_url('tag-requests') ?>" class="apple-btn-secondary btn-sm px-4 text-decoration-none d-flex align-items-center justify-content-center">Cancel</a>
-                <button type="submit" class="apple-btn-primary btn-sm px-4">Upload and Extract</button>
+                <a href="<?= site_url('tag-requests/upload-excel') ?>" class="apple-btn-secondary btn-sm px-4 text-decoration-none d-flex align-items-center justify-content-center">Upload Different File</a>
+                <button type="submit" class="apple-btn-primary btn-sm px-4">Proceed to Create Request</button>
             </div>
         </form>
-    </div>
+
+        <script>
+        function copyExtractedScript() {
+            const codeText = document.getElementById('extractedTagScript').innerText;
+            const temp = document.createElement('textarea');
+            temp.value = codeText;
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand('copy');
+            document.body.removeChild(temp);
+            alert('Tag Script copied to clipboard!');
+        }
+        </script>
+    <?php else: ?>
+        <div class="apple-card" style="background-color: var(--color-bg-base); border: 1px solid rgba(0, 0, 0, 0.05); box-shadow: none;">
+            <form action="<?= site_url('tag-requests/parse-excel') ?>" method="post" enctype="multipart/form-data" id="uploadForm">
+                <?= csrf_field() ?>
+                
+                <!-- Drag & Drop Zone -->
+                <div class="upload-zone p-5 text-center mb-4 border border-2 border-dashed rounded-3 bg-white" id="uploadZone" style="cursor: pointer; transition: all var(--transition-fast); border-color: rgba(0, 0, 0, 0.15) !important;">
+                    <div class="upload-icon-wrapper mb-3 d-inline-flex align-items-center justify-content-center rounded-circle" style="width: 80px; height: 80px; background-color: var(--color-badge-primary-bg);">
+                        <i class="bi bi-file-earmark-excel text-primary" style="font-size: 2.5rem;"></i>
+                    </div>
+                    <h5 class="mt-2 fw-bold">Upload Tag Request Excel</h5>
+                    <p class="text-secondary small mb-3">Drag & drop your <strong>.xlsx</strong> file here, or click to browse files</p>
+                    <input type="file" id="excel_file" name="excel_file" accept=".xlsx" required style="display: none;">
+                    <button type="button" class="apple-btn-secondary btn-sm px-4" id="browseButton">
+                        Choose File
+                    </button>
+                    <div class="form-text mt-3 text-muted">Only Excel template files (.xlsx) are accepted.</div>
+                    
+                    <!-- Selected File Display -->
+                    <div class="mt-3 p-2 bg-light border rounded-3 d-inline-flex align-items-center gap-2 d-none" id="fileSelectedDisplay">
+                        <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                        <span class="fw-semibold text-dark small" id="fileSelectedName"></span>
+                        <button type="button" class="btn btn-sm btn-link text-danger p-0 ms-2 text-decoration-none fw-bold" id="btnRemoveFile" style="font-size: 1.1rem; line-height: 1;" title="Remove file">&times;</button>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="<?= site_url('tag-requests') ?>" class="apple-btn-secondary btn-sm px-4 text-decoration-none d-flex align-items-center justify-content-center">Cancel</a>
+                    <button type="submit" class="apple-btn-primary btn-sm px-4">Upload and Extract</button>
+                </div>
+            </form>
+        </div>
+    <?php endif; ?>
 </div>
 
 <script>
@@ -66,62 +195,64 @@ document.addEventListener('DOMContentLoaded', function () {
     const btnRemoveFile = document.getElementById('btnRemoveFile');
     const uploadForm = document.getElementById('uploadForm');
 
-    const triggerInputClick = (e) => {
-        if (e.target !== btnRemoveFile && !btnRemoveFile.contains(e.target)) {
-            excelFileInput.click();
-        }
-    };
-
-    uploadZone.addEventListener('click', triggerInputClick);
-    browseButton.addEventListener('click', (e) => {
-        e.stopPropagation();
-        excelFileInput.click();
-    });
-
-    excelFileInput.addEventListener('change', () => {
-        if (excelFileInput.files.length > 0) {
-            fileSelectedName.textContent = excelFileInput.files[0].name;
-            fileSelectedDisplay.classList.remove('d-none');
-            browseButton.classList.add('d-none');
-        } else {
-            fileSelectedName.textContent = '';
-            fileSelectedDisplay.classList.add('d-none');
-            browseButton.classList.remove('d-none');
-        }
-    });
-
-    btnRemoveFile.addEventListener('click', (e) => {
-        e.stopPropagation();
-        excelFileInput.value = '';
-        excelFileInput.dispatchEvent(new Event('change'));
-    });
-
-    // Drag and drop event listeners
-    uploadZone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        uploadZone.style.borderColor = 'var(--color-primary)';
-        uploadZone.style.backgroundColor = 'var(--color-badge-primary-bg)';
-    });
-
-    ['dragleave', 'drop'].forEach(eventName => {
-        uploadZone.addEventListener(eventName, (e) => {
-            uploadZone.style.borderColor = 'rgba(0, 0, 0, 0.15)';
-            uploadZone.style.backgroundColor = '#ffffff';
-        });
-    });
-
-    uploadZone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        if (e.dataTransfer.files.length > 0) {
-            const file = e.dataTransfer.files[0];
-            if (file.name.endsWith('.xlsx')) {
-                excelFileInput.files = e.dataTransfer.files;
-                excelFileInput.dispatchEvent(new Event('change'));
-            } else {
-                alert('Please upload a valid Excel file (.xlsx)');
+    if (uploadZone) {
+        const triggerInputClick = (e) => {
+            if (e.target !== btnRemoveFile && !btnRemoveFile.contains(e.target)) {
+                excelFileInput.click();
             }
-        }
-    });
+        };
+
+        uploadZone.addEventListener('click', triggerInputClick);
+        browseButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            excelFileInput.click();
+        });
+
+        excelFileInput.addEventListener('change', () => {
+            if (excelFileInput.files.length > 0) {
+                fileSelectedName.textContent = excelFileInput.files[0].name;
+                fileSelectedDisplay.classList.remove('d-none');
+                browseButton.classList.add('d-none');
+            } else {
+                fileSelectedName.textContent = '';
+                fileSelectedDisplay.classList.add('d-none');
+                browseButton.classList.remove('d-none');
+            }
+        });
+
+        btnRemoveFile.addEventListener('click', (e) => {
+            e.stopPropagation();
+            excelFileInput.value = '';
+            excelFileInput.dispatchEvent(new Event('change'));
+        });
+
+        // Drag and drop event listeners
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.style.borderColor = 'var(--color-primary)';
+            uploadZone.style.backgroundColor = 'var(--color-badge-primary-bg)';
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadZone.addEventListener(eventName, (e) => {
+                uploadZone.style.borderColor = 'rgba(0, 0, 0, 0.15)';
+                uploadZone.style.backgroundColor = '#ffffff';
+            });
+        });
+
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            if (e.dataTransfer.files.length > 0) {
+                const file = e.dataTransfer.files[0];
+                if (file.name.endsWith('.xlsx')) {
+                    excelFileInput.files = e.dataTransfer.files;
+                    excelFileInput.dispatchEvent(new Event('change'));
+                } else {
+                    alert('Please upload a valid Excel file (.xlsx)');
+                }
+            }
+        });
+    }
 });
 </script>
 <?= $this->endSection() ?>

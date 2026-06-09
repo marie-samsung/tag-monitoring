@@ -35,6 +35,7 @@ $routes->group('tag-requests', function ($routes) {
     $routes->get('export', 'TagRequestsController::exportAsCSV');
     $routes->get('upload-excel', 'TagRequestsController::uploadExcel');
     $routes->post('parse-excel', 'TagRequestsController::parseExcel');
+    $routes->post('prefill', 'TagRequestsController::prefill');
     $routes->get('view/(:num)', 'TagRequestsController::view/$1');
     $routes->get('request-approved/(:num)', 'TagRequestsController::requestApproved/$1');
     $routes->post('add-new-tag', 'TagRequestsController::addNewTag');

@@ -5,6 +5,7 @@ writable/session/*
 writable/.htaccess
 writable/index.html
 writable/uploads/new_tag_requests/test-files/*
+writable/uploads/temp
 
 .idea
 .env

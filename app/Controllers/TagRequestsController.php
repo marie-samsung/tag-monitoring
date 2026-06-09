@@ -722,6 +722,12 @@ class TagRequestsController extends BaseController
         );
         $extractedData['default_tag'] = "LC-{$shopOrAem}-AD({$vendorName})-CM-ALL-WL-SDSME_{$uuid}";
 
+        return view('tag-requests/upload_excel', ['extracted_data' => $extractedData]);
+    }
+
+    public function prefill()
+    {
+        $extractedData = $this->request->getPost();
         return view('tag-requests/create', ['extracted_data' => $extractedData]);
     }
 }
