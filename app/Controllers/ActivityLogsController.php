@@ -14,17 +14,31 @@ class ActivityLogsController extends BaseController
     {
         $model = new ActivityLogsModel();
         
+        $meModeGet = $this->request->getGet('me_mode');
+        if ($meModeGet !== null) {
+            if ($meModeGet == '1') {
+                session()->set('al_me_mode', 1);
+            } else {
+                session()->set('al_me_mode', 0);
+            }
+        }
+        
+        $meMode = (session()->get('al_me_mode') == 1);
+
         $filters = [
             'keyword' => $this->request->getGet('keyword'),
             'subsidiary_id' => $this->request->getGet('subsidiary_id'),
             'project_id' => $this->request->getGet('project_id'),
             'type' => $this->request->getGet('type'),
             'status' => $this->request->getGet('status'),
+            'status_group' => $this->request->getGet('status_group'),
             'priority' => $this->request->getGet('priority'),
             'assignee' => $this->request->getGet('assignee'),
+            'me_mode' => $meMode ? 1 : 0,
             'sort_by' => $this->request->getGet('sort_by') ?? 'created_at',
             'sort_dir' => $this->request->getGet('sort_dir') ?? 'desc',
         ];
+        $data['status_counts'] = $model->getStatusCounts($filters);
         $data['logs'] = $model->filterLogs($filters, 25);
         $data['pager'] = $model->pager;
         $data['filters'] = $filters;
@@ -266,14 +280,23 @@ class ActivityLogsController extends BaseController
         helper('custom_functions');
         $logsModel = new ActivityLogsModel();
         
+        $meModeGet = $this->request->getGet('me_mode');
+        if ($meModeGet !== null) {
+            $meMode = ($meModeGet == '1');
+        } else {
+            $meMode = (session()->get('al_me_mode') == 1);
+        }
+
         $filters = [
             'keyword' => $this->request->getGet('keyword'),
             'subsidiary_id' => $this->request->getGet('subsidiary_id'),
             'project_id' => $this->request->getGet('project_id'),
             'type' => $this->request->getGet('type'),
             'status' => $this->request->getGet('status'),
+            'status_group' => $this->request->getGet('status_group'),
             'priority' => $this->request->getGet('priority'),
             'assignee' => $this->request->getGet('assignee'),
+            'me_mode' => $meMode ? 1 : 0,
             'sort_by' => $this->request->getGet('sort_by') ?? 'created_at',
             'sort_dir' => $this->request->getGet('sort_dir') ?? 'desc',
         ];

@@ -13,6 +13,33 @@ function getSortUrl($field, $currentSortBy, $currentSortDir) {
     return site_url('activity-logs') . '?' . http_build_query($queryParams);
 }
 
+function getGroupFilterUrl($group) {
+    $queryParams = $_GET;
+    if (($queryParams['status_group'] ?? '') === $group) {
+        unset($queryParams['status_group']);
+    } else {
+        $queryParams['status_group'] = $group;
+        unset($queryParams['status']);
+    }
+    unset($queryParams['page']);
+    return site_url('activity-logs') . '?' . http_build_query($queryParams);
+}
+
+function getMeModeUrl() {
+    $queryParams = $_GET;
+    $meModeSession = (session()->get('al_me_mode') == 1);
+    $isMeModeActive = isset($queryParams['me_mode']) ? ($queryParams['me_mode'] == '1') : $meModeSession;
+    
+    if ($isMeModeActive) {
+        $queryParams['me_mode'] = '0';
+    } else {
+        $queryParams['me_mode'] = '1';
+        unset($queryParams['assignee']);
+    }
+    unset($queryParams['page']);
+    return site_url('activity-logs') . '?' . http_build_query($queryParams);
+}
+
 function getSortIcon($field, $currentSortBy, $currentSortDir) {
     if ($currentSortBy === $field) {
         return $currentSortDir === 'asc' ? ' <i class="bi bi-arrow-up text-primary"></i>' : ' <i class="bi bi-arrow-down text-primary"></i>';
@@ -34,14 +61,35 @@ Activity Logs
     helper('custom_functions');
     $isAdmin = (session()->get('user_role') === Constants::USER_ROLE_ADMIN);
 
-    $activeFiltersCount = 0;
+    $statusCounts = $status_counts ?? [];
+    $pendingCount = ($statusCounts[1] ?? 0) + ($statusCounts[5] ?? 0);
+    $inProgressCount = ($statusCounts[2] ?? 0) + ($statusCounts[3] ?? 0) + ($statusCounts[4] ?? 0);
+    $blockedCount = $statusCounts[7] ?? 0;
+    $completedCount = $statusCounts[6] ?? 0;
+
+    $isMeMode = isset($_GET['me_mode']) ? ($_GET['me_mode'] == '1') : (session()->get('al_me_mode') == 1);
+
+    // Advanced filters inside the collapsible panel
+    $advancedFiltersCount = 0;
     $advancedFilterKeys = ['subsidiary_id', 'project_id', 'assignee', 'status', 'priority', 'type'];
     foreach ($advancedFilterKeys as $key) {
         if (!empty($_GET[$key]) || (isset($_GET[$key]) && $_GET[$key] !== '')) {
-            $activeFiltersCount++;
+            $advancedFiltersCount++;
         }
     }
-    $hasActiveFilters = ($activeFiltersCount > 0);
+    $hasActiveAdvancedFilters = ($advancedFiltersCount > 0);
+
+    // Total active filters (including dashboard counts and me mode)
+    $activeFiltersCount = $advancedFiltersCount;
+    if (!empty($_GET['status_group'])) {
+        $activeFiltersCount++;
+    }
+    if ($isMeMode) {
+        $activeFiltersCount++;
+    }
+    
+    // For general filter key rendering (like filter pills)
+    $allFilterKeys = ['subsidiary_id', 'project_id', 'assignee', 'status', 'priority', 'type', 'status_group', 'me_mode'];
 ?>
 
 <?= csrf_field() ?>
@@ -65,6 +113,11 @@ Activity Logs
         <div class="d-flex align-items-center gap-2">
             <a href="<?= site_url('activity-logs/create') ?>" title="Create a new log" class="apple-btn-primary btn-sm px-3 text-decoration-none">
                 <i class="bi bi-plus-lg me-1"></i> Log Activity
+            </a>
+
+            <!-- Me Mode Toggle Button -->
+            <a href="<?= getMeModeUrl() ?>" class="<?= $isMeMode ? 'apple-btn-primary' : 'apple-btn-secondary' ?> btn-sm px-3 text-decoration-none">
+                <i class="bi <?= $isMeMode ? 'bi-person-fill' : 'bi-person' ?> me-1"></i> Me Mode
             </a>
             
             <div class="dropdown">
@@ -128,6 +181,62 @@ Activity Logs
         </div>
     </div>
 
+    <!-- Dashboard Status Counts -->
+    <div class="row g-3 mb-4">
+        <!-- Pending Card -->
+        <div class="col-6 col-md-3">
+            <a href="<?= getGroupFilterUrl('pending') ?>" class="dashboard-metric-link">
+                <div class="dashboard-metric-card card-pending <?= ($filters['status_group'] ?? '') === 'pending' ? 'active' : '' ?>">
+                    <div class="dashboard-metric-info">
+                        <span class="dashboard-metric-label">Pending</span>
+                        <h3 class="dashboard-metric-value"><?= $pendingCount ?></h3>
+                        <span class="dashboard-metric-desc">Not yet started & Pending review</span>
+                    </div>
+                    <i class="bi bi-hourglass-split dashboard-metric-icon"></i>
+                </div>
+            </a>
+        </div>
+        <!-- In Progress Card -->
+        <div class="col-6 col-md-3">
+            <a href="<?= getGroupFilterUrl('in_progress') ?>" class="dashboard-metric-link">
+                <div class="dashboard-metric-card card-in-progress <?= ($filters['status_group'] ?? '') === 'in_progress' ? 'active' : '' ?>">
+                    <div class="dashboard-metric-info">
+                        <span class="dashboard-metric-label">In Progress</span>
+                        <h3 class="dashboard-metric-value"><?= $inProgressCount ?></h3>
+                        <span class="dashboard-metric-desc">Investigation, Implementation & QA</span>
+                    </div>
+                    <i class="bi bi-gear-wide-connected dashboard-metric-icon"></i>
+                </div>
+            </a>
+        </div>
+        <!-- Blocked/Hold Card -->
+        <div class="col-6 col-md-3">
+            <a href="<?= getGroupFilterUrl('blocked') ?>" class="dashboard-metric-link">
+                <div class="dashboard-metric-card card-blocked <?= ($filters['status_group'] ?? '') === 'blocked' ? 'active' : '' ?>">
+                    <div class="dashboard-metric-info">
+                        <span class="dashboard-metric-label">Blocked / Hold</span>
+                        <h3 class="dashboard-metric-value"><?= $blockedCount ?></h3>
+                        <span class="dashboard-metric-desc">Blocked / On Hold logs</span>
+                    </div>
+                    <i class="bi bi-pause-circle dashboard-metric-icon"></i>
+                </div>
+            </a>
+        </div>
+        <!-- Completed Card -->
+        <div class="col-6 col-md-3">
+            <a href="<?= getGroupFilterUrl('completed') ?>" class="dashboard-metric-link">
+                <div class="dashboard-metric-card card-completed <?= ($filters['status_group'] ?? '') === 'completed' ? 'active' : '' ?>">
+                    <div class="dashboard-metric-info">
+                        <span class="dashboard-metric-label">Completed</span>
+                        <h3 class="dashboard-metric-value"><?= $completedCount ?></h3>
+                        <span class="dashboard-metric-desc">Completed logs</span>
+                    </div>
+                    <i class="bi bi-check-circle dashboard-metric-icon"></i>
+                </div>
+            </a>
+        </div>
+    </div>
+
     <!-- #region | SEARCH FILTER -->
     <form method="get" class="m-0" id="filterForm">
         <!-- Primary Search Bar -->
@@ -151,13 +260,13 @@ Activity Logs
                         style="height: 36px; border-radius: 20px; font-weight: 500;" 
                         data-bs-toggle="collapse" 
                         data-bs-target="#advancedFiltersCollapse" 
-                        aria-expanded="<?= $hasActiveFilters ? 'true' : 'false' ?>" 
+                        aria-expanded="<?= $hasActiveAdvancedFilters ? 'true' : 'false' ?>" 
                         aria-controls="advancedFiltersCollapse">
                     <i class="bi bi-funnel"></i>
                     <span>Filters</span>
-                    <?php if ($activeFiltersCount > 0): ?>
+                    <?php if ($advancedFiltersCount > 0): ?>
                         <span class="badge bg-primary text-white rounded-circle px-1.5 py-0.5" style="font-size: 0.75rem; min-width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center;">
-                            <?= $activeFiltersCount ?>
+                            <?= $advancedFiltersCount ?>
                         </span>
                     <?php endif; ?>
                 </button>
@@ -171,7 +280,7 @@ Activity Logs
         </div>
 
         <!-- Collapsible Advanced Filters Panel -->
-        <div class="collapse <?= $hasActiveFilters ? 'show' : '' ?> mb-4" id="advancedFiltersCollapse">
+        <div class="collapse <?= $hasActiveAdvancedFilters ? 'show' : '' ?> mb-4" id="advancedFiltersCollapse">
             <div class="apple-card" style="background-color: var(--color-bg-base); border: 1px solid rgba(0, 0, 0, 0.05); box-shadow: none; padding: 20px;">
                 <h5 class="fw-bold mb-3 text-secondary d-flex align-items-center gap-2" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">
                     <i class="bi bi-sliders text-primary"></i> Advanced Filters
@@ -267,6 +376,7 @@ Activity Logs
         </div>
         <input type="hidden" name="sort_by" value="<?= esc($filters['sort_by'] ?? 'created_at') ?>">
         <input type="hidden" name="sort_dir" value="<?= esc($filters['sort_dir'] ?? 'desc') ?>">
+        <input type="hidden" name="me_mode" value="<?= $isMeMode ? '1' : '0' ?>">
     </form>
 
     <!-- Active Filters Pills -->
@@ -274,9 +384,22 @@ Activity Logs
         <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
             <span class="text-secondary small fw-medium">Active Filters:</span>
             <?php
-            foreach ($advancedFilterKeys as $key) {
-                if (!empty($_GET[$key]) || (isset($_GET[$key]) && $_GET[$key] !== '')) {
-                    $val = $_GET[$key];
+            foreach ($allFilterKeys as $key) {
+                $showPill = false;
+                $val = '';
+                if ($key === 'me_mode') {
+                    if ($isMeMode) {
+                        $showPill = true;
+                        $val = '1';
+                    }
+                } else {
+                    if (!empty($_GET[$key]) || (isset($_GET[$key]) && $_GET[$key] !== '')) {
+                        $showPill = true;
+                        $val = $_GET[$key];
+                    }
+                }
+
+                if ($showPill) {
                     $label = '';
                     if ($key === 'subsidiary_id') {
                         $label = 'Subsidiary: ' . (Constants::ACTIVITY_LOG_SUBSIDIARIES[$val] ?? $val);
@@ -286,14 +409,27 @@ Activity Logs
                         $label = 'Assignee: ' . (Constants::USERS[$val] ?? $val);
                     } elseif ($key === 'status') {
                         $label = 'Status: ' . (Constants::ACTIVITY_LOGS_STATUS[$val] ?? $val);
+                    } elseif ($key === 'status_group') {
+                        $groupLabel = '';
+                        if ($val === 'pending') $groupLabel = 'Pending';
+                        elseif ($val === 'in_progress') $groupLabel = 'In Progress';
+                        elseif ($val === 'blocked') $groupLabel = 'Blocked/Hold';
+                        elseif ($val === 'completed') $groupLabel = 'Completed';
+                        $label = 'Status Group: ' . $groupLabel;
                     } elseif ($key === 'priority') {
                         $label = 'Priority: ' . (Constants::PRIORITIES[$val] ?? $val);
                     } elseif ($key === 'type') {
                         $label = 'Type: ' . (Constants::ACTIVITY_TYPES[$val] ?? $val);
+                    } elseif ($key === 'me_mode') {
+                        $label = 'Me Mode: Enabled';
                     }
                     
                     $tempParams = $_GET;
-                    unset($tempParams[$key]);
+                    if ($key === 'me_mode') {
+                        $tempParams['me_mode'] = '0';
+                    } else {
+                        unset($tempParams[$key]);
+                    }
                     $clearUrl = site_url('activity-logs') . '?' . http_build_query($tempParams);
                     ?>
                     <a href="<?= $clearUrl ?>" class="badge bg-secondary text-decoration-none d-inline-flex align-items-center gap-1.5 py-1.5 px-2.5 rounded-pill border border-secondary" style="font-size: 0.8rem; font-weight: 500;">
@@ -564,6 +700,151 @@ Activity Logs
 </div>
 
 <style>
+/* Dashboard Count Cards Styling */
+.dashboard-metric-link {
+    text-decoration: none !important;
+    color: inherit !important;
+    display: block;
+}
+
+.dashboard-metric-card {
+    background: var(--color-card-bg);
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid var(--color-border-subtle);
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.dashboard-metric-card:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-3px);
+}
+
+.dashboard-metric-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 5px;
+    height: 100%;
+    transition: width 0.25s ease;
+}
+
+/* Specific Border Indicators */
+.dashboard-metric-card.card-pending::before {
+    background-color: var(--color-badge-warning-text);
+}
+.dashboard-metric-card.card-in-progress::before {
+    background-color: var(--color-badge-blue-text);
+}
+.dashboard-metric-card.card-blocked::before {
+    background-color: var(--color-badge-danger-text);
+}
+.dashboard-metric-card.card-completed::before {
+    background-color: var(--color-badge-success-text);
+}
+
+/* Active Selected States */
+.dashboard-metric-card.active {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+.dashboard-metric-card.card-pending.active {
+    background-color: var(--color-badge-warning-bg);
+    border-color: var(--color-badge-warning-border);
+}
+.dashboard-metric-card.card-in-progress.active {
+    background-color: var(--color-badge-blue-bg);
+    border-color: var(--color-badge-blue-border);
+}
+.dashboard-metric-card.card-blocked.active {
+    background-color: var(--color-badge-danger-bg);
+    border-color: var(--color-badge-danger-border);
+}
+.dashboard-metric-card.card-completed.active {
+    background-color: var(--color-badge-success-bg);
+    border-color: var(--color-badge-success-border);
+}
+
+/* Expand the indicator bar slightly on hover/active */
+.dashboard-metric-card:hover::before,
+.dashboard-metric-card.active::before {
+    width: 8px;
+}
+
+.dashboard-metric-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.dashboard-metric-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.dashboard-metric-value {
+    font-size: 2.25rem;
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--color-text-base);
+    margin: 0;
+}
+
+.dashboard-metric-desc {
+    font-size: 0.725rem;
+    color: var(--color-text-muted);
+    font-weight: 500;
+    margin-top: 4px;
+    line-height: 1.25;
+    transition: color 0.25s ease;
+}
+
+.dashboard-metric-card:hover .dashboard-metric-desc,
+.dashboard-metric-card.active .dashboard-metric-desc {
+    color: var(--color-text-secondary);
+}
+
+.dashboard-metric-icon {
+    font-size: 1.75rem;
+    color: var(--color-text-muted);
+    opacity: 0.6;
+    transition: all 0.25s ease;
+}
+
+.dashboard-metric-card:hover .dashboard-metric-icon,
+.dashboard-metric-card.active .dashboard-metric-icon {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* Icon Colors when active or hovered */
+.dashboard-metric-card.card-pending:hover .dashboard-metric-icon,
+.dashboard-metric-card.card-pending.active .dashboard-metric-icon {
+    color: var(--color-badge-warning-text);
+}
+.dashboard-metric-card.card-in-progress:hover .dashboard-metric-icon,
+.dashboard-metric-card.card-in-progress.active .dashboard-metric-icon {
+    color: var(--color-badge-blue-text);
+}
+.dashboard-metric-card.card-blocked:hover .dashboard-metric-icon,
+.dashboard-metric-card.card-blocked.active .dashboard-metric-icon {
+    color: var(--color-badge-danger-text);
+}
+.dashboard-metric-card.card-completed:hover .dashboard-metric-icon,
+.dashboard-metric-card.card-completed.active .dashboard-metric-icon {
+    color: var(--color-badge-success-text);
+}
+
 .selected-row td {
     background-color: rgba(0, 113, 227, 0.05) !important;
 }
@@ -943,6 +1224,15 @@ Activity Logs
 
 <?= $this->section('scripts') ?>
 <script>
+    function getStatusGroup(statusId) {
+        statusId = parseInt(statusId);
+        if (statusId === 1 || statusId === 5) return 'pending';
+        if (statusId === 2 || statusId === 3 || statusId === 4) return 'in_progress';
+        if (statusId === 7) return 'blocked';
+        if (statusId === 6) return 'completed';
+        return null;
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
         $(document).ready(function() {
             // Checkbox and Floating Action Bar Logic
@@ -1203,6 +1493,25 @@ Activity Logs
                             
                             // Success toast notification
                             showToast('success', response.message);
+
+                            // Dynamic counts update
+                            if (!dropdown.hasClass('assignee-select') && !dropdown.hasClass('priority-select')) {
+                                const oldGroup = getStatusGroup(previousValue);
+                                const newGroup = getStatusGroup(newValue);
+                                if (oldGroup && newGroup && oldGroup !== newGroup) {
+                                    const oldCardValEl = document.querySelector(`.dashboard-metric-card.card-${oldGroup} .dashboard-metric-value`);
+                                    const newCardValEl = document.querySelector(`.dashboard-metric-card.card-${newGroup} .dashboard-metric-value`);
+                                    if (oldCardValEl) {
+                                        const oldVal = parseInt(oldCardValEl.textContent) || 0;
+                                        oldCardValEl.textContent = Math.max(0, oldVal - 1);
+                                    }
+                                    if (newCardValEl) {
+                                        const newVal = parseInt(newCardValEl.textContent) || 0;
+                                        newCardValEl.textContent = newVal + 1;
+                                    }
+                                }
+                            }
+
                             previousValue = newValue; // update cached previous value
                         } else {
                             // Revert to previous value

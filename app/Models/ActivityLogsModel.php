@@ -58,11 +58,26 @@ class ActivityLogsModel extends Model
             $this->where('priority', $filters['priority']);
         }
 
-        if (!empty($filters['assignee'])) {
+        if (!empty($filters['me_mode'])) {
+            $userId = session()->get('user_id');
+            if ($userId !== null) {
+                $this->where('assignee', $userId);
+            }
+        } elseif (!empty($filters['assignee'])) {
             $this->where('assignee', $filters['assignee']);
         }
 
-        if (!empty($filters['status'])) {
+        if (!empty($filters['status_group'])) {
+            if ($filters['status_group'] === 'pending') {
+                $this->whereIn('status', [1, 5]);
+            } elseif ($filters['status_group'] === 'in_progress') {
+                $this->whereIn('status', [2, 3, 4]);
+            } elseif ($filters['status_group'] === 'blocked') {
+                $this->whereIn('status', [7]);
+            } elseif ($filters['status_group'] === 'completed') {
+                $this->whereIn('status', [6]);
+            }
+        } elseif (!empty($filters['status'])) {
             $this->where('status', $filters['status']);
         }
 
@@ -89,6 +104,56 @@ class ActivityLogsModel extends Model
         }
 
         return $this->findAll();
+    }
+
+    public function getStatusCounts($filters = [])
+    {
+        // Remove status and status_group filters to count across all statuses
+        unset($filters['status']);
+        unset($filters['status_group']);
+
+        if (!empty($filters['keyword'])) {
+            $this->groupStart()
+                 ->like('title', $filters['keyword'])
+                 ->orLike('description', $filters['keyword'])
+                 ->orLike('ticket_id', $filters['keyword'])
+                 ->groupEnd();
+        }
+
+        if (!empty($filters['subsidiary_id'])) {
+            $this->where('subsidiary_id', $filters['subsidiary_id']);
+        }
+
+        if (!empty($filters['project_id'])) {
+            $this->where('project_id', $filters['project_id']);
+        }
+
+        if (!empty($filters['type'])) {
+            $this->where('type', $filters['type']);
+        }
+
+        if (!empty($filters['priority'])) {
+            $this->where('priority', $filters['priority']);
+        }
+
+        if (!empty($filters['me_mode'])) {
+            $userId = session()->get('user_id');
+            if ($userId !== null) {
+                $this->where('assignee', $userId);
+            }
+        } elseif (!empty($filters['assignee'])) {
+            $this->where('assignee', $filters['assignee']);
+        }
+
+        $results = $this->select('status, COUNT(*) as count')
+                        ->groupBy('status')
+                        ->findAll();
+
+        $counts = [];
+        foreach ($results as $row) {
+            $counts[(int)$row['status']] = (int)$row['count'];
+        }
+        return $counts;
     }
 
     protected $beforeInsert = ['setCreatedBy'];
