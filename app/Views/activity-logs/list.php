@@ -56,6 +56,9 @@ Activity Logs
                 <span class="badge bg-secondary text-secondary" style="font-size: 0.85rem; font-weight: 600; padding: 0.35em 0.7em; border-radius: 20px;">
                     <?= $totalLogs ?>
                 </span>
+                <span id="selectedCountBadge" class="badge bg-primary text-white" style="display: none; font-size: 0.85rem; font-weight: 500; padding: 0.35em 0.7em; border-radius: 20px;">
+                    0 selected
+                </span>
             </h2>
             <p class="text-secondary small mb-0">Record and track project management activities, support tasks, and campaign tag updates.</p>
         </div>
@@ -307,15 +310,25 @@ Activity Logs
 </div>
 
 <!-- #region | LOGS TABLE -->
-<div class="d-flex justify-content-between align-items-center mb-3">
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
     <span class="text-secondary small fw-medium">
         Showing <?= count($logs) ?> of <?= $totalLogs ?> results
     </span>
+    
+    <!-- Action Style Switcher -->
+    <div class="d-flex align-items-center gap-2">
+        <span class="text-secondary" style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.8;">Action Style:</span>
+        <div class="micro-segmented-control" id="actionStyleControl">
+            <button type="button" data-style="original">Original</button>
+            <button type="button" data-style="glassmorphic">Glassmorphic</button>
+            <button type="button" data-style="hover-inline">Hover Inline</button>
+        </div>
+    </div>
 </div>
 
 <div class="apple-table-container">
     <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
+        <table class="table table-hover align-middle mb-0 style-glassmorphic" id="tblActivityLogs">
             <thead>
                 <tr>
                 <th class="form-label-sm fw-semibold">
@@ -323,6 +336,7 @@ Activity Logs
                         ID <?= getSortIcon('id', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>
                     </a>
                 </th>
+                <th><input type="checkbox" id="selectAllLogs" title="Select All" class="form-check-input"></th>
                 <th class="form-label-sm fw-semibold">
                     <a href="<?= getSortUrl('subsidiary_id', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>" class="text-decoration-none text-dark d-inline-flex align-items-center gap-1">
                         Subsidiary <?= getSortIcon('subsidiary_id', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>
@@ -375,14 +389,14 @@ Activity Logs
                         Created At <?= getSortIcon('created_at', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>
                     </a>
                 </th>
-                <th class="form-label-sm fw-semibold text-dark">Actions</th>
+                <th class="form-label-sm fw-semibold text-dark text-center">Actions</th>
             </tr>
         </thead>
 
         <tbody>
             <?php if (empty($logs)): ?>
                 <tr>
-                    <td colspan="<?= !$isAdmin ? 12 : 11 ?>" class="text-center py-5 text-muted">
+                    <td colspan="<?= !$isAdmin ? 13 : 12 ?>" class="text-center py-5 text-muted">
                         <i class="bi bi-inbox fs-2 mb-2 d-block text-secondary" style="opacity: 0.5;"></i>
                         <span class="fw-semibold">No activity logs found</span>
                         <p class="small text-secondary mb-0">Try adjusting your filters or search keywords.</p>
@@ -401,6 +415,12 @@ Activity Logs
                 ?>
                     <tr>
                         <td><?= $log['id'] ?></td>
+                        <td>
+                            <input type="checkbox"
+                                name="log_ids[]"
+                                value="<?= htmlspecialchars($log['id']) ?>"
+                                class="form-check-input">
+                        </td>
                         <td>
                             <span class="badge" style="<?= random_bg_style($subsidiary) ?>">
                                 <?= $subsidiary ?>
@@ -461,23 +481,59 @@ Activity Logs
                             </span>
                         </td>
                         <td class="form-label-sm" style="width:max-content; white-space:nowrap;"><?= esc(date('d-m-Y', strtotime($log['created_at']))) ?></td>
-                        <td class="text-nowrap align-middle">
-                            <div class="dropdown">
-                                <button class="apple-btn-secondary btn-sm dropdown-toggle px-2.5 py-1 d-inline-flex align-items-center gap-1" type="button" id="actionsDropdown_<?= $log['id'] ?>" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.8rem; border-radius: 9999px;">
-                                    Actions
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="actionsDropdown_<?= $log['id'] ?>" style="border-radius: 10px; border: 1px solid var(--color-border-input); z-index: 1050;">
-                                    <li>
-                                        <a class="dropdown-item py-2" href="<?= site_url('activity-logs/view/' . $log['id']) ?>" style="font-size: 0.85rem;">
-                                            <i class="bi bi-eye text-primary me-2"></i>View Details
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item py-2" href="<?= site_url('activity-logs/update/' . $log['id']) ?>" style="font-size: 0.85rem;">
-                                            <i class="bi bi-pencil-square text-warning me-2"></i>Update Log
-                                        </a>
-                                    </li>
-                                </ul>
+                        <td class="text-nowrap align-middle actions-cell">
+                            <!-- Original Style -->
+                            <div class="action-style-original-wrapper">
+                                <div class="dropdown">
+                                    <button class="apple-btn-secondary btn-sm dropdown-toggle px-2.5 py-1 d-inline-flex align-items-center gap-1" type="button" id="actionsDropdown_<?= $log['id'] ?>" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.8rem; border-radius: 9999px;">
+                                        Actions
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="actionsDropdown_<?= $log['id'] ?>" style="border-radius: 10px; border: 1px solid var(--color-border-input); z-index: 1050;">
+                                        <li>
+                                            <a class="dropdown-item py-2" href="<?= site_url('activity-logs/view/' . $log['id']) ?>" style="font-size: 0.85rem;">
+                                                <i class="bi bi-eye text-primary me-2"></i>View Details
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item py-2" href="<?= site_url('activity-logs/update/' . $log['id']) ?>" style="font-size: 0.85rem;">
+                                                <i class="bi bi-pencil-square text-warning me-2"></i>Update Log
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Style A: Glassmorphic Dropdown -->
+                            <div class="action-style-glassmorphic-wrapper">
+                                <div class="dropdown">
+                                    <button class="action-trigger-dot d-inline-flex align-items-center justify-content-center" type="button" id="actionsDropdownA_<?= $log['id'] ?>" data-bs-toggle="dropdown" aria-expanded="false" title="Actions">
+                                        <i class="bi bi-three-dots"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end glassmorphic-menu shadow" aria-labelledby="actionsDropdownA_<?= $log['id'] ?>" style="z-index: 1050;">
+                                        <li>
+                                            <a class="dropdown-item py-2" href="<?= site_url('activity-logs/view/' . $log['id']) ?>">
+                                                <i class="bi bi-eye text-primary me-2"></i>View Details
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item py-2" href="<?= site_url('activity-logs/update/' . $log['id']) ?>">
+                                                <i class="bi bi-pencil-square text-warning me-2"></i>Update Log
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Style B: Hover-Revealed Inline Actions -->
+                            <div class="action-style-hover-inline-wrapper">
+                                <div class="hover-actions-container d-inline-flex align-items-center gap-1">
+                                    <a href="<?= site_url('activity-logs/view/' . $log['id']) ?>" class="hover-action-btn btn-view" data-bs-toggle="tooltip" data-bs-placement="top" title="View Details">
+                                        <i class="bi bi-eye-fill"></i>
+                                    </a>
+                                    <a href="<?= site_url('activity-logs/update/' . $log['id']) ?>" class="hover-action-btn btn-update" data-bs-toggle="tooltip" data-bs-placement="top" title="Update Log">
+                                        <i class="bi bi-pencil-fill"></i>
+                                    </a>
+                                </div>
                             </div>
                         </td>
                     </tr>
@@ -494,7 +550,280 @@ Activity Logs
 </div>
 <!-- #endregion -->
 
+<!-- Floating Action Bar -->
+<div id="floatingActionBar" class="floating-action-bar">
+    <div class="floating-action-info">
+        <span id="floatingSelectedCount" class="count-badge">0</span>
+        <span>Activity Logs selected</span>
+    </div>
+    <div class="floating-action-divider"></div>
+    <a href="#" id="floatingBtnDeselect" class="floating-btn-secondary" title="Deselect All">
+        <i class="bi bi-x-circle"></i>
+        <span>Deselect All</span>
+    </a>
+</div>
+
 <style>
+.selected-row td {
+    background-color: rgba(0, 113, 227, 0.05) !important;
+}
+.floating-action-bar {
+    position: fixed;
+    bottom: -80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(29, 29, 31, 0.92);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 40px;
+    padding: 10px 24px;
+    z-index: 1050;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+    transition: bottom 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+    opacity: 0;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+.floating-action-bar.show {
+    bottom: 30px;
+    opacity: 1;
+}
+.floating-action-info {
+    color: #ffffff;
+    font-size: 0.95rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+.floating-action-info .count-badge {
+    background: #0071e3;
+    color: #ffffff;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+.floating-action-divider {
+    width: 1px;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.2);
+}
+.floating-btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 30px;
+    padding: 8px 18px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none !important;
+    transition: background-color 0.2s, border-color 0.2s, transform 0.2s;
+}
+.floating-btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+    transform: scale(1.02);
+}
+.floating-btn-secondary:active {
+    transform: scale(0.98);
+}
+#tblActivityLogs tbody td.actions-cell,
+#tblActivityLogs tbody td:not(.actions-cell):has(a:not([onclick]):not(.text-muted)) {
+    cursor: pointer;
+}
+#tblActivityLogs tbody td:not(.actions-cell):has(a:not([onclick]):not(.text-muted)):hover a:not([onclick]):not(.text-muted) {
+    color: var(--color-primary) !important;
+}
+
+/* Action Dropdown Style Experiment */
+.actions-cell {
+    position: relative;
+    width: 90px;
+    min-width: 90px;
+    text-align: center;
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+}
+
+.action-style-original-wrapper,
+.action-style-glassmorphic-wrapper,
+.action-style-hover-inline-wrapper {
+    display: none;
+}
+
+#tblActivityLogs.style-original .action-style-original-wrapper {
+    display: block;
+}
+
+#tblActivityLogs.style-glassmorphic .action-style-glassmorphic-wrapper {
+    display: block;
+}
+
+#tblActivityLogs.style-hover-inline .action-style-hover-inline-wrapper {
+    display: flex;
+    justify-content: center;
+}
+
+/* 1. Sleek Minimalist Dot Trigger Styling */
+.action-trigger-dot {
+    background: transparent;
+    border: none;
+    color: var(--color-text-muted);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.action-trigger-dot:hover, 
+.action-trigger-dot[aria-expanded="true"] {
+    background-color: var(--color-secondary-bg);
+    color: var(--color-text-base);
+    transform: scale(1.05);
+}
+.action-trigger-dot:active {
+    transform: scale(0.95);
+}
+
+/* 2. Glassmorphic Dropdown Styling */
+.glassmorphic-menu {
+    background: rgba(255, 255, 255, 0.82) !important;
+    backdrop-filter: blur(12px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(12px) saturate(180%) !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1) !important;
+    border-radius: 12px !important;
+    padding: 6px !important;
+    transform-origin: top right;
+    animation: dropdownFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes dropdownFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.96) translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.glassmorphic-menu .dropdown-item {
+    border-radius: 8px !important;
+    padding: 6px 12px !important;
+    font-size: 0.85rem !important;
+    font-weight: 500 !important;
+    transition: background-color 0.15s ease, color 0.15s ease !important;
+    color: var(--color-text-base) !important;
+}
+
+.glassmorphic-menu .dropdown-item:hover {
+    background-color: var(--color-primary) !important;
+    color: #ffffff !important;
+}
+/* Ensure standard Bootstrap icons inside dropdown inherit color changes */
+.glassmorphic-menu .dropdown-item:hover i {
+    color: #ffffff !important;
+}
+
+/* 3. Hover-Revealed Inline Action Buttons Styling */
+.hover-actions-container {
+    opacity: 0;
+    transform: translateX(6px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* When the table row is hovered, show the actions */
+#tblActivityLogs tr:hover .hover-actions-container {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Also show them if select check is active or focus is inside */
+#tblActivityLogs tr:focus-within .hover-actions-container,
+#tblActivityLogs tr.selected-row .hover-actions-container {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.hover-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    color: var(--color-text-muted);
+    background-color: var(--color-secondary-bg);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    text-decoration: none !important;
+    font-size: 0.75rem;
+}
+
+.hover-action-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.hover-action-btn:active {
+    transform: scale(0.95);
+}
+
+.hover-action-btn.btn-view:hover {
+    background-color: var(--color-badge-primary-bg) !important;
+    color: var(--color-badge-primary-text) !important;
+}
+
+.hover-action-btn.btn-update:hover {
+    background-color: var(--color-badge-warning-bg) !important;
+    color: var(--color-badge-warning-text) !important;
+}
+
+/* Micro Segmented Control Styling */
+.micro-segmented-control {
+    background-color: var(--color-secondary-bg);
+    border-radius: 20px;
+    padding: 3px;
+    display: inline-flex;
+    gap: 2px;
+    border: 1px solid rgba(0, 0, 0, 0.03);
+}
+
+.micro-segmented-control button {
+    border: none;
+    background: transparent;
+    padding: 4px 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    border-radius: 15px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    outline: none;
+}
+
+.micro-segmented-control button:hover {
+    color: var(--color-text-base);
+}
+
+.micro-segmented-control button.active {
+    background-color: var(--color-card-bg);
+    color: var(--color-text-base);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
 .status-select-badge {
     display: inline-block;
     padding: 0.3em 1.6em 0.3em 0.6em !important;
@@ -616,6 +945,222 @@ Activity Logs
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         $(document).ready(function() {
+            // Checkbox and Floating Action Bar Logic
+            const table = document.getElementById('tblActivityLogs');
+            const selectAllLogs = document.getElementById('selectAllLogs');
+            const selectedCountBadge = document.getElementById('selectedCountBadge');
+            const floatingActionBar = document.getElementById('floatingActionBar');
+            const floatingSelectedCount = document.getElementById('floatingSelectedCount');
+            const floatingBtnDeselect = document.getElementById('floatingBtnDeselect');
+
+            // Action Style Switcher logic
+            const actionStyleControl = document.getElementById('actionStyleControl');
+            if (actionStyleControl && table) {
+                const savedStyle = localStorage.getItem('tag_action_style') || 'glassmorphic';
+                table.classList.remove('style-original', 'style-glassmorphic', 'style-hover-inline');
+                table.classList.add(`style-${savedStyle}`);
+                
+                actionStyleControl.querySelectorAll('button').forEach(btn => {
+                    if (btn.dataset.style === savedStyle) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+                
+                actionStyleControl.addEventListener('click', function (e) {
+                    const btn = e.target.closest('button[data-style]');
+                    if (!btn) return;
+                    
+                    const selectedStyle = btn.dataset.style;
+                    actionStyleControl.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    
+                    table.classList.remove('style-original', 'style-glassmorphic', 'style-hover-inline');
+                    table.classList.add(`style-${selectedStyle}`);
+                    
+                    localStorage.setItem('tag_action_style', selectedStyle);
+                });
+            }
+
+            const updateSelectAllState = () => {
+                if (!selectAllLogs || !table) return;
+                const total = table.querySelectorAll('input[name="log_ids[]"]').length;
+                const checked = table.querySelectorAll('input[name="log_ids[]"]:checked').length;
+                
+                selectAllLogs.checked = (total > 0 && checked === total);
+                selectAllLogs.indeterminate = (checked > 0 && checked < total);
+            };
+
+            const toggleButton = () => {
+                if (!table) return;
+                const checkedCount = table.querySelectorAll('input[name="log_ids[]"]:checked').length;
+                const anyChecked = checkedCount > 0;
+                
+                if (selectedCountBadge) {
+                    selectedCountBadge.textContent = `${checkedCount} selected`;
+                    selectedCountBadge.style.display = anyChecked ? 'inline-block' : 'none';
+                }
+
+                if (floatingActionBar) {
+                    if (anyChecked) {
+                        if (floatingSelectedCount) {
+                            floatingSelectedCount.textContent = checkedCount;
+                        }
+                        floatingActionBar.classList.add('show');
+                    } else {
+                        floatingActionBar.classList.remove('show');
+                    }
+                }
+
+                // Highlight selected rows
+                table.querySelectorAll('input[name="log_ids[]"]').forEach(cb => {
+                    const row = cb.closest('tr');
+                    if (row) {
+                        if (cb.checked) {
+                            row.classList.add('selected-row');
+                        } else {
+                            row.classList.remove('selected-row');
+                        }
+                    }
+                });
+            };
+
+            if (table) {
+                table.addEventListener('change', function (e) {
+                    if (e.target && e.target.name === 'log_ids[]') {
+                        toggleButton();
+                        updateSelectAllState();
+                    }
+                });
+
+                // Prevent text selection when shift-clicking the table rows
+                table.addEventListener('mousedown', function (e) {
+                    if (e.shiftKey) {
+                        e.preventDefault();
+                    }
+                });
+
+                let lastChecked = null;
+
+                table.addEventListener('click', function (e) {
+                    const isCheckbox = e.target.matches('input[name="log_ids[]"]');
+                    
+                    const td = e.target.closest('td');
+                    if (td) {
+                        const clickedLinkOrBtn = e.target.closest('a, button, select, label, input');
+                        
+                        if (clickedLinkOrBtn && clickedLinkOrBtn !== e.target.closest('input[name="log_ids[]"]')) {
+                            return;
+                        }
+                        
+                        // Redirect Actions Column cell clicks to target buttons
+                        if (td.classList.contains('actions-cell')) {
+                            if (!clickedLinkOrBtn) {
+                                let activeStyle = 'glassmorphic';
+                                if (table.classList.contains('style-original')) {
+                                    activeStyle = 'original';
+                                } else if (table.classList.contains('style-hover-inline')) {
+                                    activeStyle = 'hover-inline';
+                                }
+                                
+                                const wrapper = td.querySelector(`.action-style-${activeStyle}-wrapper`);
+                                if (wrapper) {
+                                    const toggleBtn = wrapper.querySelector('[data-bs-toggle="dropdown"]');
+                                    if (toggleBtn) {
+                                        toggleBtn.click();
+                                    } else {
+                                        const viewBtn = wrapper.querySelector('.hover-action-btn.btn-view');
+                                        if (viewBtn) viewBtn.click();
+                                    }
+                                }
+                            }
+                            return;
+                        }
+
+                                                // Redirect clicks inside cells containing primary links (Jira Ticket ID, etc.)
+                        const primaryLink = td.querySelector('a:not([onclick]):not(.text-muted)');
+                        if (primaryLink) {
+                            if (!clickedLinkOrBtn) {
+                                if (primaryLink.target === '_blank') {
+                                    window.open(primaryLink.href, '_blank');
+                                } else {
+                                    primaryLink.click();
+                                }
+                            }
+                            return;
+                        }
+
+                        // Redirect clicks inside cells containing select dropdowns (Assignee, Status, Priority)
+                        const selectEl = td.querySelector('select');
+                        if (selectEl) {
+                            if (!clickedLinkOrBtn) {
+                                selectEl.focus();
+                            }
+                            return;
+                        }
+                    }
+                    
+                    const row = e.target.closest('tr');
+                    if (row && row.parentNode.tagName === 'TBODY') {
+                        const cb = row.querySelector('input[name="log_ids[]"]');
+                        if (cb) {
+                            if (!isCheckbox) {
+                                cb.checked = !cb.checked;
+                            }
+                            
+                            if (e.shiftKey && lastChecked && lastChecked !== cb) {
+                                window.getSelection().removeAllRanges();
+                                
+                                const checkboxes = Array.from(table.querySelectorAll('input[name="log_ids[]"]'));
+                                const start = checkboxes.indexOf(cb);
+                                const end = checkboxes.indexOf(lastChecked);
+                                
+                                if (start !== -1 && end !== -1) {
+                                    const rangeStart = Math.min(start, end);
+                                    const rangeEnd = Math.max(start, end);
+                                    
+                                    for (let i = rangeStart; i <= rangeEnd; i++) {
+                                        checkboxes[i].checked = cb.checked;
+                                    }
+                                }
+                            }
+                            
+                            lastChecked = cb;
+                            
+                            cb.dispatchEvent(new Event('change', { bubbles: true }));
+                        }
+                    }
+                });
+            }
+
+            if (selectAllLogs) {
+                selectAllLogs.addEventListener('change', function () {
+                    if (!table) return;
+                    table.querySelectorAll('input[name="log_ids[]"]').forEach(cb => {
+                        cb.checked = selectAllLogs.checked;
+                    });
+                    lastChecked = null;
+                    toggleButton();
+                });
+            }
+
+            if (floatingBtnDeselect) {
+                floatingBtnDeselect.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    if (!table) return;
+                    table.querySelectorAll('input[name="log_ids[]"]').forEach(cb => {
+                        cb.checked = false;
+                    });
+                    if (selectAllLogs) {
+                        selectAllLogs.checked = false;
+                        selectAllLogs.indeterminate = false;
+                    }
+                    toggleButton();
+                    updateSelectAllState();
+                });
+            }
+
             let previousValue = '';
 
             // Cache previous status value when dropdown is focused

@@ -1019,11 +1019,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
     table.addEventListener('click', function (e) {
         const isCheckbox = e.target.matches('input[name="tag_ids[]"]');
-        if (isCheckbox) return;
 
         const td = e.target.closest('td');
         if (td) {
             const clickedLinkOrBtn = e.target.closest('a, button, select, label, input');
+            
+            if (clickedLinkOrBtn && clickedLinkOrBtn !== e.target.closest('input[name="tag_ids[]"]')) {
+                return;
+            }
             
             // Redirect Actions Column cell clicks to target buttons
             if (td.classList.contains('actions-cell')) {
@@ -1061,10 +1064,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
                 return;
             }
-
-            if (clickedLinkOrBtn) {
-                return;
-            }
         }
         
         const row = e.target.closest('tr');
@@ -1094,9 +1093,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 
                 lastChecked = cb;
                 
-                if (!isCheckbox) {
-                    cb.dispatchEvent(new Event('change', { bubbles: true }));
-                }
+                cb.dispatchEvent(new Event('change', { bubbles: true }));
             }
         }
     });

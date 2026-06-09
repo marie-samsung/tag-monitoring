@@ -208,7 +208,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .apple-link:hover {
     color: var(--color-primary-active);
-    text-decoration: underline;
+    text-decoration: none;
 }
 
 .apple-link-dark {
