@@ -576,12 +576,115 @@ class TagsController extends BaseController
             return redirect()->back()->with('error', 'Please upload a valid .xlsx file.');
         }
 
+        // Save file temporarily
+        $tempFolder = WRITEPATH . 'uploads/temp';
+        if (!is_dir($tempFolder)) {
+            mkdir($tempFolder, 0777, true);
+        }
+        $originalName = $file->getClientName();
+        $tempFileName = uniqid() . '_renewal_' . $originalName;
+        $tempFilePath = $tempFolder . '/' . $tempFileName;
+
+        if (!$file->move($tempFolder, $tempFileName)) {
+            return redirect()->back()->with('error', 'Failed to save uploaded file temporarily.');
+        }
+
         require_once APPPATH . 'Libraries/SimpleXLSX.php';
 
-        $xlsx = \Shuchkin\SimpleXLSX::parse($file->getTempName());
+        $xlsx = \Shuchkin\SimpleXLSX::parse($tempFilePath);
         
         if (!$xlsx) {
-            return redirect()->back()->with('error', 'Failed to parse Excel file: ' . \Shuchkin\SimpleXLSX::parseError());
+            if (file_exists($tempFilePath)) {
+                unlink($tempFilePath);
+            }
+            return redirect()->back()->with('error', 'Failed to parse Excel file.');
+        }
+
+        $rows = $xlsx->rows();
+        
+        $tagsModel = new TagsModel();
+        $propertiesModel = new PropertiesModel();
+        
+        $isFirstRow = true;
+        $extractedRows = [];
+
+        foreach ($rows as $row) {
+            if ($isFirstRow) {
+                // Check if it's the header row
+                $firstCol = trim($row[0] ?? '');
+                if (stripos($firstCol, 'Property Name') !== false) {
+                    $isFirstRow = false;
+                    continue;
+                }
+                $isFirstRow = false;
+            }
+
+            // Ensure we have at least 5 columns
+            if (count($row) >= 5) {
+                $propertyName = trim((string)($row[0] ?? ''));
+                $tagName = trim((string)($row[1] ?? ''));
+                $renew = trim((string)($row[2] ?? ''));
+                $justification = trim((string)($row[3] ?? ''));
+                $duration = trim((string)($row[4] ?? ''));
+
+                if (empty($propertyName) && empty($tagName)) {
+                    continue;
+                }
+
+                $status = 'Valid';
+                $property = $propertiesModel->where('name', $propertyName)->first();
+                if (!$property) {
+                    $status = 'Property Not Found';
+                } else {
+                    $tag = $tagsModel->where('property_id', $property['id'])
+                                     ->where('name', $tagName)
+                                     ->first();
+                    if (!$tag) {
+                        $status = 'Tag Not Found';
+                    }
+                }
+
+                $extractedRows[] = [
+                    'property_name' => $propertyName,
+                    'tag_name' => $tagName,
+                    'renew' => $renew,
+                    'justification' => $justification,
+                    'duration' => $duration,
+                    'status' => $status
+                ];
+            }
+        }
+
+        if (empty($extractedRows)) {
+            if (file_exists($tempFilePath)) {
+                unlink($tempFilePath);
+            }
+            return redirect()->back()->with('error', 'The uploaded Excel file does not contain any valid tag renewal rows.');
+        }
+
+        return view('tags/upload_renewal_justifications', [
+            'extracted_rows' => $extractedRows,
+            'temp_file_path' => $tempFilePath,
+            'temp_file_name' => $originalName
+        ]);
+    }
+
+    public function confirmRenewalJustifications()
+    {
+        $tempFilePath = $this->request->getPost('temp_file_path');
+
+        if (empty($tempFilePath) || !file_exists($tempFilePath)) {
+            return redirect()->to('/tags/upload-renewal-justifications')->with('error', 'Temporary file not found. Please upload again.');
+        }
+
+        require_once APPPATH . 'Libraries/SimpleXLSX.php';
+
+        $xlsx = \Shuchkin\SimpleXLSX::parse($tempFilePath);
+        if (!$xlsx) {
+            if (file_exists($tempFilePath)) {
+                unlink($tempFilePath);
+            }
+            return redirect()->to('/tags/upload-renewal-justifications')->with('error', 'Failed to parse temporary file. Please upload again.');
         }
 
         $rows = $xlsx->rows();
@@ -596,7 +699,6 @@ class TagsController extends BaseController
 
         foreach ($rows as $row) {
             if ($isFirstRow) {
-                // Check if it's the header row
                 $firstCol = trim($row[0] ?? '');
                 if (stripos($firstCol, 'Property Name') !== false) {
                     $isFirstRow = false;
@@ -605,7 +707,6 @@ class TagsController extends BaseController
                 $isFirstRow = false;
             }
 
-            // Ensure we have at least 5 columns
             if (count($row) >= 5) {
                 $propertyName = trim((string)($row[0] ?? ''));
                 $tagName = trim((string)($row[1] ?? ''));
@@ -634,6 +735,10 @@ class TagsController extends BaseController
                     }
                 }
             }
+        }
+
+        if (file_exists($tempFilePath)) {
+            unlink($tempFilePath);
         }
 
         return redirect()->to('/tags')->with('success', "{$savedCount} renewal justifications have been successfully processed and saved.");
