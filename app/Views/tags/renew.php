@@ -1,9 +1,5 @@
 <?= $this->extend('layouts/default') ?>
 
-<?= $this->section('title') ?>
-Renewal: <?= esc($ticket_id) ?>
-<?= $this->endSection() ?>
-
 <?= $this->section('content') ?>
 
 <?php
@@ -41,6 +37,11 @@ Renewal: <?= esc($ticket_id) ?>
         implode(', ', $vendor)
     );
 ?>
+
+
+<?= $this->section('title') ?>
+Tags Renewal: <?= $siteCode ?? null ?>
+<?= $this->endSection() ?>
 
 <div class="container-fluid px-0">
     <!-- Page Header -->
