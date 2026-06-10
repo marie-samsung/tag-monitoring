@@ -580,7 +580,7 @@ class TagsController extends BaseController
         }
 
         $activityLogModel->insert([
-            'title' => $title . ' [' . $info['ticket_id'] . ']',
+            'title' => "[{$property['name']}] " . $title . ' [' . $info['ticket_id'] . ']',
             'description' => $description . '</ul>',
             'subsidiary_id' => $property['subsidiary_id'],
             'team_id' => Constants::TEAM_MEDIA_TAGGING,

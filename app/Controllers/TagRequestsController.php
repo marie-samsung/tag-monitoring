@@ -521,7 +521,7 @@ class TagRequestsController extends BaseController
         }
 
         $activityLogId = $activityLogModel->insert([
-            'title' => $title . $vendor['name'],
+            'title' => "[{$property['name']}] " . $title . $vendor['name'],
             'description' => $description . '</ul></ol>',
             'subsidiary_id' => $property['subsidiary_id'],
             'team_id' => Constants::TEAM_MEDIA_TAGGING,
