@@ -588,7 +588,7 @@ class TagsController extends BaseController
             'ticket_id' => $info['ticket_id'] ?? null,
             'assignee' => session()->get('user_id') ?? 0,
             'status' => Constants::ACTIVITY_LOGS_STATUS_IMPLEMENTATION,
-            'type' => Constants::ACTIVITY_TYPE_REQUEST,
+            'type' => $isRenewal ? Constants::ACTIVITY_TYPE_RENEWAL : Constants::ACTIVITY_TYPE_REQUEST,
             'size' => Constants::ACTIVITY_SIZE_M,
             'created_by' => session()->get('user_id') ?? 0,
         ]);

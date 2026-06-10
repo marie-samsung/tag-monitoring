@@ -239,28 +239,35 @@ class DashboardController extends BaseController
         $data['chart_new_rules'] = array_values($newRulesData);
         $data['chart_pending'] = array_values($pendingData);
 
-        // 3. Tag Status Distribution
-        $statusCounts = $db->table('tags')
-            ->select('status, COUNT(*) as count')
-            ->where('deleted_at', null)
-            ->groupBy('status')
-            ->get()
-            ->getResultArray();
+        // 3. Tag Status Operations Counts
+        // Run a migration update for existing renewal tasks to set their type to Constants::ACTIVITY_TYPE_RENEWAL (6)
+        $db->query("UPDATE activity_logs 
+                    SET type = " . Constants::ACTIVITY_TYPE_RENEWAL . " 
+                    WHERE type = " . Constants::ACTIVITY_TYPE_REQUEST . " 
+                      AND (title LIKE 'Tag Renewals%' OR title LIKE '%Tag Renewals%')");
 
-        $statusDistribution = [];
-        foreach (Constants::STATUS as $val => $label) {
-            if ($val == Constants::STATUS_DEFAULT || $val == Constants::STATUS_ALL) {
-                continue;
-            }
-            $statusDistribution[$label] = 0;
-        }
-        foreach ($statusCounts as $row) {
-            $label = Constants::STATUS[$row['status']] ?? 'Unknown';
-            if ($label !== 'Default') {
-                $statusDistribution[$label] = (int)$row['count'];
-            }
-        }
-        $data['status_distribution'] = $statusDistribution;
+        $data['blocked_renewal_requests'] = $activityLogsModel
+            ->where('type', Constants::ACTIVITY_TYPE_RENEWAL)
+            ->where('status', Constants::ACTIVITY_LOGS_STATUS_BLOCKED)
+            ->countAllResults();
+
+        $data['pending_review_renewals'] = $data['pending_verification'];
+
+        $data['pending_new_tag_requests'] = $tagRequestsModel
+            ->where('type', Constants::JIRA_TYPE_NEW_TAG)
+            ->whereNotIn('status', [
+                Constants::STATUS_REQUEST_PUBLISHED,
+                Constants::STATUS_REQUEST_REJECTED
+            ])
+            ->countAllResults();
+
+        $data['pending_new_rule_requests'] = $tagRequestsModel
+            ->where('type', Constants::JIRA_TYPE_NEW_RULE)
+            ->whereNotIn('status', [
+                Constants::STATUS_REQUEST_PUBLISHED,
+                Constants::STATUS_REQUEST_REJECTED
+            ])
+            ->countAllResults();
 
         // 4. Subsidiary Distribution
         $subsidiaryCounts = $db->table('tags')

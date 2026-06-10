@@ -130,6 +130,70 @@ Dashboard | Martech TMS
 #activityTagsModal .btn-close:focus {
     box-shadow: none;
 }
+
+/* Stacked Operation Metric Cards */
+.operation-metric-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 12px;
+    margin-bottom: 12px;
+    text-decoration: none !important;
+    transition: all var(--transition-medium, 0.35s cubic-bezier(0.25, 0.8, 0.25, 1));
+}
+
+.operation-metric-item:last-child {
+    margin-bottom: 0;
+}
+
+.operation-metric-item:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    background: var(--color-table-hover-bg, #F4F9FF);
+    border-color: rgba(0, 113, 227, 0.15);
+}
+
+.operation-metric-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.operation-metric-icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    font-size: 1.1rem;
+}
+
+.operation-metric-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-text-base, #1D1D1F);
+}
+
+.operation-metric-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-text-base, #1D1D1F);
+    background: rgba(0, 0, 0, 0.03);
+    padding: 2px 10px;
+    border-radius: 8px;
+    min-width: 36px;
+    text-align: center;
+    transition: all var(--transition-fast, 0.2s);
+}
+
+.operation-metric-item:hover .operation-metric-value {
+    background: var(--color-primary, #0071E3);
+    color: #ffffff;
+}
 </style>
 
 <div class="container-fluid">
@@ -390,17 +454,57 @@ Dashboard | Martech TMS
             </div>
         </div>
 
-        <!-- Doughnut Chart: Tag Status Distribution -->
+        <!-- Tag Operations Queue -->
         <div class="col-lg-4">
-            <div class="apple-card h-100">
+            <div class="apple-card h-100 d-flex flex-column">
                 <h6 class="text-secondary fw-semibold mb-3" style="font-size: 0.85rem; letter-spacing: 0.5px; text-transform: uppercase;">
-                    <i class="bi bi-pie-chart me-2 text-primary"></i>Status Distribution
+                    <i class="bi bi-activity me-2 text-primary"></i>Operations Queue
                 </h6>
-                <div style="position: relative; height: 260px; width: 100%;">
-                    <canvas id="statusDistributionChart"></canvas>
-                </div>
-                <div class="text-center mt-3 text-secondary small">
-                    Total Inventory: <strong><?= $total_tags ?></strong> tags
+                
+                <div class="flex-grow-1 d-flex flex-column justify-content-center">
+                    <!-- Blocked renewal requests -->
+                    <a href="<?= site_url('activity-logs?status_group=blocked&type=' . \App\Models\Constants::ACTIVITY_TYPE_RENEWAL) ?>" class="operation-metric-item">
+                        <div class="operation-metric-left">
+                            <div class="operation-metric-icon-wrapper" style="background-color: var(--color-badge-danger-bg); color: var(--color-badge-danger-text); border: 1px solid var(--color-badge-danger-border);">
+                                <i class="bi bi-slash-circle-fill"></i>
+                            </div>
+                            <span class="operation-metric-label">Blocked Renewals</span>
+                        </div>
+                        <div class="operation-metric-value"><?= $blocked_renewal_requests ?></div>
+                    </a>
+
+                    <!-- Pending Review renewal requests -->
+                    <a href="<?= site_url('tags?status=' . \App\Models\Constants::STATUS_PENDING_VERIFICATION) ?>" class="operation-metric-item">
+                        <div class="operation-metric-left">
+                            <div class="operation-metric-icon-wrapper" style="background-color: var(--color-badge-warning-bg); color: var(--color-badge-warning-text); border: 1px solid var(--color-badge-warning-border);">
+                                <i class="bi bi-hourglass-split"></i>
+                            </div>
+                            <span class="operation-metric-label">Pending Review Renewals</span>
+                        </div>
+                        <div class="operation-metric-value"><?= $pending_review_renewals ?></div>
+                    </a>
+
+                    <!-- Pending new tag requests -->
+                    <a href="<?= site_url('tag-requests?status=pending&type=' . \App\Models\Constants::JIRA_TYPE_NEW_TAG) ?>" class="operation-metric-item">
+                        <div class="operation-metric-left">
+                            <div class="operation-metric-icon-wrapper" style="background-color: var(--color-badge-primary-bg); color: var(--color-badge-primary-text); border: 1px solid var(--color-badge-primary-border);">
+                                <i class="bi bi-tag-fill"></i>
+                            </div>
+                            <span class="operation-metric-label">Pending New Tags</span>
+                        </div>
+                        <div class="operation-metric-value"><?= $pending_new_tag_requests ?></div>
+                    </a>
+
+                    <!-- Pending New Rule requests -->
+                    <a href="<?= site_url('tag-requests?status=pending&type=' . \App\Models\Constants::JIRA_TYPE_NEW_RULE) ?>" class="operation-metric-item">
+                        <div class="operation-metric-left">
+                            <div class="operation-metric-icon-wrapper" style="background-color: var(--color-badge-purple-bg); color: var(--color-badge-purple-text); border: 1px solid var(--color-badge-purple-border);">
+                                <i class="bi bi-gear-fill"></i>
+                            </div>
+                            <span class="operation-metric-label">Pending New Rules</span>
+                        </div>
+                        <div class="operation-metric-value"><?= $pending_new_rule_requests ?></div>
+                    </a>
                 </div>
             </div>
         </div>
@@ -726,51 +830,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // --- 2. Doughnut Chart: Tag Status Distribution ---
-    const statusCtx = document.getElementById('statusDistributionChart').getContext('2d');
-    const statusData = <?= json_encode($status_distribution) ?>;
-    
-    new Chart(statusCtx, {
-        type: 'doughnut',
-        data: {
-            labels: Object.keys(statusData),
-            datasets: [{
-                data: Object.values(statusData),
-                backgroundColor: [
-                    '#2E7D32', // Enabled
-                    '#86868B', // Disabled
-                    '#DE3535', // Expired
-                    '#F57F17', // Pending Verification
-                    '#0071E3', // Updated in AL
-                    '#6F42C1', // New Tag Request Submitted
-                    '#FD7E14'  // New Rule Request Submitted
-                ],
-                borderWidth: 2,
-                borderColor: '#ffffff',
-                hoverOffset: 6
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'right',
-                    labels: {
-                        boxWidth: 10,
-                        padding: 10,
-                        font: { size: 10, weight: '500' }
-                    }
-                },
-                tooltip: {
-                    padding: 12,
-                    cornerRadius: 8,
-                    backgroundColor: 'rgba(29, 29, 31, 0.95)'
-                }
-            },
-            cutout: '65%'
-        }
-    });
+
 
     // --- 3. Bar Chart: Subsidiary Distribution ---
     const subCtx = document.getElementById('subsidiaryDistributionChart').getContext('2d');
