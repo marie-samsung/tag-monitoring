@@ -95,7 +95,7 @@ class TagRequestsController extends BaseController
         if (count($post['tags']) > 0) {
             $name = trim($post['tags'][0]);
             preg_match('/\((.*?)\)/', $name, $matches);
-            $vendorName = $matches[1] ?? null;
+            $vendorName = !empty($matches[1]) ? trim($matches[1]) : 'Unknown';
 
             $vendor = $vendorsModel->where('name', $vendorName)->first();
             if (!$vendor) {
@@ -108,11 +108,16 @@ class TagRequestsController extends BaseController
 
             if ($reqOrg) {
                 $organizationInput = trim($reqOrg);
-                $organization = $organizationsModel->where('id', $organizationInput)->first();
+                $organization = $organizationsModel->where('name', $organizationInput)->first();
                 if (!$organization) {
-                    $organizationId = $organizationsModel->insert([
-                        'name' => $organizationInput,
-                    ]);
+                    $organizationById = is_numeric($organizationInput) ? $organizationsModel->where('id', $organizationInput)->first() : null;
+                    if ($organizationById) {
+                        $organizationId = $organizationById['id'];
+                    } else {
+                        $organizationId = $organizationsModel->insert([
+                            'name' => $organizationInput,
+                        ]);
+                    }
                 } else {
                     $organizationId = $organization['id'];
                 }
