@@ -115,6 +115,7 @@ class TagsModel extends Model
                     ELSE 7
                 END)', 'ASC', false
             );
+            $this->orderBy('tags.al_end_date', 'ASC');
             $this->orderBy('properties.id', 'ASC');
         }
 

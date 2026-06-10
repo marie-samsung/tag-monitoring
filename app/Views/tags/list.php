@@ -949,7 +949,7 @@ Martech TMS
     </a>
     <a href="#" id="floatingBtnUpdateRule" class="floating-btn-secondary" title="Create Update Rule Request">
         <i class="bi bi-pencil-square"></i>
-        <span>Update</span>
+        <span>Rule Update</span>
     </a>
     <a href="#" id="floatingBtnDeselect" class="floating-btn-secondary" title="Deselect All">
         <i class="bi bi-x-circle"></i>
