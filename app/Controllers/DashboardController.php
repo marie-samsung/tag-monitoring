@@ -31,6 +31,40 @@ class DashboardController extends BaseController
 
         $data['total_requests'] = $tagRequestsModel->countAllRequests();
 
+        // System Health Index calculation
+        $today = date('Y-m-d');
+        $expired_active = $tagsModel->whereIn('status', [
+                Constants::STATUS_ENABLED,
+                Constants::STATUS_UPDATED_IN_AL,
+                Constants::STATUS_PENDING_VERIFICATION
+            ])
+            ->where('al_end_date <', $today)
+            ->where('deleted_at', null)
+            ->countAllResults();
+
+        $expiring_soon = $tagsModel->whereIn('status', [
+                Constants::STATUS_ENABLED,
+                Constants::STATUS_UPDATED_IN_AL,
+                Constants::STATUS_PENDING_VERIFICATION
+            ])
+            ->where('al_end_date >=', $today)
+            ->where('al_end_date <=', date('Y-m-d', strtotime('+15 days')))
+            ->where('deleted_at', null)
+            ->countAllResults();
+
+        $total_active = $data['active_tags'];
+        
+        if ($total_active > 0) {
+            $health_score = 100 - (($expired_active * 8) + ($expiring_soon * 2));
+            $health_score = max(0, min(100, $health_score));
+        } else {
+            $health_score = 100;
+        }
+
+        $data['health_score'] = $health_score;
+        $data['expired_active_count'] = $expired_active;
+        $data['expiring_soon_count'] = $expiring_soon;
+
         $data['activities_last_30_days'] = $activityLogsModel
             ->where('created_at >=', date('Y-m-d H:i:s', strtotime('-30 days')))
             ->countAllResults();

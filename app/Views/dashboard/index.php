@@ -146,61 +146,148 @@ Dashboard | Martech TMS
         </div>
     </div>
 
-    <!-- Quick Stats Metric Cards -->
-    <div class="row g-3 mb-4">
-        <!-- Pending Tag Requests -->
-        <div class="col-md-3">
-            <div class="apple-metric-card border-start border-4 border-primary" style="cursor: pointer;" onclick="window.location.href='<?= site_url('tag-requests?status=pending') ?>'">
-                <div class="apple-metric-label">
-                    <i class="bi bi-file-earmark-plus-fill text-primary fs-5"></i> 
-                    <span>Pending Requests</span>
+    <!-- Dashboard Hero metrics & System Health -->
+    <div class="row g-4 mb-4">
+        <!-- Left Column: System Health Gauge Card -->
+        <div class="col-lg-4">
+            <?php
+            // Calculate health variables for styling
+            $health_color = '#2E7D32'; // Success Green
+            $health_text_class = 'text-success';
+            $health_label = 'Excellent';
+            $health_icon = 'bi-shield-fill-check';
+
+            if ($health_score < 90 && $health_score >= 70) {
+                $health_color = '#F57F17'; // Warning Orange
+                $health_text_class = 'text-warning';
+                $health_label = 'Good';
+                $health_icon = 'bi-exclamation-shield-fill';
+            } elseif ($health_score < 70) {
+                $health_color = '#C62828'; // Danger Red
+                $health_text_class = 'text-danger';
+                $health_label = 'Critical';
+                $health_icon = 'bi-shield-fill-x';
+            }
+
+            // Build dynamic description based on actual counts
+            $health_desc_parts = [];
+            if ($expired_active_count > 0) {
+                $health_desc_parts[] = $expired_active_count . ' expired active tag' . ($expired_active_count > 1 ? 's' : '');
+            }
+            if ($expiring_soon_count > 0) {
+                $health_desc_parts[] = $expiring_soon_count . ' tag' . ($expiring_soon_count > 1 ? 's' : '') . ' expiring soon';
+            }
+
+            if (empty($health_desc_parts)) {
+                $health_desc = 'All active tags are currently operational and up to date.';
+            } else {
+                $prefix = ($health_score < 70) ? 'Urgent action required: ' : 'Action recommended: ';
+                $health_desc = $prefix . implode(' and ', $health_desc_parts) . '.';
+            }
+            ?>
+            <div class="apple-card h-100 d-flex flex-column align-items-center justify-content-center text-center p-4 position-relative overflow-hidden" style="min-height: 236px;">
+                <!-- Subtle background glow matching status color -->
+                <div style="position: absolute; width: 150px; height: 150px; border-radius: 50%; background: <?= $health_color ?>; opacity: 0.03; filter: blur(50px); top: -20px; right: -20px; pointer-events: none;"></div>
+                
+                <h6 class="text-secondary fw-semibold mb-3 w-100 text-start" style="font-size: 0.85rem; letter-spacing: 0.5px; text-transform: uppercase;">
+                    <i class="bi bi-activity text-primary me-2"></i>System Health Index
+                </h6>
+                
+                <div class="d-flex align-items-center justify-content-center flex-grow-1 my-2" style="position: relative; width: 140px; height: 140px;">
+                    <!-- Circular SVG Gauge -->
+                    <svg width="140" height="140" viewBox="0 0 100 100" style="transform: rotate(-90deg); transform-origin: 50% 50%;">
+                        <!-- Background Circle -->
+                        <circle cx="50" cy="50" r="42" stroke="rgba(0, 0, 0, 0.04)" stroke-width="8" fill="transparent" />
+                        <!-- Foreground Circle (Dynamic stroke-dashoffset) -->
+                        <?php
+                        $radius = 42;
+                        $circumference = 2 * M_PI * $radius;
+                        $dashoffset = $circumference - ($health_score / 100) * $circumference;
+                        ?>
+                        <circle cx="50" cy="50" r="42" stroke="<?= $health_color ?>" stroke-width="8" fill="transparent"
+                                stroke-dasharray="<?= $circumference ?>" stroke-dashoffset="<?= $dashoffset ?>"
+                                stroke-linecap="round" style="transition: stroke-dashoffset 0.8s ease-in-out;" />
+                    </svg>
+                    
+                    <!-- Text in the middle of Gauge -->
+                    <div class="position-absolute d-flex flex-column align-items-center justify-content-center" style="top: 0; left: 0; right: 0; bottom: 0;">
+                        <span class="fw-bold text-dark" style="font-size: 1.85rem; line-height: 1;"><?= $health_score ?><span style="font-size: 1.1rem; font-weight: 600;">%</span></span>
+                        <span class="fw-bold mt-1 <?= $health_text_class ?>" style="font-size: 0.72rem; letter-spacing: 0.5px; text-transform: uppercase;"><?= $health_label ?></span>
+                    </div>
                 </div>
-                <div class="apple-metric-value text-primary"><?= $pending_requests ?></div>
-                <div class="text-secondary small mt-2">Requests in review process</div>
+
+                <div class="mt-3 w-100">
+                    <p class="text-secondary mb-0 small fw-medium" style="line-height: 1.4; min-height: 40px; display: flex; align-items: center; justify-content: center;">
+                        <i class="bi <?= $health_icon ?> me-2 <?= $health_text_class ?> fs-5"></i>
+                        <span><?= $health_desc ?></span>
+                    </p>
+                </div>
             </div>
         </div>
 
-        <!-- Expiring Soon -->
-        <div class="col-md-3">
-            <div class="apple-metric-card border-start border-4 border-danger" style="cursor: pointer;" onclick="window.location.href='<?= site_url('tags?status=expiring') ?>'">
-                <div class="apple-metric-label">
-                    <i class="bi bi-exclamation-triangle-fill text-danger fs-5"></i> 
-                    <span>Expiring Soon</span>
+        <!-- Right Column: 2x2 Grid of Metric Count Cards -->
+        <div class="col-lg-8">
+            <div class="row g-3 h-100">
+                <!-- Pending Tag Requests -->
+                <div class="col-md-6 d-flex flex-column">
+                    <div class="apple-metric-card border-start border-4 border-primary flex-grow-1" style="cursor: pointer; min-height: 106px;" onclick="window.location.href='<?= site_url('tag-requests?status=pending') ?>'">
+                        <div class="apple-metric-label">
+                            <i class="bi bi-file-earmark-plus-fill text-primary fs-5"></i> 
+                            <span>Pending Requests</span>
+                        </div>
+                        <div class="apple-metric-value text-primary"><?= $pending_requests ?></div>
+                        <div class="text-secondary small mt-2">Requests in review process</div>
+                    </div>
                 </div>
-                <div class="apple-metric-value text-danger"><?= $expiring_tags ?></div>
-                <div class="text-secondary small mt-2">Expiring within 15 days</div>
-            </div>
-        </div>
 
-        <!-- Pending Verification -->
-        <div class="col-md-3">
-            <div class="apple-metric-card border-start border-4 border-warning" style="cursor: pointer;" onclick="window.location.href='<?= site_url('tags?status=4') ?>'">
-                <div class="apple-metric-label">
-                    <i class="bi bi-hourglass-split text-warning fs-5"></i> 
-                    <span>Pending Verification</span>
+                <!-- Expiring Soon -->
+                <div class="col-md-6 d-flex flex-column">
+                    <div class="apple-metric-card border-start border-4 border-danger flex-grow-1" style="cursor: pointer; min-height: 106px;" onclick="window.location.href='<?= site_url('tags?status=expiring') ?>'">
+                        <div class="apple-metric-label">
+                            <i class="bi bi-exclamation-triangle-fill text-danger fs-5"></i> 
+                            <span>Expiring Soon</span>
+                        </div>
+                        <div class="apple-metric-value text-danger"><?= $expiring_tags ?></div>
+                        <div class="text-secondary small mt-2">Expiring within 15 days</div>
+                    </div>
                 </div>
-                <div class="apple-metric-value text-warning"><?= $pending_verification ?></div>
-                <div class="text-secondary small mt-2">Renewed tags awaiting QA</div>
-            </div>
-        </div>
 
-        <!-- Active Tags -->
-        <div class="col-md-3">
-            <div class="apple-metric-card border-start border-4 border-success" style="cursor: pointer;" onclick="window.location.href='<?= site_url('tags?status=1') ?>'">
-                <div class="apple-metric-label">
-                    <i class="bi bi-check-circle-fill text-success fs-5"></i> 
-                    <span>Active Tags</span>
+                <!-- Pending Verification -->
+                <div class="col-md-6 d-flex flex-column">
+                    <div class="apple-metric-card border-start border-4 border-warning flex-grow-1" style="cursor: pointer; min-height: 106px;" onclick="window.location.href='<?= site_url('tags?status=4') ?>'">
+                        <div class="apple-metric-label">
+                            <i class="bi bi-hourglass-split text-warning fs-5"></i> 
+                            <span>Pending Verification</span>
+                        </div>
+                        <div class="apple-metric-value text-warning"><?= $pending_verification ?></div>
+                        <div class="text-secondary small mt-2">Renewed tags awaiting QA</div>
+                    </div>
                 </div>
-                <div class="apple-metric-value text-success"><?= $active_tags ?></div>
-                <div class="text-secondary small mt-2">Currently active in AL</div>
+
+                <!-- Active Tags -->
+                <div class="col-md-6 d-flex flex-column">
+                    <div class="apple-metric-card border-start border-4 border-success flex-grow-1" style="cursor: pointer; min-height: 106px;" onclick="window.location.href='<?= site_url('tags?status=1') ?>'">
+                        <div class="apple-metric-label">
+                            <i class="bi bi-check-circle-fill text-success fs-5"></i> 
+                            <span>Active Tags</span>
+                        </div>
+                        <div class="apple-metric-value text-success"><?= $active_tags ?></div>
+                        <div class="text-secondary small mt-2">Currently active in AL</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Section: Proactive Forecast & Status -->
-    <div class="mb-3 mt-2">
-        <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-shield-check me-2 text-primary"></i>Proactive Forecast & Status</h5>
-        <p class="text-secondary small mb-0">Upcoming tag expirations and status distributions</p>
+    <div class="pt-4 pb-2 mt-2 border-top d-flex align-items-start" style="border-top: 1px solid rgba(0, 0, 0, 0.06) !important;">
+        <span class="d-inline-flex align-items-center justify-content-center text-primary rounded-circle me-2" style="width: 32px; height: 32px; background: rgba(0, 113, 227, 0.08); flex-shrink: 0;">
+            <i class="bi bi-shield-check fs-6"></i>
+        </span>
+        <div>
+            <h5 class="fw-bold mb-0 text-dark">Proactive Forecast & Status</h5>
+            <p class="text-secondary small mb-0">Upcoming tag expirations and status distributions</p>
+        </div>
     </div>
 
     <!-- Charts Section: Row 1 (Forecast & Status Distribution) -->
@@ -208,8 +295,9 @@ Dashboard | Martech TMS
         <!-- Line Chart: Tag Expiration Forecast (Next 45 Days) -->
         <div class="col-lg-8">
             <div class="apple-card h-100">
-                <h5 class="card-title mb-1">Tag Expiration Forecast (Next 45 Days)</h5>
-                <p class="text-secondary small mb-3">Expected tag deactivation/renewal timeline</p>
+                <h6 class="text-secondary fw-semibold mb-3" style="font-size: 0.85rem; letter-spacing: 0.5px; text-transform: uppercase;">
+                    <i class="bi bi-clock-history me-2 text-primary"></i>Expiration Timeline (Next 45 Days)
+                </h6>
                 <div style="position: relative; height: 320px; width: 100%;">
                     <canvas id="expirationForecastChart"></canvas>
                 </div>
@@ -219,7 +307,9 @@ Dashboard | Martech TMS
         <!-- Doughnut Chart: Tag Status Distribution -->
         <div class="col-lg-4">
             <div class="apple-card h-100">
-                <h5 class="card-title mb-3">Tag Status Distribution</h5>
+                <h6 class="text-secondary fw-semibold mb-3" style="font-size: 0.85rem; letter-spacing: 0.5px; text-transform: uppercase;">
+                    <i class="bi bi-pie-chart me-2 text-primary"></i>Status Distribution
+                </h6>
                 <div style="position: relative; height: 260px; width: 100%;">
                     <canvas id="statusDistributionChart"></canvas>
                 </div>
@@ -231,9 +321,14 @@ Dashboard | Martech TMS
     </div>
 
     <!-- Section: System Performance & Operations -->
-    <div class="mb-3 mt-4">
-        <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-activity me-2 text-primary"></i>System Ingestion & Requests</h5>
-        <p class="text-secondary small mb-0">Ingestion trends and active requests pipeline</p>
+    <div class="pt-4 pb-2 mt-5 border-top d-flex align-items-start" style="border-top: 1px solid rgba(0, 0, 0, 0.06) !important;">
+        <span class="d-inline-flex align-items-center justify-content-center text-primary rounded-circle me-2" style="width: 32px; height: 32px; background: rgba(0, 113, 227, 0.08); flex-shrink: 0;">
+            <i class="bi bi-activity fs-6"></i>
+        </span>
+        <div>
+            <h5 class="fw-bold mb-0 text-dark">System Ingestion & Requests</h5>
+            <p class="text-secondary small mb-0">Ingestion trends and active requests pipeline</p>
+        </div>
     </div>
 
     <!-- Charts Section: Row 2 (System Ingestion & Pipeline) -->
@@ -241,7 +336,9 @@ Dashboard | Martech TMS
         <!-- Line Chart: System Activity & Ingestion Trend -->
         <div class="col-lg-8">
             <div class="apple-card h-100">
-                <h5 class="card-title mb-3">System Activity & Ingestion (Last 30 Days)</h5>
+                <h6 class="text-secondary fw-semibold mb-3" style="font-size: 0.85rem; letter-spacing: 0.5px; text-transform: uppercase;">
+                    <i class="bi bi-graph-up me-2 text-primary"></i>Ingestion Trend (Last 30 Days)
+                </h6>
                 <div style="position: relative; height: 320px; width: 100%;">
                     <canvas id="activityTrendChart"></canvas>
                 </div>
@@ -251,7 +348,9 @@ Dashboard | Martech TMS
         <!-- Doughnut Chart: Tag Requests Status Distribution -->
         <div class="col-lg-4">
             <div class="apple-card h-100">
-                <h5 class="card-title mb-3">Tag Requests Pipeline</h5>
+                <h6 class="text-secondary fw-semibold mb-3" style="font-size: 0.85rem; letter-spacing: 0.5px; text-transform: uppercase;">
+                    <i class="bi bi-funnel me-2 text-primary"></i>Requests Pipeline
+                </h6>
                 <div style="position: relative; height: 260px; width: 100%;">
                     <canvas id="requestStatusChart"></canvas>
                 </div>
@@ -263,9 +362,14 @@ Dashboard | Martech TMS
     </div>
 
     <!-- Section: Inventory Analysis -->
-    <div class="mb-3 mt-4">
-        <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-pie-chart-fill me-2 text-primary"></i>Inventory Analytics</h5>
-        <p class="text-secondary small mb-0">Distribution of tags by subsidiary and vendor</p>
+    <div class="pt-4 pb-2 mt-5 border-top d-flex align-items-start" style="border-top: 1px solid rgba(0, 0, 0, 0.06) !important;">
+        <span class="d-inline-flex align-items-center justify-content-center text-primary rounded-circle me-2" style="width: 32px; height: 32px; background: rgba(0, 113, 227, 0.08); flex-shrink: 0;">
+            <i class="bi bi-pie-chart-fill fs-6"></i>
+        </span>
+        <div>
+            <h5 class="fw-bold mb-0 text-dark">Inventory Analytics</h5>
+            <p class="text-secondary small mb-0">Distribution of tags by subsidiary and vendor</p>
+        </div>
     </div>
 
     <!-- Charts Section: Row 3 (Subsidiaries & Vendors) -->
@@ -273,7 +377,9 @@ Dashboard | Martech TMS
         <!-- Bar Chart: Top Subsidiaries -->
         <div class="col-md-6">
             <div class="apple-card h-100">
-                <h5 class="card-title mb-3">Tags by Subsidiary</h5>
+                <h6 class="text-secondary fw-semibold mb-3" style="font-size: 0.85rem; letter-spacing: 0.5px; text-transform: uppercase;">
+                    <i class="bi bi-building me-2 text-primary"></i>Tags by Subsidiary
+                </h6>
                 <div style="position: relative; height: 300px; width: 100%;">
                     <canvas id="subsidiaryDistributionChart"></canvas>
                 </div>
@@ -283,7 +389,9 @@ Dashboard | Martech TMS
         <!-- Bar Chart: Top Vendors -->
         <div class="col-md-6">
             <div class="apple-card h-100">
-                <h5 class="card-title mb-3">Top 10 Vendors by Tag Count</h5>
+                <h6 class="text-secondary fw-semibold mb-3" style="font-size: 0.85rem; letter-spacing: 0.5px; text-transform: uppercase;">
+                    <i class="bi bi-shop me-2 text-primary"></i>Top 10 Vendors
+                </h6>
                 <div style="position: relative; height: 300px; width: 100%;">
                     <canvas id="vendorDistributionChart"></canvas>
                 </div>
@@ -292,9 +400,14 @@ Dashboard | Martech TMS
     </div>
 
     <!-- Section: Activity Logs & Support Analytics -->
-    <div class="mb-3 mt-4">
-        <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-ticket-detailed me-2 text-primary"></i>Activity Logs Analytics</h5>
-        <p class="text-secondary small mb-0">Breakdown of support tickets, tasks, and system activities</p>
+    <div class="pt-4 pb-2 mt-5 border-top d-flex align-items-start" style="border-top: 1px solid rgba(0, 0, 0, 0.06) !important;">
+        <span class="d-inline-flex align-items-center justify-content-center text-primary rounded-circle me-2" style="width: 32px; height: 32px; background: rgba(0, 113, 227, 0.08); flex-shrink: 0;">
+            <i class="bi bi-ticket-detailed fs-6"></i>
+        </span>
+        <div>
+            <h5 class="fw-bold mb-0 text-dark">Activity Logs Analytics</h5>
+            <p class="text-secondary small mb-0">Breakdown of support tickets, tasks, and system activities</p>
+        </div>
     </div>
 
     <!-- Charts Section: Row 4 (Activity Logs Analytics) -->
@@ -304,7 +417,9 @@ Dashboard | Martech TMS
                 <div class="row g-4">
                     <!-- Doughnut Chart: Activity Logs by Status -->
                     <div class="col-md-4">
-                        <h6 class="text-center mb-3">Activities by Status</h6>
+                        <h6 class="text-secondary text-center fw-semibold mb-3" style="font-size: 0.8rem; letter-spacing: 0.5px; text-transform: uppercase;">
+                            Activities by Status
+                        </h6>
                         <div style="position: relative; height: 240px; width: 100%;">
                             <canvas id="activityStatusChart"></canvas>
                         </div>
@@ -312,7 +427,9 @@ Dashboard | Martech TMS
                     
                     <!-- Bar Chart: Activity Logs by Priority -->
                     <div class="col-md-4">
-                        <h6 class="text-center mb-3">Activities by Priority</h6>
+                        <h6 class="text-secondary text-center fw-semibold mb-3" style="font-size: 0.8rem; letter-spacing: 0.5px; text-transform: uppercase;">
+                            Activities by Priority
+                        </h6>
                         <div style="position: relative; height: 240px; width: 100%;">
                             <canvas id="activityPriorityChart"></canvas>
                         </div>
@@ -320,7 +437,9 @@ Dashboard | Martech TMS
                     
                     <!-- Bar Chart: Activity Logs by Project -->
                     <div class="col-md-4">
-                        <h6 class="text-center mb-3">Activities by Project</h6>
+                        <h6 class="text-secondary text-center fw-semibold mb-3" style="font-size: 0.8rem; letter-spacing: 0.5px; text-transform: uppercase;">
+                            Activities by Project
+                        </h6>
                         <div style="position: relative; height: 240px; width: 100%;">
                             <canvas id="activityProjectChart"></canvas>
                         </div>
@@ -991,7 +1110,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         if (act.priority === 'Medium') accentColor = '#FF9F0A';
                         else if (['High', 'Critical', 'Blocker'].includes(act.priority)) accentColor = '#FF453A';
 
-                        let ticketHtml = act.ticket_id ? `<a href="${act.jira_link}" target="_blank" class="apple-link small fw-bold"><i class="bi bi-link-45deg me-0.5"></i>${escapeHtml(act.ticket_id)}</a>` : '<span class="text-secondary small">No JIRA ticket</span>';
+                        let ticketHtml = act.ticket_id ? `<a href="${act.jira_link}" target="_blank" class="apple-link small fw-bold"><i class="bi bi-link-45deg me-1"></i>${escapeHtml(act.ticket_id)}</a>` : '<span class="text-secondary small">No JIRA ticket</span>';
 
                         const card = document.createElement('div');
                         card.className = 'activity-modal-card';
