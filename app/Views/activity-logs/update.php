@@ -230,16 +230,31 @@
                             </select>
                         </div>
 
-                        <!-- Project -->
+                        <!-- Team -->
                         <div class="col-12">
-                            <label class="form-label-sm fw-semibold text-secondary mb-1">Project</label>
-                            <select name="project_id" class="form-select form-select-xs" required>
-                                <?php foreach (Constants::PROJECTS as $value => $label): ?>
+                            <label class="form-label-sm fw-semibold text-secondary mb-1">Team</label>
+                            <select name="team_id" class="form-select form-select-xs" required>
+                                <?php foreach (Constants::TEAMS as $value => $label): ?>
                                     <option value="<?= esc($value) ?>"
-                                        <?= ($log['project_id'] == $value) ? 'selected' : '' ?>>
+                                        <?= ($log['team_id'] == $value) ? 'selected' : '' ?>>
                                         <?= esc($label) ?>
                                     </option>
                                 <?php endforeach; ?>
+                            </select>
+                        </div>
+
+                        <!-- Project -->
+                        <div class="col-12">
+                            <label class="form-label-sm fw-semibold text-secondary mb-1">Project</label>
+                            <select name="project" id="project-select" class="form-select form-select-xs" required>
+                                <?php foreach ($project_names as $pName): ?>
+                                    <option value="<?= esc($pName) ?>" <?= old('project', $log['project'] ?? 'Generic') == $pName ? 'selected' : '' ?>>
+                                        <?= esc($pName) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                                <?php if (!in_array($log['project'] ?? 'Generic', $project_names)): ?>
+                                    <option value="<?= esc($log['project'] ?? 'Generic') ?>" selected><?= esc($log['project'] ?? 'Generic') ?></option>
+                                <?php endif; ?>
                             </select>
                         </div>
 
@@ -289,6 +304,12 @@
 
         $('.searchable-select').select2({
             width: '100%',
+        });
+
+        $('#project-select').select2({
+            tags: true,
+            width: '100%',
+            placeholder: 'Select or type a project name...'
         });
 
         const sizeDescriptions = {

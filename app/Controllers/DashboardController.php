@@ -352,24 +352,24 @@ class DashboardController extends BaseController
         }
         $data['activity_priority_distribution'] = $activityPriorityDistribution;
 
-        $activityProjectCounts = $db->table('activity_logs')
-            ->select('project_id, COUNT(*) as count')
+        $activityTeamCounts = $db->table('activity_logs')
+            ->select('team_id, COUNT(*) as count')
             ->where('deleted_at', null)
-            ->groupBy('project_id')
+            ->groupBy('team_id')
             ->get()
             ->getResultArray();
 
-        $activityProjectDistribution = [];
-        foreach (Constants::PROJECTS as $val => $label) {
-            $activityProjectDistribution[$label] = 0;
+        $activityTeamDistribution = [];
+        foreach (Constants::TEAMS as $val => $label) {
+            $activityTeamDistribution[$label] = 0;
         }
-        foreach ($activityProjectCounts as $row) {
-            $label = Constants::PROJECTS[$row['project_id']] ?? 'Unknown';
-            if (isset($activityProjectDistribution[$label])) {
-                $activityProjectDistribution[$label] += (int)$row['count'];
+        foreach ($activityTeamCounts as $row) {
+            $label = Constants::TEAMS[$row['team_id']] ?? 'Unknown';
+            if (isset($activityTeamDistribution[$label])) {
+                $activityTeamDistribution[$label] += (int)$row['count'];
             }
         }
-        $data['activity_project_distribution'] = $activityProjectDistribution;
+        $data['activity_team_distribution'] = $activityTeamDistribution;
 
         return view('dashboard/index', $data);
     }

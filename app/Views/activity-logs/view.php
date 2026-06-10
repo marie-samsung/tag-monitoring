@@ -13,7 +13,8 @@
     $subsidiary = Constants::ACTIVITY_LOG_SUBSIDIARIES[$log['subsidiary_id']] ?? null;
     $status = Constants::ACTIVITY_LOGS_STATUS[$log['status']] ?? 'Unknown';
     $type = Constants::ACTIVITY_TYPES[$log['type']] ?? 'Unknown';
-    $project = Constants::PROJECTS[$log['project_id']] ?? 'Unknown';
+    $team = Constants::TEAMS[$log['team_id']] ?? 'Unknown';
+    $project = $log['project'] ?: 'Generic';
     $assignee = Constants::USERS[$log['assignee']] ?? Constants::USER_SYSTEM_LABEL;
     $size = Constants::ACTIVITY_SIZES[$log['size']] ?? 'Unknown';
     $priority = Constants::PRIORITIES[$log['priority']] ?? 'Unknown';
@@ -134,7 +135,8 @@
                 <h2 class="mb-0 fw-bold"><?= esc($log['title']) ?></h2>
                 <div class="d-flex gap-2 justify-content-start align-items-center flex-wrap mt-2">
                     <span class="badge" style="<?= random_bg_style($subsidiary) ?>" title="Subsidiary"><?= $subsidiary ?></span>
-                    <span class="badge" style="<?= random_bg_style($project) ?>" title="Project"><?= $project ?></span>
+                    <span class="badge" style="<?= random_bg_style($team) ?>" title="Team"><?= $team ?></span>
+                    <span class="badge" style="<?= random_bg_style($project) ?>" title="Project"><?= esc($project) ?></span>
                     <span class="badge" style="<?= random_bg_style($type) ?>" title="Activity Log Type"><?= $type ?></span>
                     <?php if (!$isAdmin): ?>
                     <select class="badge status-select-badge <?= assignee_class($log['assignee']) ?> assignee-select" data-log-id="<?= $log['id'] ?>" title="Assigned To">
@@ -181,6 +183,20 @@
                 <span class="d-block text-muted fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Title</span>
                 <div class="fw-semibold mt-1" style="font-size: 0.95rem; color: var(--color-text-base);">
                     <?= esc($log['title'] ?: '—') ?>
+                </div>
+            </div>
+
+            <div class="mb-3 pb-2 border-bottom border-light">
+                <span class="d-block text-muted fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Team</span>
+                <div class="fw-semibold mt-1" style="font-size: 0.95rem; color: var(--color-text-base);">
+                    <?= esc($team ?: '—') ?>
+                </div>
+            </div>
+
+            <div class="mb-3 pb-2 border-bottom border-light">
+                <span class="d-block text-muted fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Project</span>
+                <div class="fw-semibold mt-1" style="font-size: 0.95rem; color: var(--color-text-base);">
+                    <?= esc($project ?: '—') ?>
                 </div>
             </div>
 

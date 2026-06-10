@@ -435,13 +435,13 @@ Dashboard | Martech TMS
                         </div>
                     </div>
                     
-                    <!-- Bar Chart: Activity Logs by Project -->
+                    <!-- Bar Chart: Activity Logs by Team -->
                     <div class="col-md-4">
                         <h6 class="text-secondary text-center fw-semibold mb-3" style="font-size: 0.8rem; letter-spacing: 0.5px; text-transform: uppercase;">
-                            Activities by Project
+                            Activities by Team
                         </h6>
                         <div style="position: relative; height: 240px; width: 100%;">
-                            <canvas id="activityProjectChart"></canvas>
+                            <canvas id="activityTeamChart"></canvas>
                         </div>
                     </div>
                 </div>
@@ -982,16 +982,16 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // --- 9. Bar Chart: Activity Logs by Project ---
-    const activityProjectCtx = document.getElementById('activityProjectChart').getContext('2d');
-    const activityProjectData = <?= json_encode($activity_project_distribution) ?>;
-    new Chart(activityProjectCtx, {
+    // --- 9. Bar Chart: Activity Logs by Team ---
+    const activityTeamCtx = document.getElementById('activityTeamChart').getContext('2d');
+    const activityTeamData = <?= json_encode($activity_team_distribution) ?>;
+    new Chart(activityTeamCtx, {
         type: 'bar',
         data: {
-            labels: Object.keys(activityProjectData),
+            labels: Object.keys(activityTeamData),
             datasets: [{
                 label: 'Tickets',
-                data: Object.values(activityProjectData),
+                data: Object.values(activityTeamData),
                 backgroundColor: 'rgba(0, 113, 227, 0.8)',
                 hoverBackgroundColor: '#0071E3',
                 borderRadius: 6,

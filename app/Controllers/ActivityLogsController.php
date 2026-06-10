@@ -28,7 +28,8 @@ class ActivityLogsController extends BaseController
         $filters = [
             'keyword' => $this->request->getGet('keyword'),
             'subsidiary_id' => $this->request->getGet('subsidiary_id'),
-            'project_id' => $this->request->getGet('project_id'),
+            'team_id' => $this->request->getGet('team_id'),
+            'project' => $this->request->getGet('project'),
             'type' => $this->request->getGet('type'),
             'status' => $this->request->getGet('status'),
             'status_group' => $this->request->getGet('status_group'),
@@ -42,6 +43,10 @@ class ActivityLogsController extends BaseController
         $data['logs'] = $model->filterLogs($filters, 25);
         $data['pager'] = $model->pager;
         $data['filters'] = $filters;
+
+        $distinctProjects = $model->select('DISTINCT(project) as project_name')->orderBy('project', 'ASC')->findAll();
+        $data['project_names'] = array_column($distinctProjects, 'project_name');
+
         return view('activity-logs/list', $data);
     }
 
@@ -50,7 +55,11 @@ class ActivityLogsController extends BaseController
         $model = new ActivityLogsModel();
 
         if ($this->request->getMethod() === 'GET') {
-            return view('activity-logs/create', []);
+            $distinctProjects = $model->select('DISTINCT(project) as project_name')->orderBy('project', 'ASC')->findAll();
+            $projectNames = array_column($distinctProjects, 'project_name');
+            return view('activity-logs/create', [
+                'project_names' => $projectNames
+            ]);
         }
 
         $post = $this->request->getPost();
@@ -62,7 +71,8 @@ class ActivityLogsController extends BaseController
             'description'     => $post['description'] ?? null,
             'subsidiary_id'   => (int)$post['subsidiary_id'],
             'department_id'   => !empty($post['department_id']) ? (int)$post['department_id'] : null,
-            'project_id'      => (int)$post['project_id'],
+            'team_id'         => (int)$post['team_id'],
+            'project'         => !empty($post['project']) ? trim($post['project']) : 'Generic',
             'type'            => (int)$post['type'] ?? null,
             'ticket_id'       => !empty($post['ticket_id']) ? $post['ticket_id'] : null,
             'assignee'        => $assigneeId,
@@ -116,8 +126,11 @@ class ActivityLogsController extends BaseController
         }
 
         if ($this->request->getMethod() === 'GET') {
+            $distinctProjects = $model->select('DISTINCT(project) as project_name')->orderBy('project', 'ASC')->findAll();
+            $projectNames = array_column($distinctProjects, 'project_name');
             return view('activity-logs/update', [
-                'log' => $log
+                'log' => $log,
+                'project_names' => $projectNames
             ]);
         }
 
@@ -176,7 +189,8 @@ class ActivityLogsController extends BaseController
             'description'     => $post['description'] ?? null,
             'subsidiary_id'   => (int)$post['subsidiary_id'],
             'department_id'   => !empty($post['department_id']) ? (int)$post['department_id'] : null,
-            'project_id'      => (int)$post['project_id'],
+            'team_id'         => (int)$post['team_id'],
+            'project'         => !empty($post['project']) ? trim($post['project']) : 'Generic',
             'type'            => (int)$post['type'] ?? null,
             'ticket_id'       => !empty($post['ticket_id']) ? $post['ticket_id'] : null,
             'assignee'        => $assigneeId,
@@ -293,7 +307,8 @@ class ActivityLogsController extends BaseController
         $filters = [
             'keyword' => $this->request->getGet('keyword'),
             'subsidiary_id' => $this->request->getGet('subsidiary_id'),
-            'project_id' => $this->request->getGet('project_id'),
+            'team_id' => $this->request->getGet('team_id'),
+            'project' => $this->request->getGet('project'),
             'type' => $this->request->getGet('type'),
             'status' => $this->request->getGet('status'),
             'status_group' => $this->request->getGet('status_group'),
@@ -310,15 +325,19 @@ class ActivityLogsController extends BaseController
             ? '(' . Constants::ACTIVITY_LOG_SUBSIDIARIES[$filters['subsidiary_id']] . ')'
             : null;
 
-        $project = (!empty($filters['project_id']))
-            ? '(' . Constants::PROJECTS[$filters['project_id']] . ')'
+        $team = (!empty($filters['team_id']))
+            ? '(' . Constants::TEAMS[$filters['team_id']] . ')'
+            : null;
+
+        $project = (!empty($filters['project']))
+            ? '(' . $filters['project'] . ')'
             : null;
 
         $assignee = (!empty($filters['assignee']))
             ? '(' . Constants::USERS[$filters['assignee']] . ')'
             : null;
 
-        $filename = 'ActivityLogs' . $subsidiary . $project . $assignee . '_' . date('Y-m-d') . '.csv';
+        $filename = 'ActivityLogs' . $subsidiary . $team . $project . $assignee . '_' . date('Y-m-d') . '.csv';
 
         $csv = fopen('php://output', 'w');
 
@@ -328,6 +347,7 @@ class ActivityLogsController extends BaseController
 
         $headers = [
             'Subsidiary',
+            'Team',
             'Project Name',
             'Activity Log Type',
             'Assigned To',
@@ -352,7 +372,8 @@ class ActivityLogsController extends BaseController
         foreach ($logs as $log) {
             $row = [
                 Constants::ACTIVITY_LOG_SUBSIDIARIES[$log['subsidiary_id']] ?? 'N/A',
-                Constants::PROJECTS[$log['project_id']] ?? 'N/A',
+                Constants::TEAMS[$log['team_id']] ?? 'N/A',
+                $log['project'] ?: 'Generic',
                 Constants::ACTIVITY_TYPES[$log['type']] ?? 'N/A',
                 Constants::USERS[$log['assignee']] ?? Constants::USER_SYSTEM_LABEL,
                 $log['title'],

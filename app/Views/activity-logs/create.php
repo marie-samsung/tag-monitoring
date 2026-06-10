@@ -234,17 +234,32 @@ Activity Log: Create
                             </select>
                         </div>
 
-                        <!-- Project -->
+                        <!-- Team -->
                         <div class="col-12">
-                            <label class="form-label-sm fw-semibold text-secondary mb-1">Project</label>
-                            <select name="project_id" class="form-select form-select-xs" required>
+                            <label class="form-label-sm fw-semibold text-secondary mb-1">Team</label>
+                            <select name="team_id" class="form-select form-select-xs" required>
                                 <option value="">-Select-</option>
-                                <?php foreach (Constants::PROJECTS as $value => $label): ?>
+                                <?php foreach (Constants::TEAMS as $value => $label): ?>
                                     <option value="<?= esc($value) ?>"
-                                             <?= old('project_id', $log['project_id'] ?? '') == $value ? 'selected' : '' ?>>
+                                             <?= old('team_id', $log['team_id'] ?? '') == $value ? 'selected' : '' ?>>
                                         <?= esc($label) ?>
                                     </option>
                                 <?php endforeach; ?>
+                            </select>
+                        </div>
+
+                        <!-- Project -->
+                        <div class="col-12">
+                            <label class="form-label-sm fw-semibold text-secondary mb-1">Project</label>
+                            <select name="project" id="project-select" class="form-select form-select-xs" required>
+                                <?php foreach ($project_names as $pName): ?>
+                                    <option value="<?= esc($pName) ?>" <?= old('project', 'Generic') == $pName ? 'selected' : '' ?>>
+                                        <?= esc($pName) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                                <?php if (!in_array('Generic', $project_names)): ?>
+                                    <option value="Generic" selected>Generic</option>
+                                <?php endif; ?>
                             </select>
                         </div>
 
@@ -294,6 +309,12 @@ Activity Log: Create
 
         $('.searchable-select').select2({
             width: '100%',
+        });
+
+        $('#project-select').select2({
+            tags: true,
+            width: '100%',
+            placeholder: 'Select or type a project name...'
         });
 
         const sizeDescriptions = {

@@ -13,7 +13,8 @@ class ActivityLogsModel extends Model
         'description',
         'subsidiary_id',
         'department_id',
-        'project_id',
+        'team_id',
+        'project',
         'ticket_id',
         'assignee',
         'requested_by',
@@ -47,8 +48,12 @@ class ActivityLogsModel extends Model
             $this->where('subsidiary_id', $filters['subsidiary_id']);
         }
 
-        if (!empty($filters['project_id'])) {
-            $this->where('project_id', $filters['project_id']);
+        if (!empty($filters['team_id'])) {
+            $this->where('team_id', $filters['team_id']);
+        }
+
+        if (!empty($filters['project'])) {
+            $this->where('project', $filters['project']);
         }
 
         if (!empty($filters['type'])) {
@@ -87,7 +92,7 @@ class ActivityLogsModel extends Model
         $sortDir = $filters['sort_dir'] ?? 'desc';
         
         $allowedSortColumns = [
-            'id', 'subsidiary_id', 'project_id', 'title', 'ticket_id', 'assignee', 'status', 'priority', 'type', 'size', 'created_at'
+            'id', 'subsidiary_id', 'team_id', 'project', 'title', 'ticket_id', 'assignee', 'status', 'priority', 'type', 'size', 'created_at'
         ];
         if (!in_array($sortBy, $allowedSortColumns)) {
             $sortBy = 'created_at';
@@ -125,8 +130,12 @@ class ActivityLogsModel extends Model
             $this->where('subsidiary_id', $filters['subsidiary_id']);
         }
 
-        if (!empty($filters['project_id'])) {
-            $this->where('project_id', $filters['project_id']);
+        if (!empty($filters['team_id'])) {
+            $this->where('team_id', $filters['team_id']);
+        }
+
+        if (!empty($filters['project'])) {
+            $this->where('project', $filters['project']);
         }
 
         if (!empty($filters['type'])) {

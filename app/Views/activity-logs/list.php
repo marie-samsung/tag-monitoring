@@ -71,7 +71,7 @@ Activity Logs
 
     // Advanced filters inside the collapsible panel
     $advancedFiltersCount = 0;
-    $advancedFilterKeys = ['subsidiary_id', 'project_id', 'assignee', 'status', 'priority', 'type'];
+    $advancedFilterKeys = ['subsidiary_id', 'team_id', 'project', 'assignee', 'status', 'priority', 'type'];
     foreach ($advancedFilterKeys as $key) {
         if (!empty($_GET[$key]) || (isset($_GET[$key]) && $_GET[$key] !== '')) {
             $advancedFiltersCount++;
@@ -89,7 +89,7 @@ Activity Logs
     }
     
     // For general filter key rendering (like filter pills)
-    $allFilterKeys = ['subsidiary_id', 'project_id', 'assignee', 'status', 'priority', 'type', 'status_group', 'me_mode'];
+    $allFilterKeys = ['subsidiary_id', 'team_id', 'project', 'assignee', 'status', 'priority', 'type', 'status_group', 'me_mode'];
 ?>
 
 <?= csrf_field() ?>
@@ -300,15 +300,29 @@ Activity Logs
                         </select>
                     </div>
 
+                    <!-- Team -->
+                    <div class="col-md-4 col-lg-3">
+                        <label class="form-label-xs fw-semibold text-secondary mb-1">Team</label>
+                        <select name="team_id" class="form-select form-select-xs" style="height: 34px; border-radius: 8px;">
+                            <option value="">All Teams</option>
+                            <?php foreach (Constants::TEAMS as $value => $label): ?>
+                                <option value="<?= esc($value) ?>"
+                                    <?= old('team_id', $filters['team_id'] ?? '') == $value ? 'selected' : '' ?>>
+                                    <?= esc($label) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
                     <!-- Project -->
                     <div class="col-md-4 col-lg-3">
                         <label class="form-label-xs fw-semibold text-secondary mb-1">Project</label>
-                        <select name="project_id" class="form-select form-select-xs" style="height: 34px; border-radius: 8px;">
+                        <select name="project" class="form-select form-select-xs" style="height: 34px; border-radius: 8px;">
                             <option value="">All Projects</option>
-                            <?php foreach (Constants::PROJECTS as $value => $label): ?>
-                                <option value="<?= esc($value) ?>"
-                                    <?= old('project_id', $filters['project_id'] ?? '') == $value ? 'selected' : '' ?>>
-                                    <?= esc($label) ?>
+                            <?php foreach ($project_names as $pName): ?>
+                                <option value="<?= esc($pName) ?>"
+                                    <?= ($filters['project'] ?? '') == $pName ? 'selected' : '' ?>>
+                                    <?= esc($pName) ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
@@ -403,8 +417,10 @@ Activity Logs
                     $label = '';
                     if ($key === 'subsidiary_id') {
                         $label = 'Subsidiary: ' . (Constants::ACTIVITY_LOG_SUBSIDIARIES[$val] ?? $val);
-                    } elseif ($key === 'project_id') {
-                        $label = 'Project: ' . (Constants::PROJECTS[$val] ?? $val);
+                    } elseif ($key === 'team_id') {
+                        $label = 'Team: ' . (Constants::TEAMS[$val] ?? $val);
+                    } elseif ($key === 'project') {
+                        $label = 'Project: ' . $val;
                     } elseif ($key === 'assignee') {
                         $label = 'Assignee: ' . (Constants::USERS[$val] ?? $val);
                     } elseif ($key === 'status') {
@@ -479,8 +495,13 @@ Activity Logs
                     </a>
                 </th>
                 <th class="form-label-sm fw-semibold">
-                    <a href="<?= getSortUrl('project_id', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>" class="text-decoration-none text-dark d-inline-flex align-items-center gap-1">
-                        Project <?= getSortIcon('project_id', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>
+                    <a href="<?= getSortUrl('team_id', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>" class="text-decoration-none text-dark d-inline-flex align-items-center gap-1">
+                        Team <?= getSortIcon('team_id', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>
+                    </a>
+                </th>
+                <th class="form-label-sm fw-semibold">
+                    <a href="<?= getSortUrl('project', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>" class="text-decoration-none text-dark d-inline-flex align-items-center gap-1">
+                        Project <?= getSortIcon('project', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>
                     </a>
                 </th>
                 <th class="form-label-sm fw-semibold">
@@ -532,7 +553,7 @@ Activity Logs
         <tbody>
             <?php if (empty($logs)): ?>
                 <tr>
-                    <td colspan="<?= !$isAdmin ? 13 : 12 ?>" class="text-center py-5 text-muted">
+                    <td colspan="<?= !$isAdmin ? 14 : 13 ?>" class="text-center py-5 text-muted">
                         <i class="bi bi-inbox fs-2 mb-2 d-block text-secondary" style="opacity: 0.5;"></i>
                         <span class="fw-semibold">No activity logs found</span>
                         <p class="small text-secondary mb-0">Try adjusting your filters or search keywords.</p>
@@ -545,7 +566,8 @@ Activity Logs
                         $subsidiary = Constants::ACTIVITY_LOG_SUBSIDIARIES[$log['subsidiary_id']] ?? 'Unknown';
                         $status = Constants::ACTIVITY_LOGS_STATUS[$log['status']] ?? 'Unknown';
                         $type = Constants::ACTIVITY_TYPES[$log['type']] ?? 'Unknown';
-                        $project = Constants::PROJECTS[$log['project_id']] ?? 'Unknown';
+                        $team = Constants::TEAMS[$log['team_id']] ?? 'Unknown';
+                        $project = $log['project'] ?: 'Generic';
                         $assignee = Constants::USERS[$log['assignee']] ?? Constants::USER_SYSTEM_LABEL;
                         $size = Constants::ACTIVITY_SIZES[$log['size']] ?? 'Unknown';
                 ?>
@@ -563,8 +585,13 @@ Activity Logs
                             </span>
                         </td>
                         <td>
+                            <span class="badge" style="<?= random_bg_style($team) ?>">
+                                <?= $team ?>
+                            </span>
+                        </td>
+                        <td>
                             <span class="badge" style="<?= random_bg_style($project) ?>">
-                                <?= $project ?>
+                                <?= esc($project) ?>
                             </span>
                         </td>
                         <td>

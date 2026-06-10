@@ -199,18 +199,25 @@ class Constants
         self::DWF_DEPT_OTHER => 'Other',
     ];
 
+    public const TEAM_MEDIA_TAGGING = 1;
+    public const TEAM_DWF = 2;
+    public const TEAM_CRM = 3;
+    public const TEAM_SPOKE = 4;
+    public const TEAM_OTHER = 5;
+    public const TEAMS = [
+        self::TEAM_MEDIA_TAGGING => 'Media Tagging',
+        self::TEAM_DWF => 'DWF',
+        self::TEAM_CRM => 'CRM 2.0',
+        self::TEAM_SPOKE => 'Spoke',
+        self::TEAM_OTHER => 'Other',
+    ];
+
     public const PROJECT_MEDIA_TAGGING = 1;
     public const PROJECT_DWF = 2;
     public const PROJECT_CRM = 3;
     public const PROJECT_SPOKE = 4;
     public const PROJECT_OTHER = 5;
-    public const PROJECTS = [
-        self::PROJECT_MEDIA_TAGGING => 'Media Tagging',
-        self::PROJECT_DWF => 'DWF',
-        self::PROJECT_CRM => 'CRM 2.0',
-        self::PROJECT_SPOKE => 'Spoke',
-        self::PROJECT_OTHER => 'Other',
-    ];
+    public const PROJECTS = self::TEAMS;
 
     public const USER_SYSTEM = 0;
     public const USER_SYSTEM_LABEL = 'System';
