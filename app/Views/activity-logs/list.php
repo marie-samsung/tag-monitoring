@@ -567,7 +567,11 @@ Activity Logs
                                 <?= $project ?>
                             </span>
                         </td>
-                        <td><?= $log['title'] ?></td>
+                        <td>
+                            <a href="<?= site_url('activity-logs/view/' . $log['id']) ?>" class="apple-link-dark">
+                                <?= $log['title'] ?>
+                            </a>
+                        </td>
                         <td>
                             <?php if (!empty($log['ticket_id'])) : ?>
                                 <a href="<?= Constants::JIRA_LINK . $log['ticket_id'] ?>" target="_blank" class="apple-link fw-bold">

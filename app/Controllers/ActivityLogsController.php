@@ -68,6 +68,7 @@ class ActivityLogsController extends BaseController
             'assignee'        => $assigneeId,
             'requested_by'    => $post['requested_by'] ?? null,
             'status'          => (int)$post['status'],
+            'priority'        => (int)$post['priority'] ?? Constants::PRIORITY_LOW,
             'size'            => (int)$post['size'] ?? null,
             'requested_date'  => !empty($post['requested_date']) ? $post['requested_date'] : null,
             'start_date'      => !empty($post['start_date']) ? $post['start_date'] : null,
