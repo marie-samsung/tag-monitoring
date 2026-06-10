@@ -33,37 +33,88 @@ class DashboardController extends BaseController
 
         // System Health Index calculation
         $today = date('Y-m-d');
-        $expired_active = $tagsModel->whereIn('status', [
+        $active_tags_list = $tagsModel->select('id, name, status, al_end_date')
+            ->whereIn('status', [
                 Constants::STATUS_ENABLED,
                 Constants::STATUS_UPDATED_IN_AL,
                 Constants::STATUS_PENDING_VERIFICATION
             ])
-            ->where('al_end_date <', $today)
             ->where('deleted_at', null)
-            ->countAllResults();
+            ->findAll();
 
-        $expiring_soon = $tagsModel->whereIn('status', [
-                Constants::STATUS_ENABLED,
-                Constants::STATUS_UPDATED_IN_AL,
-                Constants::STATUS_PENDING_VERIFICATION
-            ])
-            ->where('al_end_date >=', $today)
-            ->where('al_end_date <=', date('Y-m-d', strtotime('+15 days')))
-            ->where('deleted_at', null)
-            ->countAllResults();
+        $critical_active = 0;       // Expired or < 7 days, NOT pending verification
+        $critical_pending = 0;      // Expired or < 7 days, IS pending verification
+        $attention_active = 0;      // 7-9 days, NOT pending verification
+        $attention_pending = 0;     // 7-9 days, IS pending verification
+        $normal_renewal = 0;        // 10-15 days
+        $safe_tags = 0;             // > 15 days
 
-        $total_active = $data['active_tags'];
-        
-        if ($total_active > 0) {
-            $health_score = 100 - (($expired_active * 8) + ($expiring_soon * 2));
+        $total_penalty = 0;
+        $active_tags_count = count($active_tags_list);
+
+        foreach ($active_tags_list as $tag) {
+            $endDate = $tag['al_end_date'];
+            $status = (int)$tag['status'];
+
+            if (empty($endDate)) {
+                $days_remaining = 999;
+            } else {
+                $days_remaining = (int)round((strtotime($endDate) - strtotime($today)) / (60 * 60 * 24));
+            }
+
+            $is_pending = ($status === Constants::STATUS_PENDING_VERIFICATION);
+
+            if ($days_remaining < 7) {
+                if ($is_pending) {
+                    $critical_pending++;
+                    if ($days_remaining < 0) {
+                        $total_penalty += 0.6; // Expired but pending verification
+                    } else {
+                        $total_penalty += 0.4; // Critical days left, pending verification
+                    }
+                } else {
+                    $critical_active++;
+                    if ($days_remaining < 0) {
+                        $total_penalty += 1.0; // Expired and not renewed
+                    } else {
+                        $total_penalty += 0.8; // Critical days left, not renewed
+                    }
+                }
+            } elseif ($days_remaining < 10) {
+                if ($is_pending) {
+                    $attention_pending++;
+                    $total_penalty += 0.15; // Needs attention soon, but renewed
+                } else {
+                    $attention_active++;
+                    $total_penalty += 0.3; // Needs attention soon, not renewed
+                }
+            } elseif ($days_remaining <= 15) {
+                $normal_renewal++;
+            } else {
+                $safe_tags++;
+            }
+        }
+
+        $sensitivity_multiplier = 10.0;
+        if ($active_tags_count > 0) {
+            $penalty_ratio = $total_penalty / $active_tags_count;
+            $health_score = (int)round(100 * (1 - ($penalty_ratio * $sensitivity_multiplier)));
             $health_score = max(0, min(100, $health_score));
         } else {
             $health_score = 100;
         }
 
         $data['health_score'] = $health_score;
-        $data['expired_active_count'] = $expired_active;
-        $data['expiring_soon_count'] = $expiring_soon;
+        $data['critical_active'] = $critical_active;
+        $data['critical_pending'] = $critical_pending;
+        $data['attention_active'] = $attention_active;
+        $data['attention_pending'] = $attention_pending;
+        $data['normal_renewal'] = $normal_renewal;
+        $data['safe_tags'] = $safe_tags;
+        
+        // Backward compatibility for view variables
+        $data['expired_active_count'] = $critical_active + $critical_pending;
+        $data['expiring_soon_count'] = $attention_active + $attention_pending;
 
         $data['activities_last_30_days'] = $activityLogsModel
             ->where('created_at >=', date('Y-m-d H:i:s', strtotime('-30 days')))

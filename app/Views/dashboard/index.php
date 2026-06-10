@@ -151,74 +151,160 @@ Dashboard | Martech TMS
         <!-- Left Column: System Health Gauge Card -->
         <div class="col-lg-4">
             <?php
-            // Calculate health variables for styling
-            $health_color = '#2E7D32'; // Success Green
-            $health_text_class = 'text-success';
-            $health_label = 'Excellent';
-            $health_icon = 'bi-shield-fill-check';
-
-            if ($health_score < 90 && $health_score >= 70) {
-                $health_color = '#F57F17'; // Warning Orange
-                $health_text_class = 'text-warning';
+            // Calculate health variables for styling based on overall score ranges:
+            // >= 90%: Excellent (Green)
+            // 85% - 89%: Good (Light Green)
+            // 80% - 84%: Fair (Blue)
+            // 60% - 79%: Attention (Orange/Amber)
+            // < 60%: Critical (Red)
+            if ($health_score >= 90) {
+                $health_color = '#2E7D32'; 
+                $health_text_class = 'text-success';
+                $health_label = 'Excellent';
+                $health_icon = 'bi-shield-fill-check';
+            } elseif ($health_score >= 85) {
+                $health_color = '#4CAF50'; 
+                $health_text_class = 'text-success';
                 $health_label = 'Good';
-                $health_icon = 'bi-exclamation-shield-fill';
-            } elseif ($health_score < 70) {
-                $health_color = '#C62828'; // Danger Red
+                $health_icon = 'bi-shield-fill-check';
+            } elseif ($health_score >= 80) {
+                $health_color = '#0071E3'; 
+                $health_text_class = 'text-primary';
+                $health_label = 'Fair';
+                $health_icon = 'bi-shield-fill';
+            } elseif ($health_score >= 60) {
+                $health_color = '#F57F17'; 
+                $health_text_class = 'text-warning';
+                $health_label = 'Attention';
+                $health_icon = 'bi-exclamation-triangle-fill';
+            } else {
+                $health_color = '#C62828'; 
                 $health_text_class = 'text-danger';
                 $health_label = 'Critical';
                 $health_icon = 'bi-shield-fill-x';
             }
 
-            // Build dynamic description based on actual counts
-            $health_desc_parts = [];
-            if ($expired_active_count > 0) {
-                $health_desc_parts[] = $expired_active_count . ' expired active tag' . ($expired_active_count > 1 ? 's' : '');
-            }
-            if ($expiring_soon_count > 0) {
-                $health_desc_parts[] = $expiring_soon_count . ' tag' . ($expiring_soon_count > 1 ? 's' : '') . ' expiring soon';
-            }
+            // Build dynamic description and alert styling based on actual threats (decoupled from overall score)
+            $critical_total = $critical_active + $critical_pending;
+            $attention_total = $attention_active + $attention_pending;
 
-            if (empty($health_desc_parts)) {
-                $health_desc = 'All active tags are currently operational and up to date.';
+            $health_desc = '';
+            $alert_icon = 'bi-info-circle-fill';
+            $alert_text_class = 'text-secondary';
+
+            if ($critical_total > 0) {
+                if ($critical_active > 0) {
+                    $health_desc = 'Urgent action required: ' . $critical_total . ' critical tag' . ($critical_total > 1 ? 's' : '') . ' expiring in < 7 days';
+                    if ($critical_pending > 0) {
+                        $health_desc .= ' (' . $critical_pending . ' pending verification)';
+                    }
+                    $health_desc .= '.';
+                    $alert_icon = 'bi-shield-fill-x';
+                    $alert_text_class = 'text-danger';
+                } else {
+                    $health_desc = 'Attention needed: ' . $critical_total . ' tag' . ($critical_total > 1 ? 's' : '') . ' expiring in < 7 days (' . $critical_pending . ' pending verification).';
+                    $alert_icon = 'bi-exclamation-triangle-fill';
+                    $alert_text_class = 'text-warning';
+                }
+            } elseif ($attention_total > 0) {
+                $health_desc = 'Action recommended: ' . $attention_total . ' tag' . ($attention_total > 1 ? 's' : '') . ' ' . ($attention_total == 1 ? 'needs' : 'need') . ' attention';
+                if ($attention_pending > 0) {
+                    $health_desc .= ' (' . $attention_pending . ' pending verification)';
+                }
+                $health_desc .= '.';
+                $alert_icon = 'bi-info-circle-fill';
+                $alert_text_class = 'text-primary';
             } else {
-                $prefix = ($health_score < 70) ? 'Urgent action required: ' : 'Action recommended: ';
-                $health_desc = $prefix . implode(' and ', $health_desc_parts) . '.';
+                $health_desc = 'All active tags are currently operational and up to date.';
+                $alert_icon = 'bi-shield-fill-check';
+                $alert_text_class = 'text-success';
             }
             ?>
-            <div class="apple-card h-100 d-flex flex-column align-items-center justify-content-center text-center p-4 position-relative overflow-hidden" style="min-height: 236px;">
+            <div class="apple-card h-100 d-flex flex-column justify-content-between p-4 position-relative overflow-hidden" style="min-height: 236px;">
                 <!-- Subtle background glow matching status color -->
                 <div style="position: absolute; width: 150px; height: 150px; border-radius: 50%; background: <?= $health_color ?>; opacity: 0.03; filter: blur(50px); top: -20px; right: -20px; pointer-events: none;"></div>
                 
-                <h6 class="text-secondary fw-semibold mb-3 w-100 text-start" style="font-size: 0.85rem; letter-spacing: 0.5px; text-transform: uppercase;">
+                <h6 class="text-secondary fw-semibold mb-2 w-100 text-start" style="font-size: 0.85rem; letter-spacing: 0.5px; text-transform: uppercase;">
                     <i class="bi bi-activity text-primary me-2"></i>System Health Index
                 </h6>
                 
-                <div class="d-flex align-items-center justify-content-center flex-grow-1 my-2" style="position: relative; width: 140px; height: 140px;">
-                    <!-- Circular SVG Gauge -->
-                    <svg width="140" height="140" viewBox="0 0 100 100" style="transform: rotate(-90deg); transform-origin: 50% 50%;">
-                        <!-- Background Circle -->
-                        <circle cx="50" cy="50" r="42" stroke="rgba(0, 0, 0, 0.04)" stroke-width="8" fill="transparent" />
-                        <!-- Foreground Circle (Dynamic stroke-dashoffset) -->
-                        <?php
-                        $radius = 42;
-                        $circumference = 2 * M_PI * $radius;
-                        $dashoffset = $circumference - ($health_score / 100) * $circumference;
-                        ?>
-                        <circle cx="50" cy="50" r="42" stroke="<?= $health_color ?>" stroke-width="8" fill="transparent"
-                                stroke-dasharray="<?= $circumference ?>" stroke-dashoffset="<?= $dashoffset ?>"
-                                stroke-linecap="round" style="transition: stroke-dashoffset 0.8s ease-in-out;" />
-                    </svg>
-                    
-                    <!-- Text in the middle of Gauge -->
-                    <div class="position-absolute d-flex flex-column align-items-center justify-content-center" style="top: 0; left: 0; right: 0; bottom: 0;">
-                        <span class="fw-bold text-dark" style="font-size: 1.85rem; line-height: 1;"><?= $health_score ?><span style="font-size: 1.1rem; font-weight: 600;">%</span></span>
-                        <span class="fw-bold mt-1 <?= $health_text_class ?>" style="font-size: 0.72rem; letter-spacing: 0.5px; text-transform: uppercase;"><?= $health_label ?></span>
+                <div class="d-flex align-items-center justify-content-between flex-grow-1 w-100 my-2 gap-3" style="min-height: 120px;">
+                    <!-- Car Fuel Meter SVG Gauge -->
+                    <div class="d-flex align-items-center justify-content-center position-relative flex-shrink-0" style="width: 140px; height: 120px;">
+                        <svg width="140" height="115" viewBox="0 0 100 82">
+                            <defs>
+                                <linearGradient id="fuelGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" stop-color="#FF453A" /> <!-- Red -->
+                                    <stop offset="40%" stop-color="#FF9F0A" /> <!-- Orange -->
+                                    <stop offset="75%" stop-color="#FFD60A" /> <!-- Yellow -->
+                                    <stop offset="100%" stop-color="#30D158" /> <!-- Green -->
+                                </linearGradient>
+                            </defs>
+                            <!-- Background Track -->
+                            <path d="M 10 62 A 40 40 0 0 1 90 62" fill="none" stroke="rgba(0, 0, 0, 0.05)" stroke-width="7" stroke-linecap="round" />
+                            
+                            <!-- Foreground Fuel Fill Arc -->
+                            <?php
+                            $radius = 40;
+                            $circumference = M_PI * $radius; // Semi-circle length = ~125.66
+                            $dashoffset = $circumference - ($health_score / 100) * $circumference;
+                            ?>
+                            <path d="M 10 62 A 40 40 0 0 1 90 62" fill="none" stroke="url(#fuelGradient)" stroke-width="7" stroke-linecap="round"
+                                  stroke-dasharray="<?= $circumference ?>" stroke-dashoffset="<?= $dashoffset ?>"
+                                  style="transition: stroke-dashoffset 1.2s ease-in-out;" />
+                            
+                            <!-- E / F Text Labels -->
+                            <text x="10" y="74" font-size="8" font-weight="bold" fill="#FF453A" text-anchor="middle">E</text>
+                            <text x="90" y="74" font-size="8" font-weight="bold" fill="#30D158" text-anchor="middle">F</text>
+                            
+                            <!-- Value Label and Status label inside gauge -->
+                            <text x="50" y="47" font-size="6.5" font-weight="bold" fill="<?= $health_color ?>" text-anchor="middle" style="letter-spacing: 0.5px; text-transform: uppercase;"><?= $health_label ?></text>
+                            <text x="50" y="78" font-size="12" font-weight="800" fill="#1d1d1f" text-anchor="middle"><?= $health_score ?>%</text>
+                            
+                            <!-- Needle (Points to the current health score) -->
+                            <polygon points="49.3,22 50.7,22 52,62 48,62" fill="#FF453A"
+                                     style="transform: rotate(<?= ($health_score / 100) * 180 - 90 ?>deg); transform-origin: 50px 62px; transition: transform 1.2s cubic-bezier(0.25, 0.8, 0.25, 1);" />
+                            
+                            <!-- Center pivot cap -->
+                            <circle cx="50" cy="62" r="4.5" fill="#1d1d1f" />
+                            <circle cx="50" cy="62" r="1.8" fill="#FF453A" />
+                        </svg>
+                    </div>
+
+                    <!-- Breakdown details -->
+                    <div class="text-start flex-grow-1 ps-2" style="font-size: 0.78rem; border-left: 1px solid rgba(0,0,0,0.06);">
+                        <div class="mb-1.5 d-flex justify-content-between align-items-center">
+                            <span class="text-secondary"><i class="bi bi-x-circle-fill text-danger me-1"></i>Critical (< 7d):</span>
+                            <span class="fw-bold text-dark">
+                                <?php if ($critical_pending > 0): ?>
+                                    <span class="text-secondary fw-normal" style="font-size: 0.7rem;" title="Pending verification">(<?= $critical_pending ?> pv)</span>
+                                <?php endif; ?>
+                                <?= $critical_active + $critical_pending ?>
+                            </span>
+                        </div>
+                        <div class="mb-1.5 d-flex justify-content-between align-items-center">
+                            <span class="text-secondary"><i class="bi bi-exclamation-triangle-fill text-warning me-1"></i>Attention (7-9d):</span>
+                            <span class="fw-bold text-dark">
+                                <?php if ($attention_pending > 0): ?>
+                                    <span class="text-secondary fw-normal" style="font-size: 0.7rem;" title="Pending verification">(<?= $attention_pending ?> pv)</span>
+                                <?php endif; ?>
+                                <?= $attention_active + $attention_pending ?>
+                            </span>
+                        </div>
+                        <div class="mb-1.5 d-flex justify-content-between align-items-center">
+                            <span class="text-secondary"><i class="bi bi-arrow-repeat text-primary me-1"></i>Renewal (10-15d):</span>
+                            <span class="fw-bold text-dark"><?= $normal_renewal ?></span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-secondary"><i class="bi bi-check-circle-fill text-success me-1"></i>Safe (> 15d):</span>
+                            <span class="fw-bold text-dark"><?= $safe_tags ?></span>
+                        </div>
                     </div>
                 </div>
 
-                <div class="mt-3 w-100">
-                    <p class="text-secondary mb-0 small fw-medium" style="line-height: 1.4; min-height: 40px; display: flex; align-items: center; justify-content: center;">
-                        <i class="bi <?= $health_icon ?> me-2 <?= $health_text_class ?> fs-5"></i>
+                <div class="mt-2 w-100">
+                    <p class="text-secondary mb-0 small fw-medium text-start" style="line-height: 1.3; min-height: 36px; display: flex; align-items: center;">
+                        <i class="bi <?= $alert_icon ?> me-2 <?= $alert_text_class ?> fs-5"></i>
                         <span><?= $health_desc ?></span>
                     </p>
                 </div>
