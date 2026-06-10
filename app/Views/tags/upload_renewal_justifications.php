@@ -28,19 +28,63 @@ Upload Renewal Justifications
         <!-- Preview of Extracted Data -->
         <div class="alert alert-info mb-4">
             <i class="bi bi-info-circle-fill me-2"></i>
-            <strong>Data Extracted Successfully!</strong> Please review the table below before updating.
+            <strong>Data Extracted Successfully!</strong> Please review the summary and table below before updating.
         </div>
 
         <?php 
-        $hasInvalid = false;
+        $validCount = 0;
+        $invalidTagsCount = 0;
+        $propertyNotFoundCount = 0;
         foreach ($extracted_rows as $row) {
-            if ($row['status'] !== 'Valid') {
-                $hasInvalid = true;
-                break;
+            if ($row['status'] === 'Valid') {
+                $validCount++;
+            } elseif ($row['status'] === 'Tag Not Found') {
+                $invalidTagsCount++;
+            } elseif ($row['status'] === 'Property Not Found') {
+                $propertyNotFoundCount++;
             }
         }
-        if ($hasInvalid):
+        $hasInvalid = ($invalidTagsCount > 0 || $propertyNotFoundCount > 0);
         ?>
+
+        <!-- Extraction Summary Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="apple-card p-3 d-flex align-items-center gap-3 animate-fade-in" style="background-color: #f4fbf7; border: 1px solid #d1f2e0; box-shadow: var(--shadow-sm); border-radius: 12px; transition: transform var(--transition-fast);">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center bg-success text-white" style="width: 48px; height: 48px; min-width: 48px;">
+                        <i class="bi bi-check-circle-fill fs-4"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-secondary mb-1 small uppercase fw-bold" style="letter-spacing: 0.5px; font-size: 0.75rem;">Renewal Justifications Extracted</h6>
+                        <h3 class="mb-0 fw-bold text-success" style="font-size: 1.6rem;"><?= $validCount ?></h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="apple-card p-3 d-flex align-items-center gap-3 animate-fade-in" style="background-color: #fff8f8; border: 1px solid #fcdad7; box-shadow: var(--shadow-sm); border-radius: 12px; transition: transform var(--transition-fast);">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center bg-danger text-white" style="width: 48px; height: 48px; min-width: 48px;">
+                        <i class="bi bi-x-circle-fill fs-4"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-secondary mb-1 small uppercase fw-bold" style="letter-spacing: 0.5px; font-size: 0.75rem;">Invalid Tags Found</h6>
+                        <h3 class="mb-0 fw-bold text-danger" style="font-size: 1.6rem;"><?= $invalidTagsCount ?></h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="apple-card p-3 d-flex align-items-center gap-3 animate-fade-in" style="background-color: #fffbf0; border: 1px solid #ffeeba; box-shadow: var(--shadow-sm); border-radius: 12px; transition: transform var(--transition-fast);">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center bg-warning text-white" style="width: 48px; height: 48px; min-width: 48px;">
+                        <i class="bi bi-exclamation-triangle-fill fs-4"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-secondary mb-1 small uppercase fw-bold" style="letter-spacing: 0.5px; font-size: 0.75rem;">Property Not Found</h6>
+                        <h3 class="mb-0 fw-bold text-warning" style="font-size: 1.6rem;"><?= $propertyNotFoundCount ?></h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <?php if ($hasInvalid): ?>
             <div class="alert alert-warning mb-4">
                 <i class="bi bi-exclamation-triangle-fill me-2"></i>
                 <strong>Warning:</strong> Some rows are invalid (highlighted in red) and will be skipped during insertion.
