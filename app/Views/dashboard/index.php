@@ -197,14 +197,21 @@ Dashboard | Martech TMS
         </div>
     </div>
 
-    <!-- Charts Section: Row 1 -->
+    <!-- Section: Proactive Forecast & Status -->
+    <div class="mb-3 mt-2">
+        <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-shield-check me-2 text-primary"></i>Proactive Forecast & Status</h5>
+        <p class="text-secondary small mb-0">Upcoming tag expirations and status distributions</p>
+    </div>
+
+    <!-- Charts Section: Row 1 (Forecast & Status Distribution) -->
     <div class="row g-4 mb-4">
-        <!-- Line Chart: System Activity & Ingestion Trend -->
+        <!-- Line Chart: Tag Expiration Forecast (Next 45 Days) -->
         <div class="col-lg-8">
             <div class="apple-card h-100">
-                <h5 class="card-title mb-3">System Activity & Ingestion (Last 30 Days)</h5>
+                <h5 class="card-title mb-1">Tag Expiration Forecast (Next 45 Days)</h5>
+                <p class="text-secondary small mb-3">Expected tag deactivation/renewal timeline</p>
                 <div style="position: relative; height: 320px; width: 100%;">
-                    <canvas id="activityTrendChart"></canvas>
+                    <canvas id="expirationForecastChart"></canvas>
                 </div>
             </div>
         </div>
@@ -223,7 +230,45 @@ Dashboard | Martech TMS
         </div>
     </div>
 
-    <!-- Charts Section: Row 2 -->
+    <!-- Section: System Performance & Operations -->
+    <div class="mb-3 mt-4">
+        <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-activity me-2 text-primary"></i>System Ingestion & Requests</h5>
+        <p class="text-secondary small mb-0">Ingestion trends and active requests pipeline</p>
+    </div>
+
+    <!-- Charts Section: Row 2 (System Ingestion & Pipeline) -->
+    <div class="row g-4 mb-4">
+        <!-- Line Chart: System Activity & Ingestion Trend -->
+        <div class="col-lg-8">
+            <div class="apple-card h-100">
+                <h5 class="card-title mb-3">System Activity & Ingestion (Last 30 Days)</h5>
+                <div style="position: relative; height: 320px; width: 100%;">
+                    <canvas id="activityTrendChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Doughnut Chart: Tag Requests Status Distribution -->
+        <div class="col-lg-4">
+            <div class="apple-card h-100">
+                <h5 class="card-title mb-3">Tag Requests Pipeline</h5>
+                <div style="position: relative; height: 260px; width: 100%;">
+                    <canvas id="requestStatusChart"></canvas>
+                </div>
+                <div class="text-center mt-3 text-secondary small">
+                    Total Requests: <strong><?= $total_requests ?></strong> requests
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section: Inventory Analysis -->
+    <div class="mb-3 mt-4">
+        <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-pie-chart-fill me-2 text-primary"></i>Inventory Analytics</h5>
+        <p class="text-secondary small mb-0">Distribution of tags by subsidiary and vendor</p>
+    </div>
+
+    <!-- Charts Section: Row 3 (Subsidiaries & Vendors) -->
     <div class="row g-4 mb-4">
         <!-- Bar Chart: Top Subsidiaries -->
         <div class="col-md-6">
@@ -246,40 +291,16 @@ Dashboard | Martech TMS
         </div>
     </div>
 
-    <!-- Charts Section: Row 3 -->
-    <div class="row g-4 mb-4">
-        <!-- Line Chart: Tag Expiration Forecast (Next 45 Days) -->
-        <div class="col-lg-8">
-            <div class="apple-card h-100">
-                <h5 class="card-title mb-1">Tag Expiration Forecast (Next 45 Days)</h5>
-                <p class="text-secondary small mb-3">Expected tag deactivation/renewal timeline</p>
-                <div style="position: relative; height: 300px; width: 100%;">
-                    <canvas id="expirationForecastChart"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- Doughnut Chart: Tag Requests Status Distribution -->
-        <div class="col-lg-4">
-            <div class="apple-card h-100">
-                <h5 class="card-title mb-3">Tag Requests Pipeline</h5>
-                <div style="position: relative; height: 260px; width: 100%;">
-                    <canvas id="requestStatusChart"></canvas>
-                </div>
-                <div class="text-center mt-3 text-secondary small">
-                    Total Requests: <strong><?= $total_requests ?></strong> requests
-                </div>
-            </div>
-        </div>
+    <!-- Section: Activity Logs & Support Analytics -->
+    <div class="mb-3 mt-4">
+        <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-ticket-detailed me-2 text-primary"></i>Activity Logs Analytics</h5>
+        <p class="text-secondary small mb-0">Breakdown of support tickets, tasks, and system activities</p>
     </div>
 
     <!-- Charts Section: Row 4 (Activity Logs Analytics) -->
     <div class="row g-4 mb-4">
         <div class="col-12">
             <div class="apple-card">
-                <h5 class="card-title mb-1">Activity Logs Analytics</h5>
-                <p class="text-secondary small mb-4">Breakdown of support tickets, tasks, and system activities</p>
-                
                 <div class="row g-4">
                     <!-- Doughnut Chart: Activity Logs by Status -->
                     <div class="col-md-4">
