@@ -30,6 +30,10 @@
         $siteCode = $propertiesModel->getSiteCode($propertyIds[0]);
         $is_shop = $propertiesModel->isShop($propertyIds[0]);
         $subsidiaryTicketId = $jiraHistoryModel->getLatestSubsidiary($properties[$propertyIds[0]]['subsidiary_id'])['ticket_id'] ?? null;
+
+        $rawRefLink = $properties[$propertyIds[0]]['ref_link'] ?? '#';
+        $baseRefLink = preg_replace('/(\/(overview|rules|data_elements|extensions|environments|hosts|settings|history)(\/|\?|$).*)$/i', '', $rawRefLink);
+        $createLibraryLink = $baseRefLink . Constants::AL_LIBRARY_CREATE;
     }
     $jiraTitle = sprintf(
         '[LC Request] [%s] - [%s] - [Date Extension Rule]',
@@ -143,32 +147,56 @@ Tags Renewal: <?= $siteCode ?? null ?>
                     <span>JIRA Ticket Information</span>
                 </h5>
                 
+                <!-- Proposed JIRA Title -->
                 <div class="mb-3">
                     <label class="form-label-sm fw-semibold text-secondary mb-1">Proposed JIRA Title</label>
-                    <div class="d-flex align-items-center gap-2">
-                        <span id="jiraTitle" class="fw-bold text-dark fs-6"><?= esc($jiraTitle) ?></span>
-                        <a href="javascript:void(0)" onclick="copyJiraTitle()" class="text-primary text-decoration-none">
-                            <i class="bi bi-copy fs-6"></i>
-                        </a>
-                        <span id="copyStatus" class="badge bg-success" style="opacity:0; transition: opacity .6s; font-size:10px;">
-                            Copied!
-                        </span>
+                    <div class="d-flex align-items-center justify-content-between p-2 bg-light border rounded gap-2" style="min-height: 38px;">
+                        <span id="jiraTitle" class="fw-semibold text-dark fs-7 text-truncate" style="max-width: 80%;" title="<?= esc($jiraTitle) ?>"><?= esc($jiraTitle) ?></span>
+                        <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                            <a href="javascript:void(0)" onclick="copyJiraTitle()" class="text-primary text-decoration-none d-flex align-items-center" title="Copy JIRA Title">
+                                <i class="bi bi-copy fs-6"></i>
+                            </a>
+                            <span id="copyStatus" class="badge bg-success" style="opacity:0; transition: opacity .6s; font-size:10px;">
+                                Copied!
+                            </span>
+                        </div>
                     </div>
                 </div>
 
-                <div class="mb-2">
+                <!-- Library Name -->
+                <div class="mb-3">
+                    <label class="form-label-sm fw-semibold text-secondary mb-1">Library Name</label>
+                    <div class="d-flex align-items-center justify-content-between p-2 bg-light border rounded gap-2" style="min-height: 38px;">
+                        <div class="d-flex align-items-center gap-2">
+                            <span id="libraryNameVal" class="fw-bold text-dark fs-7"><?= esc($libraryName) ?></span>
+                            <a href="javascript:void(0)" onclick="copyLibraryName()" class="text-primary text-decoration-none d-flex align-items-center" title="Copy Library Name">
+                                <i class="bi bi-copy fs-6"></i>
+                            </a>
+                            <span id="copyLibraryStatus" class="badge bg-success" style="opacity:0; transition: opacity .6s; font-size:10px;">
+                                Copied!
+                            </span>
+                        </div>
+                        <a href="<?= esc($createLibraryLink ?? '#') ?>" target="_blank" rel="noopener" class="apple-btn-secondary px-3 py-1 text-decoration-none btn-sm d-inline-flex align-items-center gap-1 text-nowrap flex-shrink-0" style="font-size: 0.72rem; height: 26px;">
+                            <i class="bi bi-plus-circle"></i> Create Library
+                        </a>
+                    </div>
+                </div>
+
+                <!-- JIRA Ticket ID -->
+                <div class="mb-3">
                     <label for="ticket_id" class="form-label-sm fw-semibold text-secondary mb-1">JIRA Ticket ID</label>
                     <div class="d-flex gap-2">
                         <input type="text" name="ticket_id" id="ticket_id"
                             class="form-control form-control-xs"
                             value="<?= old('ticket_id', $old['ticket_id'] ?? '') ?>"
                             placeholder="GTA-XXXXX"
+                            style="height: 38px;"
                             required>
-                        <a href="<?= Constants::JIRA_CREATE_ISSUE ?>" title="Create Issue in JIRA" class="apple-btn-secondary px-3 text-decoration-none btn-sm d-flex align-items-center justify-content-center text-nowrap" target="_blank">
+                        <a href="<?= Constants::JIRA_CREATE_ISSUE ?>" title="Create Issue in JIRA" class="apple-btn-secondary px-3 text-decoration-none btn-sm d-flex align-items-center justify-content-center text-nowrap" style="height: 38px; font-size: 0.75rem;" target="_blank">
                             Create JIRA Ticket
                         </a>
                     </div>
-                    <small class="form-text text-muted mt-1 d-block" style="font-size: 0.75rem;">
+                    <small class="form-text text-muted mt-1 d-block" style="font-size: 0.72rem; padding-left: 2px;">
                         Format: GTA-XXXXX
                     </small>
                 </div>
@@ -348,6 +376,9 @@ Tags Renewal: <?= $siteCode ?? null ?>
             // Update visible header
             $('#ticket-id-header').text(ticketId);
 
+            // Update Library Name text inside JIRA Ticket Information
+            $('#libraryNameVal').text(newLibraryName);
+
             // Update hidden form inputs
             $('#info_ticket_id').val(ticketId);
             $('.library-name-input').val(newLibraryName);
@@ -361,6 +392,9 @@ Tags Renewal: <?= $siteCode ?? null ?>
                 $('#details').summernote('code', $temp.html());
             }
         });
+
+        // Trigger input event to ensure initial state sync (e.g. if ticket_id is prefilled)
+        $('#ticket_id').trigger('input');
     });
 
     $(document).on('click', '.save-btn', function() {
@@ -387,6 +421,27 @@ Tags Renewal: <?= $siteCode ?? null ?>
 
         const temp = document.createElement('textarea');
         temp.value = title;
+
+        temp.style.position = 'fixed';
+        temp.style.left = '-9999px';
+        document.body.appendChild(temp);
+
+        temp.focus();
+        temp.select();
+
+        document.execCommand('copy');
+        document.body.removeChild(temp);
+
+        status.style.opacity = 1;
+        setTimeout(() => status.style.opacity = 0, 1000);
+    }
+
+    function copyLibraryName() {
+        const libName = document.getElementById('libraryNameVal').innerText;
+        const status = document.getElementById('copyLibraryStatus');
+
+        const temp = document.createElement('textarea');
+        temp.value = libName;
 
         temp.style.position = 'fixed';
         temp.style.left = '-9999px';
