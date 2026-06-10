@@ -525,8 +525,24 @@ document.addEventListener('DOMContentLoaded', function () {
             const query = this.value.toLowerCase().trim();
             
             tableRows.forEach(row => {
-                const textContent = row.textContent.toLowerCase();
-                if (textContent.includes(query)) {
+                let textParts = [];
+                row.querySelectorAll('td').forEach(td => {
+                    // For the row index column, skip it so row numbers don't affect search
+                    if (td.classList.contains('row-index-col')) return;
+                    
+                    const select = td.querySelector('select');
+                    if (select) {
+                        const selectedOption = select.options[select.selectedIndex];
+                        if (selectedOption) {
+                            textParts.push(selectedOption.textContent);
+                        }
+                    } else {
+                        textParts.push(td.textContent);
+                    }
+                });
+                const searchText = textParts.join(' ').toLowerCase();
+
+                if (searchText.includes(query)) {
                     row.style.display = '';
                 } else {
                     row.style.display = 'none';
