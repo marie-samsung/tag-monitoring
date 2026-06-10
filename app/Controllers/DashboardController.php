@@ -219,16 +219,18 @@ class DashboardController extends BaseController
         // 6. Tag Expiration Forecast (Next 45 Days)
         $forecastDates = [];
         $forecastDatesFull = [];
-        $forecastData = [];
+        $forecastExpiringData = [];
+        $forecastPendingData = [];
         for ($i = 0; $i < 45; $i++) {
             $dateStr = date('Y-m-d', strtotime("+$i days"));
             $forecastDates[] = date('d M', strtotime($dateStr));
             $forecastDatesFull[] = $dateStr;
-            $forecastData[$dateStr] = 0;
+            $forecastExpiringData[$dateStr] = 0;
+            $forecastPendingData[$dateStr] = 0;
         }
 
         $forecastQuery = $db->table('tags')
-            ->select("al_end_date, COUNT(*) as count")
+            ->select("al_end_date, status, COUNT(*) as count")
             ->whereIn('status', [
                 Constants::STATUS_ENABLED,
                 Constants::STATUS_PENDING_VERIFICATION,
@@ -237,19 +239,25 @@ class DashboardController extends BaseController
             ->where('al_end_date >=', date('Y-m-d'))
             ->where('al_end_date <=', date('Y-m-d', strtotime('+44 days')))
             ->where('deleted_at', null)
-            ->groupBy('al_end_date')
+            ->groupBy('al_end_date, status')
             ->get()
             ->getResultArray();
 
         foreach ($forecastQuery as $row) {
-            if (isset($forecastData[$row['al_end_date']])) {
-                $forecastData[$row['al_end_date']] = (int)$row['count'];
+            $dateStr = $row['al_end_date'];
+            if (isset($forecastExpiringData[$dateStr])) {
+                if ((int)$row['status'] === Constants::STATUS_PENDING_VERIFICATION) {
+                    $forecastPendingData[$dateStr] += (int)$row['count'];
+                } else {
+                    $forecastExpiringData[$dateStr] += (int)$row['count'];
+                }
             }
         }
 
         $data['forecast_labels'] = $forecastDates;
         $data['forecast_labels_full'] = $forecastDatesFull;
-        $data['forecast_data'] = array_values($forecastData);
+        $data['forecast_data_expiring'] = array_values($forecastExpiringData);
+        $data['forecast_data_pending'] = array_values($forecastPendingData);
 
         // 7. Tag Requests Status Distribution
         $requestStatusCounts = $db->table('tag_requests')
@@ -417,7 +425,6 @@ class DashboardController extends BaseController
                     ->select('id')
                     ->whereIn('status', [
                         Constants::STATUS_ENABLED,
-                        Constants::STATUS_PENDING_VERIFICATION,
                         Constants::STATUS_UPDATED_IN_AL
                     ])
                     ->where('al_end_date', $date)
@@ -429,6 +436,22 @@ class DashboardController extends BaseController
                 $ticketMap = [];
                 foreach ($expiringQuery as $eq) {
                     $tagIds[] = (int)$eq['id'];
+                }
+                break;
+
+            case 'pending_verification_tags':
+                $pendingQuery = $db->table('tags')
+                    ->select('id')
+                    ->where('status', Constants::STATUS_PENDING_VERIFICATION)
+                    ->where('al_end_date', $date)
+                    ->where('deleted_at', null)
+                    ->get()
+                    ->getResultArray();
+
+                $tagIds = [];
+                $ticketMap = [];
+                foreach ($pendingQuery as $pq) {
+                    $tagIds[] = (int)$pq['id'];
                 }
                 break;
 

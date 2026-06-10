@@ -631,17 +631,30 @@ document.addEventListener('DOMContentLoaded', function () {
         type: 'line',
         data: {
             labels: <?= json_encode($forecast_labels) ?>,
-            datasets: [{
-                label: 'Tags Expiring',
-                data: <?= json_encode($forecast_data) ?>,
-                borderColor: '#FF453A',
-                backgroundColor: 'rgba(255, 69, 58, 0.05)',
-                borderWidth: 2,
-                tension: 0.35,
-                fill: true,
-                pointBackgroundColor: '#FF453A',
-                pointHoverRadius: 6
-            }]
+            datasets: [
+                {
+                    label: 'Tags Expiring',
+                    data: <?= json_encode($forecast_data_expiring) ?>,
+                    borderColor: '#FF453A',
+                    backgroundColor: 'rgba(255, 69, 58, 0.05)',
+                    borderWidth: 2,
+                    tension: 0.35,
+                    fill: true,
+                    pointBackgroundColor: '#FF453A',
+                    pointHoverRadius: 6
+                },
+                {
+                    label: 'Pending Verification',
+                    data: <?= json_encode($forecast_data_pending) ?>,
+                    borderColor: '#FF9F0A',
+                    backgroundColor: 'rgba(255, 159, 10, 0.05)',
+                    borderWidth: 2,
+                    tension: 0.35,
+                    fill: true,
+                    pointBackgroundColor: '#FF9F0A',
+                    pointHoverRadius: 6
+                }
+            ]
         },
         options: {
             responsive: true,
@@ -649,16 +662,33 @@ document.addEventListener('DOMContentLoaded', function () {
             onClick: (event, elements, chart) => {
                 if (elements.length > 0) {
                     const firstElement = elements[0];
+                    const datasetIndex = firstElement.datasetIndex;
                     const index = firstElement.index;
                     const dateStr = forecastLabelsFull[index];
-                    showActivityTagsModal(dateStr, 'expiring_tags', 'Expiring Tags');
+                    const datasetLabel = chart.data.datasets[datasetIndex].label;
+
+                    let category = '';
+                    if (datasetLabel === 'Tags Expiring') category = 'expiring_tags';
+                    else if (datasetLabel === 'Pending Verification') category = 'pending_verification_tags';
+
+                    if (category) {
+                        showActivityTagsModal(dateStr, category, datasetLabel);
+                    }
                 }
             },
             onHover: (event, elements) => {
                 event.native.target.style.cursor = elements.length ? 'pointer' : 'default';
             },
             plugins: {
-                legend: { display: false },
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: {
+                        boxWidth: 12,
+                        padding: 15,
+                        font: { size: 12, weight: '500' }
+                    }
+                },
                 tooltip: {
                     padding: 12,
                     cornerRadius: 8,
@@ -863,6 +893,8 @@ document.addEventListener('DOMContentLoaded', function () {
         else if (category === 'pending_requests') categoryColor = '#00C2FF';
         else if (category === 'date_extensions') categoryColor = '#0071E3';
         else if (category === 'activities') categoryColor = '#A855F7';
+        else if (category === 'expiring_tags') categoryColor = '#FF453A';
+        else if (category === 'pending_verification_tags') categoryColor = '#FF9F0A';
 
         document.querySelector('#activityTagsModal .modal-content').style.borderTop = `5px solid ${categoryColor}`;
 
