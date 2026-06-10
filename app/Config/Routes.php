@@ -18,6 +18,7 @@ $routes->group('tags', function ($routes) {
     $routes->get('export', 'TagsController::exportAsCSV');
     $routes->get('view/(:num)', 'TagsController::view/$1');
     $routes->get('verify/(:num)', 'TagsController::verify/$1');
+    $routes->match(['get', 'post'], 'verify-multiple', 'TagsController::verifyMultiple');
     $routes->post('renew/confirm', 'TagsController::renewConfirm');
     $routes->post('renew/updateAL', 'TagsController::updateAL');
     $routes->post('update-rule/confirm', 'TagsController::updateRuleRequestConfirm');

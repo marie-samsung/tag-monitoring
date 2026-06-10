@@ -89,6 +89,7 @@ Martech TMS
     align-items: center;
     gap: 6px;
     text-decoration: none !important;
+    white-space: nowrap;
     transition: background-color 0.2s, transform 0.2s;
 }
 .floating-btn-renew:hover {
@@ -97,6 +98,29 @@ Martech TMS
     transform: scale(1.02);
 }
 .floating-btn-renew:active {
+    transform: scale(0.98);
+}
+.floating-btn-verify {
+    background: #34c759;
+    color: #ffffff;
+    border: none;
+    border-radius: 30px;
+    padding: 8px 18px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none !important;
+    white-space: nowrap;
+    transition: background-color 0.2s, transform 0.2s;
+}
+.floating-btn-verify:hover {
+    background: #30b852;
+    color: #ffffff;
+    transform: scale(1.02);
+}
+.floating-btn-verify:active {
     transform: scale(0.98);
 }
 .floating-btn-secondary {
@@ -111,6 +135,7 @@ Martech TMS
     align-items: center;
     gap: 6px;
     text-decoration: none !important;
+    white-space: nowrap;
     transition: background-color 0.2s, border-color 0.2s, transform 0.2s;
 }
 .floating-btn-secondary:hover {
@@ -384,6 +409,11 @@ Martech TMS
                     <i class="bi bi-three-dots-vertical"></i> Actions
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="headerActionsDropdown" style="border-radius: 10px; border: 1px solid var(--color-border-input);">
+                    <li>
+                        <a class="dropdown-item py-2 text-success" href="#" id="btnVerify" style="display: none; font-size: 0.9rem; font-weight: 500;">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>Verify Tag
+                        </a>
+                    </li>
                     <li>
                         <a class="dropdown-item py-2" href="#" id="btnRenew" style="display: none; font-size: 0.9rem;">
                             <i class="bi bi-calendar-check-fill text-primary me-2"></i>Date Extension
@@ -748,6 +778,7 @@ Martech TMS
                             <input type="checkbox"
                                 name="tag_ids[]"
                                 value="<?= htmlspecialchars($tag['id']) ?>"
+                                data-status="<?= htmlspecialchars($tag['status']) ?>"
                                 class="form-check-input">
                         </td>
                         <!-- Subsidiary -->
@@ -908,17 +939,21 @@ Martech TMS
         <span>Tags selected</span>
     </div>
     <div class="floating-action-divider"></div>
+    <a href="#" id="floatingBtnVerify" class="floating-btn-verify" title="Verify Tags" style="display: none;">
+        <i class="bi bi-check-circle-fill"></i>
+        <span>Verify</span>
+    </a>
     <a href="#" id="floatingBtnRenew" class="floating-btn-renew" title="Date Extension">
         <i class="bi bi-calendar-check-fill"></i>
-        <span>Date Extension</span>
+        <span>Extend</span>
     </a>
     <a href="#" id="floatingBtnUpdateRule" class="floating-btn-secondary" title="Create Update Rule Request">
         <i class="bi bi-pencil-square"></i>
-        <span>Update Rule</span>
+        <span>Update</span>
     </a>
     <a href="#" id="floatingBtnDeselect" class="floating-btn-secondary" title="Deselect All">
         <i class="bi bi-x-circle"></i>
-        <span>Deselect All</span>
+        <span>Deselect</span>
     </a>
 </div>
 
@@ -945,6 +980,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const btnRenew = document.getElementById('btnRenew');
     const btnUpdateRule = document.getElementById('btnUpdateRule');
+    const btnVerify = document.getElementById('btnVerify');
     const table = document.getElementById('tblTags');
     const selectAllTags = document.getElementById('selectAllTags');
     const selectedCountBadge = document.getElementById('selectedCountBadge');
@@ -962,8 +998,13 @@ document.addEventListener('DOMContentLoaded', function () {
         const checkedCount = table.querySelectorAll('input[name="tag_ids[]"]:checked').length;
         const anyChecked = checkedCount > 0;
         
+        const pendingCheckedCount = [...table.querySelectorAll('input[name="tag_ids[]"]:checked')]
+            .filter(cb => cb.getAttribute('data-status') === '4').length;
+        const anyPendingChecked = pendingCheckedCount > 0;
+        
         if (btnRenew) btnRenew.style.display = anyChecked ? 'block' : 'none';
         if (btnUpdateRule) btnUpdateRule.style.display = anyChecked ? 'block' : 'none';
+        if (btnVerify) btnVerify.style.display = anyPendingChecked ? 'block' : 'none';
         
         const menuBulkDivider = document.getElementById('menuBulkDivider');
         if (menuBulkDivider) {
@@ -977,10 +1018,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const floatingActionBar = document.getElementById('floatingActionBar');
         const floatingSelectedCount = document.getElementById('floatingSelectedCount');
+        const floatingBtnVerify = document.getElementById('floatingBtnVerify');
         if (floatingActionBar) {
             if (anyChecked) {
                 if (floatingSelectedCount) {
                     floatingSelectedCount.textContent = checkedCount;
+                }
+                if (floatingBtnVerify) {
+                    floatingBtnVerify.style.display = anyPendingChecked ? 'flex' : 'none';
                 }
                 floatingActionBar.classList.add('show');
             } else {
@@ -1129,13 +1174,31 @@ document.addEventListener('DOMContentLoaded', function () {
         window.location.href = url;
     };
 
+    const handleVerify = (e) => {
+        if (e) e.preventDefault();
+        const checkedPending = [...document.querySelectorAll('input[name="tag_ids[]"]:checked')]
+            .filter(cb => cb.getAttribute('data-status') === '4')
+            .map(cb => cb.value);
+            
+        if (checkedPending.length === 0) return;
+        
+        const msg = `Have you verified the end date matches in AL for the selected ${checkedPending.length} tag(s)?`;
+        if (confirm(msg)) {
+            const url = "<?= site_url('tags/verify-multiple') ?>?tags=" + checkedPending.join(',');
+            window.location.href = url;
+        }
+    };
+
     if (btnRenew) btnRenew.addEventListener('click', handleRenew);
     if (btnUpdateRule) btnUpdateRule.addEventListener('click', handleUpdateRule);
+    if (btnVerify) btnVerify.addEventListener('click', handleVerify);
 
     const floatingBtnRenew = document.getElementById('floatingBtnRenew');
     const floatingBtnUpdateRule = document.getElementById('floatingBtnUpdateRule');
+    const floatingBtnVerify = document.getElementById('floatingBtnVerify');
     if (floatingBtnRenew) floatingBtnRenew.addEventListener('click', handleRenew);
     if (floatingBtnUpdateRule) floatingBtnUpdateRule.addEventListener('click', handleUpdateRule);
+    if (floatingBtnVerify) floatingBtnVerify.addEventListener('click', handleVerify);
 
     const floatingBtnDeselect = document.getElementById('floatingBtnDeselect');
     if (floatingBtnDeselect) {

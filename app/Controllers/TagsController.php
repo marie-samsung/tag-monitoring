@@ -352,6 +352,102 @@ class TagsController extends BaseController
     }
 
     /**
+     * Verify multiple tags
+     * @return \CodeIgniter\HTTP\RedirectResponse
+     * @throws ReflectionException
+     */
+    public function verifyMultiple()
+    {
+        $model = new TagsModel();
+        $jiraModel = new JiraHistoryModel();
+        $activityLogModel = new ActivityLogsModel();
+        $commentsModel = new ActivityLogCommentsModel();
+
+        // Support both GET query parameters and POST
+        $tag_ids_raw = $this->request->getVar('tags');
+        if (empty($tag_ids_raw)) {
+            return redirect()
+                ->to('/tags')
+                ->with('error', 'No tags selected for verification.');
+        }
+
+        $tag_ids = is_array($tag_ids_raw) ? $tag_ids_raw : explode(',', $tag_ids_raw);
+        $tag_ids = array_filter(array_map('intval', $tag_ids));
+
+        if (empty($tag_ids)) {
+            return redirect()
+                ->to('/tags')
+                ->with('error', 'No valid tags selected for verification.');
+        }
+
+        $verifiedCount = 0;
+        $skippedCount = 0;
+        $verifiedNames = [];
+
+        foreach ($tag_ids as $id) {
+            $tag = $model->find($id);
+            if (!$tag) {
+                $skippedCount++;
+                continue;
+            }
+
+            // Only verify tags in STATUS_PENDING_VERIFICATION
+            if ($tag['status'] != Constants::STATUS_PENDING_VERIFICATION) {
+                $skippedCount++;
+                continue;
+            }
+
+            $requestedDate = $tag['requested_date'];
+
+            $jiraTicket = $jiraModel->getRelatedTags($id);
+            if (!empty($jiraTicket)) {
+                $activityLog = $activityLogModel->where('ticket_id', $jiraTicket[0]['ticket_id'])->first();
+
+                if ($activityLog) {
+                    if ($activityLog['status'] != Constants::ACTIVITY_LOGS_STATUS_COMPLETED) {
+                        $from = Constants::ACTIVITY_LOGS_STATUS[$activityLog['status']];
+                        $to = Constants::ACTIVITY_LOGS_STATUS[Constants::ACTIVITY_LOGS_STATUS_COMPLETED];
+
+                        $commentsModel->insert([
+                            'log_id' => $activityLog['id'],
+                            'comment' => "Status updated from [{$from}] to [{$to}] (Bulk Verification)",
+                            'commented_by' => session()->get('user_id') ?? 0,
+                            'type' => Constants::COMMENT_TYPE_UPDATE,
+                        ]);
+
+                        $activityLogModel->update($activityLog['id'], [
+                            'status' => Constants::ACTIVITY_LOGS_STATUS_COMPLETED,
+                        ]);
+                    }
+                }
+            }
+
+            $model->update($id, [
+                'status' => Constants::STATUS_ENABLED,
+                'al_end_date' => $requestedDate,
+                'requested_date' => null,
+            ]);
+
+            $verifiedCount++;
+            $verifiedNames[] = "#{$tag['id']} {$tag['name']}";
+        }
+
+        if ($verifiedCount > 0) {
+            $msg = "Successfully verified {$verifiedCount} tag(s).";
+            if ($skippedCount > 0) {
+                $msg .= " Skipped {$skippedCount} tag(s) that were not pending verification.";
+            }
+            return redirect()
+                ->to('/tags')
+                ->with('success', $msg);
+        } else {
+            return redirect()
+                ->to('/tags')
+                ->with('error', "No tags were verified. Make sure the selected tags are in 'Pending Verification' status.");
+        }
+    }
+
+    /**
      * In renew/confirm view, to track if tag is updated in AL but not submitted for review
      * @return \CodeIgniter\HTTP\ResponseInterface
      * @throws ReflectionException
