@@ -87,9 +87,12 @@ Activity Logs
     if ($isMeMode) {
         $activeFiltersCount++;
     }
+    if (!empty($_GET['show_completed']) && $_GET['show_completed'] == '1') {
+        $activeFiltersCount++;
+    }
     
     // For general filter key rendering (like filter pills)
-    $allFilterKeys = ['subsidiary_id', 'team_id', 'project', 'assignee', 'status', 'priority', 'type', 'status_group', 'me_mode'];
+    $allFilterKeys = ['subsidiary_id', 'team_id', 'project', 'assignee', 'status', 'priority', 'type', 'status_group', 'me_mode', 'show_completed'];
 ?>
 
 <?= csrf_field() ?>
@@ -239,6 +242,9 @@ Activity Logs
 
     <!-- #region | SEARCH FILTER -->
     <form method="get" class="m-0" id="filterForm">
+        <?php if (!empty($_GET['status_group'])): ?>
+            <input type="hidden" name="status_group" value="<?= esc($_GET['status_group']) ?>">
+        <?php endif; ?>
         <!-- Primary Search Bar -->
         <div class="apple-control-bar mb-3">
             <div class="d-flex align-items-center gap-2 flex-wrap">
@@ -385,6 +391,15 @@ Activity Logs
                             <?php endforeach; ?>
                         </select>
                     </div>
+
+                    <!-- Show Completed -->
+                    <div class="col-md-4 col-lg-3">
+                        <label class="form-label-xs fw-semibold text-secondary mb-1">&nbsp;</label>
+                        <div class="form-check form-switch d-flex align-items-center gap-2" style="height: 34px;">
+                            <input class="form-check-input" type="checkbox" name="show_completed" value="1" id="showCompletedSwitch" <?= (isset($_GET['show_completed']) && $_GET['show_completed'] == '1') ? 'checked' : '' ?> onchange="this.form.submit()" style="cursor: pointer; width: 2.4em; height: 1.2em; margin-top: 0;">
+                            <label class="form-check-label small fw-medium text-secondary mb-0" for="showCompletedSwitch" style="cursor: pointer; user-select: none;">Show Completed</label>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -438,6 +453,8 @@ Activity Logs
                         $label = 'Type: ' . (Constants::ACTIVITY_TYPES[$val] ?? $val);
                     } elseif ($key === 'me_mode') {
                         $label = 'Assigned To Me: Enabled';
+                    } elseif ($key === 'show_completed') {
+                        $label = 'Show Completed: Enabled';
                     }
                     
                     $tempParams = $_GET;

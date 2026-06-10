@@ -38,6 +38,7 @@ class ActivityLogsController extends BaseController
             'me_mode' => $meMode ? 1 : 0,
             'sort_by' => $this->request->getGet('sort_by') ?? 'created_at',
             'sort_dir' => $this->request->getGet('sort_dir') ?? 'desc',
+            'show_completed' => $this->request->getGet('show_completed'),
         ];
         $data['status_counts'] = $model->getStatusCounts($filters);
         $data['logs'] = $model->filterLogs($filters, 25);
@@ -317,6 +318,7 @@ class ActivityLogsController extends BaseController
             'me_mode' => $meMode ? 1 : 0,
             'sort_by' => $this->request->getGet('sort_by') ?? 'created_at',
             'sort_dir' => $this->request->getGet('sort_dir') ?? 'desc',
+            'show_completed' => $this->request->getGet('show_completed'),
         ];
         
         $logs = $logsModel->filterLogs($filters);

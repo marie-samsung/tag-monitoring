@@ -87,6 +87,12 @@ class ActivityLogsModel extends Model
             $this->where('status', $filters['status']);
         }
 
+        if (empty($filters['show_completed']) || $filters['show_completed'] !== '1') {
+            if (($filters['status_group'] ?? '') !== 'completed' && ($filters['status'] ?? null) != Constants::ACTIVITY_LOGS_STATUS_COMPLETED) {
+                $this->where('status !=', Constants::ACTIVITY_LOGS_STATUS_COMPLETED);
+            }
+        }
+
         // Dynamic Sort options
         $sortBy = $filters['sort_by'] ?? 'created_at';
         $sortDir = $filters['sort_dir'] ?? 'desc';
