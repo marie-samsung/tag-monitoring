@@ -599,4 +599,255 @@ class ActivityLogsController extends BaseController
             'csrf_hash' => csrf_hash()
         ]);
     }
+
+    public function bulkStatus()
+    {
+        $model = new ActivityLogsModel();
+        $commentsModel = new ActivityLogCommentsModel();
+
+        $logIds = $this->request->getPost('log_ids');
+        $status = (int)$this->request->getPost('status');
+
+        if (empty($logIds) || !is_array($logIds)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'No activity logs selected.',
+                'csrf_hash' => csrf_hash()
+            ]);
+        }
+
+        if (!array_key_exists($status, Constants::ACTIVITY_LOGS_STATUS)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Invalid status value.',
+                'csrf_hash' => csrf_hash()
+            ]);
+        }
+
+        $to = Constants::ACTIVITY_LOGS_STATUS[$status] ?? 'Unknown';
+        $updatedCount = 0;
+
+        foreach ($logIds as $id) {
+            $log = $model->find($id);
+            if ($log && (int)$log['status'] !== $status) {
+                $from = Constants::ACTIVITY_LOGS_STATUS[$log['status']] ?? 'Unknown';
+
+                $commentsModel->insert([
+                    'log_id' => $id,
+                    'comment' => "Status updated from [{$from}] to [{$to}]",
+                    'commented_by' => session()->get('user_id'),
+                    'type' => Constants::COMMENT_TYPE_UPDATE,
+                ]);
+
+                $updateData = [
+                    'status' => $status,
+                ];
+
+                if ($status == Constants::ACTIVITY_LOGS_STATUS_COMPLETED) {
+                    $updateData['finished_date'] = date('Y-m-d');
+                }
+
+                $model->update($id, $updateData);
+                $updatedCount++;
+            }
+        }
+
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => "Successfully marked {$updatedCount} activity log(s) as '{$to}'.",
+            'csrf_hash' => csrf_hash()
+        ]);
+    }
+
+    public function bulkProject()
+    {
+        $model = new ActivityLogsModel();
+        $commentsModel = new ActivityLogCommentsModel();
+
+        $logIds = $this->request->getPost('log_ids');
+        $project = trim((string)$this->request->getPost('project'));
+
+        if (empty($logIds) || !is_array($logIds)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'No activity logs selected.',
+                'csrf_hash' => csrf_hash()
+            ]);
+        }
+
+        if ($project === '') {
+            $project = 'Generic';
+        }
+
+        $updatedCount = 0;
+
+        foreach ($logIds as $id) {
+            $log = $model->find($id);
+            if ($log && $log['project'] !== $project) {
+                $from = $log['project'] ?: 'Generic';
+
+                $commentsModel->insert([
+                    'log_id' => $id,
+                    'comment' => "Project changed from [{$from}] to [{$project}]",
+                    'commented_by' => session()->get('user_id'),
+                    'type' => Constants::COMMENT_TYPE_UPDATE,
+                ]);
+
+                $model->update($id, [
+                    'project' => $project,
+                ]);
+                $updatedCount++;
+            }
+        }
+
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => "Successfully added {$updatedCount} activity log(s) to project '{$project}'.",
+            'csrf_hash' => csrf_hash()
+        ]);
+    }
+
+    public function bulkAssignee()
+    {
+        $model = new ActivityLogsModel();
+        $commentsModel = new ActivityLogCommentsModel();
+
+        $logIds = $this->request->getPost('log_ids');
+        $assigneeId = (int)$this->request->getPost('assignee');
+
+        if (empty($logIds) || !is_array($logIds)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'No activity logs selected.',
+                'csrf_hash' => csrf_hash()
+            ]);
+        }
+
+        if (!array_key_exists($assigneeId, Constants::USERS) && $assigneeId !== Constants::USER_SYSTEM) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Invalid assignee value.',
+                'csrf_hash' => csrf_hash()
+            ]);
+        }
+
+        $to = $assigneeId == Constants::USER_SYSTEM
+            ? Constants::USER_SYSTEM_LABEL
+            : Constants::USERS[$assigneeId] ?? 'Unknown';
+
+        $updatedCount = 0;
+
+        foreach ($logIds as $id) {
+            $log = $model->find($id);
+            if ($log && (int)$log['assignee'] !== $assigneeId) {
+                $from = $log['assignee'] == Constants::USER_SYSTEM
+                    ? Constants::USER_SYSTEM_LABEL
+                    : Constants::USERS[$log['assignee']] ?? 'Unknown';
+
+                $commentsModel->insert([
+                    'log_id' => $id,
+                    'comment' => "Assignee changed from [{$from}] to [{$to}]",
+                    'commented_by' => session()->get('user_id'),
+                    'type' => Constants::COMMENT_TYPE_UPDATE,
+                ]);
+
+                $model->update($id, [
+                    'assignee' => $assigneeId,
+                ]);
+                $updatedCount++;
+            }
+        }
+
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => "Successfully reassigned {$updatedCount} activity log(s) to '{$to}'.",
+            'csrf_hash' => csrf_hash()
+        ]);
+    }
+
+    public function projectView($projectName)
+    {
+        $projectName = urldecode($projectName);
+        $model = new ActivityLogsModel();
+        
+        $tasks = $model->getProjectLogs($projectName, 25);
+
+        $distinctProjects = $model->select('DISTINCT(project) as project_name')->orderBy('project', 'ASC')->findAll();
+        $projectNames = array_column($distinctProjects, 'project_name');
+        // Ensure no empty values, and if so default to Generic
+        $projectNames = array_map(function($p) {
+            return !empty($p) ? $p : 'Generic';
+        }, $projectNames);
+        $projectNames = array_unique($projectNames);
+
+        return view('activity-logs/project_spreadsheet', [
+            'project_name'  => $projectName,
+            'tasks'         => $tasks,
+            'pager'         => $model->pager,
+            'project_names' => $projectNames,
+        ]);
+    }
+
+    public function exportProjectExcel($projectName)
+    {
+        $projectName = urldecode($projectName);
+        $model = new ActivityLogsModel();
+        $tasks = $model->getProjectLogs($projectName);
+
+        $filename = str_replace(' ', '_', $projectName) . '_Tasks_Export_' . date('Y-m-d') . '.csv';
+
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        
+        $output = fopen('php://output', 'w');
+        
+        // Output BOM for Excel UTF-8 support
+        fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
+
+        // Header row
+        fputcsv($output, [
+            'Subsidiary',
+            'Task Title',
+            'Ticket ID',
+            'Priority',
+            'Assignee',
+            'Created Date',
+            'Status',
+            'Last Comment'
+        ]);
+
+        foreach ($tasks as $task) {
+            $subsidiary = Constants::ACTIVITY_LOG_SUBSIDIARIES[$task['subsidiary_id']] ?? 'Unknown';
+            $priority = Constants::PRIORITIES[$task['priority']] ?? 'Unknown';
+            $assignee = Constants::USERS[$task['assignee']] ?? Constants::USER_SYSTEM_LABEL;
+            $createdDate = date('d-m-Y', strtotime($task['created_at']));
+            $status = Constants::ACTIVITY_LOGS_STATUS[$task['status']] ?? 'Unknown';
+
+            fputcsv($output, [
+                $subsidiary,
+                $task['title'],
+                $task['ticket_id'] ?: '',
+                $priority,
+                $assignee,
+                $createdDate,
+                $status,
+                $task['last_comment'] ?: ''
+            ]);
+        }
+
+        fclose($output);
+        exit;
+    }
+
+    public function exportProjectPDF($projectName)
+    {
+        $projectName = urldecode($projectName);
+        $model = new ActivityLogsModel();
+        $tasks = $model->getProjectLogs($projectName);
+
+        return view('activity-logs/project_pdf', [
+            'project_name' => $projectName,
+            'tasks'        => $tasks,
+        ]);
+    }
 }

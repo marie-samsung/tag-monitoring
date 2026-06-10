@@ -590,9 +590,11 @@ Activity Logs
                             </span>
                         </td>
                         <td>
-                            <span class="badge" style="<?= random_bg_style($project) ?>">
-                                <?= esc($project) ?>
-                            </span>
+                            <a href="<?= site_url('activity-logs/project/' . rawurlencode($project)) ?>" class="text-decoration-none" title="View Project Spreadsheet">
+                                <span class="badge" style="<?= random_bg_style($project) ?>">
+                                    <?= esc($project) ?>
+                                </span>
+                            </a>
                         </td>
                         <td>
                             <a href="<?= site_url('activity-logs/view/' . $log['id']) ?>" class="apple-link-dark">
@@ -663,7 +665,7 @@ Activity Logs
                                         </li>
                                         <li>
                                             <a class="dropdown-item py-2" href="<?= site_url('activity-logs/update/' . $log['id']) ?>" style="font-size: 0.85rem;">
-                                                <i class="bi bi-pencil-square text-warning me-2"></i>Update Log
+                                                <i class="bi bi-pencil-square text-warning me-2"></i>Edit Log
                                             </a>
                                         </li>
                                     </ul>
@@ -684,7 +686,7 @@ Activity Logs
                                         </li>
                                         <li>
                                             <a class="dropdown-item py-2" href="<?= site_url('activity-logs/update/' . $log['id']) ?>">
-                                                <i class="bi bi-pencil-square text-warning me-2"></i>Update Log
+                                                <i class="bi bi-pencil-square text-warning me-2"></i>Edit Log
                                             </a>
                                         </li>
                                     </ul>
@@ -697,7 +699,7 @@ Activity Logs
                                     <a href="<?= site_url('activity-logs/view/' . $log['id']) ?>" class="hover-action-btn btn-view" data-bs-toggle="tooltip" data-bs-placement="top" title="View Details">
                                         <i class="bi bi-eye-fill"></i>
                                     </a>
-                                    <a href="<?= site_url('activity-logs/update/' . $log['id']) ?>" class="hover-action-btn btn-update" data-bs-toggle="tooltip" data-bs-placement="top" title="Update Log">
+                                    <a href="<?= site_url('activity-logs/update/' . $log['id']) ?>" class="hover-action-btn btn-update" data-bs-toggle="tooltip" data-bs-placement="top" title="Edit Log">
                                         <i class="bi bi-pencil-fill"></i>
                                     </a>
                                 </div>
@@ -721,9 +723,46 @@ Activity Logs
 <div id="floatingActionBar" class="floating-action-bar">
     <div class="floating-action-info">
         <span id="floatingSelectedCount" class="count-badge">0</span>
-        <span>Activity Logs selected</span>
+        <span>selected</span>
     </div>
     <div class="floating-action-divider"></div>
+    
+    <button type="button" id="floatingBtnComplete" class="floating-btn-primary" title="Mark Selected as Complete">
+        <i class="bi bi-check-circle-fill"></i>
+        <span>Mark Complete</span>
+    </button>
+
+    <div class="dropdown">
+        <button class="floating-btn-secondary dropdown-toggle" type="button" id="floatingDropdownProject" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-folder-plus"></i>
+            <span>Add to Project</span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-dark shadow" aria-labelledby="floatingDropdownProject" style="max-height: 250px; overflow-y: auto; z-index: 1060;">
+            <?php foreach ($project_names as $pName): ?>
+                <?php if (!empty($pName)): ?>
+                    <li><a class="dropdown-item py-2 floating-action-project-item" href="#" data-project="<?= esc($pName) ?>"><?= esc($pName) ?></a></li>
+                <?php endif; ?>
+            <?php endforeach; ?>
+            <li><hr class="dropdown-divider" style="background-color: rgba(255, 255, 255, 0.15);"></li>
+            <li><a class="dropdown-item py-2 floating-action-project-new" href="#"><i class="bi bi-plus-circle me-2"></i>New Project...</a></li>
+        </ul>
+    </div>
+
+    <div class="dropdown">
+        <button class="floating-btn-secondary dropdown-toggle" type="button" id="floatingDropdownAssignee" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-person-plus"></i>
+            <span>Change Assignee</span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-dark shadow" aria-labelledby="floatingDropdownAssignee" style="max-height: 250px; overflow-y: auto; z-index: 1060;">
+            <?php foreach (Constants::USERS as $uId => $uName): ?>
+                <li><a class="dropdown-item py-2 floating-action-assignee-item" href="#" data-assignee-id="<?= $uId ?>"><?= esc($uName) ?></a></li>
+            <?php endforeach; ?>
+            <li><a class="dropdown-item py-2 floating-action-assignee-item" href="#" data-assignee-id="<?= Constants::USER_SYSTEM ?>"><?= esc(Constants::USER_SYSTEM_LABEL) ?></a></li>
+        </ul>
+    </div>
+
+    <div class="floating-action-divider"></div>
+
     <a href="#" id="floatingBtnDeselect" class="floating-btn-secondary" title="Deselect All">
         <i class="bi bi-x-circle"></i>
         <span>Deselect All</span>
@@ -932,10 +971,12 @@ Activity Logs
     padding: 8px 18px;
     font-size: 0.9rem;
     font-weight: 500;
-    display: flex;
+    display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 6px;
     text-decoration: none !important;
+    white-space: nowrap;
     transition: background-color 0.2s, border-color 0.2s, transform 0.2s;
 }
 .floating-btn-secondary:hover {
@@ -946,6 +987,52 @@ Activity Logs
 }
 .floating-btn-secondary:active {
     transform: scale(0.98);
+}
+.floating-btn-primary {
+    background: #0071e3;
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 30px;
+    padding: 8px 18px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    text-decoration: none !important;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.2s, border-color 0.2s, transform 0.2s;
+}
+.floating-btn-primary:hover {
+    background: #0077ed;
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    transform: scale(1.02);
+}
+.floating-btn-primary:active {
+    transform: scale(0.98);
+}
+.floating-action-bar button {
+    border: none;
+    outline: none;
+}
+.floating-action-bar .dropdown-menu {
+    border-radius: 12px !important;
+    background: rgba(30, 30, 30, 0.96) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+.floating-action-bar .dropdown-item {
+    color: rgba(255, 255, 255, 0.8) !important;
+    font-size: 0.85rem;
+    transition: background-color 0.2s, color 0.2s;
+}
+.floating-action-bar .dropdown-item:hover {
+    background-color: rgba(255, 255, 255, 0.15) !important;
+    color: #ffffff !important;
 }
 #tblActivityLogs tbody td.actions-cell,
 #tblActivityLogs tbody td:not(.actions-cell):has(a:not([onclick]):not(.text-muted)) {
@@ -1238,7 +1325,7 @@ Activity Logs
 
 <!-- Custom Toast Notification -->
 <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1100;">
-    <div id="toastNotification" class="toast align-items-center border-0 text-white" role="alert" aria-live="assertive" aria-atomic="true" style="display: none; min-width: 280px; border-radius: 12px; backdrop-filter: blur(10px); box-shadow: 0 8px 32px rgba(0,0,0,0.15); transition: opacity 0.3s ease;">
+    <div id="toastNotification" class="toast align-items-center" role="alert" aria-live="assertive" aria-atomic="true" style="display: none; min-width: 280px; border-radius: 12px; backdrop-filter: blur(10px); box-shadow: 0 8px 32px rgba(0,0,0,0.15); transition: opacity 0.3s ease;">
         <div class="d-flex p-3 align-items-center">
             <div class="me-2" id="toastIcon">
                 <!-- Icon will be set dynamically -->
@@ -1246,7 +1333,7 @@ Activity Logs
             <div class="toast-body flex-grow-1 fw-medium" id="toastMessage" style="font-size: 0.9rem;">
                 <!-- Message will be set dynamically -->
             </div>
-            <button type="button" class="btn-close btn-close-white ms-auto" style="box-shadow: none;" onclick="$('#toastNotification').fadeOut(300);"></button>
+            <button type="button" class="btn-close ms-auto" style="box-shadow: none; opacity: 0.6;" onclick="$('#toastNotification').fadeOut(300);"></button>
         </div>
     </div>
 </div>
@@ -1482,6 +1569,111 @@ Activity Logs
                 });
             }
 
+            // Helper to get selected log IDs
+            function getSelectedLogIds() {
+                if (!table) return [];
+                const checkedCbs = table.querySelectorAll('input[name="log_ids[]"]:checked');
+                return Array.from(checkedCbs).map(cb => cb.value);
+            }
+
+            // Helper to run bulk AJAX operation
+            function runBulkOperation(url, data, successCallback) {
+                const logIds = getSelectedLogIds();
+                if (logIds.length === 0) {
+                    showToast('error', 'No activity logs selected.');
+                    return;
+                }
+
+                // Show loading state
+                const originalOpacity = $('#floatingActionBar').css('opacity');
+                $('#floatingActionBar').css('opacity', '0.6');
+                $('#floatingActionBar button, #floatingActionBar a').prop('disabled', true).addClass('disabled');
+
+                const csrfToken = $('input[name="csrf_test_name"]').val();
+                const postData = Object.assign({
+                    csrf_test_name: csrfToken,
+                    log_ids: logIds
+                }, data);
+
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    data: postData,
+                    dataType: 'json',
+                    success: function(response) {
+                        // Restore state
+                        $('#floatingActionBar').css('opacity', originalOpacity);
+                        $('#floatingActionBar button, #floatingActionBar a').prop('disabled', false).removeClass('disabled');
+
+                        if (response.csrf_hash) {
+                            $('input[name="csrf_test_name"]').val(response.csrf_hash);
+                        }
+
+                        if (response.success) {
+                            showToast('success', response.message);
+                            if (successCallback) {
+                                successCallback(response);
+                            } else {
+                                setTimeout(function() {
+                                    window.location.reload();
+                                }, 1000);
+                            }
+                        } else {
+                            showToast('error', response.message || 'Bulk update failed.');
+                        }
+                    },
+                    error: function() {
+                        // Restore state
+                        $('#floatingActionBar').css('opacity', originalOpacity);
+                        $('#floatingActionBar button, #floatingActionBar a').prop('disabled', false).removeClass('disabled');
+                        showToast('error', 'An error occurred during bulk update.');
+                    }
+                });
+            }
+
+            // Mark Complete handler
+            const floatingBtnComplete = document.getElementById('floatingBtnComplete');
+            if (floatingBtnComplete) {
+                floatingBtnComplete.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    if (confirm('Are you sure you want to mark all selected activity logs as Completed?')) {
+                        runBulkOperation('<?= site_url("activity-logs/bulk-status") ?>', {
+                            status: <?= Constants::ACTIVITY_LOGS_STATUS_COMPLETED ?>
+                        });
+                    }
+                });
+            }
+
+            // Add to Project handlers
+            $(document).on('click', '.floating-action-project-item', function(e) {
+                e.preventDefault();
+                const project = $(this).data('project');
+                if (project) {
+                    runBulkOperation('<?= site_url("activity-logs/bulk-project") ?>', {
+                        project: project
+                    });
+                }
+            });
+
+            $(document).on('click', '.floating-action-project-new', function(e) {
+                e.preventDefault();
+                const project = prompt("Enter new project name:");
+                if (project && project.trim() !== '') {
+                    runBulkOperation('<?= site_url("activity-logs/bulk-project") ?>', {
+                        project: project.trim()
+                    });
+                }
+            });
+
+            // Change Assignee handlers
+            $(document).on('click', '.floating-action-assignee-item', function(e) {
+                e.preventDefault();
+                const assigneeId = $(this).data('assignee-id');
+                runBulkOperation('<?= site_url("activity-logs/bulk-assignee") ?>', {
+                    assignee: assigneeId
+                });
+            });
+
             let previousValue = '';
 
             // Cache previous status value when dropdown is focused
@@ -1571,19 +1763,29 @@ Activity Logs
 
                 messageEl.text(message);
 
-                toast.removeClass('bg-success bg-danger bg-warning text-dark text-white');
-                toast.find('.btn-close').removeClass('btn-close-white btn-close-dark').addClass('btn-close-white');
+                toast.removeClass('bg-success bg-danger bg-warning text-dark text-white border-0');
 
                 if (type === 'success') {
-                    toast.addClass('bg-success text-white');
-                    iconEl.html('<i class="bi bi-check-circle-fill fs-5 text-white"></i>');
+                    toast.css({
+                        'background-color': 'var(--color-alert-success-bg)',
+                        'color': 'var(--color-alert-success-text)',
+                        'border': '1px solid rgba(29, 138, 68, 0.2)'
+                    });
+                    iconEl.html('<i class="bi bi-check-circle-fill fs-5" style="color: var(--color-alert-success-text);"></i>');
                 } else if (type === 'error') {
-                    toast.addClass('bg-danger text-white');
-                    iconEl.html('<i class="bi bi-exclamation-triangle-fill fs-5 text-white"></i>');
+                    toast.css({
+                        'background-color': 'var(--color-alert-danger-bg)',
+                        'color': 'var(--color-alert-danger-text)',
+                        'border': '1px solid rgba(222, 53, 53, 0.2)'
+                    });
+                    iconEl.html('<i class="bi bi-exclamation-triangle-fill fs-5" style="color: var(--color-alert-danger-text);"></i>');
                 } else {
-                    toast.addClass('bg-warning text-dark');
-                    toast.find('.btn-close').addClass('btn-close-dark');
-                    iconEl.html('<i class="bi bi-exclamation-circle-fill fs-5 text-dark"></i>');
+                    toast.css({
+                        'background-color': 'var(--color-alert-warning-bg)',
+                        'color': 'var(--color-alert-warning-text)',
+                        'border': '1px solid rgba(180, 107, 0, 0.2)'
+                    });
+                    iconEl.html('<i class="bi bi-exclamation-circle-fill fs-5" style="color: var(--color-alert-warning-text);"></i>');
                 }
 
                 toast.fadeIn(300);

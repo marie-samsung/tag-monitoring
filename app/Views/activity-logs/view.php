@@ -404,7 +404,7 @@
 
 <!-- Custom Toast Notification -->
 <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1100;">
-    <div id="toastNotification" class="toast align-items-center border-0 text-white" role="alert" aria-live="assertive" aria-atomic="true" style="display: none; min-width: 280px; border-radius: 12px; backdrop-filter: blur(10px); box-shadow: 0 8px 32px rgba(0,0,0,0.15); transition: opacity 0.3s ease;">
+    <div id="toastNotification" class="toast align-items-center" role="alert" aria-live="assertive" aria-atomic="true" style="display: none; min-width: 280px; border-radius: 12px; backdrop-filter: blur(10px); box-shadow: 0 8px 32px rgba(0,0,0,0.15); transition: opacity 0.3s ease;">
         <div class="d-flex p-3 align-items-center">
             <div class="me-2" id="toastIcon">
                 <!-- Icon will be set dynamically -->
@@ -412,7 +412,7 @@
             <div class="toast-body flex-grow-1 fw-medium" id="toastMessage" style="font-size: 0.9rem;">
                 <!-- Message will be set dynamically -->
             </div>
-            <button type="button" class="btn-close btn-close-white ms-auto" style="box-shadow: none;" onclick="$('#toastNotification').fadeOut(300);"></button>
+            <button type="button" class="btn-close ms-auto" style="box-shadow: none; opacity: 0.6;" onclick="$('#toastNotification').fadeOut(300);"></button>
         </div>
     </div>
 </div>
@@ -513,19 +513,29 @@
 
                 messageEl.text(message);
 
-                toast.removeClass('bg-success bg-danger bg-warning text-dark text-white');
-                toast.find('.btn-close').removeClass('btn-close-white btn-close-dark').addClass('btn-close-white');
+                toast.removeClass('bg-success bg-danger bg-warning text-dark text-white border-0');
 
                 if (type === 'success') {
-                    toast.addClass('bg-success text-white');
-                    iconEl.html('<i class="bi bi-check-circle-fill fs-5 text-white"></i>');
+                    toast.css({
+                        'background-color': 'var(--color-alert-success-bg)',
+                        'color': 'var(--color-alert-success-text)',
+                        'border': '1px solid rgba(29, 138, 68, 0.2)'
+                    });
+                    iconEl.html('<i class="bi bi-check-circle-fill fs-5" style="color: var(--color-alert-success-text);"></i>');
                 } else if (type === 'error') {
-                    toast.addClass('bg-danger text-white');
-                    iconEl.html('<i class="bi bi-exclamation-triangle-fill fs-5 text-white"></i>');
+                    toast.css({
+                        'background-color': 'var(--color-alert-danger-bg)',
+                        'color': 'var(--color-alert-danger-text)',
+                        'border': '1px solid rgba(222, 53, 53, 0.2)'
+                    });
+                    iconEl.html('<i class="bi bi-exclamation-triangle-fill fs-5" style="color: var(--color-alert-danger-text);"></i>');
                 } else {
-                    toast.addClass('bg-warning text-dark');
-                    toast.find('.btn-close').addClass('btn-close-dark');
-                    iconEl.html('<i class="bi bi-exclamation-circle-fill fs-5 text-dark"></i>');
+                    toast.css({
+                        'background-color': 'var(--color-alert-warning-bg)',
+                        'color': 'var(--color-alert-warning-text)',
+                        'border': '1px solid rgba(180, 107, 0, 0.2)'
+                    });
+                    iconEl.html('<i class="bi bi-exclamation-circle-fill fs-5" style="color: var(--color-alert-warning-text);"></i>');
                 }
 
                 toast.fadeIn(300);

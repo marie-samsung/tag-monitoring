@@ -166,6 +166,18 @@ class ActivityLogsModel extends Model
         return $counts;
     }
 
+    public function getProjectLogs($projectName, $limit = null)
+    {
+        $query = $this->select('activity_logs.*, (SELECT comment FROM activity_log_comments WHERE activity_log_comments.log_id = activity_logs.id ORDER BY activity_log_comments.created_at DESC, activity_log_comments.id DESC LIMIT 1) as last_comment')
+            ->where('project', $projectName)
+            ->orderBy('created_at', 'DESC');
+
+        if ($limit !== null) {
+            return $query->paginate($limit);
+        }
+        return $query->findAll();
+    }
+
     protected $beforeInsert = ['setCreatedBy'];
     protected $beforeUpdate = ['setUpdatedBy'];
 

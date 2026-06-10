@@ -73,6 +73,7 @@ $routes->group('jira', function ($routes) {
 
 $routes->group('activity-logs', function ($routes) {
     $routes->get('/', 'ActivityLogsController::index');
+    $routes->get('project/(:any)', 'ActivityLogsController::projectView/$1');
     $routes->get('export', 'ActivityLogsController::exportAsCSV');
     $routes->get('view/(:num)', 'ActivityLogsController::view/$1');
     $routes->post('comment', 'ActivityLogsController::comment');
@@ -82,4 +83,9 @@ $routes->group('activity-logs', function ($routes) {
     $routes->post('update-status/(:num)', 'ActivityLogsController::updateStatus/$1');
     $routes->post('update-assignee/(:num)', 'ActivityLogsController::updateAssignee/$1');
     $routes->post('update-priority/(:num)', 'ActivityLogsController::updatePriority/$1');
+    $routes->post('bulk-status', 'ActivityLogsController::bulkStatus');
+    $routes->post('bulk-project', 'ActivityLogsController::bulkProject');
+    $routes->post('bulk-assignee', 'ActivityLogsController::bulkAssignee');
+    $routes->get('project-export/excel/(:any)', 'ActivityLogsController::exportProjectExcel/$1');
+    $routes->get('project-export/pdf/(:any)', 'ActivityLogsController::exportProjectPDF/$1');
 });
