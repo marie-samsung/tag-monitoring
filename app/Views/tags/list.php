@@ -411,15 +411,15 @@ Martech TMS
     </div>
 
     <div class="row g-3 mb-4">
-        <!-- Active Tags -->
+        <!-- Total Tags -->
         <div class="col-md-3">
-            <div class="apple-metric-card border-start border-4 border-success" style="cursor: pointer;" onclick="window.location.href='<?= site_url('tags?status=' . Constants::STATUS_ENABLED) ?>'">
+            <div class="apple-metric-card border-start border-4 border-secondary" style="cursor: pointer;" onclick="window.location.href='<?= site_url('tags?status=all') ?>'">
                 <div class="apple-metric-label">
-                    <i class="bi bi-check-circle-fill text-success fs-5"></i> 
-                    <span>Active Tags</span>
+                    <i class="bi bi-collection-fill text-secondary fs-5"></i> 
+                    <span>Total Tags</span>
                 </div>
-                <div class="apple-metric-value text-success"><?= $tagsModel->countActiveTags() ?></div>
-                <div class="text-secondary small mt-2">Currently active in AL</div>
+                <div class="apple-metric-value text-secondary"><?= $tagsModel->countAllTags() ?></div>
+                <div class="text-secondary small mt-2">Total tags in the system</div>
             </div>
         </div>
 
@@ -447,15 +447,15 @@ Martech TMS
             </div>
         </div>
 
-        <!-- Total Tags -->
+        <!-- Active Tags -->
         <div class="col-md-3">
-            <div class="apple-metric-card border-start border-4 border-secondary" style="cursor: pointer;" onclick="window.location.href='<?= site_url('tags?status=all') ?>'">
+            <div class="apple-metric-card border-start border-4 border-success" style="cursor: pointer;" onclick="window.location.href='<?= site_url('tags?status=' . Constants::STATUS_ENABLED) ?>'">
                 <div class="apple-metric-label">
-                    <i class="bi bi-collection-fill text-secondary fs-5"></i> 
-                    <span>Total Tags</span>
+                    <i class="bi bi-check-circle-fill text-success fs-5"></i> 
+                    <span>Active Tags</span>
                 </div>
-                <div class="apple-metric-value text-secondary"><?= $tagsModel->countAllTags() ?></div>
-                <div class="text-secondary small mt-2">Total tags in the system</div>
+                <div class="apple-metric-value text-success"><?= $tagsModel->countActiveTags() ?></div>
+                <div class="text-secondary small mt-2">Currently active in AL</div>
             </div>
         </div>
     </div>

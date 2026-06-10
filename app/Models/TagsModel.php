@@ -53,7 +53,6 @@ class TagsModel extends Model
                 $expiring = date('Y-m-d', strtotime('+15 days'));
                 $this->whereIn('tags.status', [
                     Constants::STATUS_ENABLED,
-                    Constants::STATUS_PENDING_VERIFICATION,
                     Constants::STATUS_UPDATED_IN_AL
                 ])
                 ->where('tags.al_end_date >=', $base)
@@ -158,7 +157,6 @@ class TagsModel extends Model
 
         return $this->whereIn('status', [
                 Constants::STATUS_ENABLED,
-                Constants::STATUS_PENDING_VERIFICATION,
                 Constants::STATUS_UPDATED_IN_AL
             ])
             ->where('al_end_date >=', $base)

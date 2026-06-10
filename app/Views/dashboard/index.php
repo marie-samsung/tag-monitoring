@@ -148,18 +148,18 @@ Dashboard | Martech TMS
 
     <!-- Quick Stats Metric Cards -->
     <div class="row g-3 mb-4">
-        <!-- Active Tags -->
+        <!-- Pending Tag Requests -->
         <div class="col-md-3">
-            <div class="apple-metric-card border-start border-4 border-success" style="cursor: pointer;" onclick="window.location.href='<?= site_url('tags?status=1') ?>'">
+            <div class="apple-metric-card border-start border-4 border-primary" style="cursor: pointer;" onclick="window.location.href='<?= site_url('tag-requests?status=pending') ?>'">
                 <div class="apple-metric-label">
-                    <i class="bi bi-check-circle-fill text-success fs-5"></i> 
-                    <span>Active Tags</span>
+                    <i class="bi bi-file-earmark-plus-fill text-primary fs-5"></i> 
+                    <span>Pending Requests</span>
                 </div>
-                <div class="apple-metric-value text-success"><?= $active_tags ?></div>
-                <div class="text-secondary small mt-2">Currently active in AL</div>
+                <div class="apple-metric-value text-primary"><?= $pending_requests ?></div>
+                <div class="text-secondary small mt-2">Requests in review process</div>
             </div>
         </div>
-        
+
         <!-- Expiring Soon -->
         <div class="col-md-3">
             <div class="apple-metric-card border-start border-4 border-danger" style="cursor: pointer;" onclick="window.location.href='<?= site_url('tags?status=expiring') ?>'">
@@ -184,15 +184,15 @@ Dashboard | Martech TMS
             </div>
         </div>
 
-        <!-- Pending Tag Requests -->
+        <!-- Active Tags -->
         <div class="col-md-3">
-            <div class="apple-metric-card border-start border-4 border-primary" style="cursor: pointer;" onclick="window.location.href='<?= site_url('tag-requests?status=pending') ?>'">
+            <div class="apple-metric-card border-start border-4 border-success" style="cursor: pointer;" onclick="window.location.href='<?= site_url('tags?status=1') ?>'">
                 <div class="apple-metric-label">
-                    <i class="bi bi-file-earmark-plus-fill text-primary fs-5"></i> 
-                    <span>Pending Requests</span>
+                    <i class="bi bi-check-circle-fill text-success fs-5"></i> 
+                    <span>Active Tags</span>
                 </div>
-                <div class="apple-metric-value text-primary"><?= $pending_requests ?></div>
-                <div class="text-secondary small mt-2">Requests in review process</div>
+                <div class="apple-metric-value text-success"><?= $active_tags ?></div>
+                <div class="text-secondary small mt-2">Currently active in AL</div>
             </div>
         </div>
     </div>
