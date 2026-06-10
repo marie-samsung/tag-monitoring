@@ -174,10 +174,9 @@ Activity Log: Create
                         <div class="col-12">
                             <label class="form-label-sm fw-semibold text-secondary mb-1">Priority</label>
                             <select name="priority" class="form-select form-select-xs" required>
-                                <option value="">-Select-</option>
                                 <?php foreach (Constants::PRIORITIES as $value => $label): ?>
                                     <option value="<?= esc($value) ?>"
-                                            <?= old('priority', $log['priority'] ?? '') == $value ? 'selected' : '' ?>>
+                                            <?= old('priority', $log['priority'] ?? Constants::PRIORITY_DEFAULT) == $value ? 'selected' : '' ?>>
                                         <?= esc($label) ?>
                                     </option>
                                 <?php endforeach; ?>
@@ -191,10 +190,9 @@ Activity Log: Create
                                 <i class="bi bi-question-circle-fill text-muted" style="cursor: help;" title="T-Shirt Size Guide: Represents the project management estimation size. Hover or select a size for more details."></i>
                             </label>
                             <select name="size" id="size-select" class="form-select form-select-xs" required>
-                                <option value="">-Select-</option>
                                 <?php foreach (Constants::ACTIVITY_SIZES as $value => $label): ?>
                                     <option value="<?= esc($value) ?>"
-                                        <?= old('size', $log['size'] ?? '') == $value ? 'selected' : '' ?>>
+                                        <?= old('size', $log['size'] ?? Constants::ACTIVITY_SIZE_M) == $value ? 'selected' : '' ?>>
                                         <?= esc($label) ?>
                                     </option>
                                 <?php endforeach; ?>
@@ -209,10 +207,9 @@ Activity Log: Create
                         <div class="col-12">
                             <label class="form-label-sm fw-semibold text-secondary mb-1">Assignee</label>
                             <select name="assignee" class="form-select form-select-xs" required>
-                                <option value="">-Select-</option>
                                 <?php foreach (Constants::USERS as $value => $label): ?>
                                     <option value="<?= esc($value) ?>"
-                                            <?= old('assignee', $log['assignee'] ?? '') == $value ? 'selected' : '' ?>>
+                                            <?= old('assignee', $log['assignee'] ?? session()->get('user_id')) == $value ? 'selected' : '' ?>>
                                         <?= esc($label) ?>
                                     </option>
                                 <?php endforeach; ?>
@@ -238,10 +235,9 @@ Activity Log: Create
                         <div class="col-12">
                             <label class="form-label-sm fw-semibold text-secondary mb-1">Team</label>
                             <select name="team_id" class="form-select form-select-xs" required>
-                                <option value="">-Select-</option>
                                 <?php foreach (Constants::TEAMS as $value => $label): ?>
                                     <option value="<?= esc($value) ?>"
-                                             <?= old('team_id', $log['team_id'] ?? '') == $value ? 'selected' : '' ?>>
+                                             <?= old('team_id', $log['team_id'] ?? Constants::USER_TEAMS[session()->get('user_id')]) == $value ? 'selected' : '' ?>>
                                         <?= esc($label) ?>
                                     </option>
                                 <?php endforeach; ?>
@@ -267,10 +263,9 @@ Activity Log: Create
                         <div class="col-12">
                             <label class="form-label-sm fw-semibold text-secondary mb-1">Type</label>
                             <select name="type" class="form-select form-select-xs" required>
-                                <option value="">-Select-</option>
                                 <?php foreach (Constants::ACTIVITY_TYPES as $value => $label): ?>
                                     <option value="<?= esc($value) ?>"
-                                             <?= old('type', $log['type'] ?? '') == $value ? 'selected' : '' ?>>
+                                             <?= old('type', $log['type'] ?? Constants::ACTIVITY_TYPE_TASK) == $value ? 'selected' : '' ?>>
                                         <?= esc($label) ?>
                                     </option>
                                 <?php endforeach; ?>

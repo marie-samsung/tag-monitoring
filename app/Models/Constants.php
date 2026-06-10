@@ -12,7 +12,7 @@ class Constants
 
     // https://experience.adobe.com/#/@samsung/data-collection/tags/companies/COae164dc89349443cb5092e1fdc571f55/properties/PR508988f4e47a4b0f9064de57454b604d/rules?filter%5Bname%5D=CONTAINS+LC-Shop-AD%28Meta%29-CM-WL-SDSME_1240253317108112&page%5Bnumber%5D=1
     public const AL_RULES_SEARCH_PARAMETER = 'rules?filter%5Bname%5D=CONTAINS+';
-    public const AL_LIBRARY_CREATE = '/publishing';
+    public const AL_LIBRARY_CREATE = 'publishing/new';
     public const LP_WRITE_PATH = WRITEPATH . 'uploads/lp/';
     public const LP_PATH = 'uploads/lp/';
     public const NEW_TAG_FILE_WRITE_PATH = WRITEPATH . 'uploads/new_tag_requests/';
@@ -255,6 +255,15 @@ class Constants
         self::USER_OTHER => self::USER_ROLE_ADMIN,
     ];
 
+    public const USER_TEAMS = [
+        self::USER_MARIE => self::TEAM_MEDIA_TAGGING,
+        self::USER_LUCKY => self::TEAM_MEDIA_TAGGING,
+        self::USER_GEORGE => self::TEAM_MEDIA_TAGGING,
+        self::USER_KHRISTINE => self::TEAM_DWF,
+        self::USER_JANITHA => self::TEAM_CRM,
+        self::USER_OTHER => self::TEAM_CRM,
+    ];
+
     public const USER_ROLES_ACCESS = [
         self::USER_ROLE_MEDIA_TAGGING => [
             'dashboard' => true,
@@ -299,13 +308,15 @@ class Constants
     public const ACTIVITY_TYPE_TROUBLESHOOTING = 3;
     public const ACTIVITY_TYPE_REQUEST = 4;
     public const ACTIVITY_TYPE_MEETING = 5;
-    public const ACTIVITY_TYPE_OTHER = 6;
+    public const ACTIVITY_TYPE_RENEWAL = 6;
+    public const ACTIVITY_TYPE_OTHER = 7;
     public const ACTIVITY_TYPES = [
         self::ACTIVITY_TYPE_TASK => 'Task',
         self::ACTIVITY_TYPE_SUPPORT => 'Support',
         self::ACTIVITY_TYPE_TROUBLESHOOTING => 'Troubleshooting',
         self::ACTIVITY_TYPE_REQUEST => 'Request',
         self::ACTIVITY_TYPE_MEETING => 'Meeting',
+        self::ACTIVITY_TYPE_RENEWAL => 'Renewal',
         self::ACTIVITY_TYPE_OTHER => 'Other',
     ];
 
@@ -327,7 +338,9 @@ class Constants
     public const PRIORITY_HIGH = 3;
     public const PRIORITY_CRITICAL = 4;
     public const PRIORITY_BLOCKER = 5;
+    public const PRIORITY_DEFAULT = 10;
     public const PRIORITIES = [
+        self::PRIORITY_DEFAULT => 'Default',
         self::PRIORITY_LOW => 'Low',
         self::PRIORITY_MEDIUM => 'Medium',
         self::PRIORITY_HIGH => 'High',
