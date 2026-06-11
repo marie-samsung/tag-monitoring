@@ -205,11 +205,17 @@ class TagsController extends BaseController
 
         if ($tag['status'] !== $post['status']) {
             $activityLogsModel = new ActivityLogsModel();
-            $ticketId = (new JiraHistoryModel())->getRelatedTagDateExtension($tag['id'])['ticket_id'] ?? null;
+            $jiraHistoryModel = new JiraHistoryModel();
+            $ticketId = $jiraHistoryModel->getRelatedTagDateExtension($tag['id'])['ticket_id'] ?? null;
             $activityLog = $activityLogsModel->getRelatedTagRenewal($ticketId) ?? null;
-            $from = Constants::ACTIVITY_LOGS_STATUS[$activityLog['status']];
+
+            if ($tag['status'] == Constants::STATUS_NEW_TAG_SUBMITTED || $tag['status'] == Constants::STATUS_NEW_RULE_SUBMITTED) {
+                $ticketId = $jiraHistoryModel->getRelatedTagRequest($tag['id'])['ticket_id'] ?? null;
+                $activityLog = $activityLogsModel->getRelatedTagRequest($ticketId) ?? null;
+            }
 
             if ($activityLog) {
+                $from = Constants::ACTIVITY_LOGS_STATUS[$activityLog['status']];
                 $commentsModel = new ActivityLogCommentsModel();
 
                 if ($post['status'] == Constants::STATUS_PENDING_VERIFICATION) {

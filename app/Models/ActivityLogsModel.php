@@ -127,6 +127,15 @@ class ActivityLogsModel extends Model
             ->first();
     }
 
+    public function getRelatedTagRequest($ticketId)
+    {
+        return $this->select()
+            ->where('ticket_id', $ticketId)
+            ->where('type', Constants::ACTIVITY_TYPE_REQUEST)
+            ->orderBy('created_at', 'DESC')
+            ->first();
+    }
+
     public function getStatusCounts($filters = [])
     {
         // Remove status and status_group filters to count across all statuses

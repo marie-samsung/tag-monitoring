@@ -47,6 +47,15 @@ class JiraHistoryModel extends Model
             ->first();
     }
 
+    public function getRelatedTagRequest(int $id)
+    {
+        return $this->select()
+            ->where('tag_id', $id)
+            ->whereIn('type', [Constants::JIRA_TYPE_NEW_TAG, Constants::JIRA_TYPE_NEW_RULE])
+            ->orderBy('created_at', 'DESC')
+            ->first();
+    }
+
     public function getLatestSubsidiary(int $id)
     {
         return $this->select()

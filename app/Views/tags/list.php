@@ -810,7 +810,7 @@ Martech TMS
                             <span class="badge <?= status_class($tag['status']) ?>">
                                 <?= esc(status_label($tag['status'])) ?>
                             </span>
-                            <?php if ($tag['status'] == Constants::STATUS_PENDING_VERIFICATION): ?>
+                            <?php if (($tag['status'] == Constants::STATUS_PENDING_VERIFICATION || $tag['status'] == Constants::STATUS_ON_HOLD) && $ticketId != null): ?>
                                 <br>
                                 <a href="<?= Constants::JIRA_LINK . $ticketId ?>" target="_blank" rel="noopener" class="apple-link ms-1" style="font-size: 0.8rem;">
                                     <?= $ticketId ?>
