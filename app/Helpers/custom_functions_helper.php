@@ -249,3 +249,11 @@ function format_comment_time(string|null $datetime): string
     return date('d-m-Y H:i', $timestamp);
 }
 
+function request_type_label(int $type, int $status): string
+{
+    if ($type === Constants::JIRA_TYPE_NEW_TAG && $status === Constants::STATUS_REQUEST_NEW_RULE_REQUEST_SUBMITTED) {
+        return 'New Rule';
+    }
+    return Constants::REQUEST_TYPES[$type] ?? (Constants::JIRA_TICKET_TYPES[$type] ?? 'Unknown');
+}
+

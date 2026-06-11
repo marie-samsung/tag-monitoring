@@ -569,7 +569,7 @@ Tag: Requests (New Rule, New Tag)
                                 <?php endif; ?>
                             </td>
                             <td>
-                                <?= Constants::REQUEST_TYPES[$type] ?>
+                                <?= request_type_label((int)$type, (int)$request['status']) ?>
                             </td>
                             <td>
                                 <span class="badge <?= status_request_class($request['status']) ?>">

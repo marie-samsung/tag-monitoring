@@ -41,7 +41,7 @@ $hasNewRule = !empty($request['new_rule_ticket']);
             <div class="text-secondary small mb-0 fw-semibold d-flex align-items-center gap-2">
                 <span class="badge bg-secondary"><?= esc(Constants::SUBSIDIARIES[$properties[$request['property_id']]['subsidiary_id']] ?? 'Unknown') ?></span>
                 <span>•</span>
-                <span class="text-muted"><?= esc(Constants::JIRA_TICKET_TYPES[$request['type']] ?? 'Unknown') ?></span>
+                <span class="text-muted"><?= esc(request_type_label((int)$request['type'], (int)$request['status'])) ?></span>
                 <?php if ($hasNewTag): ?>
                     <span>•</span>
                     <a href="<?= Constants::JIRA_LINK . $request['new_tag_ticket'] ?>" target="_blank" class="apple-link fw-bold">

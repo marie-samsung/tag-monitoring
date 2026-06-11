@@ -440,7 +440,7 @@ class TagRequestsController extends BaseController
                 $subsidiary['name'] ?? 'N/A',
                 $property['name'] ?? 'N/A',
                 $request[$ticketColumn] ?? 'N/A',
-                Constants::JIRA_TICKET_TYPES[$request['type']] ?? 'N/A',
+                request_type_label((int)$request['type'], (int)$request['status']),
                 Constants::STATUS_REQUESTS[$request['status']] ?? 'Unknown',
                 "'" . date_ymd($request['created_at']),
             ]);
