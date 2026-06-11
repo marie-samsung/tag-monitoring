@@ -122,6 +122,15 @@
     border: 1px solid var(--color-badge-orange-border) !important;
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23E65100' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
 }
+
+.task-description img {
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+    border-radius: 8px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+}
 </style>
 
 <div class="container-fluid px-0">
@@ -203,7 +212,7 @@
 
             <div class="mb-3 pb-2 border-bottom border-light">
                 <span class="d-block text-muted fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Description</span>
-                <div class="mt-1" style="font-size: 0.9rem; line-height: 1.5; color: var(--color-text-base);">
+                <div class="mt-1 task-description" style="font-size: 0.9rem; line-height: 1.5; color: var(--color-text-base);">
                     <?= $log['description'] ?: '—' ?>
                 </div>
             </div>

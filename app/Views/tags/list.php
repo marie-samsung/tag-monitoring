@@ -825,6 +825,9 @@ Martech TMS
                                         <?= $ticketId ?>
                                     </a>
                                 <?php endif; ?>
+                                <a href="<?= Constants::JIRA_LINK . $ticketId ?>" target="_blank" rel="noopener" class="text-muted ms-1" style="font-size: 0.75rem;" title="View in JIRA">
+                                    <i class="bi bi-box-arrow-up-right"></i>
+                                </a>
                             <?php endif; ?>
                         </td>
                         <!-- Days -->

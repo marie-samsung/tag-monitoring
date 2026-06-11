@@ -113,3 +113,4 @@ ALTER TABLE `activity_logs` ADD `start_date` DATETIME NULL DEFAULT NULL AFTER `r
 ALTER TABLE `activity_logs` CHANGE `project_id` `team_id` INT NOT NULL;
 ALTER TABLE `activity_logs` ADD `project` VARCHAR(255) NOT NULL DEFAULT 'Generic' AFTER `team_id`;
 
+ALTER TABLE `activity_logs` MODIFY `description` MEDIUMTEXT NOT NULL;
