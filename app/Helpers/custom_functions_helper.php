@@ -37,6 +37,7 @@ function status_activity_logs_class(int $id): string
         Constants::ACTIVITY_LOGS_STATUS_QA => 'bg-info text-dark',
         Constants::ACTIVITY_LOGS_STATUS_COMPLETED => 'bg-success text-white',
         Constants::ACTIVITY_LOGS_STATUS_BLOCKED => 'bg-danger text-white',
+        default => 'bg-secondary text-white',
     };
 }
 
@@ -60,15 +61,17 @@ function assignee_class(int $id): string
         Constants::USER_LUCKY => 'bg-green text-white',
         Constants::USER_JANITHA => 'bg-blue text-dark',
         Constants::USER_GEORGE => 'bg-orange text-dark',
+        default => 'bg-secondary text-white',
     };
 }
 
 function priority_class(int $id): string
 {
     return match ($id) {
-        Constants::PRIORITY_LOW => 'bg-secondary text-white',
+        Constants::PRIORITY_LOW, Constants::PRIORITY_DEFAULT => 'bg-secondary text-white',
         Constants::PRIORITY_MEDIUM => 'bg-warning text-dark',
         Constants::PRIORITY_HIGH, Constants::PRIORITY_CRITICAL, Constants::PRIORITY_BLOCKER => 'bg-danger text-white',
+        default => 'bg-secondary text-white',
     };
 }
 
@@ -78,6 +81,7 @@ function size_class(int $id): string
         Constants::ACTIVITY_SIZE_S => 'bg-secondary text-white',
         Constants::ACTIVITY_SIZE_M => 'bg-warning text-dark',
         Constants::ACTIVITY_SIZE_L, Constants::ACTIVITY_SIZE_XL, Constants::ACTIVITY_SIZE_SPRINT => 'bg-danger text-white',
+        default => 'bg-secondary text-white',
     };
 }
 
@@ -122,6 +126,7 @@ function bool_class(int $value): string
     return match ($value) {
         Constants::YES => 'bg-success text-white',   // Yes
         Constants::NO => 'bg-secondary text-white',    // No
+        default => 'bg-secondary text-white',
     };
 }
 
