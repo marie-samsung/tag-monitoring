@@ -350,6 +350,7 @@ Martech TMS
     use App\Models\SubsidiariesModel;
     use App\Models\JiraHistoryModel;
     use App\Models\TagsModel;
+    use App\Models\TasksModel;
     helper('custom_functions');
 
     $propertiesModel = new PropertiesModel();
@@ -363,6 +364,8 @@ Martech TMS
     $vendors = $vendorsModel->Options();
 
     $tagsModel = new TagsModel();
+    $jiraHistoryModel = new JiraHistoryModel();
+    $tasksModel = new TasksModel();
 
     $activeFiltersCount = 0;
     $advancedFilterKeys = ['subsidiary_id', 'property_id', 'vendor_id', 'status', 'al_end_date_from', 'al_end_date_to'];
@@ -766,7 +769,8 @@ Martech TMS
                 <?php else: ?>
                     <?php
                         foreach ($tags as $tag): 
-                        $ticketId = (new JiraHistoryModel())->getRelatedTagDateExtension($tag['id'])['ticket_id'] ?? null;
+                        $ticketId = $jiraHistoryModel->getRelatedTagDateExtension($tag['id'])['ticket_id'] ?? null;
+                        $relatedTask = $ticketId ? $tasksModel->where('ticket_id', $ticketId)->first() : null;
                         $subsidiaryId = $properties[$tag['property_id']]['subsidiary_id'];
                         $subsidiary = $subsidiaries[$subsidiaryId];
                     ?>
@@ -812,9 +816,15 @@ Martech TMS
                             </span>
                             <?php if (($tag['status'] == Constants::STATUS_PENDING_VERIFICATION || $tag['status'] == Constants::STATUS_ON_HOLD) && $ticketId != null): ?>
                                 <br>
-                                <a href="<?= Constants::JIRA_LINK . $ticketId ?>" target="_blank" rel="noopener" class="apple-link ms-1" style="font-size: 0.8rem;">
-                                    <?= $ticketId ?>
-                                </a>
+                                <?php if ($relatedTask): ?>
+                                    <a href="<?= site_url('tasks/view/' . $relatedTask['id']) ?>" class="apple-link ms-1" style="font-size: 0.8rem;">
+                                        <?= $ticketId ?>
+                                    </a>
+                                <?php else: ?>
+                                    <a href="<?= site_url('tasks?keyword=' . urlencode($ticketId)) ?>" class="apple-link ms-1" style="font-size: 0.8rem;">
+                                        <?= $ticketId ?>
+                                    </a>
+                                <?php endif; ?>
                             <?php endif; ?>
                         </td>
                         <!-- Days -->

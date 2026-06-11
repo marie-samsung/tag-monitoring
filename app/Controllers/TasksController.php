@@ -168,7 +168,7 @@ class TasksController extends BaseController
             }
         }
 
-        if (!$isAdmin && $log['assignee'] !== $assigneeId) {
+        if ($log['assignee'] !== $assigneeId) {
             $from = $log['assignee'] == Constants::USER_SYSTEM
                 ? Constants::USER_SYSTEM_LABEL
                 : Constants::USERS[$log['assignee']];
