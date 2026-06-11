@@ -248,13 +248,19 @@ Task: Create
                         <div class="col-12">
                             <label class="form-label-sm fw-semibold text-secondary mb-1">Project</label>
                             <select name="project" id="project-select" class="form-select form-select-xs" required>
+                                <?php 
+                                    $selectedProject = old('project', $log['project'] ?? 'Generic');
+                                    if (!empty($selectedProject) && !in_array($selectedProject, $project_names)): 
+                                ?>
+                                    <option value="<?= esc($selectedProject) ?>" selected><?= esc($selectedProject) ?></option>
+                                <?php endif; ?>
                                 <?php foreach ($project_names as $pName): ?>
-                                    <option value="<?= esc($pName) ?>" <?= old('project', 'Generic') == $pName ? 'selected' : '' ?>>
+                                    <option value="<?= esc($pName) ?>" <?= $selectedProject == $pName ? 'selected' : '' ?>>
                                         <?= esc($pName) ?>
                                     </option>
                                 <?php endforeach; ?>
-                                <?php if (!in_array('Generic', $project_names)): ?>
-                                    <option value="Generic" selected>Generic</option>
+                                <?php if (!in_array('Generic', $project_names) && $selectedProject !== 'Generic'): ?>
+                                    <option value="Generic">Generic</option>
                                 <?php endif; ?>
                             </select>
                         </div>

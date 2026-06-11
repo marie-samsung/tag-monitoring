@@ -559,8 +559,13 @@ Tasks
                     </a>
                 </th>
                 <th class="form-label-sm fw-semibold">
-                    <a href="<?= getSortUrl('created_at', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>" class="text-decoration-none text-dark d-inline-flex align-items-center gap-1">
-                        Created At <?= getSortIcon('created_at', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>
+                    <a href="<?= getSortUrl('requested_date', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>" class="text-decoration-none text-dark d-inline-flex align-items-center gap-1">
+                        Requested Date <?= getSortIcon('requested_date', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>
+                    </a>
+                </th>
+                <th class="form-label-sm fw-semibold">
+                    <a href="<?= getSortUrl('start_date', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>" class="text-decoration-none text-dark d-inline-flex align-items-center gap-1">
+                        Start Date <?= getSortIcon('start_date', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>
                     </a>
                 </th>
                 <th class="form-label-sm fw-semibold text-dark text-center">Actions</th>
@@ -570,7 +575,7 @@ Tasks
         <tbody>
             <?php if (empty($logs)): ?>
                 <tr>
-                    <td colspan="<?= !$isAdmin ? 14 : 13 ?>" class="text-center py-5 text-muted">
+                    <td colspan="<?= !$isAdmin ? 15 : 14 ?>" class="text-center py-5 text-muted">
                         <i class="bi bi-inbox fs-2 mb-2 d-block text-secondary" style="opacity: 0.5;"></i>
                         <span class="fw-semibold">No tasks found</span>
                         <p class="small text-secondary mb-0">Try adjusting your filters or search keywords.</p>
@@ -666,7 +671,8 @@ Tasks
                                 <?= $size ?>
                             </span>
                         </td>
-                        <td class="form-label-sm" style="width:max-content; white-space:nowrap;"><?= esc(date('d-m-Y', strtotime($log['created_at']))) ?></td>
+                        <td class="form-label-sm" style="width:max-content; white-space:nowrap;"><?= !empty($log['requested_date']) ? esc(date('d-m-Y', strtotime($log['requested_date']))) : '<span class="text-secondary small">—</span>' ?></td>
+                        <td class="form-label-sm" style="width:max-content; white-space:nowrap;"><?= !empty($log['start_date']) ? esc(date('d-m-Y', strtotime($log['start_date']))) : '<span class="text-secondary small">—</span>' ?></td>
                         <td class="text-nowrap align-middle actions-cell">
                             <!-- Original Style -->
                             <div class="action-style-original-wrapper">
