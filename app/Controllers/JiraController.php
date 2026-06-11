@@ -184,4 +184,116 @@ class JiraController extends BaseController
 
     //     return $this->response->download($file_path, null)->setFileName(basename($file_path));
     // }
+
+    public function updateTags($id)
+    {
+        $jiraModel = new JiraHistoryModel();
+        $ticket = $jiraModel->find($id);
+
+        if (!$ticket) {
+            return redirect()
+                ->to('/jira')
+                ->with('error', 'JIRA Ticket not found.');
+        }
+
+        $tagModel = new TagsModel();
+        $propertiesModel = new PropertiesModel();
+        $subsidiaryModel = new SubsidiariesModel();
+
+        // Find the subsidiary info
+        $subsidiary = $subsidiaryModel->find($ticket['subsidiary_id']);
+
+        // Load all tags belonging to the same subsidiary (grouped by property)
+        $tagsQuery = $tagModel->select('tags.*, properties.name as property_name')
+            ->join('properties', 'properties.id = tags.property_id');
+        if ($ticket['subsidiary_id']) {
+            $tagsQuery->where('properties.subsidiary_id', $ticket['subsidiary_id']);
+        }
+        $availableTags = $tagsQuery->orderBy('properties.name', 'ASC')
+            ->orderBy('tags.name', 'ASC')
+            ->findAll();
+
+        // Get currently related tags
+        $currentTagIds = [];
+        if (!empty($ticket['comments'])) {
+            $rawIds = explode(',', $ticket['comments']);
+            foreach ($rawIds as $rawId) {
+                $rawId = trim($rawId);
+                if (is_numeric($rawId)) {
+                    $currentTagIds[] = (int)$rawId;
+                }
+            }
+        }
+        // Also include the main tag_id if set
+        if (!empty($ticket['tag_id']) && !in_array((int)$ticket['tag_id'], $currentTagIds)) {
+            $currentTagIds[] = (int)$ticket['tag_id'];
+        }
+
+        // Group available tags by property name for grouping in the select dropdown
+        $groupedTags = [];
+        foreach ($availableTags as $t) {
+            $groupedTags[$t['property_name']][] = $t;
+        }
+
+        return view('jira/update_tags', [
+            'ticket' => $ticket,
+            'subsidiary' => $subsidiary,
+            'groupedTags' => $groupedTags,
+            'currentTagIds' => $currentTagIds,
+        ]);
+    }
+
+    public function updateTagsConfirm($id)
+    {
+        $jiraModel = new JiraHistoryModel();
+        $ticket = $jiraModel->find($id);
+
+        if (!$ticket) {
+            return redirect()
+                ->to('/jira')
+                ->with('error', 'JIRA Ticket not found.');
+        }
+
+        $tagIds = $this->request->getPost('tag_ids') ?? [];
+        // Ensure they are numeric IDs
+        $tagIds = array_filter(array_map('intval', $tagIds));
+
+        // Format as comma-separated list of tag IDs
+        $comments = implode(',', $tagIds);
+
+        // First tag ID or null if none
+        $tagId = !empty($tagIds) ? $tagIds[0] : null;
+
+        $updateData = [
+            'comments' => $comments,
+            'tag_id' => $tagId,
+            'updated_by' => session()->get('user_id') ?? 0,
+        ];
+
+        // Also, if the ticket type is not one of the tag-related types (e.g. date extension, new tag, rule request, update request),
+        // we might want to check if the ticket type should be updated/converted to an update request (Constants::JIRA_TYPE_UPDATE_RULE).
+        // Let's keep the type unchanged unless it is Master Approval/Other and now gets related tags.
+        // But keeping it unchanged is safer unless user expects it to change.
+        if (empty($ticket['type']) || !in_array($ticket['type'], [
+            Constants::JIRA_TYPE_DATE_EXTENSION_RULE,
+            Constants::JIRA_TYPE_NEW_TAG,
+            Constants::JIRA_TYPE_NEW_RULE,
+            Constants::JIRA_TYPE_UPDATE_RULE
+        ])) {
+            // If it was another type, change its type to Update Rule to render properly on lists
+            if (!empty($tagIds)) {
+                $updateData['type'] = Constants::JIRA_TYPE_UPDATE_RULE;
+            }
+        }
+
+        if ($jiraModel->update($id, $updateData)) {
+            return redirect()
+                ->to('/jira')
+                ->with('success', 'Related tags updated successfully for ticket ' . esc($ticket['ticket_id']) . '.');
+        } else {
+            return redirect()
+                ->back()
+                ->with('error', 'Failed to update related tags.');
+        }
+    }
 }

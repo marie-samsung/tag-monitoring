@@ -25,7 +25,18 @@ class JiraHistoryModel extends Model
     public function getRelatedTags(int $id): array
     {
         return $this->select()
-            ->where('tag_id', $id)
+            ->groupStart()
+                ->where('tag_id', $id)
+                ->orGroupStart()
+                    ->whereIn('type', [
+                        Constants::JIRA_TYPE_DATE_EXTENSION_RULE,
+                        Constants::JIRA_TYPE_NEW_TAG,
+                        Constants::JIRA_TYPE_NEW_RULE,
+                        Constants::JIRA_TYPE_UPDATE_RULE
+                    ])
+                    ->where("FIND_IN_SET('{$id}', comments) >", 0)
+                ->groupEnd()
+            ->groupEnd()
             ->orderBy('created_at', 'DESC')
             ->findAll();
     }
@@ -41,7 +52,10 @@ class JiraHistoryModel extends Model
     public function getRelatedTagDateExtension(int $id)
     {
         return $this->select()
-            ->where('tag_id', $id)
+            ->groupStart()
+                ->where('tag_id', $id)
+                ->orWhere("FIND_IN_SET('{$id}', comments) >", 0)
+            ->groupEnd()
             ->where('type', Constants::JIRA_TYPE_DATE_EXTENSION_RULE)
             ->orderBy('created_at', 'DESC')
             ->first();
@@ -50,7 +64,10 @@ class JiraHistoryModel extends Model
     public function getRelatedTagRequest(int $id)
     {
         return $this->select()
-            ->where('tag_id', $id)
+            ->groupStart()
+                ->where('tag_id', $id)
+                ->orWhere("FIND_IN_SET('{$id}', comments) >", 0)
+            ->groupEnd()
             ->whereIn('type', [Constants::JIRA_TYPE_NEW_TAG, Constants::JIRA_TYPE_NEW_RULE])
             ->orderBy('created_at', 'DESC')
             ->first();

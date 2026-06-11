@@ -289,12 +289,13 @@ $hasActiveFilters = ($activeFiltersCount > 0);
                                 Created At <?= getSortIcon('created_at', $currentSortBy, $currentSortDir) ?>
                             </a>
                         </th>
+                        <th class="form-label-sm fw-semibold text-dark text-center">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if (empty($jiraTickets)): ?>
                         <tr>
-                            <td colspan="7" class="text-center py-5 text-muted">
+                            <td colspan="8" class="text-center py-5 text-muted">
                                 <i class="bi bi-inbox fs-2 mb-2 d-block text-secondary" style="opacity: 0.5;"></i>
                                 <span class="fw-semibold">No JIRA tickets found</span>
                                 <p class="small text-secondary mb-0">Try adjusting your filters or search keywords.</p>
@@ -394,6 +395,11 @@ $hasActiveFilters = ($activeFiltersCount > 0);
                                     <?php endif; ?>
                                 </td>
                                 <td class="form-label-sm" style="width:max-content; white-space:nowrap;"><?= esc(date('d-m-Y', strtotime($ticket['created_at']))) ?></td>
+                                <td class="text-center">
+                                    <a href="<?= site_url('jira/update-tags/' . $ticket['id']) ?>" class="apple-btn-secondary btn-sm px-2 py-1" style="font-size: 0.75rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;" title="Update Related Tags">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </a>
+                                </td>
                             </tr>
                         <?php endforeach; ?>
                     <?php endif; ?>

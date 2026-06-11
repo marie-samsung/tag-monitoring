@@ -70,6 +70,8 @@ $routes->group('jira', function ($routes) {
     $routes->get('download', 'JiraController::download');
     $routes->match(['get', 'post'], 'add-entry', 'JiraController::addEntry');
     $routes->match(['get', 'post'], 'create', 'JiraController::create');
+    $routes->get('update-tags/(:num)', 'JiraController::updateTags/$1');
+    $routes->post('update-tags/(:num)', 'JiraController::updateTagsConfirm/$1');
 });
 
 $routes->group('tasks', function ($routes) {
