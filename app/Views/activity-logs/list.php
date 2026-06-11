@@ -681,6 +681,11 @@ Activity Logs
                                             </a>
                                         </li>
                                         <li>
+                                            <a class="dropdown-item py-2" href="<?= site_url('activity-logs/create?duplicate_id=' . $log['id']) ?>" style="font-size: 0.85rem;">
+                                                <i class="bi bi-files text-info me-2"></i>Duplicate
+                                            </a>
+                                        </li>
+                                        <li>
                                             <a class="dropdown-item py-2" href="<?= site_url('activity-logs/update/' . $log['id']) ?>" style="font-size: 0.85rem;">
                                                 <i class="bi bi-pencil-square text-warning me-2"></i>Edit Log
                                             </a>
@@ -702,6 +707,11 @@ Activity Logs
                                             </a>
                                         </li>
                                         <li>
+                                            <a class="dropdown-item py-2" href="<?= site_url('activity-logs/create?duplicate_id=' . $log['id']) ?>">
+                                                <i class="bi bi-files text-info me-2"></i>Duplicate
+                                            </a>
+                                        </li>
+                                        <li>
                                             <a class="dropdown-item py-2" href="<?= site_url('activity-logs/update/' . $log['id']) ?>">
                                                 <i class="bi bi-pencil-square text-warning me-2"></i>Edit Log
                                             </a>
@@ -715,6 +725,9 @@ Activity Logs
                                 <div class="hover-actions-container d-inline-flex align-items-center gap-1">
                                     <a href="<?= site_url('activity-logs/view/' . $log['id']) ?>" class="hover-action-btn btn-view" data-bs-toggle="tooltip" data-bs-placement="top" title="View Details">
                                         <i class="bi bi-eye-fill"></i>
+                                    </a>
+                                    <a href="<?= site_url('activity-logs/create?duplicate_id=' . $log['id']) ?>" class="hover-action-btn btn-duplicate" data-bs-toggle="tooltip" data-bs-placement="top" title="Duplicate Log">
+                                        <i class="bi bi-files"></i>
                                     </a>
                                     <a href="<?= site_url('activity-logs/update/' . $log['id']) ?>" class="hover-action-btn btn-update" data-bs-toggle="tooltip" data-bs-placement="top" title="Edit Log">
                                         <i class="bi bi-pencil-fill"></i>
@@ -1200,6 +1213,11 @@ Activity Logs
 .hover-action-btn.btn-view:hover {
     background-color: var(--color-badge-primary-bg) !important;
     color: var(--color-badge-primary-text) !important;
+}
+
+.hover-action-btn.btn-duplicate:hover {
+    background-color: var(--color-badge-purple-bg) !important;
+    color: var(--color-badge-purple-text) !important;
 }
 
 .hover-action-btn.btn-update:hover {

@@ -159,6 +159,7 @@
             </div>
         </div>
         <div class="d-flex gap-2">
+            <a href="<?= site_url('activity-logs/create?duplicate_id=' . $log['id']) ?>" class="apple-btn-secondary btn-sm px-3">Duplicate</a>
             <a href="<?= site_url('activity-logs/update/' . $log['id']) ?>" class="apple-btn-primary btn-sm px-3">Edit</a>
         </div>
     </div>
@@ -341,6 +342,7 @@
 
             <div class="d-flex align-items-center gap-2 mt-4 pt-3 border-top">
                 <a href="<?= site_url('activity-logs') ?>" class="apple-btn-secondary btn-sm px-3">Back</a>
+                <a href="<?= site_url('activity-logs/create?duplicate_id=' . $log['id']) ?>" class="apple-btn-secondary btn-sm px-3">Duplicate</a>
                 <a href="<?= site_url('activity-logs/update/' . $log['id']) ?>" class="apple-btn-primary btn-sm px-3">Edit</a>
             </div>
         </div>

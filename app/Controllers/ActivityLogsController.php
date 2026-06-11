@@ -56,10 +56,22 @@ class ActivityLogsController extends BaseController
         $model = new ActivityLogsModel();
 
         if ($this->request->getMethod() === 'GET') {
+            $log = null;
+            $duplicateId = $this->request->getGet('duplicate_id');
+            if (!empty($duplicateId)) {
+                $originalLog = $model->find($duplicateId);
+                if ($originalLog) {
+                    $log = $originalLog;
+                    $log['title'] = 'Copy of ' . $log['title'];
+                    $log['finished_date'] = null;
+                }
+            }
+
             $distinctProjects = $model->select('DISTINCT(project) as project_name')->orderBy('project', 'ASC')->findAll();
             $projectNames = array_column($distinctProjects, 'project_name');
             return view('activity-logs/create', [
-                'project_names' => $projectNames
+                'project_names' => $projectNames,
+                'log' => $log
             ]);
         }
 
