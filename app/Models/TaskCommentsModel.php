@@ -3,7 +3,7 @@
 namespace App\Models;
 use CodeIgniter\Model;
 
-class ActivityLogCommentsModel extends Model
+class TaskCommentsModel extends Model
 {
     protected $table = 'activity_log_comments';
     protected $primaryKey = 'id';

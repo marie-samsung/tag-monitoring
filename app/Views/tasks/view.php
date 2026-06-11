@@ -128,7 +128,7 @@
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom flex-wrap gap-3">
         <div class="d-flex align-items-center gap-3">
-            <a href="<?= site_url('activity-logs') ?>" onclick="if (document.referrer) { window.history.back(); return false; }" class="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; padding: 0; display: inline-flex;" title="Back to Logs">
+            <a href="<?= site_url('tasks') ?>" onclick="if (document.referrer) { window.history.back(); return false; }" class="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; padding: 0; display: inline-flex;" title="Back to Tasks">
                 <i class="bi bi-arrow-left fs-5"></i>
             </a>
             <div>
@@ -137,7 +137,7 @@
                     <span class="badge" style="<?= random_bg_style($subsidiary) ?>" title="Subsidiary"><?= $subsidiary ?></span>
                     <span class="badge" style="<?= random_bg_style($team) ?>" title="Team"><?= $team ?></span>
                     <span class="badge" style="<?= random_bg_style($project) ?>" title="Project"><?= esc($project) ?></span>
-                    <span class="badge" style="<?= random_bg_style($type) ?>" title="Activity Log Type"><?= $type ?></span>
+                    <span class="badge" style="<?= random_bg_style($type) ?>" title="Task Type"><?= $type ?></span>
                     <?php if (!$isAdmin): ?>
                     <select class="badge status-select-badge <?= assignee_class($log['assignee']) ?> assignee-select" data-log-id="<?= $log['id'] ?>" title="Assigned To">
                         <?php foreach (Constants::USERS as $val => $lbl): ?>
@@ -159,8 +159,8 @@
             </div>
         </div>
         <div class="d-flex gap-2">
-            <a href="<?= site_url('activity-logs/create?duplicate_id=' . $log['id']) ?>" class="apple-btn-secondary btn-sm px-3">Duplicate</a>
-            <a href="<?= site_url('activity-logs/update/' . $log['id']) ?>" class="apple-btn-primary btn-sm px-3">Edit</a>
+            <a href="<?= site_url('tasks/create?duplicate_id=' . $log['id']) ?>" class="apple-btn-secondary btn-sm px-3">Duplicate</a>
+            <a href="<?= site_url('tasks/update/' . $log['id']) ?>" class="apple-btn-primary btn-sm px-3">Edit</a>
         </div>
     </div>
 </div>
@@ -170,7 +170,7 @@
     <div class="<?= !$isAdmin ? 'col-lg-6 col-md-12' : 'col-lg-8 col-md-12 mx-auto' ?>">
         <div class="apple-card p-4 h-100">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="fw-bold mb-0 text-secondary" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;">Log Details</h5>
+                <h5 class="fw-bold mb-0 text-secondary" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;">Task Details</h5>
                 <select class="badge status-select-badge <?= status_activity_logs_class($log['status']) ?> status-select" data-log-id="<?= $log['id'] ?>" title="Status" style="font-size: 0.85rem !important; padding: 0.35em 1.7em 0.35em 0.7em !important; height: fit-content; margin: 0;">
                     <?php foreach (Constants::ACTIVITY_LOGS_STATUS as $val => $lbl): ?>
                         <option value="<?= $val ?>" <?= $log['status'] == $val ? 'selected' : '' ?> class="bg-white text-dark text-start">
@@ -321,11 +321,11 @@
                             </table>
                         </div>
                     <?php else : ?>
-                        <div class="alert alert-info py-2 px-3 m-0" style="font-size: 0.85rem;">No files attached to this log.</div>
+                        <div class="alert alert-info py-2 px-3 m-0" style="font-size: 0.85rem;">No files attached to this task.</div>
                     <?php endif; ?>
                 </div>
 
-                <form action="<?= site_url('activity-logs/upload') ?>" method="post" enctype="multipart/form-data" class="mt-3 pt-3 border-top">
+                <form action="<?= site_url('tasks/upload') ?>" method="post" enctype="multipart/form-data" class="mt-3 pt-3 border-top">
                     <input type="hidden" name="log_id" value="<?= esc($log['id']) ?>">
                     <input type="hidden" name="created_by" value="<?= $isAdmin ? session()->get('user_id') : esc($log['assignee']) ?>">
                     <div class="d-flex flex-column gap-2">
@@ -341,9 +341,9 @@
             </div>
 
             <div class="d-flex align-items-center gap-2 mt-4 pt-3 border-top">
-                <a href="<?= site_url('activity-logs') ?>" class="apple-btn-secondary btn-sm px-3">Back</a>
-                <a href="<?= site_url('activity-logs/create?duplicate_id=' . $log['id']) ?>" class="apple-btn-secondary btn-sm px-3">Duplicate</a>
-                <a href="<?= site_url('activity-logs/update/' . $log['id']) ?>" class="apple-btn-primary btn-sm px-3">Edit</a>
+                <a href="<?= site_url('tasks') ?>" class="apple-btn-secondary btn-sm px-3">Back</a>
+                <a href="<?= site_url('tasks/create?duplicate_id=' . $log['id']) ?>" class="apple-btn-secondary btn-sm px-3">Duplicate</a>
+                <a href="<?= site_url('tasks/update/' . $log['id']) ?>" class="apple-btn-primary btn-sm px-3">Edit</a>
             </div>
         </div>
     </div>
@@ -380,11 +380,11 @@
                         <?php endif; ?>
                     <?php endforeach; ?>
                 <?php else: ?>
-                    <div id="no-comments-alert" class="alert alert-info py-2 px-3">No update(s) for this log yet.</div>
+                    <div id="no-comments-alert" class="alert alert-info py-2 px-3">No update(s) for this task yet.</div>
                 <?php endif; ?>
             </div>
 
-            <form id="comment-form" action="<?= site_url('activity-logs/comment') ?>" method="post" class="mt-3 pt-3 border-top">
+            <form id="comment-form" action="<?= site_url('tasks/comment') ?>" method="post" class="mt-3 pt-3 border-top">
                 <?= csrf_field() ?>
                 <div>
                     <label for="comment" class="form-label-xs text-primary fw-medium mb-2">Post an Update</label>
@@ -565,13 +565,13 @@
                 let postData = { csrf_test_name: csrfToken };
 
                 if (dropdown.hasClass('assignee-select')) {
-                    url = '<?= site_url("activity-logs/update-assignee") ?>/' + logId;
+                    url = '<?= site_url("tasks/update-assignee") ?>/' + logId;
                     postData.assignee = newValue;
                 } else if (dropdown.hasClass('priority-select')) {
-                    url = '<?= site_url("activity-logs/update-priority") ?>/' + logId;
+                    url = '<?= site_url("tasks/update-priority") ?>/' + logId;
                     postData.priority = newValue;
                 } else {
-                    url = '<?= site_url("activity-logs/update-status") ?>/' + logId;
+                    url = '<?= site_url("tasks/update-status") ?>/' + logId;
                     postData.status = newValue;
                 }
 

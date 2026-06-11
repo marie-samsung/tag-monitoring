@@ -3,7 +3,7 @@
 namespace App\Models;
 use CodeIgniter\Model;
 
-class ActivityLogsModel extends Model
+class TasksModel extends Model
 {
     protected $table = 'activity_logs';
     protected $primaryKey = 'id';

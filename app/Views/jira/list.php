@@ -26,7 +26,7 @@ JIRA Tickets List
 <?= $this->section('content') ?>
 
 <?php
-use App\Models\ActivityLogsModel;
+use App\Models\TasksModel;
 use App\Models\Constants;
 use App\Models\TagRequestsModel;
 use App\Models\TagsModel;
@@ -367,12 +367,12 @@ $hasActiveFilters = ($activeFiltersCount > 0);
                                     <?php
                                             }
                                         } elseif ($type == Constants::JIRA_TYPE_UPDATE_RULE) {
-                                            $activityLogsModel = new ActivityLogsModel();
-                                            $activityLog = $activityLogsModel->where('ticket_id', $ticket['ticket_id'])->first();
+                                            $tasksModel = new TasksModel();
+                                            $activityLog = $tasksModel->where('ticket_id', $ticket['ticket_id'])->first();
 
                                             if ($activityLog) {
                                     ?>
-                                            <a href="<?= site_url('/activity-logs/view/' . $activityLog['id']) ?>" class="apple-link-dark">
+                                            <a href="<?= site_url('/tasks/view/' . $activityLog['id']) ?>" class="apple-link-dark">
                                                 <?= Constants::JIRA_TICKET_TYPES[$type] ?>
                                             </a>
 

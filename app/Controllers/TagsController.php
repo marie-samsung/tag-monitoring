@@ -2,8 +2,8 @@
 
 namespace App\Controllers;
 
-use App\Models\ActivityLogCommentsModel;
-use App\Models\ActivityLogsModel;
+use App\Models\TaskCommentsModel;
+use App\Models\TasksModel;
 use App\Models\Constants;
 use App\Models\JiraHistoryModel;
 use App\Models\PropertiesModel;
@@ -204,7 +204,7 @@ class TagsController extends BaseController
         }
 
         if ($tag['status'] !== $post['status']) {
-            $activityLogsModel = new ActivityLogsModel();
+            $activityLogsModel = new TasksModel();
             $jiraHistoryModel = new JiraHistoryModel();
             $ticketId = $jiraHistoryModel->getRelatedTagDateExtension($tag['id'])['ticket_id'] ?? null;
             $activityLog = $activityLogsModel->getRelatedTagRenewal($ticketId) ?? null;
@@ -216,7 +216,7 @@ class TagsController extends BaseController
 
             if ($activityLog) {
                 $from = Constants::ACTIVITY_LOGS_STATUS[$activityLog['status']];
-                $commentsModel = new ActivityLogCommentsModel();
+                $commentsModel = new TaskCommentsModel();
 
                 if ($post['status'] == Constants::STATUS_PENDING_VERIFICATION) {
                     if ($activityLog['status'] != Constants::ACTIVITY_LOGS_STATUS_REVIEW) {
@@ -335,7 +335,7 @@ class TagsController extends BaseController
         }
 
         $this->saveRenewalLogs($propertyIds, $tagIds, $info);
-        $this->addActivityLog($propertyIds[0], $tagIds, $info);
+        $this->addTask($propertyIds[0], $tagIds, $info);
 
         return redirect()
             ->to('/tags')
@@ -353,8 +353,8 @@ class TagsController extends BaseController
         $model = new TagsModel();
         $tag = $model->find($id);
         $jiraModel = new JiraHistoryModel();
-        $activityLogModel = new ActivityLogsModel();
-        $commentsModel = new ActivityLogCommentsModel();
+        $activityLogModel = new TasksModel();
+        $commentsModel = new TaskCommentsModel();
         $requestedDate = $tag['requested_date'];
 
         if (!$tag) {
@@ -408,8 +408,8 @@ class TagsController extends BaseController
     {
         $model = new TagsModel();
         $jiraModel = new JiraHistoryModel();
-        $activityLogModel = new ActivityLogsModel();
-        $commentsModel = new ActivityLogCommentsModel();
+        $activityLogModel = new TasksModel();
+        $commentsModel = new TaskCommentsModel();
 
         // Support both GET query parameters and POST
         $tag_ids_raw = $this->request->getVar('tags');
@@ -557,10 +557,10 @@ class TagsController extends BaseController
             $this->saveJiraHistory($tag, $info['ticket_id'], $tagIds, false);
         }
 
-        $this->addActivityLog($propertyId, $tagIds, $info, false);
+        $this->addTask($propertyId, $tagIds, $info, false);
 
         return redirect()
-            ->to('/activity-logs')
+            ->to('/tasks')
             ->with('success', 'Update Request created successfully.');
     }
 
@@ -606,9 +606,9 @@ class TagsController extends BaseController
         }
     }
 
-    public function addActivityLog($propertyId, $tagIds, $info, $isRenewal = true)
+    public function addTask($propertyId, $tagIds, $info, $isRenewal = true)
     {
-        $activityLogModel = new ActivityLogsModel();
+        $activityLogModel = new TasksModel();
         $propertyModel = new PropertiesModel();
         $tagsModel = new TagsModel();
         $property = $propertyModel->find($propertyId);

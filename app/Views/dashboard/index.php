@@ -463,7 +463,7 @@ Dashboard | Martech TMS
                 
                 <div class="flex-grow-1 d-flex flex-column justify-content-center">
                     <!-- Blocked renewal requests -->
-                    <a href="<?= site_url('activity-logs?status_group=blocked&type=' . \App\Models\Constants::ACTIVITY_TYPE_RENEWAL) ?>" class="operation-metric-item">
+                    <a href="<?= site_url('tasks?status_group=blocked&type=' . \App\Models\Constants::ACTIVITY_TYPE_RENEWAL) ?>" class="operation-metric-item">
                         <div class="operation-metric-left">
                             <div class="operation-metric-icon-wrapper" style="background-color: var(--color-badge-danger-bg); color: var(--color-badge-danger-text); border: 1px solid var(--color-badge-danger-border);">
                                 <i class="bi bi-slash-circle-fill"></i>
@@ -595,7 +595,7 @@ Dashboard | Martech TMS
             <i class="bi bi-ticket-detailed fs-6"></i>
         </span>
         <div>
-            <h5 class="fw-bold mb-0 text-dark">Activity Logs Analytics</h5>
+            <h5 class="fw-bold mb-0 text-dark">Tasks Analytics</h5>
             <p class="text-secondary small mb-0">Breakdown of support tickets, tasks, and system activities</p>
         </div>
     </div>
@@ -1193,7 +1193,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         activityTagsModal.show();
 
-        fetch(`<?= site_url('dashboard/activity-tags') ?>?date=${date}&category=${category}`)
+        fetch(`<?= site_url('dashboard/task-tags') ?>?date=${date}&category=${category}`)
             .then(response => response.json())
             .then(data => {
                 document.getElementById('modalLoading').style.display = 'none';

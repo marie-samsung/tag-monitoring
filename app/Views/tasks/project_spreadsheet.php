@@ -243,7 +243,7 @@ Project: <?= esc($project_name) ?>
 <div class="container-fluid px-0">
     <!-- Page Header -->
     <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
-        <a href="<?= site_url('activity-logs') ?>" class="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; padding: 0;" title="Back to Logs">
+        <a href="<?= site_url('tasks') ?>" class="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; padding: 0;" title="Back to Tasks">
             <i class="bi bi-arrow-left fs-5"></i>
         </a>
         <div>
@@ -259,7 +259,7 @@ Project: <?= esc($project_name) ?>
             $pName = !empty($p) ? $p : 'Generic';
             $isActive = ($pName === $project_name);
             ?>
-            <a href="<?= site_url('activity-logs/project/' . rawurlencode($pName)) ?>" class="sheet-tab <?= $isActive ? 'active' : '' ?>">
+            <a href="<?= site_url('tasks/project/' . rawurlencode($pName)) ?>" class="sheet-tab <?= $isActive ? 'active' : '' ?>">
                 <i class="bi bi-file-earmark-spreadsheet-fill <?= $isActive ? 'text-success' : 'text-secondary' ?>"></i>
                 <span><?= esc($pName) ?></span>
             </a>
@@ -274,11 +274,11 @@ Project: <?= esc($project_name) ?>
                 <span class="badge bg-success text-white px-2.5 py-1.5" style="border-radius: 6px; font-weight: 600;">
                     <i class="bi bi-grid-3x3-gap-fill me-1"></i> <?= isset($pager) ? $pager->getTotal() : count($tasks) ?> Rows
                 </span>
-                <a href="<?= site_url('activity-logs/project-export/excel/' . rawurlencode($project_name)) ?>" class="apple-btn-secondary btn-sm d-inline-flex align-items-center gap-1.5 py-1 px-2.5" style="font-size: 0.8rem; border-radius: 6px; height: 28px; text-decoration: none;" title="Export Excel">
+                <a href="<?= site_url('tasks/project-export/excel/' . rawurlencode($project_name)) ?>" class="apple-btn-secondary btn-sm d-inline-flex align-items-center gap-1.5 py-1 px-2.5" style="font-size: 0.8rem; border-radius: 6px; height: 28px; text-decoration: none;" title="Export Excel">
                     <i class="bi bi-file-earmark-excel-fill text-success"></i>
                     <span>Export Excel</span>
                 </a>
-                <a href="<?= site_url('activity-logs/project-export/pdf/' . rawurlencode($project_name)) ?>" target="_blank" class="apple-btn-secondary btn-sm d-inline-flex align-items-center gap-1.5 py-1 px-2.5" style="font-size: 0.8rem; border-radius: 6px; height: 28px; text-decoration: none;" title="Export PDF">
+                <a href="<?= site_url('tasks/project-export/pdf/' . rawurlencode($project_name)) ?>" target="_blank" class="apple-btn-secondary btn-sm d-inline-flex align-items-center gap-1.5 py-1 px-2.5" style="font-size: 0.8rem; border-radius: 6px; height: 28px; text-decoration: none;" title="Export PDF">
                     <i class="bi bi-file-earmark-pdf-fill text-danger"></i>
                     <span>Export PDF</span>
                 </a>
@@ -349,7 +349,7 @@ Project: <?= esc($project_name) ?>
                                     </span>
                                 </td>
                                 <td>
-                                    <a href="<?= site_url('activity-logs/view/' . $task['id']) ?>" class="apple-link-dark fw-semibold text-decoration-none">
+                                    <a href="<?= site_url('tasks/view/' . $task['id']) ?>" class="apple-link-dark fw-semibold text-decoration-none">
                                         <?= esc($task['title']) ?>
                                     </a>
                                 </td>
@@ -481,7 +481,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const newValue = dropdown.val();
         const csrfToken = $('input[name="csrf_test_name"]').val();
 
-        const url = '<?= site_url("activity-logs/update-status") ?>/' + logId;
+        const url = '<?= site_url("tasks/update-status") ?>/' + logId;
         const postData = { csrf_test_name: csrfToken, status: newValue };
 
         dropdown.css('opacity', '0.6');

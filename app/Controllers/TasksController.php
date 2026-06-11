@@ -2,17 +2,17 @@
 
 namespace App\Controllers;
 
-use App\Models\ActivityLogCommentsModel;
-use App\Models\ActivityLogFilesModel;
-use App\Models\ActivityLogsModel;
+use App\Models\TaskCommentsModel;
+use App\Models\TaskFilesModel;
+use App\Models\TasksModel;
 use App\Models\Constants;
 use CodeIgniter\Files\Exceptions\FileException;
 
-class ActivityLogsController extends BaseController
+class TasksController extends BaseController
 {
     public function index()
     {
-        $model = new ActivityLogsModel();
+        $model = new TasksModel();
         
         $meModeGet = $this->request->getGet('me_mode');
         if ($meModeGet !== null) {
@@ -48,12 +48,12 @@ class ActivityLogsController extends BaseController
         $distinctProjects = $model->select('DISTINCT(project) as project_name')->orderBy('project', 'ASC')->findAll();
         $data['project_names'] = array_column($distinctProjects, 'project_name');
 
-        return view('activity-logs/list', $data);
+        return view('tasks/list', $data);
     }
 
     public function create()
     {
-        $model = new ActivityLogsModel();
+        $model = new TasksModel();
 
         if ($this->request->getMethod() === 'GET') {
             $log = null;
@@ -69,7 +69,7 @@ class ActivityLogsController extends BaseController
 
             $distinctProjects = $model->select('DISTINCT(project) as project_name')->orderBy('project', 'ASC')->findAll();
             $projectNames = array_column($distinctProjects, 'project_name');
-            return view('activity-logs/create', [
+            return view('tasks/create', [
                 'project_names' => $projectNames,
                 'log' => $log
             ]);
@@ -103,22 +103,22 @@ class ActivityLogsController extends BaseController
         $model->insert($insertData);
 
         return redirect()
-            ->to('/activity-logs')
+            ->to('/tasks')
             ->with('success', "Activity log '{$insertData['title']}' created successfully.");
     }
 
     public function view($id)
     {
-        $model = new ActivityLogsModel();
-        $comments = new ActivityLogCommentsModel();
-        $files = new ActivityLogFilesModel();
+        $model = new TasksModel();
+        $comments = new TaskCommentsModel();
+        $files = new TaskFilesModel();
         $log = $model->find($id);
 
         if (!$log) {
             throw new \CodeIgniter\Exceptions\PageNotFoundException("Activity log with ID $id not found.");
         }
 
-        return view('activity-logs/view', [
+        return view('tasks/view', [
             'log' => $log,
             'comments' => $comments->getRelatedComments($id),
             'files' => $files->getRelatedFiles($id),
@@ -128,20 +128,20 @@ class ActivityLogsController extends BaseController
     public function update($id)
     {
         helper('custom_functions');
-        $model = new ActivityLogsModel();
-        $commentsModel = new ActivityLogCommentsModel();
+        $model = new TasksModel();
+        $commentsModel = new TaskCommentsModel();
         $log = $model->find($id);
 
         if (!$log) {
             return redirect()
-                ->to('/activity-logs')
+                ->to('/tasks')
                 ->with('error', 'Activity log not found.');
         }
 
         if ($this->request->getMethod() === 'GET') {
             $distinctProjects = $model->select('DISTINCT(project) as project_name')->orderBy('project', 'ASC')->findAll();
             $projectNames = array_column($distinctProjects, 'project_name');
-            return view('activity-logs/update', [
+            return view('tasks/update', [
                 'log' => $log,
                 'project_names' => $projectNames
             ]);
@@ -221,13 +221,13 @@ class ActivityLogsController extends BaseController
         $model->update($id, $updateData);
 
         return redirect()
-            ->to('/activity-logs/view/' . $id)
+            ->to('/tasks/view/' . $id)
             ->with('success', "Activity log '{$updateData['title']}' updated successfully.");
     }
 
     public function comment()
     {
-        $commentsModel = new ActivityLogCommentsModel();
+        $commentsModel = new TaskCommentsModel();
         $post = $this->request->getPost();
 
         if (!$post) {
@@ -269,8 +269,8 @@ class ActivityLogsController extends BaseController
 
     public function uploadFile()
     {
-        $model = new ActivityLogsModel();
-        $filesModel = new ActivityLogFilesModel();
+        $model = new TasksModel();
+        $filesModel = new TaskFilesModel();
 
         $post = $this->request->getPost();
         $logId = $post['log_id'];
@@ -292,7 +292,7 @@ class ActivityLogsController extends BaseController
                     ]);
 
                     return redirect()
-                        ->to('/activity-logs/view/' . $post['log_id'])
+                        ->to('/tasks/view/' . $post['log_id'])
                         ->with('success', "File successfully uploaded.");
                 }
             }
@@ -301,14 +301,14 @@ class ActivityLogsController extends BaseController
         }
 
         return redirect()
-            ->to('/activity-logs/view/' . $post['log_id'])
+            ->to('/tasks/view/' . $post['log_id'])
             ->with('error', "An error occurred. File was not uploaded successfully.");
     }
 
     public function exportAsCSV()
     {
         helper('custom_functions');
-        $logsModel = new ActivityLogsModel();
+        $logsModel = new TasksModel();
         
         $meModeGet = $this->request->getGet('me_mode');
         if ($meModeGet !== null) {
@@ -413,8 +413,8 @@ class ActivityLogsController extends BaseController
 
     public function updateStatus($id)
     {
-        $model = new ActivityLogsModel();
-        $commentsModel = new ActivityLogCommentsModel();
+        $model = new TasksModel();
+        $commentsModel = new TaskCommentsModel();
         
         $log = $model->find($id);
         if (!$log) {
@@ -483,8 +483,8 @@ class ActivityLogsController extends BaseController
 
     public function updateAssignee($id)
     {
-        $model = new ActivityLogsModel();
-        $commentsModel = new ActivityLogCommentsModel();
+        $model = new TasksModel();
+        $commentsModel = new TaskCommentsModel();
         
         $log = $model->find($id);
         if (!$log) {
@@ -552,8 +552,8 @@ class ActivityLogsController extends BaseController
 
     public function updatePriority($id)
     {
-        $model = new ActivityLogsModel();
-        $commentsModel = new ActivityLogCommentsModel();
+        $model = new TasksModel();
+        $commentsModel = new TaskCommentsModel();
         
         $log = $model->find($id);
         if (!$log) {
@@ -616,8 +616,8 @@ class ActivityLogsController extends BaseController
 
     public function bulkStatus()
     {
-        $model = new ActivityLogsModel();
-        $commentsModel = new ActivityLogCommentsModel();
+        $model = new TasksModel();
+        $commentsModel = new TaskCommentsModel();
 
         $logIds = $this->request->getPost('log_ids');
         $status = (int)$this->request->getPost('status');
@@ -675,8 +675,8 @@ class ActivityLogsController extends BaseController
 
     public function bulkProject()
     {
-        $model = new ActivityLogsModel();
-        $commentsModel = new ActivityLogCommentsModel();
+        $model = new TasksModel();
+        $commentsModel = new TaskCommentsModel();
 
         $logIds = $this->request->getPost('log_ids');
         $project = trim((string)$this->request->getPost('project'));
@@ -723,8 +723,8 @@ class ActivityLogsController extends BaseController
 
     public function bulkAssignee()
     {
-        $model = new ActivityLogsModel();
-        $commentsModel = new ActivityLogCommentsModel();
+        $model = new TasksModel();
+        $commentsModel = new TaskCommentsModel();
 
         $logIds = $this->request->getPost('log_ids');
         $assigneeId = (int)$this->request->getPost('assignee');
@@ -782,7 +782,7 @@ class ActivityLogsController extends BaseController
     public function projectView($projectName)
     {
         $projectName = urldecode($projectName);
-        $model = new ActivityLogsModel();
+        $model = new TasksModel();
         
         $tasks = $model->getProjectLogs($projectName, 25);
 
@@ -794,7 +794,7 @@ class ActivityLogsController extends BaseController
         }, $projectNames);
         $projectNames = array_unique($projectNames);
 
-        return view('activity-logs/project_spreadsheet', [
+        return view('tasks/project_spreadsheet', [
             'project_name'  => $projectName,
             'tasks'         => $tasks,
             'pager'         => $model->pager,
@@ -805,7 +805,7 @@ class ActivityLogsController extends BaseController
     public function exportProjectExcel($projectName)
     {
         $projectName = urldecode($projectName);
-        $model = new ActivityLogsModel();
+        $model = new TasksModel();
         $tasks = $model->getProjectLogs($projectName);
 
         $filename = str_replace(' ', '_', $projectName) . '_Tasks_Export_' . date('Y-m-d') . '.csv';
@@ -856,10 +856,10 @@ class ActivityLogsController extends BaseController
     public function exportProjectPDF($projectName)
     {
         $projectName = urldecode($projectName);
-        $model = new ActivityLogsModel();
+        $model = new TasksModel();
         $tasks = $model->getProjectLogs($projectName);
 
-        return view('activity-logs/project_pdf', [
+        return view('tasks/project_pdf', [
             'project_name' => $projectName,
             'tasks'        => $tasks,
         ]);

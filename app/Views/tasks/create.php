@@ -1,7 +1,7 @@
 <?= $this->extend('layouts/default') ?>
 
 <?= $this->section('title') ?>
-Activity Log: Create
+Task: Create
 <?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
@@ -14,11 +14,11 @@ Activity Log: Create
 <div class="container-fluid px-0">
     <!-- Page Header -->
     <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
-        <a href="<?= site_url('activity-logs') ?>" onclick="if (document.referrer) { window.history.back(); return false; }" class="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; padding: 0; display: inline-flex;" title="Back to Logs">
+        <a href="<?= site_url('tasks') ?>" onclick="if (document.referrer) { window.history.back(); return false; }" class="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; padding: 0; display: inline-flex;" title="Back to Tasks">
             <i class="bi bi-arrow-left fs-5"></i>
         </a>
         <div>
-            <h2 class="mb-0 fw-bold">Add a New Activity Log</h2>
+            <h2 class="mb-0 fw-bold">Create a New Task</h2>
             <p class="text-secondary small mb-0">Record and track project management activities, support tasks, and campaign tag updates.</p>
         </div>
     </div>
@@ -29,7 +29,7 @@ Activity Log: Create
         </div>
     <?php endif; ?>
 
-    <form action="<?= site_url('activity-logs/create') ?>" method="post">
+    <form action="<?= site_url('tasks/create') ?>" method="post">
         <?= csrf_field() ?>
 
         <div class="row g-4">
@@ -142,7 +142,7 @@ Activity Log: Create
 
                 <!-- Form Action Buttons -->
                 <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
-                    <a href="<?= site_url('activity-logs') ?>" onclick="if (document.referrer) { window.history.back(); return false; }" title="Cancel" class="apple-btn-secondary btn-sm px-4 text-decoration-none">Cancel</a>
+                    <a href="<?= site_url('tasks') ?>" onclick="if (document.referrer) { window.history.back(); return false; }" title="Cancel" class="apple-btn-secondary btn-sm px-4 text-decoration-none">Cancel</a>
                     <button type="submit" class="apple-btn-primary btn-sm px-4">Submit</button>
                 </div>
             </div>
@@ -153,7 +153,7 @@ Activity Log: Create
                 <div class="apple-card mb-4" style="background-color: var(--color-bg-base); border: 1px solid rgba(0, 0, 0, 0.05); box-shadow: none;">
                     <h5 class="mb-3 text-primary d-flex align-items-center gap-2 fw-bold" style="font-size: 1rem;">
                         <i class="bi bi-gear-fill"></i>
-                        <span>Activity Settings</span>
+                        <span>Task Settings</span>
                     </h5>
                     
                     <div class="row g-3">

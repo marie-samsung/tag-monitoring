@@ -2,9 +2,9 @@
 
 namespace App\Controllers;
 
-use App\Models\ActivityLogCommentsModel;
-use App\Models\ActivityLogsModel;
-use App\Models\ActivityLogFilesModel;
+use App\Models\TaskCommentsModel;
+use App\Models\TasksModel;
+use App\Models\TaskFilesModel;
 use App\Models\Constants;
 use App\Models\JiraHistoryModel;
 use App\Models\OrganizationsModel;
@@ -230,7 +230,7 @@ class TagRequestsController extends BaseController
                 $title = "New Rule Request: ";
             }
 
-            $this->addActivityLog($tagRequest, $title, $ticketId);
+            $this->addTask($tagRequest, $title, $ticketId);
 
             if (!$tagRequest) {
                 return redirect()
@@ -339,8 +339,8 @@ class TagRequestsController extends BaseController
     {
         $model = new TagRequestsModel();
         $tagsModel = new TagsModel();
-        $activityLogModel = new ActivityLogsModel();
-        $commentsModel = new ActivityLogCommentsModel();
+        $taskModel = new TasksModel();
+        $commentsModel = new TaskCommentsModel();
         $request = $model->find($id);
 
         if (!$request) {
@@ -358,21 +358,21 @@ class TagRequestsController extends BaseController
         }
 
         $ticketId = $request['new_tag_ticket'] ?? $request['new_rule_ticket'];
-        $activityLog = $activityLogModel->where('ticket_id', $ticketId)->first();
+        $task = $taskModel->where('ticket_id', $ticketId)->first();
 
-        if ($activityLog) {
-            if ($activityLog['status'] != Constants::ACTIVITY_LOGS_STATUS_COMPLETED) {
-                $from = Constants::ACTIVITY_LOGS_STATUS[$activityLog['status']];
+        if ($task) {
+            if ($task['status'] != Constants::ACTIVITY_LOGS_STATUS_COMPLETED) {
+                $from = Constants::ACTIVITY_LOGS_STATUS[$task['status']];
                 $to = Constants::ACTIVITY_LOGS_STATUS[Constants::ACTIVITY_LOGS_STATUS_COMPLETED];
 
                 $commentsModel->insert([
-                    'log_id' => $activityLog['id'],
+                    'log_id' => $task['id'],
                     'comment' => "Status updated from [{$from}] to [{$to}]",
                     'commented_by' => session()->get('user_id'),
                     'type' => Constants::COMMENT_TYPE_UPDATE,
                 ]);
 
-                $activityLogModel->update($activityLog['id'], [
+                $taskModel->update($task['id'], [
                     'status' => Constants::ACTIVITY_LOGS_STATUS_COMPLETED,
                 ]);
             }
@@ -509,9 +509,9 @@ class TagRequestsController extends BaseController
         }
     }
 
-    public function addActivityLog($request, $title, $ticketId)
+    public function addTask($request, $title, $ticketId)
     {
-        $activityLogModel = new ActivityLogsModel();
+        $taskModel = new TasksModel();
         $propertiesModel = new PropertiesModel();
         $vendorsModel = new VendorsModel();
         $tagsModel = new TagsModel();
@@ -525,7 +525,7 @@ class TagRequestsController extends BaseController
             $description .= '<li>' . $tagInfo['name'] . '</li>';
         }
 
-        $activityLogId = $activityLogModel->insert([
+        $taskId = $taskModel->insert([
             'title' => "{$property['name']} | " . $title . $vendor['name'],
             'description' => $description . '</ul></ol>',
             'subsidiary_id' => $property['subsidiary_id'],
@@ -540,19 +540,19 @@ class TagRequestsController extends BaseController
             'created_by' => session()->get('user_id') ?? 0,
         ]);
 
-        if ($activityLogId) {
+        if ($taskId) {
             $filesModel = new TagRequestFilesModel();
             $relatedFiles = $filesModel->where('request_id', $request['id'])
                                        ->where('type', Constants::ATTACHMENT_REQUEST_FORM)
                                        ->findAll();
 
             if (!empty($relatedFiles)) {
-                $activityLogFilesModel = new ActivityLogFilesModel();
+                $taskFilesModel = new TaskFilesModel();
                 foreach ($relatedFiles as $file) {
-                    $activityLogFilesModel->insert([
+                    $taskFilesModel->insert([
                         'file_name' => $file['file_name'],
                         'file_path' => $file['file_path'],
-                        'log_id' => $activityLogId,
+                        'log_id' => $taskId,
                         'created_by' => session()->get('user_id') ?? 0,
                     ]);
                 }

@@ -109,7 +109,7 @@
     <div class="report-header">
         <div>
             <h1 class="report-title">Project: <?= esc($project_name) ?></h1>
-            <p class="report-subtitle">Activity Logs & Tasks Export Report</p>
+            <p class="report-subtitle">Tasks Export Report</p>
         </div>
         <div class="report-meta">
             <div>Date Generated: <strong><?= date('d-m-Y H:i') ?></strong></div>

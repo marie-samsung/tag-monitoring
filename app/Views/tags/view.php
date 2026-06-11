@@ -7,7 +7,7 @@
 <?= $this->section('content') ?>
 
 <?php
-use App\Models\ActivityLogsModel;
+use App\Models\TasksModel;
 use App\Models\Constants;
 use App\Models\TagsModel;
 use App\Models\PropertiesModel;
@@ -213,12 +213,12 @@ $tagRequestsModel = new TagRequestsModel();
 
                                         <?php
                                             } elseif ($type == Constants::JIRA_TYPE_UPDATE_RULE) {
-                                                $activityLogsModel = new ActivityLogsModel();
+                                                $activityLogsModel = new TasksModel();
                                                 $activityLog = $activityLogsModel->where('ticket_id', $jira['ticket_id'])->first();
 
                                                 if ($activityLog) {
                                         ?>
-                                                <a href="<?= site_url('/activity-logs/view/' . $activityLog['id']) ?>" target="_blank" class="apple-link-dark text-decoration-none fw-semibold">
+                                                <a href="<?= site_url('/tasks/view/' . $activityLog['id']) ?>" target="_blank" class="apple-link-dark text-decoration-none fw-semibold">
                                                     <?= Constants::JIRA_TICKET_TYPES[$type] ?>
                                                 </a>
 

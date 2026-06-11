@@ -10,7 +10,7 @@ function getSortUrl($field, $currentSortBy, $currentSortDir) {
     } else {
         $queryParams['sort_dir'] = 'asc';
     }
-    return site_url('activity-logs') . '?' . http_build_query($queryParams);
+    return site_url('tasks') . '?' . http_build_query($queryParams);
 }
 
 function getGroupFilterUrl($group) {
@@ -22,7 +22,7 @@ function getGroupFilterUrl($group) {
         unset($queryParams['status']);
     }
     unset($queryParams['page']);
-    return site_url('activity-logs') . '?' . http_build_query($queryParams);
+    return site_url('tasks') . '?' . http_build_query($queryParams);
 }
 
 function getMeModeUrl() {
@@ -37,7 +37,7 @@ function getMeModeUrl() {
         unset($queryParams['assignee']);
     }
     unset($queryParams['page']);
-    return site_url('activity-logs') . '?' . http_build_query($queryParams);
+    return site_url('tasks') . '?' . http_build_query($queryParams);
 }
 
 function getSortIcon($field, $currentSortBy, $currentSortDir) {
@@ -51,7 +51,7 @@ function getSortIcon($field, $currentSortBy, $currentSortDir) {
 <?= $this->extend('layouts/default') ?>
 
 <?= $this->section('title') ?>
-Activity Logs
+Tasks
 <?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
@@ -103,7 +103,7 @@ Activity Logs
         <div>
             <?php $totalLogs = isset($pager) ? $pager->getTotal() : count($logs); ?>
             <h2 class="mb-0 fw-bold d-flex align-items-center gap-2">
-                <span>Activity Logs</span>
+                <span>Tasks</span>
                 <span class="badge bg-secondary text-secondary" style="font-size: 0.85rem; font-weight: 600; padding: 0.35em 0.7em; border-radius: 20px;">
                     <?= $totalLogs ?>
                 </span>
@@ -114,8 +114,8 @@ Activity Logs
             <p class="text-secondary small mb-0">Record and track project management activities, support tasks, and campaign tag updates.</p>
         </div>
         <div class="d-flex align-items-center gap-2">
-            <a href="<?= site_url('activity-logs/create') ?>" title="Create a new log" class="apple-btn-primary btn-sm px-3 text-decoration-none">
-                <i class="bi bi-plus-lg me-1"></i> Log Activity
+            <a href="<?= site_url('tasks/create') ?>" title="Create a new log" class="apple-btn-primary btn-sm px-3 text-decoration-none">
+                <i class="bi bi-plus-lg me-1"></i> Create Task
             </a>
 
             <!-- Me Mode Toggle Button -->
@@ -134,7 +134,7 @@ Activity Logs
                         </a>
                     </li>
                     <li>
-                        <a class="dropdown-item py-2" href="<?= site_url('activity-logs/export?' . http_build_query($_GET)) ?>" style="font-size: 0.9rem;">
+                        <a class="dropdown-item py-2" href="<?= site_url('tasks/export?' . http_build_query($_GET)) ?>" style="font-size: 0.9rem;">
                             <i class="bi bi-file-earmark-arrow-down-fill text-secondary me-2"></i>Export as CSV
                         </a>
                     </li>
@@ -280,7 +280,7 @@ Activity Logs
                 <!-- Action Buttons -->
                 <button type="submit" class="apple-btn-primary btn-sm px-4" style="height: 36px; border-radius: 20px;">Apply</button>
                 <?php if (!empty($_GET)): ?>
-                    <a href="<?= site_url('activity-logs') ?>" class="apple-btn-secondary btn-sm px-4 text-decoration-none d-inline-flex align-items-center justify-content-center" style="height: 36px; border-radius: 20px;">Clear</a>
+                    <a href="<?= site_url('tasks') ?>" class="apple-btn-secondary btn-sm px-4 text-decoration-none d-inline-flex align-items-center justify-content-center" style="height: 36px; border-radius: 20px;">Clear</a>
                 <?php endif; ?>
             </div>
         </div>
@@ -463,7 +463,7 @@ Activity Logs
                     } else {
                         unset($tempParams[$key]);
                     }
-                    $clearUrl = site_url('activity-logs') . '?' . http_build_query($tempParams);
+                    $clearUrl = site_url('tasks') . '?' . http_build_query($tempParams);
                     ?>
                     <a href="<?= $clearUrl ?>" class="badge bg-secondary text-decoration-none d-inline-flex align-items-center gap-1.5 py-1.5 px-2.5 rounded-pill border border-secondary" style="font-size: 0.8rem; font-weight: 500;">
                         <span><?= esc($label) ?></span>
@@ -572,7 +572,7 @@ Activity Logs
                 <tr>
                     <td colspan="<?= !$isAdmin ? 14 : 13 ?>" class="text-center py-5 text-muted">
                         <i class="bi bi-inbox fs-2 mb-2 d-block text-secondary" style="opacity: 0.5;"></i>
-                        <span class="fw-semibold">No activity logs found</span>
+                        <span class="fw-semibold">No tasks found</span>
                         <p class="small text-secondary mb-0">Try adjusting your filters or search keywords.</p>
                     </td>
                 </tr>
@@ -607,14 +607,14 @@ Activity Logs
                             </span>
                         </td>
                         <td>
-                            <a href="<?= site_url('activity-logs/project/' . rawurlencode($project)) ?>" class="text-decoration-none" title="View Project Spreadsheet">
+                            <a href="<?= site_url('tasks/project/' . rawurlencode($project)) ?>" class="text-decoration-none" title="View Project Spreadsheet">
                                 <span class="badge" style="<?= random_bg_style($project) ?>">
                                     <?= esc($project) ?>
                                 </span>
                             </a>
                         </td>
                         <td>
-                            <a href="<?= site_url('activity-logs/view/' . $log['id']) ?>" class="apple-link-dark">
+                            <a href="<?= site_url('tasks/view/' . $log['id']) ?>" class="apple-link-dark">
                                 <?= $log['title'] ?>
                             </a>
                         </td>
@@ -676,18 +676,18 @@ Activity Logs
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="actionsDropdown_<?= $log['id'] ?>" style="border-radius: 10px; border: 1px solid var(--color-border-input); z-index: 1050;">
                                         <li>
-                                            <a class="dropdown-item py-2" href="<?= site_url('activity-logs/view/' . $log['id']) ?>" style="font-size: 0.85rem;">
+                                            <a class="dropdown-item py-2" href="<?= site_url('tasks/view/' . $log['id']) ?>" style="font-size: 0.85rem;">
                                                 <i class="bi bi-eye text-primary me-2"></i>View Details
                                             </a>
                                         </li>
                                         <li>
-                                            <a class="dropdown-item py-2" href="<?= site_url('activity-logs/create?duplicate_id=' . $log['id']) ?>" style="font-size: 0.85rem;">
+                                            <a class="dropdown-item py-2" href="<?= site_url('tasks/create?duplicate_id=' . $log['id']) ?>" style="font-size: 0.85rem;">
                                                 <i class="bi bi-files text-info me-2"></i>Duplicate
                                             </a>
                                         </li>
                                         <li>
-                                            <a class="dropdown-item py-2" href="<?= site_url('activity-logs/update/' . $log['id']) ?>" style="font-size: 0.85rem;">
-                                                <i class="bi bi-pencil-square text-warning me-2"></i>Edit Log
+                                            <a class="dropdown-item py-2" href="<?= site_url('tasks/update/' . $log['id']) ?>" style="font-size: 0.85rem;">
+                                                <i class="bi bi-pencil-square text-warning me-2"></i>Edit Task
                                             </a>
                                         </li>
                                     </ul>
@@ -702,18 +702,18 @@ Activity Logs
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end glassmorphic-menu shadow" aria-labelledby="actionsDropdownA_<?= $log['id'] ?>" style="z-index: 1050;">
                                         <li>
-                                            <a class="dropdown-item py-2" href="<?= site_url('activity-logs/view/' . $log['id']) ?>">
+                                            <a class="dropdown-item py-2" href="<?= site_url('tasks/view/' . $log['id']) ?>">
                                                 <i class="bi bi-eye text-primary me-2"></i>View Details
                                             </a>
                                         </li>
                                         <li>
-                                            <a class="dropdown-item py-2" href="<?= site_url('activity-logs/create?duplicate_id=' . $log['id']) ?>">
+                                            <a class="dropdown-item py-2" href="<?= site_url('tasks/create?duplicate_id=' . $log['id']) ?>">
                                                 <i class="bi bi-files text-info me-2"></i>Duplicate
                                             </a>
                                         </li>
                                         <li>
-                                            <a class="dropdown-item py-2" href="<?= site_url('activity-logs/update/' . $log['id']) ?>">
-                                                <i class="bi bi-pencil-square text-warning me-2"></i>Edit Log
+                                            <a class="dropdown-item py-2" href="<?= site_url('tasks/update/' . $log['id']) ?>">
+                                                <i class="bi bi-pencil-square text-warning me-2"></i>Edit Task
                                             </a>
                                         </li>
                                     </ul>
@@ -723,13 +723,13 @@ Activity Logs
                             <!-- Style B: Hover-Revealed Inline Actions -->
                             <div class="action-style-hover-inline-wrapper">
                                 <div class="hover-actions-container d-inline-flex align-items-center gap-1">
-                                    <a href="<?= site_url('activity-logs/view/' . $log['id']) ?>" class="hover-action-btn btn-view" data-bs-toggle="tooltip" data-bs-placement="top" title="View Details">
+                                    <a href="<?= site_url('tasks/view/' . $log['id']) ?>" class="hover-action-btn btn-view" data-bs-toggle="tooltip" data-bs-placement="top" title="View Details">
                                         <i class="bi bi-eye-fill"></i>
                                     </a>
-                                    <a href="<?= site_url('activity-logs/create?duplicate_id=' . $log['id']) ?>" class="hover-action-btn btn-duplicate" data-bs-toggle="tooltip" data-bs-placement="top" title="Duplicate Log">
+                                    <a href="<?= site_url('tasks/create?duplicate_id=' . $log['id']) ?>" class="hover-action-btn btn-duplicate" data-bs-toggle="tooltip" data-bs-placement="top" title="Duplicate Task">
                                         <i class="bi bi-files"></i>
                                     </a>
-                                    <a href="<?= site_url('activity-logs/update/' . $log['id']) ?>" class="hover-action-btn btn-update" data-bs-toggle="tooltip" data-bs-placement="top" title="Edit Log">
+                                    <a href="<?= site_url('tasks/update/' . $log['id']) ?>" class="hover-action-btn btn-update" data-bs-toggle="tooltip" data-bs-placement="top" title="Edit Task">
                                         <i class="bi bi-pencil-fill"></i>
                                     </a>
                                 </div>
@@ -1615,7 +1615,7 @@ Activity Logs
             function runBulkOperation(url, data, successCallback) {
                 const logIds = getSelectedLogIds();
                 if (logIds.length === 0) {
-                    showToast('error', 'No activity logs selected.');
+                    showToast('error', 'No tasks selected.');
                     return;
                 }
 
@@ -1671,8 +1671,8 @@ Activity Logs
             if (floatingBtnComplete) {
                 floatingBtnComplete.addEventListener('click', function(e) {
                     e.preventDefault();
-                    if (confirm('Are you sure you want to mark all selected activity logs as Completed?')) {
-                        runBulkOperation('<?= site_url("activity-logs/bulk-status") ?>', {
+                    if (confirm('Are you sure you want to mark all selected tasks as Completed?')) {
+                        runBulkOperation('<?= site_url("tasks/bulk-status") ?>', {
                             status: <?= Constants::ACTIVITY_LOGS_STATUS_COMPLETED ?>
                         });
                     }
@@ -1684,7 +1684,7 @@ Activity Logs
                 e.preventDefault();
                 const project = $(this).data('project');
                 if (project) {
-                    runBulkOperation('<?= site_url("activity-logs/bulk-project") ?>', {
+                    runBulkOperation('<?= site_url("tasks/bulk-project") ?>', {
                         project: project
                     });
                 }
@@ -1694,7 +1694,7 @@ Activity Logs
                 e.preventDefault();
                 const project = prompt("Enter new project name:");
                 if (project && project.trim() !== '') {
-                    runBulkOperation('<?= site_url("activity-logs/bulk-project") ?>', {
+                    runBulkOperation('<?= site_url("tasks/bulk-project") ?>', {
                         project: project.trim()
                     });
                 }
@@ -1704,7 +1704,7 @@ Activity Logs
             $(document).on('click', '.floating-action-assignee-item', function(e) {
                 e.preventDefault();
                 const assigneeId = $(this).data('assignee-id');
-                runBulkOperation('<?= site_url("activity-logs/bulk-assignee") ?>', {
+                runBulkOperation('<?= site_url("tasks/bulk-assignee") ?>', {
                     assignee: assigneeId
                 });
             });
@@ -1724,13 +1724,13 @@ Activity Logs
                 let postData = { csrf_test_name: csrfToken };
 
                 if (dropdown.hasClass('assignee-select')) {
-                    url = '<?= site_url("activity-logs/update-assignee") ?>/' + logId;
+                    url = '<?= site_url("tasks/update-assignee") ?>/' + logId;
                     postData.assignee = newValue;
                 } else if (dropdown.hasClass('priority-select')) {
-                    url = '<?= site_url("activity-logs/update-priority") ?>/' + logId;
+                    url = '<?= site_url("tasks/update-priority") ?>/' + logId;
                     postData.priority = newValue;
                 } else {
-                    url = '<?= site_url("activity-logs/update-status") ?>/' + logId;
+                    url = '<?= site_url("tasks/update-status") ?>/' + logId;
                     postData.status = newValue;
                 }
 

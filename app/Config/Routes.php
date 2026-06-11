@@ -8,7 +8,7 @@ use CodeIgniter\Router\RouteCollection;
 
 $routes->addRedirect('/', 'dashboard');
 $routes->get('dashboard', 'DashboardController::index');
-$routes->get('dashboard/activity-tags', 'DashboardController::getActivityTags');
+$routes->get('dashboard/task-tags', 'DashboardController::getTaskTags');
 $routes->get('testdb', 'TestDB::index');
 $routes->match(['get', 'post'], 'login', 'AuthController::login');
 $routes->get('logout', 'AuthController::logout');
@@ -72,21 +72,21 @@ $routes->group('jira', function ($routes) {
     $routes->match(['get', 'post'], 'create', 'JiraController::create');
 });
 
-$routes->group('activity-logs', function ($routes) {
-    $routes->get('/', 'ActivityLogsController::index');
-    $routes->get('project/(:any)', 'ActivityLogsController::projectView/$1');
-    $routes->get('export', 'ActivityLogsController::exportAsCSV');
-    $routes->get('view/(:num)', 'ActivityLogsController::view/$1');
-    $routes->post('comment', 'ActivityLogsController::comment');
-    $routes->post('upload', 'ActivityLogsController::uploadFile');
-    $routes->match(['get', 'post'], 'create', 'ActivityLogsController::create');
-    $routes->match(['get', 'post'], 'update/(:num)', 'ActivityLogsController::update/$1');
-    $routes->post('update-status/(:num)', 'ActivityLogsController::updateStatus/$1');
-    $routes->post('update-assignee/(:num)', 'ActivityLogsController::updateAssignee/$1');
-    $routes->post('update-priority/(:num)', 'ActivityLogsController::updatePriority/$1');
-    $routes->post('bulk-status', 'ActivityLogsController::bulkStatus');
-    $routes->post('bulk-project', 'ActivityLogsController::bulkProject');
-    $routes->post('bulk-assignee', 'ActivityLogsController::bulkAssignee');
-    $routes->get('project-export/excel/(:any)', 'ActivityLogsController::exportProjectExcel/$1');
-    $routes->get('project-export/pdf/(:any)', 'ActivityLogsController::exportProjectPDF/$1');
+$routes->group('tasks', function ($routes) {
+    $routes->get('/', 'TasksController::index');
+    $routes->get('project/(:any)', 'TasksController::projectView/$1');
+    $routes->get('export', 'TasksController::exportAsCSV');
+    $routes->get('view/(:num)', 'TasksController::view/$1');
+    $routes->post('comment', 'TasksController::comment');
+    $routes->post('upload', 'TasksController::uploadFile');
+    $routes->match(['get', 'post'], 'create', 'TasksController::create');
+    $routes->match(['get', 'post'], 'update/(:num)', 'TasksController::update/$1');
+    $routes->post('update-status/(:num)', 'TasksController::updateStatus/$1');
+    $routes->post('update-assignee/(:num)', 'TasksController::updateAssignee/$1');
+    $routes->post('update-priority/(:num)', 'TasksController::updatePriority/$1');
+    $routes->post('bulk-status', 'TasksController::bulkStatus');
+    $routes->post('bulk-project', 'TasksController::bulkProject');
+    $routes->post('bulk-assignee', 'TasksController::bulkAssignee');
+    $routes->get('project-export/excel/(:any)', 'TasksController::exportProjectExcel/$1');
+    $routes->get('project-export/pdf/(:any)', 'TasksController::exportProjectPDF/$1');
 });

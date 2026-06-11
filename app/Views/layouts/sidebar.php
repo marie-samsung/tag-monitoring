@@ -85,32 +85,32 @@ if ($permissions['vendors'] ?? false) {
 }
 
 // 5. Workspace Dropdown (Tasks, Projects)
-if ($permissions['activity-logs'] ?? false) {
+if ($permissions['tasks'] ?? false) {
     $uri = service('uri');
-    $isProjectsActive = ($segment === 'activity-logs' && $uri->getTotalSegments() >= 2 && $uri->getSegment(2) === 'project');
-    $isTasksActive = ($segment === 'activity-logs' && !$isProjectsActive);
+    $isProjectsActive = ($segment === 'tasks' && $uri->getTotalSegments() >= 2 && $uri->getSegment(2) === 'project');
+    $isTasksActive = ($segment === 'tasks' && !$isProjectsActive);
     
     $subItems = [
         [
             'label' => 'Tasks',
             'icon' => 'bi bi-card-checklist text-primary',
-            'url' => site_url('/activity-logs'),
+            'url' => site_url('/tasks'),
             'active' => $isTasksActive,
         ],
         [
             'label' => 'Projects',
             'icon' => 'bi bi-folder-fill text-success',
-            'url' => site_url('/activity-logs/project/Generic'),
+            'url' => site_url('/tasks/project/Generic'),
             'active' => $isProjectsActive,
         ]
     ];
     
     $menuItems[] = [
         'type' => 'dropdown',
-        'id' => 'navbarActivityLogs',
+        'id' => 'navbarTasks',
         'label' => 'Workspace',
         'icon' => 'bi bi-card-list',
-        'active' => ($segment === 'activity-logs'),
+        'active' => ($segment === 'tasks'),
         'subItems' => $subItems,
     ];
 }

@@ -4,7 +4,7 @@ namespace App\Controllers;
 
 use App\Models\TagsModel;
 use App\Models\TagRequestsModel;
-use App\Models\ActivityLogsModel;
+use App\Models\TasksModel;
 use App\Models\Constants;
 
 class DashboardController extends BaseController
@@ -13,7 +13,7 @@ class DashboardController extends BaseController
     {
         $tagsModel = new TagsModel();
         $tagRequestsModel = new TagRequestsModel();
-        $activityLogsModel = new ActivityLogsModel();
+        $tasksModel = new TasksModel();
         $db = \Config\Database::connect();
 
         // 1. Metric Counts
@@ -116,7 +116,7 @@ class DashboardController extends BaseController
         $data['expired_active_count'] = $critical_active + $critical_pending;
         $data['expiring_soon_count'] = $attention_active + $attention_pending;
 
-        $data['activities_last_30_days'] = $activityLogsModel
+        $data['activities_last_30_days'] = $tasksModel
             ->where('created_at >=', date('Y-m-d H:i:s', strtotime('-30 days')))
             ->countAllResults();
 
@@ -246,7 +246,7 @@ class DashboardController extends BaseController
                     WHERE type = " . Constants::ACTIVITY_TYPE_REQUEST . " 
                       AND (title LIKE 'Tag Renewals%' OR title LIKE '%Tag Renewals%')");
 
-        $data['blocked_renewal_requests'] = $activityLogsModel
+        $data['blocked_renewal_requests'] = $tasksModel
             ->where('type', Constants::ACTIVITY_TYPE_RENEWAL)
             ->where('status', Constants::ACTIVITY_LOGS_STATUS_BLOCKED)
             ->countAllResults();
@@ -439,7 +439,7 @@ class DashboardController extends BaseController
         return view('dashboard/index', $data);
     }
 
-    public function getActivityTags()
+    public function getTaskTags()
     {
         helper('custom_functions');
 

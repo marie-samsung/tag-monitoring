@@ -272,17 +272,17 @@ class Constants
             'properties' => true,
             'vendors' => true,
             'jira' => true,
-            'activity-logs' => true,
+            'tasks' => true,
         ],
         self::USER_ROLE_MARTECH => [
             'dashboard' => true,
-            'activity-logs' => true,
+            'tasks' => true,
         ],
         self::USER_ROLE_ADMIN => [
             'dashboard' => true,
             'tags' => true,
             'jira' => true,
-            'activity-logs' => true,
+            'tasks' => true,
         ],
     ];
 
