@@ -221,11 +221,14 @@
 
             <div class="mb-3 pb-2 border-bottom border-light">
                 <span class="d-block text-muted fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Ticket ID</span>
-                <div class="mt-1" style="font-size: 0.9rem; color: var(--color-text-base);">
+                <div class="mt-1 d-flex align-items-center gap-2" style="font-size: 0.9rem; color: var(--color-text-base);">
                     <?php if (!empty($log['ticket_id'])) : ?>
-                        <a href="<?= Constants::JIRA_LINK . $log['ticket_id'] ?>" target="_blank" class="apple-link">
+                        <a href="<?= Constants::JIRA_LINK . $log['ticket_id'] ?>" target="_blank" class="apple-link" id="ticket-id-link">
                             <?= esc($log['ticket_id']) ?>
                         </a>
+                        <button type="button" class="btn btn-link p-0 text-muted border-0 d-inline-flex align-items-center justify-content-center" id="copy-ticket-btn" title="Copy Ticket ID" style="box-shadow: none;">
+                            <i class="bi bi-copy fs-6" id="copy-ticket-icon"></i>
+                        </button>
                     <?php else: ?>
                         <span class="text-muted">—</span>
                     <?php endif; ?>
@@ -558,6 +561,28 @@
                     toast.fadeOut(300);
                 }, 4000);
             }
+
+            $('#copy-ticket-btn').on('click', function() {
+                var ticketId = $('#ticket-id-link').text().trim();
+                var temp = document.createElement('textarea');
+                temp.value = ticketId;
+                temp.style.position = 'fixed';
+                temp.style.left = '-9999px';
+                document.body.appendChild(temp);
+                temp.focus();
+                temp.select();
+                document.execCommand('copy');
+                document.body.removeChild(temp);
+
+                var icon = $('#copy-ticket-icon');
+                icon.removeClass('bi-copy').addClass('bi-check-lg text-success');
+                setTimeout(function() {
+                    icon.animate({ opacity: 0 }, 400, function() {
+                        icon.removeClass('bi-check-lg text-success').addClass('bi-copy');
+                        icon.animate({ opacity: 1 }, 800);
+                    });
+                }, 1200);
+            });
 
             // Dropdown selection state tracking for reverts
             let previousValue = '';
