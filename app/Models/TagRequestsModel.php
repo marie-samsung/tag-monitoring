@@ -53,7 +53,20 @@ class TagRequestsModel extends Model
         }
 
         if (!empty($filters['type'])) {
-            $this->where('tag_requests.type', $filters['type']);
+            if ((int)$filters['type'] === Constants::JIRA_TYPE_NEW_RULE) {
+                $this->groupStart()
+                         ->where('tag_requests.type', Constants::JIRA_TYPE_NEW_RULE)
+                         ->orGroupStart()
+                             ->where('tag_requests.type', Constants::JIRA_TYPE_NEW_TAG)
+                             ->where('tag_requests.status', Constants::STATUS_REQUEST_NEW_RULE_REQUEST_SUBMITTED)
+                         ->groupEnd()
+                     ->groupEnd();
+            } elseif ((int)$filters['type'] === Constants::JIRA_TYPE_NEW_TAG) {
+                $this->where('tag_requests.type', Constants::JIRA_TYPE_NEW_TAG)
+                     ->where('tag_requests.status !=', Constants::STATUS_REQUEST_NEW_RULE_REQUEST_SUBMITTED);
+            } else {
+                $this->where('tag_requests.type', $filters['type']);
+            }
         }
 
         if (!empty($filters['status'])) {

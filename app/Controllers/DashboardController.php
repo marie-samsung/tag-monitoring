@@ -257,16 +257,23 @@ class DashboardController extends BaseController
             ->where('type', Constants::JIRA_TYPE_NEW_TAG)
             ->whereNotIn('status', [
                 Constants::STATUS_REQUEST_PUBLISHED,
-                Constants::STATUS_REQUEST_REJECTED
+                Constants::STATUS_REQUEST_REJECTED,
+                Constants::STATUS_REQUEST_NEW_RULE_REQUEST_SUBMITTED
             ])
             ->countAllResults();
 
         $data['pending_new_rule_requests'] = $tagRequestsModel
-            ->where('type', Constants::JIRA_TYPE_NEW_RULE)
-            ->whereNotIn('status', [
-                Constants::STATUS_REQUEST_PUBLISHED,
-                Constants::STATUS_REQUEST_REJECTED
-            ])
+            ->groupStart()
+                ->where('type', Constants::JIRA_TYPE_NEW_RULE)
+                ->whereNotIn('status', [
+                    Constants::STATUS_REQUEST_PUBLISHED,
+                    Constants::STATUS_REQUEST_REJECTED
+                ])
+            ->groupEnd()
+            ->orGroupStart()
+                ->where('type', Constants::JIRA_TYPE_NEW_TAG)
+                ->where('status', Constants::STATUS_REQUEST_NEW_RULE_REQUEST_SUBMITTED)
+            ->groupEnd()
             ->countAllResults();
 
         // 4. Subsidiary Distribution
