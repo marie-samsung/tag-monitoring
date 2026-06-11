@@ -116,7 +116,7 @@
                     <tbody>
                         <?php
                             foreach ($tags as $tag):
-                                $ticketId = (new JiraHistoryModel())->getLatestTag($tag['id'])['ticket_id'] ?? null;
+                                $ticketId = (new JiraHistoryModel())->getRelatedTagDateExtension($tag['id'])['ticket_id'] ?? null;
                         ?>
                             <tr>
                                 <!-- ID -->

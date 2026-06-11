@@ -766,7 +766,7 @@ Martech TMS
                 <?php else: ?>
                     <?php
                         foreach ($tags as $tag): 
-                        $ticketId = (new JiraHistoryModel())->getLatestTag($tag['id'])['ticket_id'] ?? null;
+                        $ticketId = (new JiraHistoryModel())->getRelatedTagDateExtension($tag['id'])['ticket_id'] ?? null;
                         $subsidiaryId = $properties[$tag['property_id']]['subsidiary_id'];
                         $subsidiary = $subsidiaries[$subsidiaryId];
                     ?>

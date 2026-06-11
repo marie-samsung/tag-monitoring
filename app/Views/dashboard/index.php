@@ -266,7 +266,7 @@ Dashboard | Martech TMS
                     $alert_icon = 'bi-shield-fill-x';
                     $alert_text_class = 'text-danger';
                 } else {
-                    $health_desc = 'Attention needed: ' . $critical_total . ' tag' . ($critical_total > 1 ? 's' : '') . ' expiring in < 7 days (' . $critical_pending . ' pending verification).';
+                    $health_desc = 'Attention needed: ' . $critical_total . ' tag' . ($critical_total > 1 ? 's' : '') . ' expiring in < 7 days (' . $critical_pending . ' pending verification)';
                     $alert_icon = 'bi-exclamation-triangle-fill';
                     $alert_text_class = 'text-warning';
                 }

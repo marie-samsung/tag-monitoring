@@ -25,7 +25,7 @@ class TagsController extends BaseController
         if ($status === 'all') {
             $status = null; // null triggers filterTags to ignore status and fetch everything
         } elseif ($status == Constants::STATUS_DEFAULT || empty($status)) {
-            $status = [1, 4, 5]; // Default to show Enabled, Pending Verification, and Updated in AL
+            $status = [1, 4, 5, 9]; // Default to show Enabled, Pending Verification, and Updated in AL
         }
 
         if ($status == Constants::STATUS_ALL) {
@@ -200,6 +200,48 @@ class TagsController extends BaseController
                 }
             } else {
                 $organizationId = $organization['id'];
+            }
+        }
+
+        if ($tag['status'] !== $post['status']) {
+            $activityLogsModel = new ActivityLogsModel();
+            $ticketId = (new JiraHistoryModel())->getRelatedTagDateExtension($tag['id'])['ticket_id'] ?? null;
+            $activityLog = $activityLogsModel->getRelatedTagRenewal($ticketId) ?? null;
+            $from = Constants::ACTIVITY_LOGS_STATUS[$activityLog['status']];
+
+            if ($activityLog) {
+                $commentsModel = new ActivityLogCommentsModel();
+
+                if ($post['status'] == Constants::STATUS_PENDING_VERIFICATION) {
+                    if ($activityLog['status'] != Constants::ACTIVITY_LOGS_STATUS_REVIEW) {
+                        $to = Constants::ACTIVITY_LOGS_STATUS[Constants::ACTIVITY_LOGS_STATUS_REVIEW];
+                        $commentsModel->insert([
+                            'log_id' => $activityLog['id'],
+                            'comment' => "Status updated from [{$from}] to [{$to}]",
+                            'commented_by' => session()->get('user_id'),
+                            'type' => Constants::COMMENT_TYPE_UPDATE,
+                        ]);
+
+                        $activityLogsModel->update($activityLog['id'], [
+                            'status' => Constants::ACTIVITY_LOGS_STATUS_REVIEW,
+                        ]);
+                    }
+                }
+
+                if ($post['status'] == Constants::STATUS_ON_HOLD) {
+                    if ($activityLog['status'] != Constants::ACTIVITY_LOGS_STATUS_BLOCKED) {
+                        $to = Constants::ACTIVITY_LOGS_STATUS[Constants::ACTIVITY_LOGS_STATUS_BLOCKED];
+                        $commentsModel->insert([
+                            'log_id' => $activityLog['id'],
+                            'comment' => "Status updated from [{$from}] to [{$to}]",
+                            'commented_by' => session()->get('user_id'),
+                            'type' => Constants::COMMENT_TYPE_UPDATE,
+                        ]);
+                        $activityLogsModel->update($activityLog['id'], [
+                            'status' => Constants::ACTIVITY_LOGS_STATUS_BLOCKED,
+                        ]);
+                    }
+                }
             }
         }
 
@@ -580,7 +622,7 @@ class TagsController extends BaseController
         }
 
         $activityLogModel->insert([
-            'title' => "({$property['name']}) " . $title . ' [' . $info['ticket_id'] . ']',
+            'title' => "{$property['name']} | " . $title . ' [' . $info['ticket_id'] . ']',
             'description' => $description . '</ul>',
             'subsidiary_id' => $property['subsidiary_id'],
             'team_id' => Constants::TEAM_MEDIA_TAGGING,

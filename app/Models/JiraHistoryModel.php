@@ -38,7 +38,7 @@ class JiraHistoryModel extends Model
             ->findAll();
     }
 
-    public function getLatestTag(int $id)
+    public function getRelatedTagDateExtension(int $id)
     {
         return $this->select()
             ->where('tag_id', $id)

@@ -118,6 +118,15 @@ class ActivityLogsModel extends Model
         return $this->findAll();
     }
 
+    public function getRelatedTagRenewal($ticketId)
+    {
+        return $this->select()
+            ->where('ticket_id', $ticketId)
+            ->where('type', Constants::ACTIVITY_TYPE_RENEWAL)
+            ->orderBy('created_at', 'DESC')
+            ->first();
+    }
+
     public function getStatusCounts($filters = [])
     {
         // Remove status and status_group filters to count across all statuses
