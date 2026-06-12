@@ -213,20 +213,25 @@ class JiraController extends BaseController
             ->orderBy('tags.name', 'ASC')
             ->findAll();
 
-        // Get currently related tags
+        // Get currently related tags by collating from all matching jira_history rows for this ticket_id
         $currentTagIds = [];
-        if (!empty($ticket['comments'])) {
-            $rawIds = explode(',', $ticket['comments']);
-            foreach ($rawIds as $rawId) {
-                $rawId = trim($rawId);
-                if (is_numeric($rawId)) {
-                    $currentTagIds[] = (int)$rawId;
+        if (!empty($ticket['ticket_id'])) {
+            $jiraTickets = $jiraModel->where('ticket_id', $ticket['ticket_id'])->findAll();
+            foreach ($jiraTickets as $jt) {
+                if (!empty($jt['tag_id'])) {
+                    $currentTagIds[] = (int)$jt['tag_id'];
+                }
+                if (!empty($jt['comments'])) {
+                    $rawIds = explode(',', $jt['comments']);
+                    foreach ($rawIds as $rawId) {
+                        $rawId = trim($rawId);
+                        if (is_numeric($rawId)) {
+                            $currentTagIds[] = (int)$rawId;
+                        }
+                    }
                 }
             }
-        }
-        // Also include the main tag_id if set
-        if (!empty($ticket['tag_id']) && !in_array((int)$ticket['tag_id'], $currentTagIds)) {
-            $currentTagIds[] = (int)$ticket['tag_id'];
+            $currentTagIds = array_unique($currentTagIds);
         }
 
         // Group available tags by property name for grouping in the select dropdown
@@ -286,7 +291,14 @@ class JiraController extends BaseController
             }
         }
 
-        if ($jiraModel->update($id, $updateData)) {
+        $success = false;
+        if (!empty($ticket['ticket_id'])) {
+            $success = $jiraModel->where('ticket_id', $ticket['ticket_id'])->set($updateData)->update();
+        } else {
+            $success = $jiraModel->update($id, $updateData);
+        }
+
+        if ($success) {
             return redirect()
                 ->to('/jira')
                 ->with('success', 'Related tags updated successfully for ticket ' . esc($ticket['ticket_id']) . '.');

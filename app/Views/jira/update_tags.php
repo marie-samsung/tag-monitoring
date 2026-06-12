@@ -11,6 +11,15 @@ use App\Models\Constants;
 
 helper('custom_functions');
 
+$currentTags = [];
+if (!empty($currentTagIds)) {
+    $tagModel = new \App\Models\TagsModel();
+    $tagsQuery = $tagModel->select('tags.*, properties.name as property_name')
+        ->join('properties', 'properties.id = tags.property_id')
+        ->whereIn('tags.id', $currentTagIds);
+    $currentTags = $tagsQuery->findAll();
+}
+
 // Check if comments contains actual user comment text (as opposed to just comma-separated tag IDs)
 $isCustomComment = false;
 $originalComment = trim($ticket['comments'] ?? '');
@@ -99,25 +108,53 @@ if (!empty($originalComment)) {
                         <span>Tag Association</span>
                     </h5>
                     
+                    <!-- Related Tags List -->
                     <div class="mb-4">
-                        <label for="tag_ids" class="form-label-sm fw-semibold text-secondary mb-2">Select Related Tags</label>
-                        <p class="text-muted small mb-3">Only tags from the same subsidiary (<strong><?= esc($subsidiary['name'] ?? '') ?></strong>) are listed below, grouped by Property.</p>
-                        
-                        <select name="tag_ids[]" id="tag_ids" class="form-select searchable-select-multiple" multiple="multiple" style="display: none;">
-                            <?php if (empty($groupedTags)): ?>
-                                <option disabled>No tags found in this subsidiary</option>
+                        <label class="form-label-sm fw-semibold text-secondary mb-2">Associated Tags</label>
+                        <div id="related-tags-list" class="d-flex flex-column gap-2 mb-2">
+                            <?php if (empty($currentTags)): ?>
+                                <div id="no-tags-alert" class="alert alert-info py-2 px-3 m-0" style="font-size: 0.85rem; border-radius: 8px;">
+                                    No tags currently associated with this JIRA ticket.
+                                </div>
                             <?php else: ?>
-                                <?php foreach ($groupedTags as $propertyName => $tags): ?>
-                                    <optgroup label="<?= esc($propertyName) ?>">
-                                        <?php foreach ($tags as $tag): ?>
-                                            <option value="<?= $tag['id'] ?>" <?= in_array((int)$tag['id'], $currentTagIds) ? 'selected' : '' ?>>
-                                                #<?= $tag['id'] ?> - <?= esc($tag['name']) ?>
-                                            </option>
-                                        <?php endforeach; ?>
-                                    </optgroup>
+                                <?php foreach ($currentTags as $tag): ?>
+                                    <div class="d-flex align-items-center justify-content-between p-2.5 rounded-3 border border-light tag-row-item" data-tag-id="<?= $tag['id'] ?>" style="background: #F5F5F7; transition: all 0.3s ease;">
+                                        <input type="hidden" name="tag_ids[]" value="<?= $tag['id'] ?>">
+                                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                                            <i class="bi bi-tag-fill text-primary" style="font-size: 0.85rem;"></i>
+                                            <a href="<?= site_url('tags/view/' . $tag['id']) ?>" target="_blank" class="apple-link-dark fw-semibold"><?= esc($tag['name']) ?></a>
+                                            <span class="badge bg-secondary text-secondary small py-0.5 px-1.5" style="font-size: 0.7rem; border-radius: 4px;">#<?= $tag['id'] ?></span>
+                                            <span class="text-muted small">(<?= esc($tag['property_name']) ?>)</span>
+                                        </div>
+                                        <button type="button" class="btn btn-link text-danger p-0 border-0 remove-tag-btn" onclick="removeTagRow(<?= $tag['id'] ?>)" title="Remove Tag" style="box-shadow: none;">
+                                            <i class="bi bi-trash fs-5"></i>
+                                        </button>
+                                    </div>
                                 <?php endforeach; ?>
                             <?php endif; ?>
-                        </select>
+                        </div>
+                    </div>
+
+                    <!-- Add Tag Dropdown with Search -->
+                    <div class="mb-4">
+                        <label for="add-tag-select" class="form-label-sm fw-semibold text-secondary mb-2">Add Tag</label>
+                        <div class="d-flex gap-2 align-items-center">
+                            <div class="flex-grow-1">
+                                <select id="add-tag-select" class="form-select searchable-select-single">
+                                    <option value="">Search and select tag to add...</option>
+                                    <?php foreach ($groupedTags as $propertyName => $tags): ?>
+                                        <optgroup label="<?= esc($propertyName) ?>">
+                                            <?php foreach ($tags as $tag): ?>
+                                                <option value="<?= $tag['id'] ?>" data-name="<?= esc($tag['name']) ?>" data-property="<?= esc($tag['property_name'] ?? $propertyName) ?>">
+                                                    #<?= $tag['id'] ?> - <?= esc($tag['name']) ?> (<?= esc($tag['property_name'] ?? $propertyName) ?>)
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </optgroup>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <button type="button" id="btn-add-tag" class="apple-btn-secondary d-inline-flex align-items-center justify-content-center" style="height: 38px; min-width: 90px; border-radius: 8px;">Add Tag</button>
+                        </div>
                     </div>
 
                     <!-- Form Actions -->
@@ -136,12 +173,97 @@ if (!empty($originalComment)) {
 <?= $this->section('scripts') ?>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    $('.searchable-select-multiple').select2({
+    const tagsViewUrl = '<?= site_url('tags/view') ?>/';
+
+    $('.searchable-select-single').select2({
         width: '100%',
-        placeholder: "Search and select tags...",
-        allowClear: true,
-        closeOnSelect: false
+        placeholder: "Search and select tag to add...",
+        allowClear: true
     });
+
+    function addSelectedTag() {
+        const select = $('#add-tag-select');
+        const tagId = select.val();
+        if (!tagId) return;
+
+        const selectedOption = select.find('option:selected');
+        const tagName = selectedOption.data('name');
+        const propertyName = selectedOption.data('property');
+
+        // Check if already in the list
+        if ($(`.tag-row-item[data-tag-id="${tagId}"]`).length > 0) {
+            alert('This tag is already associated with the ticket.');
+            select.val('').trigger('change');
+            return;
+        }
+
+        // Remove "no tags" alert if it exists
+        $('#no-tags-alert').hide();
+
+        // Append new tag item
+        const html = `
+            <div class="d-flex align-items-center justify-content-between p-2.5 rounded-3 border border-light tag-row-item" data-tag-id="${tagId}" style="background: #F5F5F7; opacity: 0; transform: translateY(-10px); transition: all 0.3s ease;">
+                <input type="hidden" name="tag_ids[]" value="${tagId}">
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <i class="bi bi-tag-fill text-primary" style="font-size: 0.85rem;"></i>
+                    <a href="${tagsViewUrl}${tagId}" target="_blank" class="apple-link-dark fw-semibold">${tagName}</a>
+                    <span class="badge bg-secondary text-secondary small py-0.5 px-1.5" style="font-size: 0.7rem; border-radius: 4px;">#${tagId}</span>
+                    <span class="text-muted small">(${propertyName})</span>
+                </div>
+                <button type="button" class="btn btn-link text-danger p-0 border-0 remove-tag-btn" onclick="removeTagRow(${tagId})" title="Remove Tag" style="box-shadow: none;">
+                    <i class="bi bi-trash fs-5"></i>
+                </button>
+            </div>
+        `;
+
+        const $newRow = $(html);
+        $('#related-tags-list').append($newRow);
+        
+        // Trigger animations
+        setTimeout(() => {
+            $newRow.css({
+                'opacity': '1',
+                'transform': 'translateY(0)'
+            });
+        }, 50);
+
+        // Reset select2 selection
+        select.val('').trigger('change');
+    }
+
+    // Add on click
+    $('#btn-add-tag').on('click', function() {
+        addSelectedTag();
+    });
+
+    // Add on select2 close / selection
+    $('#add-tag-select').on('select2:select', function(e) {
+        addSelectedTag();
+    });
+
+    // Also support enter key in select2 search container
+    $(document).on('keydown', '.select2-search__field', function(e) {
+        if (e.which === 13) {
+            // Delay to let Select2 finish its select event
+            setTimeout(addSelectedTag, 100);
+        }
+    });
+
+    window.removeTagRow = function(tagId) {
+        const row = $(`.tag-row-item[data-tag-id="${tagId}"]`);
+        if (row.length > 0) {
+            row.css({
+                'opacity': '0',
+                'transform': 'translateY(10px)'
+            });
+            setTimeout(() => {
+                row.remove();
+                if ($('#related-tags-list .tag-row-item').length === 0) {
+                    $('#no-tags-alert').show();
+                }
+            }, 300);
+        }
+    };
 });
 </script>
 <?= $this->endSection() ?>
