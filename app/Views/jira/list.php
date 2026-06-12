@@ -36,6 +36,7 @@ use App\Models\SubsidiariesModel;
 $tagModel = new TagsModel();
 $propertiesModel = new PropertiesModel();
 $subsidiaryModel = new SubsidiariesModel();
+$tasksModel = new TasksModel();
 
 $properties = $propertiesModel->WebsiteLinks();
 $propertyOptions = $propertiesModel->Options();
@@ -370,10 +371,17 @@ $hasActiveFilters = ($activeFiltersCount > 0);
                                     <?php endif; ?>
                                 </td>
                                 <td>
-                                    <a href="<?= Constants::JIRA_LINK . $ticket['ticket_id'] ?>" target="_blank" rel="noopener" class="apple-link form-label-sm">
-                                        <?= $ticket['ticket_id'] ?>
-                                    </a>
-                                    <a href="<?= Constants::JIRA_LINK . $ticket['ticket_id'] ?>" target="_blank" rel="noopener" class="text-muted ms-1" style="font-size: 0.75rem;" title="View in JIRA">
+                                    <?php $relatedTask = $tasksModel->where('ticket_id', $ticket['ticket_id'])->first(); ?>
+                                    <?php if ($relatedTask): ?>
+                                        <a href="<?= site_url('tasks/view/' . $relatedTask['id']) ?>" class="apple-link form-label-sm" title="View related Task">
+                                            <?= esc($ticket['ticket_id']) ?>
+                                        </a>
+                                    <?php else: ?>
+                                        <a href="<?= Constants::JIRA_LINK . $ticket['ticket_id'] ?>" target="_blank" rel="noopener" class="apple-link form-label-sm">
+                                            <?= esc($ticket['ticket_id']) ?>
+                                        </a>
+                                    <?php endif; ?>
+                                    <a href="<?= Constants::JIRA_LINK . $ticket['ticket_id'] ?>" target="_blank" rel="noopener" class="text-muted ms-1" style="font-size: 0.75rem; text-decoration: none;" title="View in JIRA">
                                         <i class="bi bi-box-arrow-up-right"></i>
                                     </a>
                                 </td>
@@ -393,7 +401,6 @@ $hasActiveFilters = ($activeFiltersCount > 0);
                                     <?php
                                             }
                                         } elseif ($type == Constants::JIRA_TYPE_UPDATE_RULE) {
-                                            $tasksModel = new TasksModel();
                                             $activityLog = $tasksModel->where('ticket_id', $ticket['ticket_id'])->first();
 
                                             if ($activityLog) {

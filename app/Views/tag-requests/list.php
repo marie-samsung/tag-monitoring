@@ -208,6 +208,7 @@ Tag: Requests (New Rule, New Tag)
     use App\Models\PropertiesModel;
     use App\Models\SubsidiariesModel;
     use App\Models\TagRequestsModel;
+    use App\Models\TasksModel;
     use App\Models\VendorsModel;
     use App\Models\JiraHistoryModel;
     use App\Models\TagsModel;
@@ -224,6 +225,7 @@ Tag: Requests (New Rule, New Tag)
     $vendors = $vendorsModel->Options();
 
     $tagsModel = new TagsModel();
+    $tasksModel = new TasksModel();
 
     $tagRequestsModel = new TagRequestsModel();
 
@@ -538,6 +540,15 @@ Tag: Requests (New Rule, New Tag)
                             } else {
                                 $newTagRequestsCount++;
                             }
+
+                            // Look up the related task via ticket_id
+                            $mainTicket = $request[$ticketColumn] ?? null;
+                            $relatedTask = $mainTicket ? $tasksModel->where('ticket_id', $mainTicket)->first() : null;
+
+                            $ruleTicket = ($type == Constants::JIRA_TYPE_NEW_TAG && !empty($request['new_rule_ticket']))
+                                ? $request['new_rule_ticket']
+                                : null;
+                            $relatedRuleTask = $ruleTicket ? $tasksModel->where('ticket_id', $ruleTicket)->first() : null;
                     ?>
                         <tr>
                             <!-- ID -->
@@ -556,16 +567,38 @@ Tag: Requests (New Rule, New Tag)
                                 </a>
                             </td>
                             <td>
-                                <a href="<?= Constants::JIRA_LINK . $request[$ticketColumn] ?>" target="_blank" rel="noopener" class="apple-link">
-                                    <?= $request[$ticketColumn] ?>
-                                </a>
+                                <?php if ($mainTicket): ?>
+                                    <a href="<?= Constants::JIRA_LINK . $mainTicket ?>" target="_blank" rel="noopener" class="text-muted me-1" style="font-size: 0.75rem; text-decoration: none;" title="View in JIRA">
+                                        <i class="bi bi-box-arrow-up-right"></i>
+                                    </a>
+                                    <?php if ($relatedTask): ?>
+                                        <a href="<?= site_url('tasks/view/' . $relatedTask['id']) ?>" class="apple-link" title="View related Task">
+                                            <?= esc($mainTicket) ?>
+                                        </a>
+                                    <?php else: ?>
+                                        <a href="<?= Constants::JIRA_LINK . $mainTicket ?>" target="_blank" rel="noopener" class="apple-link">
+                                            <?= esc($mainTicket) ?>
+                                        </a>
+                                    <?php endif; ?>
+                                <?php else: ?>
+                                    <span class="text-muted">—</span>
+                                <?php endif; ?>
                                 <span class="text-muted ms-1" style="font-size: 0.8rem;">(<?= $vendors[$request['vendor_id']] ?? '' ?>)</span>
-                                <?php if ($type == Constants::JIRA_TYPE_NEW_TAG && !empty($request['new_rule_ticket'])) : ?>
+                                <?php if ($ruleTicket): ?>
                                     <br/>
                                     <small class="text-muted" style="font-size: 0.75rem;">New Rule:</small>
-                                    <a href="<?= Constants::JIRA_LINK . $request['new_rule_ticket'] ?>" target="_blank" rel="noopener" class="apple-link" style="font-size: 0.85rem;">
-                                        <?= $request['new_rule_ticket'] ?>
+                                    <a href="<?= Constants::JIRA_LINK . $ruleTicket ?>" target="_blank" rel="noopener" class="text-muted me-1" style="font-size: 0.75rem; text-decoration: none;" title="View in JIRA">
+                                        <i class="bi bi-box-arrow-up-right"></i>
                                     </a>
+                                    <?php if ($relatedRuleTask): ?>
+                                        <a href="<?= site_url('tasks/view/' . $relatedRuleTask['id']) ?>" class="apple-link" style="font-size: 0.85rem;" title="View related Task">
+                                            <?= esc($ruleTicket) ?>
+                                        </a>
+                                    <?php else: ?>
+                                        <a href="<?= Constants::JIRA_LINK . $ruleTicket ?>" target="_blank" rel="noopener" class="apple-link" style="font-size: 0.85rem;">
+                                            <?= esc($ruleTicket) ?>
+                                        </a>
+                                    <?php endif; ?>
                                 <?php endif; ?>
                             </td>
                             <td>

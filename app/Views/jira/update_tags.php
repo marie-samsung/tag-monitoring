@@ -111,26 +111,48 @@ if (!empty($originalComment)) {
                     <!-- Related Tags List -->
                     <div class="mb-4">
                         <label class="form-label-sm fw-semibold text-secondary mb-2">Associated Tags</label>
-                        <div id="related-tags-list" class="d-flex flex-column gap-2 mb-2">
+                        <div id="related-tags-list" class="mb-2">
                             <?php if (empty($currentTags)): ?>
                                 <div id="no-tags-alert" class="alert alert-info py-2 px-3 m-0" style="font-size: 0.85rem; border-radius: 8px;">
                                     No tags currently associated with this JIRA ticket.
                                 </div>
                             <?php else: ?>
-                                <?php foreach ($currentTags as $tag): ?>
-                                    <div class="d-flex align-items-center justify-content-between p-2.5 rounded-3 border border-light tag-row-item" data-tag-id="<?= $tag['id'] ?>" style="background: #F5F5F7; transition: all 0.3s ease;">
-                                        <input type="hidden" name="tag_ids[]" value="<?= $tag['id'] ?>">
-                                        <div class="d-flex align-items-center gap-2 flex-wrap">
-                                            <i class="bi bi-tag-fill text-primary" style="font-size: 0.85rem;"></i>
-                                            <a href="<?= site_url('tags/view/' . $tag['id']) ?>" target="_blank" class="apple-link-dark fw-semibold"><?= esc($tag['name']) ?></a>
-                                            <span class="badge bg-secondary text-secondary small py-0.5 px-1.5" style="font-size: 0.7rem; border-radius: 4px;">#<?= $tag['id'] ?></span>
-                                            <span class="text-muted small">(<?= esc($tag['property_name']) ?>)</span>
-                                        </div>
-                                        <button type="button" class="btn btn-link text-danger p-0 border-0 remove-tag-btn" onclick="removeTagRow(<?= $tag['id'] ?>)" title="Remove Tag" style="box-shadow: none;">
-                                            <i class="bi bi-trash fs-5"></i>
-                                        </button>
-                                    </div>
-                                <?php endforeach; ?>
+                                <div id="no-tags-alert" style="display: none;" class="alert alert-info py-2 px-3 m-0" style="font-size: 0.85rem; border-radius: 8px;">
+                                    No tags currently associated with this JIRA ticket.
+                                </div>
+                                <table class="table table-sm align-middle mb-0" id="tag-association-table" style="border-radius: 10px; overflow: hidden; border: 1px solid var(--color-border-input, #e5e5ea);">
+                                    <thead style="background-color: var(--color-secondary-bg, #F5F5F7);">
+                                        <tr>
+                                            <th class="form-label-sm fw-semibold text-secondary ps-3" style="width: 40%; padding: 10px 12px;">Property</th>
+                                            <th class="form-label-sm fw-semibold text-secondary" style="padding: 10px 12px;">Tag Name</th>
+                                            <th style="width: 40px; padding: 10px 12px;"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tag-association-tbody">
+                                        <?php foreach ($currentTags as $tag): ?>
+                                            <tr class="tag-row-item" data-tag-id="<?= $tag['id'] ?>" style="transition: all 0.3s ease;">
+                                                <input type="hidden" name="tag_ids[]" value="<?= $tag['id'] ?>">
+                                                <td class="ps-3" style="padding: 10px 12px;">
+                                                    <span class="d-flex align-items-center gap-2">
+                                                        <i class="bi bi-tag-fill" style="<?= random_text_style($tag['property_id']) ?>; font-size: 0.85rem;"></i>
+                                                        <span class="fw-medium text-dark form-label-sm"><?= esc($tag['property_name']) ?></span>
+                                                    </span>
+                                                </td>
+                                                <td style="padding: 10px 12px;">
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        <a href="<?= site_url('tags/view/' . $tag['id']) ?>" target="_blank" class="apple-link-dark fw-semibold form-label-sm"><?= esc($tag['name']) ?></a>
+                                                        <span class="badge bg-secondary text-secondary" style="font-size: 0.7rem; border-radius: 4px; padding: 2px 6px;">#<?= $tag['id'] ?></span>
+                                                    </div>
+                                                </td>
+                                                <td style="padding: 10px 12px; text-align: center;">
+                                                    <button type="button" class="btn btn-link text-danger p-0 border-0 remove-tag-btn" onclick="removeTagRow(<?= $tag['id'] ?>)" title="Remove Tag" style="box-shadow: none; line-height: 1;">
+                                                        <i class="bi bi-trash" style="font-size: 1rem;"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -200,31 +222,53 @@ document.addEventListener('DOMContentLoaded', function () {
         // Remove "no tags" alert if it exists
         $('#no-tags-alert').hide();
 
-        // Append new tag item
-        const html = `
-            <div class="d-flex align-items-center justify-content-between p-2.5 rounded-3 border border-light tag-row-item" data-tag-id="${tagId}" style="background: #F5F5F7; opacity: 0; transform: translateY(-10px); transition: all 0.3s ease;">
+        // Ensure the table exists (first tag being added to an empty list)
+        if ($('#tag-association-table').length === 0) {
+            const tableHtml = `
+                <table class="table table-sm align-middle mb-0" id="tag-association-table" style="border-radius: 10px; overflow: hidden; border: 1px solid var(--color-border-input, #e5e5ea);">
+                    <thead style="background-color: var(--color-secondary-bg, #F5F5F7);">
+                        <tr>
+                            <th class="form-label-sm fw-semibold text-secondary ps-3" style="width: 40%; padding: 10px 12px;">Property</th>
+                            <th class="form-label-sm fw-semibold text-secondary" style="padding: 10px 12px;">Tag Name</th>
+                            <th style="width: 40px; padding: 10px 12px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="tag-association-tbody"></tbody>
+                </table>
+            `;
+            $('#related-tags-list').append(tableHtml);
+        }
+
+        // Append new tag row inside the table body
+        const rowHtml = `
+            <tr class="tag-row-item" data-tag-id="${tagId}" style="opacity: 0; transition: opacity 0.3s ease;">
                 <input type="hidden" name="tag_ids[]" value="${tagId}">
-                <div class="d-flex align-items-center gap-2 flex-wrap">
-                    <i class="bi bi-tag-fill text-primary" style="font-size: 0.85rem;"></i>
-                    <a href="${tagsViewUrl}${tagId}" target="_blank" class="apple-link-dark fw-semibold">${tagName}</a>
-                    <span class="badge bg-secondary text-secondary small py-0.5 px-1.5" style="font-size: 0.7rem; border-radius: 4px;">#${tagId}</span>
-                    <span class="text-muted small">(${propertyName})</span>
-                </div>
-                <button type="button" class="btn btn-link text-danger p-0 border-0 remove-tag-btn" onclick="removeTagRow(${tagId})" title="Remove Tag" style="box-shadow: none;">
-                    <i class="bi bi-trash fs-5"></i>
-                </button>
-            </div>
+                <td class="ps-3" style="padding: 10px 12px;">
+                    <span class="d-flex align-items-center gap-2">
+                        <i class="bi bi-tag-fill text-primary" style="font-size: 0.85rem;"></i>
+                        <span class="fw-medium text-dark form-label-sm">${propertyName}</span>
+                    </span>
+                </td>
+                <td style="padding: 10px 12px;">
+                    <div class="d-flex align-items-center gap-2">
+                        <a href="${tagsViewUrl}${tagId}" target="_blank" class="apple-link-dark fw-semibold form-label-sm">${tagName}</a>
+                        <span class="badge bg-secondary text-secondary" style="font-size: 0.7rem; border-radius: 4px; padding: 2px 6px;">#${tagId}</span>
+                    </div>
+                </td>
+                <td style="padding: 10px 12px; text-align: center;">
+                    <button type="button" class="btn btn-link text-danger p-0 border-0 remove-tag-btn" onclick="removeTagRow(${tagId})" title="Remove Tag" style="box-shadow: none; line-height: 1;">
+                        <i class="bi bi-trash" style="font-size: 1rem;"></i>
+                    </button>
+                </td>
+            </tr>
         `;
 
-        const $newRow = $(html);
-        $('#related-tags-list').append($newRow);
-        
-        // Trigger animations
+        const $newRow = $(rowHtml);
+        $('#tag-association-tbody').append($newRow);
+
+        // Trigger fade-in animation
         setTimeout(() => {
-            $newRow.css({
-                'opacity': '1',
-                'transform': 'translateY(0)'
-            });
+            $newRow.css('opacity', '1');
         }, 50);
 
         // Reset select2 selection
@@ -252,13 +296,11 @@ document.addEventListener('DOMContentLoaded', function () {
     window.removeTagRow = function(tagId) {
         const row = $(`.tag-row-item[data-tag-id="${tagId}"]`);
         if (row.length > 0) {
-            row.css({
-                'opacity': '0',
-                'transform': 'translateY(10px)'
-            });
+            row.css('opacity', '0');
             setTimeout(() => {
                 row.remove();
                 if ($('#related-tags-list .tag-row-item').length === 0) {
+                    $('#tag-association-table').remove();
                     $('#no-tags-alert').show();
                 }
             }, 300);
