@@ -110,3 +110,9 @@ $routes->group('settings', function ($routes) {
     $routes->post('backup/delete/(:any)', 'SettingsController::deleteBackup/$1');
     $routes->post('backup/restore/(:any)', 'SettingsController::restoreBackup/$1');
 });
+
+$routes->group('profile', function ($routes) {
+    $routes->get('/', 'ProfileController::index');
+    $routes->post('update', 'ProfileController::update');
+});
+

@@ -197,6 +197,18 @@ foreach ($overflowItems as $item) {
             justify-content: center !important;
         }
     }
+    
+    .apple-profile-link {
+        background-color: var(--color-secondary-bg) !important;
+        color: var(--color-text-base) !important;
+        transition: all 0.2s ease;
+        padding: 0 12px 0 0 !important;
+    }
+    
+    .apple-profile-link:hover {
+        background-color: var(--color-secondary-hover) !important;
+        color: var(--color-primary) !important;
+    }
 </style>
 
 <div class="d-flex justify-content-between align-items-center w-100 px-4 gap-4 py-2 apple-nav-wrapper">
@@ -270,17 +282,22 @@ foreach ($overflowItems as $item) {
 
     <div class="d-flex align-items-center justify-content-end gap-3" style="flex: 1; min-width: fit-content;">
         <?php if (session()->get('isLoggedIn')): ?>
-            <span class="text-secondary small d-none d-md-inline-block">
-                <i class="bi bi-person-circle text-primary"></i> 
+            <?php $hasPhoto = !empty(session()->get('profile_photo')); ?>
+            <a href="<?= site_url('profile') ?>" class="apple-btn-secondary btn-sm d-flex align-items-center gap-2 text-decoration-none apple-profile-link <?= $hasPhoto ? 'has-photo' : '' ?>" title="My Profile" data-bs-toggle="tooltip" data-bs-placement="bottom" style="height: 32px; font-size: 0.82rem; overflow: hidden;">
+                <?php if ($hasPhoto): ?>
+                    <img src="<?= base_url('uploads/profile_photos/' . esc(session()->get('profile_photo'))) ?>" alt="Avatar" style="width: 32px; height: 32px; object-fit: cover; border-radius: 0;">
+                <?php else: ?>
+                    <i class="bi bi-person-circle text-primary" style="font-size: 1.05rem; line-height: 1;"></i> 
+                <?php endif; ?>
                 <strong><?= esc(session()->get('user_name')) ?></strong>
-            </span>
+            </a>
             <?php if (session()->get('permissions')['settings'] ?? false): ?>
-                <a href="<?= site_url('settings') ?>" class="apple-btn-secondary btn-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; padding: 0; border-radius: 8px; <?= $segment === 'settings' ? 'border: 1px solid var(--color-primary); color: var(--color-primary); background: var(--color-primary-subtle);' : 'color: var(--color-text-secondary);' ?>" title="System Settings" data-bs-toggle="tooltip" data-bs-placement="bottom">
+                <a href="<?= site_url('settings') ?>" class="apple-btn-secondary btn-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; padding: 0; <?= $segment === 'settings' ? 'border: 1px solid var(--color-primary); color: var(--color-primary); background: var(--color-primary-subtle);' : 'color: var(--color-text-secondary);' ?>" title="System Settings" data-bs-toggle="tooltip" data-bs-placement="bottom">
                     <i class="bi bi-gear-fill" style="font-size: 1rem;"></i>
                 </a>
             <?php endif; ?>
-            <a href="<?= site_url('logout') ?>" class="apple-btn-secondary btn-sm text-danger d-flex align-items-center gap-1" style="padding: 4px 12px; font-size: 0.8rem; border-radius: 8px;">
-                <i class="bi bi-box-arrow-right"></i> Logout
+            <a href="<?= site_url('logout') ?>" class="apple-btn-secondary btn-sm text-danger d-flex align-items-center gap-1.5" style="height: 32px; padding: 0 12px; font-size: 0.82rem;">
+                <i class="bi bi-box-arrow-right" style="font-size: 1rem; line-height: 1;"></i> <strong>Logout</strong>
             </a>
         <?php endif; ?>
     </div>

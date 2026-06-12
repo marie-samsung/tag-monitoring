@@ -137,6 +137,7 @@ class AuthController extends BaseController
                     'user_role'      => $roleId,
                     'user_role_name' => $roleName,
                     'permissions'    => $permissions,
+                    'profile_photo'  => $user['profile_photo'] ?? null,
                     'isLoggedIn'     => true,
                 ];
                 session()->set($sessionData);
