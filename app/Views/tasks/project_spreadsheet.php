@@ -314,8 +314,7 @@ Project: <?= esc($project_name) ?>
         </div>
         <div>
             <a href="<?= site_url('tasks/create?project=' . rawurlencode($project_name)) ?>" title="Create a new task for this project" class="apple-btn-primary btn-sm px-3 text-decoration-none d-inline-flex align-items-center gap-1.5 py-2" style="border-radius: 8px;">
-                <i class="bi bi-plus-lg"></i>
-                <span>Add Task</span>
+                <i class="bi bi-plus-lg me-1"></i> Add Task
             </a>
         </div>
     </div>
