@@ -76,8 +76,7 @@ class TasksController extends BaseController
         }
 
         $post = $this->request->getPost();
-        $isAdmin = (session()->get('user_role') === Constants::USER_ROLE_ADMIN);
-        $assigneeId = $isAdmin ? Constants::USER_SYSTEM : (int)($post['assignee'] ?? Constants::USER_SYSTEM);
+        $assigneeId = $post['assignee'] ?? $log['assignee'];
 
         $insertData = [
             'title'           => trim($post['title']),
@@ -148,8 +147,7 @@ class TasksController extends BaseController
         }
 
         $post = $this->request->getPost();
-        $isAdmin = (session()->get('user_role') === Constants::USER_ROLE_ADMIN);
-        $assigneeId = $isAdmin ? (int)$log['assignee'] : (int)($post['assignee'] ?? $log['assignee']);
+        $assigneeId = (int)($post['assignee'] ?? $log['assignee']);
 
         // @NOTE: ACTIVITY LOGS AUTOMATIC UPDATE COMMENTS
         if ($log['status'] != $post['status']) {

@@ -8,7 +8,6 @@
 
 <?php
     use App\Models\Constants;
-    $isAdmin = (session()->get('user_role') === Constants::USER_ROLE_ADMIN);
 ?>
 
 <div class="container-fluid px-0">
@@ -203,7 +202,6 @@
                         </div>
 
                         <!-- Assignee -->
-                        <?php if (!$isAdmin): ?>
                         <div class="col-12">
                             <label class="form-label-sm fw-semibold text-secondary mb-1">Assignee</label>
                             <select name="assignee" class="form-select form-select-xs" required>
@@ -215,7 +213,6 @@
                                 <?php endforeach; ?>
                             </select>
                         </div>
-                        <?php endif; ?>
 
                         <!-- Subsidiary -->
                         <div class="col-12">

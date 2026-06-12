@@ -18,7 +18,6 @@
     $assignee = Constants::USERS[$log['assignee']] ?? Constants::USER_SYSTEM_LABEL;
     $size = Constants::ACTIVITY_SIZES[$log['size']] ?? 'Unknown';
     $priority = Constants::PRIORITIES[$log['priority']] ?? 'Unknown';
-    $isAdmin = (session()->get('user_role') === Constants::USER_ROLE_ADMIN);
 
     // Fetch related tags if type is Renewal/Request and Team is Media Tagging
     $showRelatedTags = (($log['type'] == Constants::ACTIVITY_TYPE_RENEWAL || $log['type'] == Constants::ACTIVITY_TYPE_REQUEST) && $log['team_id'] == Constants::TEAM_MEDIA_TAGGING);
@@ -194,15 +193,13 @@
                             </option>
                         <?php endforeach; ?>
                     </select>
-                    <?php if (!$isAdmin): ?>
-                        <select class="badge status-select-badge <?= assignee_class($log['assignee']) ?> assignee-select" data-log-id="<?= $log['id'] ?>" title="Assigned To">
-                            <?php foreach (Constants::USERS as $val => $lbl): ?>
-                                <option value="<?= $val ?>" <?= $log['assignee'] == $val ? 'selected' : '' ?> class="bg-white text-dark text-start">
-                                    <?= esc($lbl) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    <?php endif; ?>
+                    <select class="badge status-select-badge <?= assignee_class($log['assignee']) ?> assignee-select" data-log-id="<?= $log['id'] ?>" title="Assigned To">
+                        <?php foreach (Constants::USERS as $val => $lbl): ?>
+                            <option value="<?= $val ?>" <?= $log['assignee'] == $val ? 'selected' : '' ?> class="bg-white text-dark text-start">
+                                <?= esc($lbl) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
                 </div>
             </div>
         </div>
@@ -215,7 +212,7 @@
 
 <div class="row my-3 g-3">
     <!-- LOG DETAILS & ATTACHMENTS -->
-    <div class="<?= !$isAdmin ? 'col-lg-6 col-md-12' : 'col-lg-8 col-md-12 mx-auto' ?>">
+    <div class="col-lg-8 col-md-12 mx-auto">
         <div class="apple-card p-4 h-100">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h5 class="fw-bold mb-0 text-secondary" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;">Task Details</h5>
@@ -457,7 +454,7 @@
 
                 <form action="<?= site_url('tasks/upload') ?>" method="post" enctype="multipart/form-data" class="mt-3 pt-3 border-top">
                     <input type="hidden" name="log_id" value="<?= esc($log['id']) ?>">
-                    <input type="hidden" name="created_by" value="<?= $isAdmin ? session()->get('user_id') : esc($log['assignee']) ?>">
+                    <input type="hidden" name="created_by" value="<?= session()->get('user_id') ?>">
                     <div class="d-flex flex-column gap-2">
                         <label for="file_path" class="form-label-xs text-primary fw-medium">Upload Attachment</label>
                         <div class="d-flex gap-2 align-items-center justify-content-between">
@@ -479,7 +476,6 @@
     </div>
 
     <!-- COMMENTS -->
-    <?php if (!$isAdmin): ?>
     <div class="col-lg-6 col-md-12">
         <div class="apple-card p-4 h-100">
             <h5 class="fw-bold mb-3 text-secondary" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;">Updates</h5>
@@ -531,7 +527,6 @@
             </form>
         </div>
     </div>
-    <?php endif; ?>
 </div>
 
 <!-- Custom Toast Notification -->
