@@ -524,8 +524,9 @@ class TagRequestsController extends BaseController
             $description .= '<li>' . $tagInfo['name'] . '</li>';
         }
 
+        // Auto-add Task
         $taskId = $taskModel->insert([
-            'title' => "{$property['name']} | " . $title . $vendor['name'],
+            'title' => $title . ' | ' . $property['name'] . ' [' . $vendor['name'] . ']',
             'description' => $description . '</ul></ol>',
             'subsidiary_id' => $property['subsidiary_id'],
             'team_id' => Constants::TEAM_MEDIA_TAGGING,

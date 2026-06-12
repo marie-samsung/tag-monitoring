@@ -608,7 +608,7 @@ class TagsController extends BaseController
 
     public function addTask($propertyId, $tagIds, $info, $isRenewal = true)
     {
-        $activityLogModel = new TasksModel();
+        $$tasksModel = new TasksModel();
         $propertyModel = new PropertiesModel();
         $tagsModel = new TagsModel();
         $property = $propertyModel->find($propertyId);
@@ -627,8 +627,9 @@ class TagsController extends BaseController
             }
         }
 
-        $activityLogModel->insert([
-            'title' => "{$property['name']} | " . $title . ' [' . $info['ticket_id'] . ']',
+        // Auto-add Task
+        $tasksModel->insert([
+            'title' => $title . ' | ' . $property['name'],
             'description' => $description . '</ul>',
             'subsidiary_id' => $property['subsidiary_id'],
             'team_id' => Constants::TEAM_MEDIA_TAGGING,
