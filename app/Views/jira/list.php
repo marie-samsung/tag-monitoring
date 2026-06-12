@@ -416,14 +416,46 @@ $hasActiveFilters = ($activeFiltersCount > 0);
                                     <?php } ?>
                                 </td>
                                 <!-- COMMENTS -->
-                                <td class="form-label-sm">
+                                <td class="form-label-sm td-comments">
                                     <?php if ($ticketTagsList): ?>
-
-                                        <?php foreach ($ticketTagsList as $id => $tagObj): ?>
-                                            <a href="<?= site_url('tags/view/' . $id) ?>" class="apple-link-dark"><?= esc($tagObj['name']) ?></a><br>
-                                        <?php endforeach; ?>
+                                        <?php
+                                            $tagCount = count($ticketTagsList);
+                                            $collapseId = 'tagCollapse_' . $ticket['id'];
+                                        ?>
+                                        <div class="tag-expand-cell">
+                                            <!-- Collapsed Summary -->
+                                            <div class="tag-summary d-flex align-items-center gap-2">
+                                                <span class="badge tag-count-badge">
+                                                    <i class="bi bi-tags-fill me-1"></i><?= $tagCount ?> tag<?= $tagCount !== 1 ? 's' : '' ?>
+                                                </span>
+                                                <button
+                                                    type="button"
+                                                    class="btn-tag-expand"
+                                                    data-bs-toggle="collapse"
+                                                    data-bs-target="#<?= $collapseId ?>"
+                                                    aria-expanded="false"
+                                                    aria-controls="<?= $collapseId ?>"
+                                                    title="Show related tags"
+                                                >
+                                                    <span class="expand-label">Show more</span>
+                                                    <i class="bi bi-chevron-down expand-icon"></i>
+                                                </button>
+                                            </div>
+                                            <!-- Expanded Tag List -->
+                                            <div class="collapse mt-2" id="<?= $collapseId ?>">
+                                                <div class="tag-list-expanded">
+                                                    <?php foreach ($ticketTagsList as $id => $tagObj): ?>
+                                                        <a href="<?= site_url('tags/view/' . $id) ?>" class="tag-pill-link" title="<?= esc($tagObj['name']) ?>">
+                                                            <i class="bi bi-tag-fill me-1"></i><?= esc($tagObj['name']) ?>
+                                                        </a>
+                                                    <?php endforeach; ?>
+                                                </div>
+                                            </div>
+                                        </div>
                                     <?php else: ?>
-                                        <?= esc($ticket['comments']) ?>
+                                        <span class="comment-text-plain">
+                                            <?= esc($ticket['comments']) ?>
+                                        </span>
                                     <?php endif; ?>
                                 </td>
                                 <!-- STATUS -->
@@ -581,6 +613,16 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
+    // Tag expand/collapse label toggling
+    document.querySelectorAll('.btn-tag-expand').forEach(function (btn) {
+        var label = btn.querySelector('.expand-label');
+        btn.addEventListener('click', function () {
+            var expanded = btn.getAttribute('aria-expanded') === 'true';
+            // aria-expanded is toggled by Bootstrap AFTER this event fires,
+            // so we read the CURRENT value (before toggle) and flip it:
+            label.textContent = expanded ? 'Show more' : 'Show less';
+        });
+    });
 });
 </script>
 
@@ -768,8 +810,119 @@ document.addEventListener('DOMContentLoaded', function () {
 #tblJira tbody td:not(.actions-cell):has(a:not([onclick]):not(.text-muted)) {
     cursor: pointer;
 }
-#tblJira tbody td:not(.actions-cell):has(a:not([onclick]):not(.text-muted)):hover a:not([onclick]):not(.text-muted) {
+#tblJira tbody td:not(.actions-cell):has(a:not([onclick]):not(.text-muted)):hover a:not([onclick]):not(.text-muted):not(.tag-pill-link) {
     color: var(--color-primary) !important;
+}
+/* ── Tag Expand Cell ────────────────────────────────────────── */
+
+/* Keep comments column width consistent */
+#tblJira td.td-comments {
+    width: 220px;
+    min-width: 220px;
+    max-width: 220px;
+}
+
+/* When a row expands, top-align ALL its cells to prevent jumping */
+#tblJira tbody tr:has(.collapse.show) td,
+#tblJira tbody tr:has(.collapsing) td {
+    vertical-align: top;
+}
+
+.tag-expand-cell {
+    width: 100%;
+}
+
+/* Lock the summary row so badge + button never wrap or shift */
+.tag-summary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+}
+
+.tag-count-badge {
+    background-color: var(--color-badge-primary-bg);
+    color: var(--color-badge-primary-text);
+    border: 1px solid var(--color-badge-primary-border);
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 20px;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+}
+
+.btn-tag-expand {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    background-color: var(--color-secondary-bg);
+    border: 1px solid transparent;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+    outline: none;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.btn-tag-expand:hover {
+    background-color: var(--color-secondary-hover);
+    color: var(--color-text-base);
+}
+
+.btn-tag-expand .expand-icon {
+    font-size: 0.65rem;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-tag-expand[aria-expanded="true"] .expand-icon {
+    transform: rotate(180deg);
+}
+
+.tag-list-expanded {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.tag-pill-link {
+    display: inline-flex;
+    align-items: flex-start;
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--color-badge-primary-text);
+    background: var(--color-badge-primary-bg);
+    border: 1px solid var(--color-badge-primary-border);
+    border-radius: 12px;
+    padding: 4px 10px;
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    white-space: normal;
+    word-break: break-word;
+    width: fit-content;
+    max-width: 100%;
+    line-height: 1.3;
+}
+
+.tag-pill-link:hover {
+    background: var(--color-primary);
+    color: #fff !important;
+    border-color: var(--color-primary);
+}
+
+.comment-text-plain {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    word-break: break-word;
+    white-space: normal;
+    line-height: 1.4;
 }
 </style>
 
