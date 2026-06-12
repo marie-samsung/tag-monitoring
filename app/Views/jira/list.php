@@ -360,7 +360,7 @@ $hasActiveFilters = ($activeFiltersCount > 0);
                                         <?= esc($subsidiary['name'] ?? '') ?>
                                     </span>
                                 </td>
-                                <td>
+                                <td style="width:25%;">
                                     <?php if ($property): ?>
                                     <i class="bi bi-tag-fill" style="<?= random_text_style($property['id']) ?>"></i>
                                     <a href="<?= $property['ref_link'] ?>" target="_blank" rel="noopener" class="apple-link-dark form-label-sm">
@@ -416,7 +416,7 @@ $hasActiveFilters = ($activeFiltersCount > 0);
                                     <?php } ?>
                                 </td>
                                 <!-- COMMENTS -->
-                                <td class="form-label-sm td-comments">
+                                <td class="form-label-sm td-comments" style="width:25%">
                                     <?php if ($ticketTagsList): ?>
                                         <?php
                                             $tagCount = count($ticketTagsList);

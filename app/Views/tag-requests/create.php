@@ -308,7 +308,7 @@ Tag Request: Create
                     <div class="mb-3">
                         <label class="form-label-xs fw-semibold text-secondary mb-1 d-block">Property</label>
                         <span class="fw-semibold text-dark ms-1" style="font-size: 0.9rem;">
-                            <a href="<?= esc($properties[$property_id]['ref_link'] ?? '#') ?>" target="_blank" class="apple-link-dark text-decoration-none">
+                            <a href="<?= esc($properties[$property_id]['ref_link'] . Constants::AL_LIBRARY_CREATE ?? '#') ?>" target="_blank" class="apple-link-dark text-decoration-none">
                                 <?= esc($property['name'] ?? '—') ?>
                             </a>
                         </span>
