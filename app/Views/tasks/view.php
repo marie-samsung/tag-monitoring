@@ -162,6 +162,16 @@
     margin-top: 8px;
     margin-bottom: 8px;
 }
+.remove-related-tag-btn i {
+    transition: opacity 0.2s, transform 0.2s;
+}
+.remove-related-tag-btn:hover i {
+    opacity: 1 !important;
+    transform: scale(1.15);
+}
+.remove-related-tag-btn:active i {
+    transform: scale(0.9);
+}
 </style>
 
 <div class="container-fluid px-0">
@@ -265,8 +275,8 @@
                         <?php endif; ?>
                     </div>
                     <div class="mt-2" style="font-size: 0.9rem; line-height: 1.5; color: var(--color-text-base);">
-                        <?php if (!empty($relatedTags)): ?>
-                            <div class="d-flex flex-column gap-2">
+                        <div id="related-tags-container" class="d-flex flex-column gap-2">
+                            <?php if (!empty($relatedTags)): ?>
                                 <?php foreach ($relatedTags as $tag): ?>
                                     <?php
                                         $diffDays = null;
@@ -276,25 +286,30 @@
                                             $diffDays = (int)ceil(($alEndDate - $now) / 86400);
                                         }
                                     ?>
-                                    <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
-                                        <i class="bi bi-tag-fill text-primary" style="font-size: 0.85rem;"></i>
-                                        <a href="<?= site_url('tags/view/' . $tag['id']) ?>" class="apple-link-dark fw-medium">
-                                            <?= esc($tag['name']) ?>
-                                        </a>
-                                        <span class="badge bg-secondary text-secondary small py-0.5 px-1.5" style="font-size: 0.7rem; border-radius: 4px;">
-                                            #<?= $tag['id'] ?>
-                                        </span>
-                                        <?php if ($diffDays !== null): ?>
-                                            <span class="small fw-semibold <?= days_class($diffDays) ?>" style="font-size: 0.8rem;">
-                                                (<?= $diffDays ?> <?= $diffDays == 1 ? 'day' : 'days' ?> remaining)
+                                    <div class="d-flex align-items-center justify-content-between p-2 rounded-3 border border-light tag-relation-item" data-tag-id="<?= $tag['id'] ?>" style="background: #F5F5F7; transition: all 0.3s ease;">
+                                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                                            <i class="bi bi-tag-fill text-primary" style="font-size: 0.85rem;"></i>
+                                            <a href="<?= site_url('tags/view/' . $tag['id']) ?>" class="apple-link-dark fw-medium text-decoration-none">
+                                                <?= esc($tag['name']) ?>
+                                            </a>
+                                            <span class="badge bg-secondary text-secondary small py-0.5 px-1.5" style="font-size: 0.7rem; border-radius: 4px;">
+                                                #<?= $tag['id'] ?>
                                             </span>
-                                        <?php endif; ?>
+                                            <?php if ($diffDays !== null): ?>
+                                                <span class="small fw-semibold <?= days_class($diffDays) ?>" style="font-size: 0.8rem;">
+                                                    (<?= $diffDays ?> <?= $diffDays == 1 ? 'day' : 'days' ?> remaining)
+                                                </span>
+                                            <?php endif; ?>
+                                        </div>
+                                        <button type="button" class="btn btn-link text-danger p-0 border-0 remove-related-tag-btn" data-tag-id="<?= $tag['id'] ?>" data-tag-name="<?= esc($tag['name']) ?>" title="Remove Tag from Task" style="box-shadow: none; line-height: 1;">
+                                            <i class="bi bi-trash" style="font-size: 1.05rem; opacity: 0.65; transition: opacity 0.2s;"></i>
+                                        </button>
                                     </div>
                                 <?php endforeach; ?>
-                            </div>
-                        <?php else: ?>
-                            <span class="text-muted">No related tags associated with this ticket ID.</span>
-                        <?php endif; ?>
+                            <?php else: ?>
+                                <span class="text-muted" id="no-tags-placeholder">No related tags associated with this ticket ID.</span>
+                            <?php endif; ?>
+                        </div>
                     </div>
                 </div>
             <?php else: ?>
@@ -812,6 +827,69 @@
                         submitBtn.prop('disabled', false).text('Post');
                         console.error('AJAX Error:', error);
                         alert('Failed to post update. Please try again.');
+                    }
+                });
+            });
+
+            // Handle related tag deletion from list
+            $(document).on('click', '.remove-related-tag-btn', function() {
+                const btn = $(this);
+                const tagId = btn.data('tag-id');
+                const tagName = btn.data('tag-name');
+                const logId = '<?= $log['id'] ?>';
+                const csrfToken = $('input[name="csrf_test_name"]').val();
+
+                if (!confirm(`Are you sure you want to remove tag "${tagName}" (#${tagId}) from this task?`)) {
+                    return;
+                }
+
+                // Fade out row slightly to show processing
+                const row = btn.closest('.tag-relation-item');
+                row.css('opacity', '0.5');
+
+                $.ajax({
+                    url: '<?= site_url("tasks/remove-tag") ?>/' + logId,
+                    type: 'POST',
+                    data: {
+                        tag_id: tagId,
+                        csrf_test_name: csrfToken
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            showToast('success', response.message);
+                            
+                            // Animate tag item removal
+                            row.css({
+                                'opacity': '0',
+                                'transform': 'scale(0.9)',
+                                'transition': 'all 0.3s ease'
+                            });
+                            
+                            setTimeout(function() {
+                                row.remove();
+                                if ($('#related-tags-container .tag-relation-item').length === 0) {
+                                    $('#related-tags-container').html('<span class="text-muted" id="no-tags-placeholder">No related tags associated with this ticket ID.</span>');
+                                }
+                            }, 300);
+
+                            // Prepend system update comment
+                            if (response.comment) {
+                                prependComment(response.comment);
+                            }
+                        } else {
+                            row.css('opacity', '1');
+                            showToast('error', response.message || 'Failed to remove tag.');
+                        }
+
+                        // Always update CSRF token
+                        if (response.csrf_hash) {
+                            $('input[name="csrf_test_name"]').val(response.csrf_hash);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        row.css('opacity', '1');
+                        showToast('error', 'An error occurred while removing the tag.');
                     }
                 });
             });

@@ -688,6 +688,110 @@ class TasksController extends BaseController
         ]);
     }
 
+    public function removeTag($id)
+    {
+        $model = new TasksModel();
+        $log = $model->find($id);
+        if (!$log) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Activity log not found.',
+                'csrf_hash' => csrf_hash()
+            ]);
+        }
+
+        $tagIdToRemove = (int)$this->request->getPost('tag_id');
+        if (empty($tagIdToRemove)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Invalid tag ID.',
+                'csrf_hash' => csrf_hash()
+            ]);
+        }
+
+        if (empty($log['ticket_id'])) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Task is not associated with any JIRA ticket ID.',
+                'csrf_hash' => csrf_hash()
+            ]);
+        }
+
+        $jiraHistoryModel = new \App\Models\JiraHistoryModel();
+        $jiraTickets = $jiraHistoryModel->where('ticket_id', $log['ticket_id'])->findAll();
+
+        if (empty($jiraTickets)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'No JIRA history entries found for this task.',
+                'csrf_hash' => csrf_hash()
+            ]);
+        }
+
+        $updatedCount = 0;
+        foreach ($jiraTickets as $jt) {
+            $jtTagId = !empty($jt['tag_id']) ? (int)$jt['tag_id'] : null;
+
+            // Retrieve tag IDs from comments
+            $commentsTagIds = [];
+            if (!empty($jt['comments'])) {
+                $rawIds = explode(',', $jt['comments']);
+                foreach ($rawIds as $rid) {
+                    if (is_numeric(trim($rid))) {
+                        $commentsTagIds[] = (int)trim($rid);
+                    }
+                }
+            }
+
+            // Remove tag ID from the list
+            $newCommentsTagIds = array_diff($commentsTagIds, [$tagIdToRemove]);
+            
+            // Determine new tag_id (first from new list, or null if empty)
+            $newTagId = $jtTagId;
+            if ($jtTagId === $tagIdToRemove) {
+                $newTagId = !empty($newCommentsTagIds) ? reset($newCommentsTagIds) : null;
+            }
+
+            $updateData = [
+                'comments' => implode(',', $newCommentsTagIds),
+                'tag_id' => $newTagId,
+                'updated_by' => session()->get('user_id') ?? 0,
+            ];
+
+            $jiraHistoryModel->update($jt['id'], $updateData);
+            $updatedCount++;
+        }
+
+        // Add a system update comment to the task
+        $commentsModel = new TaskCommentsModel();
+        $tagModel = new \App\Models\TagsModel();
+        $tag = $tagModel->find($tagIdToRemove);
+        $tagName = $tag ? $tag['name'] : "#{$tagIdToRemove}";
+
+        $insertedId = $commentsModel->insert([
+            'log_id' => $id,
+            'comment' => "Removed related tag [{$tagName}] from task.",
+            'commented_by' => Constants::USER_SYSTEM,
+            'type' => Constants::COMMENT_TYPE_UPDATE,
+        ]);
+
+        $insertedComment = $commentsModel->find($insertedId);
+        $commentData = [
+            'comment' => $insertedComment['comment'],
+            'commented_by' => $insertedComment['commented_by'],
+            'created_at' => $insertedComment['created_at'],
+            'user_label' => Constants::USERS[$insertedComment['commented_by']] ?? Constants::USER_SYSTEM_LABEL,
+            'is_system' => ($insertedComment['commented_by'] == Constants::USER_SYSTEM)
+        ];
+
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => "Tag '{$tagName}' removed successfully.",
+            'csrf_hash' => csrf_hash(),
+            'comment' => $commentData
+        ]);
+    }
+
     public function bulkStatus()
     {
         $model = new TasksModel();
