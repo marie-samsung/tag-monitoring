@@ -29,6 +29,8 @@ $routes->group('tags', function ($routes) {
     $routes->get('upload-renewal-justifications', 'TagsController::uploadRenewalJustifications');
     $routes->post('parse-renewal-justifications', 'TagsController::parseRenewalJustifications');
     $routes->post('confirm-renewal-justifications', 'TagsController::confirmRenewalJustifications');
+    $routes->get('renewal-justifications', 'TagsController::renewalJustifications');
+    $routes->match(['get', 'post'], 'renewal-justifications/update/(:num)', 'TagsController::updateRenewalJustification/$1');
     // $routes->post('delete/(:num)', 'TagsController::delete/$1');
 });
 

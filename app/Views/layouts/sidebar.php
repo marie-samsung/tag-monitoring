@@ -2,6 +2,7 @@
 
 $segment = service('uri')->getSegment(1);
 $permissions = session()->get('permissions') ?? [];
+$uri = service('uri');
 
 // Build the array of all permitted menu items in order
 $menuItems = [];
@@ -28,7 +29,13 @@ if ($hasTagsPermissions) {
             'label' => 'Inventory',
             'icon' => 'bi bi-tags-fill text-primary',
             'url' => site_url('/tags'),
-            'active' => ($segment === 'tags'),
+            'active' => ($segment === 'tags' && ($uri->getTotalSegments() < 2 || ($uri->getSegment(2) !== 'renewal-justifications' && $uri->getSegment(2) !== 'upload-renewal-justifications'))),
+        ];
+        $subItems[] = [
+            'label' => 'Renewal Justifications',
+            'icon' => 'bi bi-file-earmark-check-fill text-warning',
+            'url' => site_url('/tags/renewal-justifications'),
+            'active' => ($segment === 'tags' && $uri->getTotalSegments() >= 2 && ($uri->getSegment(2) === 'renewal-justifications' || $uri->getSegment(2) === 'upload-renewal-justifications')),
         ];
     }
     if ($permissions['tag-requests'] ?? false) {

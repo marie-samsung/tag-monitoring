@@ -893,4 +893,80 @@ class TagsController extends BaseController
 
         return redirect()->to('/tags')->with('success', "{$savedCount} renewal justifications have been successfully processed and saved.");
     }
+
+    public function renewalJustifications()
+    {
+        $justificationModel = new \App\Models\RenewalJustificationModel();
+        
+        $latestIdsQuery = $justificationModel->db->table('renewal_justification')
+            ->select('MAX(id) as id')
+            ->groupBy('tag_id')
+            ->get()
+            ->getResultArray();
+            
+        $latestIds = array_column($latestIdsQuery, 'id');
+        
+        $justifications = [];
+        if (!empty($latestIds)) {
+            $justifications = $justificationModel
+                ->select('renewal_justification.*, tags.name as tag_name, properties.name as property_name, subsidiaries.name as subsidiary_name, subsidiaries.id as subsidiary_id')
+                ->join('tags', 'tags.id = renewal_justification.tag_id')
+                ->join('properties', 'properties.id = tags.property_id')
+                ->join('subsidiaries', 'subsidiaries.id = properties.subsidiary_id')
+                ->whereIn('renewal_justification.id', $latestIds)
+                ->orderBy('subsidiaries.name', 'ASC')
+                ->orderBy('properties.name', 'ASC')
+                ->orderBy('tags.name', 'ASC')
+                ->findAll();
+        }
+        
+        $grouped = [];
+        foreach ($justifications as $j) {
+            $grouped[$j['subsidiary_id']][] = $j;
+        }
+
+        $subsidiariesModel = new \App\Models\SubsidiariesModel();
+        $subsidiaries = $subsidiariesModel
+            ->where('is_active', Constants::YES)
+            ->orderBy('name', 'ASC')
+            ->findAll();
+
+        return view('tags/renewal_justifications', [
+            'grouped' => $grouped,
+            'subsidiaries' => $subsidiaries
+        ]);
+    }
+
+    public function updateRenewalJustification($id)
+    {
+        $justificationModel = new \App\Models\RenewalJustificationModel();
+        $justification = $justificationModel->find($id);
+        
+        if (!$justification) {
+            return redirect()->to('/tags/renewal-justifications')->with('error', 'Renewal justification not found.');
+        }
+        
+        $tagsModel = new TagsModel();
+        $tag = $tagsModel->find($justification['tag_id']);
+        
+        if ($this->request->getMethod() === 'GET') {
+            return view('tags/update_renewal_justification', [
+                'justification' => $justification,
+                'tag' => $tag
+            ]);
+        }
+        
+        $post = $this->request->getPost();
+        
+        $updateData = [
+            'renew' => trim($post['renew']),
+            'justification' => trim($post['justification']),
+            'duration' => trim($post['duration']),
+            'updated_by' => session()->get('user_id') ?? 0
+        ];
+        
+        $justificationModel->update($id, $updateData);
+        
+        return redirect()->to('/tags/renewal-justifications')->with('success', 'Renewal justification updated successfully.');
+    }
 }
