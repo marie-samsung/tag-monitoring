@@ -262,3 +262,47 @@ function request_type_label(int $type, int $status): string
     return Constants::REQUEST_TYPES[$type] ?? (Constants::JIRA_TICKET_TYPES[$type] ?? 'Unknown');
 }
 
+/**
+ * Safely parses HTML snippet, closes unclosed tags, and strips out dangerous elements like <script> or style sheets that can leak styles.
+ */
+function clean_html_comment(string $html): string
+{
+    if (empty($html)) {
+        return '';
+    }
+
+    $dom = new \DOMDocument();
+    
+    // Disable standard libxml errors so it doesn't log PHP notices for malformed HTML
+    libxml_use_internal_errors(true);
+    
+    // Load the HTML content with UTF-8 encoding. Wrap it in a single root element (like a div)
+    // to preserve structure and let us easily extract just the inner HTML block.
+    $dom->loadHTML('<?xml encoding="utf-8" ?><div>' . $html . '</div>', LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+    
+    libxml_clear_errors();
+
+    // Find and remove script and style tags to prevent JS execution or global CSS leakage
+    $removeTags = ['script', 'style'];
+    foreach ($removeTags as $tagName) {
+        $tags = $dom->getElementsByTagName($tagName);
+        while ($tags->length > 0) {
+            $tag = $tags->item(0);
+            $tag->parentNode->removeChild($tag);
+        }
+    }
+
+    // Extract the inner HTML content inside our root div
+    $root = $dom->getElementsByTagName('div')->item(0);
+    $cleanedHtml = '';
+    if ($root) {
+        foreach ($root->childNodes as $child) {
+            $cleanedHtml .= $dom->saveHTML($child);
+        }
+    } else {
+        $cleanedHtml = $html;
+    }
+
+    return $cleanedHtml;
+}
+
