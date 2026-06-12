@@ -376,7 +376,7 @@ Project: <?= esc($project_name) ?>
                         <th style="width: 140px;">Ticket ID</th>
                         <th style="width: 110px;">Priority</th>
                         <th style="width: 150px;">Assignee</th>
-                        <th style="width: 120px;">Created Date</th>
+                        <th style="width: 120px;">Start Date</th>
                         <th style="width: 180px;">Status</th>
                         <th>Last Comment</th>
                     </tr>
@@ -399,7 +399,7 @@ Project: <?= esc($project_name) ?>
                             $subsidiary = Constants::ACTIVITY_LOG_SUBSIDIARIES[$task['subsidiary_id']] ?? 'Unknown';
                             $priority = Constants::PRIORITIES[$task['priority']] ?? 'Unknown';
                             $assignee = Constants::USERS[$task['assignee']] ?? Constants::USER_SYSTEM_LABEL;
-                            $createdDate = date('d-m-Y', strtotime($task['created_at']));
+                            $startDate = $task['start_date'] ? date('d-m-Y', strtotime($task['start_date'])) : '-';
                         ?>
                             <tr class="task-row">
                                 <td class="row-index-col"><?= $idx++ ?></td>
@@ -449,7 +449,7 @@ Project: <?= esc($project_name) ?>
                                         </option>
                                     </select>
                                 </td>
-                                <td class="text-secondary"><?= esc($createdDate) ?></td>
+                                <td class="text-secondary"><?= esc($startDate) ?></td>
                                 <td>
                                     <!-- Dynamic AJAX status select badge -->
                                     <select class="badge status-select-badge <?= status_activity_logs_class($task['status']) ?> status-select" data-log-id="<?= $task['id'] ?>">
