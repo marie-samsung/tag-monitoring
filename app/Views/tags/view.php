@@ -173,81 +173,107 @@ $tagRequestsModel = new TagRequestsModel();
 
                         <tbody>
                             <?php 
-                                foreach ($jiraTickets as $jira):
-                                    $ticketTagsList = [];
-                                    $type = $jira['type'];
-                                    if ($type == Constants::JIRA_TYPE_DATE_EXTENSION_RULE ||
-                                            $type == Constants::JIRA_TYPE_NEW_TAG ||
-                                            $type == Constants::JIRA_TYPE_NEW_RULE ||
-                                            $type == Constants::JIRA_TYPE_UPDATE_RULE) {
-                                        $ticketTags = explode(',', $jira['comments']);
-                                        
-                                        foreach ($ticketTags as $tagId) {
-                                            $tagInfo = $tagModel->find($tagId);
-                                            if ($tagInfo) {
-                                                $ticketTagsList[$tagInfo['name']] = $tagInfo['ref_link'];
-                                            }
-                                        }
+                                $hasTickets = false;
+                                foreach ($jiraTickets as $jira) {
+                                    if ($jira['tag_id'] == $tag['id']) {
+                                        $hasTickets = true;
+                                        break;
                                     }
+                                }
                             ?>
+                            <?php if (!$hasTickets): ?>
                                 <tr>
-                                    <td class="fw-semibold"><?= $jira['id'] ?: '-' ?></td>
-                                    <td>
-                                        <a href="<?= Constants::JIRA_LINK ?><?= $jira['ticket_id'] ?: '#' ?>" target="_blank" class="apple-link text-decoration-none fw-semibold">
-                                            <?= $jira['ticket_id'] ?: '-' ?>
-                                        </a>
-                                    </td>
-                                    <!-- TYPE -->
-                                    <td>
-                                        <?php
-                                            if ($type == Constants::JIRA_TYPE_NEW_TAG || $type == Constants::JIRA_TYPE_NEW_RULE) {
-                                                $request_id = $tagRequestsModel->getRequestByTicketId($jira['ticket_id']);
-
-                                                if ($request_id) {
-                                        ?>
-                                                    <a href="<?= site_url('/tag-requests/view/' . $request_id) ?>" target="_blank" class="apple-link-dark text-decoration-none fw-semibold">
-                                                        <?= Constants::JIRA_TICKET_TYPES[$type] ?>
-                                                    </a>
-                                            <?php } else { ?>
-                                                <?= Constants::JIRA_TICKET_TYPES[$type] ?>
-                                            <?php } ?>
-
-                                        <?php
-                                            } elseif ($type == Constants::JIRA_TYPE_UPDATE_RULE) {
-                                                $activityLogsModel = new TasksModel();
-                                                $activityLog = $activityLogsModel->where('ticket_id', $jira['ticket_id'])->first();
-
-                                                if ($activityLog) {
-                                        ?>
-                                                <a href="<?= site_url('/tasks/view/' . $activityLog['id']) ?>" target="_blank" class="apple-link-dark text-decoration-none fw-semibold">
-                                                    <?= Constants::JIRA_TICKET_TYPES[$type] ?>
-                                                </a>
-
-                                                <?php } else { ?>
-                                                    <?= Constants::JIRA_TICKET_TYPES[$type] ?>
-
-                                        <?php }} else { ?>
-                                            <?= Constants::JIRA_TICKET_TYPES[$type] ?>
-                                        <?php } ?>
-                                    </td>
-                                    <!-- COMMENTS -->
-                                    <td>
-                                        <?php if ($ticketTagsList): ?>
-                                            <?php foreach ($ticketTagsList as $name => $link): ?>
-                                                <a href="<?= $link ?>" target="_blank" class="apple-link text-decoration-none"><?= esc($name) ?></a><br>
-                                            <?php endforeach; ?>
-                                        <?php else: ?>
-                                            <span class="text-secondary"><?= esc($jira['comments']) ?></span>
-                                        <?php endif; ?>
-                                    </td>
-                                    <!-- ACTIONS -->
-                                    <td class="text-center">
-                                        <a href="<?= site_url('jira/update-tags/' . $jira['id']) ?>" class="apple-btn-secondary btn-sm px-2 py-1" style="font-size: 0.75rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;" title="Update Related Tags">
-                                            <i class="bi bi-pencil-square"></i>
-                                        </a>
+                                    <td colspan="5" class="text-center py-4 text-muted">
+                                        <i class="bi bi-info-circle d-block fs-4 mb-2 text-secondary" style="opacity: 0.5;"></i>
+                                        No JIRA references associated with this tag.
                                     </td>
                                 </tr>
-                            <?php endforeach; ?>
+                            <?php else: ?>
+                                <?php 
+                                    $displayedTickets = [];
+                                    foreach ($jiraTickets as $jira):
+                                        if ($jira['tag_id'] != $tag['id']) {
+                                            continue;
+                                        }
+                                        if (in_array($jira['ticket_id'], $displayedTickets)) {
+                                            continue;
+                                        }
+                                        $displayedTickets[] = $jira['ticket_id'];
+                                        $ticketTagsList = [];
+                                        $type = $jira['type'];
+                                        if ($type == Constants::JIRA_TYPE_DATE_EXTENSION_RULE ||
+                                                $type == Constants::JIRA_TYPE_NEW_TAG ||
+                                                $type == Constants::JIRA_TYPE_NEW_RULE ||
+                                                $type == Constants::JIRA_TYPE_UPDATE_RULE) {
+                                            $ticketTags = explode(',', $jira['comments']);
+                                            
+                                            foreach ($ticketTags as $tagId) {
+                                                $tagInfo = $tagModel->find($tagId);
+                                                if ($tagInfo) {
+                                                    $ticketTagsList[$tagInfo['name']] = $tagInfo['ref_link'];
+                                                }
+                                            }
+                                        }
+                                ?>
+                                    <tr>
+                                        <td class="fw-semibold"><?= $jira['id'] ?: '-' ?></td>
+                                        <td>
+                                            <a href="<?= Constants::JIRA_LINK ?><?= $jira['ticket_id'] ?: '#' ?>" target="_blank" class="apple-link text-decoration-none fw-semibold">
+                                                <?= $jira['ticket_id'] ?: '-' ?>
+                                            </a>
+                                        </td>
+                                        <!-- TYPE -->
+                                        <td>
+                                            <?php
+                                                if ($type == Constants::JIRA_TYPE_NEW_TAG || $type == Constants::JIRA_TYPE_NEW_RULE) {
+                                                    $request_id = $tagRequestsModel->getRequestByTicketId($jira['ticket_id']);
+     
+                                                    if ($request_id) {
+                                            ?>
+                                                        <a href="<?= site_url('/tag-requests/view/' . $request_id) ?>" target="_blank" class="apple-link-dark text-decoration-none fw-semibold">
+                                                            <?= Constants::JIRA_TICKET_TYPES[$type] ?>
+                                                        </a>
+                                                <?php } else { ?>
+                                                    <?= Constants::JIRA_TICKET_TYPES[$type] ?>
+                                                <?php } ?>
+     
+                                            <?php
+                                                } elseif ($type == Constants::JIRA_TYPE_UPDATE_RULE) {
+                                                    $activityLogsModel = new TasksModel();
+                                                    $activityLog = $activityLogsModel->where('ticket_id', $jira['ticket_id'])->first();
+     
+                                                    if ($activityLog) {
+                                            ?>
+                                                    <a href="<?= site_url('/tasks/view/' . $activityLog['id']) ?>" target="_blank" class="apple-link-dark text-decoration-none fw-semibold">
+                                                        <?= Constants::JIRA_TICKET_TYPES[$type] ?>
+                                                    </a>
+     
+                                                    <?php } else { ?>
+                                                        <?= Constants::JIRA_TICKET_TYPES[$type] ?>
+     
+                                            <?php }} else { ?>
+                                                <?= Constants::JIRA_TICKET_TYPES[$type] ?>
+                                            <?php } ?>
+                                        </td>
+                                        <!-- COMMENTS -->
+                                        <td>
+                                            <?php if ($ticketTagsList): ?>
+                                                <?php foreach ($ticketTagsList as $name => $link): ?>
+                                                    <a href="<?= $link ?>" target="_blank" class="apple-link text-decoration-none"><?= esc($name) ?></a><br>
+                                                <?php endforeach; ?>
+                                            <?php else: ?>
+                                                <span class="text-secondary"><?= esc($jira['comments']) ?></span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <!-- ACTIONS -->
+                                        <td class="text-center">
+                                            <a href="<?= site_url('jira/update-tags/' . $jira['id']) ?>" class="apple-btn-secondary btn-sm px-2 py-1" style="font-size: 0.75rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;" title="Update Related Tags">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
                         </tbody>
                     </table>
                 </div>
