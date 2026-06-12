@@ -220,6 +220,13 @@ class TasksController extends BaseController
 
         $model->update($id, $updateData);
 
+        if ($updateData['status'] == Constants::ACTIVITY_LOGS_STATUS_BLOCKED) {
+            $updatedLog = $model->find($id);
+            if ($updatedLog) {
+                $this->updateRelatedTagsStatusToOnHold($updatedLog);
+            }
+        }
+
         return redirect()
             ->to('/tasks/view/' . $id)
             ->with('success', "Activity log '{$updateData['title']}' updated successfully.");
@@ -454,6 +461,13 @@ class TasksController extends BaseController
             }
 
             $model->update($id, $updateData);
+
+            if ($status == Constants::ACTIVITY_LOGS_STATUS_BLOCKED) {
+                $updatedLog = $model->find($id);
+                if ($updatedLog) {
+                    $this->updateRelatedTagsStatusToOnHold($updatedLog);
+                }
+            }
 
             $insertedComment = $commentsModel->find($insertedId);
             $commentData = [
@@ -722,6 +736,14 @@ class TasksController extends BaseController
                 }
 
                 $model->update($id, $updateData);
+
+                if ($status == Constants::ACTIVITY_LOGS_STATUS_BLOCKED) {
+                    $updatedLog = $model->find($id);
+                    if ($updatedLog) {
+                        $this->updateRelatedTagsStatusToOnHold($updatedLog);
+                    }
+                }
+
                 $updatedCount++;
             }
         }
@@ -923,5 +945,36 @@ class TasksController extends BaseController
             'project_name' => $projectName,
             'tasks'        => $tasks,
         ]);
+    }
+
+    private function updateRelatedTagsStatusToOnHold($log)
+    {
+        if (($log['type'] == Constants::ACTIVITY_TYPE_RENEWAL || $log['type'] == Constants::ACTIVITY_TYPE_REQUEST) && $log['team_id'] == Constants::TEAM_MEDIA_TAGGING) {
+            if (!empty($log['ticket_id'])) {
+                $jiraHistoryModel = new \App\Models\JiraHistoryModel();
+                $jiraTickets = $jiraHistoryModel->where('ticket_id', $log['ticket_id'])->findAll();
+                if (!empty($jiraTickets)) {
+                    $tagIds = [];
+                    foreach ($jiraTickets as $jt) {
+                        if (!empty($jt['tag_id'])) {
+                            $tagIds[] = (int)$jt['tag_id'];
+                        }
+                        if (!empty($jt['comments'])) {
+                            $rawIds = explode(',', $jt['comments']);
+                            foreach ($rawIds as $rid) {
+                                if (is_numeric(trim($rid))) {
+                                    $tagIds[] = (int)trim($rid);
+                                }
+                            }
+                        }
+                    }
+                    $tagIds = array_unique($tagIds);
+                    if (!empty($tagIds)) {
+                        $tagsModel = new \App\Models\TagsModel();
+                        $tagsModel->whereIn('id', $tagIds)->set(['status' => Constants::STATUS_ON_HOLD])->update();
+                    }
+                }
+            }
+        }
     }
 }

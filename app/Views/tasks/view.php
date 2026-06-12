@@ -19,6 +19,37 @@
     $size = Constants::ACTIVITY_SIZES[$log['size']] ?? 'Unknown';
     $priority = Constants::PRIORITIES[$log['priority']] ?? 'Unknown';
     $isAdmin = (session()->get('user_role') === Constants::USER_ROLE_ADMIN);
+
+    // Fetch related tags if type is Renewal/Request and Team is Media Tagging
+    $showRelatedTags = (($log['type'] == Constants::ACTIVITY_TYPE_RENEWAL || $log['type'] == Constants::ACTIVITY_TYPE_REQUEST) && $log['team_id'] == Constants::TEAM_MEDIA_TAGGING);
+    $relatedTags = [];
+    $jiraTicketRecord = null;
+    if ($showRelatedTags && !empty($log['ticket_id'])) {
+        $jiraHistoryModel = new \App\Models\JiraHistoryModel();
+        $jiraTickets = $jiraHistoryModel->where('ticket_id', $log['ticket_id'])->findAll();
+        if (!empty($jiraTickets)) {
+            $jiraTicketRecord = $jiraTickets[0];
+            $tagIds = [];
+            foreach ($jiraTickets as $jt) {
+                if (!empty($jt['tag_id'])) {
+                    $tagIds[] = (int)$jt['tag_id'];
+                }
+                if (!empty($jt['comments'])) {
+                    $rawIds = explode(',', $jt['comments']);
+                    foreach ($rawIds as $rid) {
+                        if (is_numeric(trim($rid))) {
+                            $tagIds[] = (int)trim($rid);
+                        }
+                    }
+                }
+            }
+            $tagIds = array_unique($tagIds);
+            if (!empty($tagIds)) {
+                $tagModel = new \App\Models\TagsModel();
+                $relatedTags = $tagModel->whereIn('id', $tagIds)->findAll();
+            }
+        }
+    }
 ?>
 
 <?= csrf_field() ?>
@@ -222,12 +253,58 @@
                 </div>
             </div>
 
-            <div class="mb-3 pb-2 border-bottom border-light">
-                <span class="d-block text-muted fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Description</span>
-                <div class="mt-1 task-description" style="font-size: 0.9rem; line-height: 1.5; color: var(--color-text-base);">
-                    <?= $log['description'] ?: '—' ?>
+            <?php if ($showRelatedTags): ?>
+                <div class="mb-3 pb-2 border-bottom border-light">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <span class="text-muted fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Related Tags</span>
+                        <?php if ($jiraTicketRecord): ?>
+                            <a href="<?= site_url('jira/update-tags/' . $jiraTicketRecord['id']) ?>" class="apple-btn-secondary btn-sm py-1 px-2.5 d-inline-flex align-items-center gap-1.5" style="font-size: 0.75rem; border-radius: 8px; font-weight: 500; height: auto;">
+                                <i class="bi bi-pencil-square"></i>
+                                <span>Edit Tags</span>
+                            </a>
+                        <?php endif; ?>
+                    </div>
+                    <div class="mt-2" style="font-size: 0.9rem; line-height: 1.5; color: var(--color-text-base);">
+                        <?php if (!empty($relatedTags)): ?>
+                            <div class="d-flex flex-column gap-2">
+                                <?php foreach ($relatedTags as $tag): ?>
+                                    <?php
+                                        $diffDays = null;
+                                        if (!empty($tag['al_end_date'])) {
+                                            $alEndDate = strtotime($tag['al_end_date']);
+                                            $now = time();
+                                            $diffDays = (int)ceil(($alEndDate - $now) / 86400);
+                                        }
+                                    ?>
+                                    <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+                                        <i class="bi bi-tag-fill text-primary" style="font-size: 0.85rem;"></i>
+                                        <a href="<?= site_url('tags/view/' . $tag['id']) ?>" class="apple-link-dark fw-medium">
+                                            <?= esc($tag['name']) ?>
+                                        </a>
+                                        <span class="badge bg-secondary text-secondary small py-0.5 px-1.5" style="font-size: 0.7rem; border-radius: 4px;">
+                                            #<?= $tag['id'] ?>
+                                        </span>
+                                        <?php if ($diffDays !== null): ?>
+                                            <span class="small fw-semibold <?= days_class($diffDays) ?>" style="font-size: 0.8rem;">
+                                                (<?= $diffDays ?> <?= $diffDays == 1 ? 'day' : 'days' ?> remaining)
+                                            </span>
+                                        <?php endif; ?>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php else: ?>
+                            <span class="text-muted">No related tags associated with this ticket ID.</span>
+                        <?php endif; ?>
+                    </div>
                 </div>
-            </div>
+            <?php else: ?>
+                <div class="mb-3 pb-2 border-bottom border-light">
+                    <span class="d-block text-muted fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Description</span>
+                    <div class="mt-1 task-description" style="font-size: 0.9rem; line-height: 1.5; color: var(--color-text-base);">
+                        <?= $log['description'] ?: '—' ?>
+                    </div>
+                </div>
+            <?php endif; ?>
 
             <!-- Team -->
             <div class="mb-3 pb-2 border-bottom border-light">
