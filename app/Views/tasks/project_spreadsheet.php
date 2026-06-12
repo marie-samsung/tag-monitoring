@@ -238,6 +238,66 @@ Project: <?= esc($project_name) ?>
     border: 1px solid var(--color-badge-primary-border) !important;
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%231565C0' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
 }
+
+/* Specific theme styles for Assignee users */
+.status-select-badge.bg-purple {
+    background-color: var(--color-badge-purple-bg) !important;
+    color: var(--color-badge-purple-text) !important;
+    border: 1px solid var(--color-badge-purple-border) !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%237B1FA2' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+}
+
+.status-select-badge.bg-pink {
+    background-color: var(--color-badge-pink-bg) !important;
+    color: var(--color-badge-pink-text) !important;
+    border: 1px solid var(--color-badge-pink-border) !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23C2185B' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+}
+
+.status-select-badge.bg-green {
+    background-color: var(--color-badge-green-bg) !important;
+    color: var(--color-badge-green-text) !important;
+    border: 1px solid var(--color-badge-green-border) !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%231B5E20' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+}
+
+.status-select-badge.bg-blue {
+    background-color: var(--color-badge-blue-bg) !important;
+    color: var(--color-badge-blue-text) !important;
+    border: 1px solid var(--color-badge-blue-border) !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%230071E3' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+}
+
+.status-select-badge.bg-orange {
+    background-color: var(--color-badge-orange-bg) !important;
+    color: var(--color-badge-orange-text) !important;
+    border: 1px solid var(--color-badge-orange-border) !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23E65100' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+}
+
+/* Ticket ID Cell Hover & Inline Edit styling */
+.ticket-cell {
+    position: relative;
+    cursor: pointer;
+    min-width: 140px;
+}
+.ticket-cell:hover {
+    background-color: rgba(0, 113, 227, 0.03) !important;
+}
+.edit-ticket-btn {
+    opacity: 0;
+    transition: opacity 0.2s ease, color 0.2s ease;
+    background: none;
+    border: none;
+    line-height: 1;
+}
+.ticket-cell:hover .edit-ticket-btn {
+    opacity: 0.6;
+}
+.edit-ticket-btn:hover {
+    opacity: 1 !important;
+    color: var(--color-primary) !important;
+}
 </style>
 
 <div class="container-fluid px-0">
@@ -353,14 +413,24 @@ Project: <?= esc($project_name) ?>
                                         <?= esc($task['title']) ?>
                                     </a>
                                 </td>
-                                <td>
-                                    <?php if (!empty($task['ticket_id'])): ?>
-                                        <a href="<?= Constants::JIRA_LINK . $task['ticket_id'] ?>" target="_blank" class="apple-link fw-bold">
-                                            <?= esc($task['ticket_id']) ?>
-                                        </a>
-                                    <?php else: ?>
-                                        <span class="text-secondary small">—</span>
-                                    <?php endif; ?>
+                                <td class="ticket-cell" data-log-id="<?= $task['id'] ?>">
+                                    <div class="ticket-display d-flex align-items-center justify-content-between">
+                                        <span class="ticket-link-wrapper">
+                                            <?php if (!empty($task['ticket_id'])): ?>
+                                                <a href="<?= Constants::JIRA_LINK . $task['ticket_id'] ?>" target="_blank" class="apple-link fw-bold ticket-value">
+                                                    <?= esc($task['ticket_id']) ?>
+                                                </a>
+                                            <?php else: ?>
+                                                <span class="text-secondary small ticket-value">—</span>
+                                            <?php endif; ?>
+                                        </span>
+                                        <button class="btn btn-link p-0 edit-ticket-btn text-muted" title="Edit Ticket ID">
+                                            <i class="bi bi-pencil-fill" style="font-size: 0.7rem;"></i>
+                                        </button>
+                                    </div>
+                                    <div class="ticket-edit-wrapper d-none">
+                                        <input type="text" class="form-control form-control-xs ticket-input" value="<?= esc($task['ticket_id'] ?? '') ?>" style="font-size: 0.8rem; padding: 2px 6px; height: 26px; border-radius: 4px; width: 100%;">
+                                    </div>
                                 </td>
                                 <td>
                                     <span class="badge <?= priority_class($task['priority']) ?>">
@@ -368,9 +438,16 @@ Project: <?= esc($project_name) ?>
                                     </span>
                                 </td>
                                 <td>
-                                    <span class="badge <?= assignee_class($task['assignee']) ?>">
-                                        <?= esc($assignee) ?>
-                                    </span>
+                                    <select class="badge status-select-badge <?= assignee_class($task['assignee']) ?> assignee-select" data-log-id="<?= $task['id'] ?>">
+                                        <?php foreach (Constants::USERS as $val => $lbl): ?>
+                                            <option value="<?= $val ?>" <?= $task['assignee'] == $val ? 'selected' : '' ?> class="bg-white text-dark text-start">
+                                                <?= esc($lbl) ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                        <option value="<?= Constants::USER_SYSTEM ?>" <?= $task['assignee'] == Constants::USER_SYSTEM ? 'selected' : '' ?> class="bg-white text-dark text-start">
+                                            <?= esc(Constants::USER_SYSTEM_LABEL) ?>
+                                        </option>
+                                    </select>
                                 </td>
                                 <td class="text-secondary"><?= esc($createdDate) ?></td>
                                 <td>
@@ -470,19 +547,27 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 4000);
     }
 
-    // AJAX Inline Status Updates
+    // AJAX Inline Updates (Status, Assignee)
     let previousValue = '';
 
-    $('.status-select').on('focus', function() {
+    $(document).on('focus', '.status-select, .assignee-select', function() {
         previousValue = $(this).val();
-    }).on('change', function() {
+    }).on('change', '.status-select, .assignee-select', function() {
         const dropdown = $(this);
         const logId = dropdown.data('log-id');
         const newValue = dropdown.val();
         const csrfToken = $('input[name="csrf_test_name"]').val();
 
-        const url = '<?= site_url("tasks/update-status") ?>/' + logId;
-        const postData = { csrf_test_name: csrfToken, status: newValue };
+        let url = '';
+        let postData = { csrf_test_name: csrfToken };
+
+        if (dropdown.hasClass('assignee-select')) {
+            url = '<?= site_url("tasks/update-assignee") ?>/' + logId;
+            postData.assignee = newValue;
+        } else {
+            url = '<?= site_url("tasks/update-status") ?>/' + logId;
+            postData.status = newValue;
+        }
 
         dropdown.css('opacity', '0.6');
 
@@ -495,7 +580,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 dropdown.css('opacity', '1');
                 if (response.success) {
                     // Update classes
-                    dropdown.removeClass('bg-secondary bg-warning bg-info bg-success bg-danger text-white text-dark');
+                    dropdown.removeClass('bg-secondary bg-warning bg-info bg-success bg-danger bg-purple bg-pink bg-green bg-blue bg-orange text-white text-dark');
                     dropdown.addClass(response.status_class);
                     showToast('success', response.message);
                     previousValue = newValue;
@@ -515,6 +600,135 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     });
+
+    // Inline Ticket ID Editing
+    $(document).on('click', '.edit-ticket-btn', function(e) {
+        e.stopPropagation();
+        const cell = $(this).closest('.ticket-cell');
+        startTicketEdit(cell);
+    });
+
+    $(document).on('dblclick', '.ticket-cell', function(e) {
+        if ($(e.target).closest('a, button, input').length) return;
+        startTicketEdit($(this));
+    });
+
+    function startTicketEdit(cell) {
+        const display = cell.find('.ticket-display');
+        const editWrapper = cell.find('.ticket-edit-wrapper');
+        const input = editWrapper.find('.ticket-input');
+        
+        display.addClass('d-none');
+        editWrapper.removeClass('d-none');
+        
+        // Save current value
+        input.data('old-val', input.val());
+        
+        input.focus().select();
+    }
+
+    $(document).on('keydown', '.ticket-input', function(e) {
+        const input = $(this);
+        const cell = input.closest('.ticket-cell');
+        
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            input.blur(); // Triggers blur which calls saveTicketEdit
+        } else if (e.key === 'Escape') {
+            e.preventDefault();
+            cancelTicketEdit(cell);
+        }
+    });
+
+    $(document).on('blur', '.ticket-input', function() {
+        const input = $(this);
+        const cell = input.closest('.ticket-cell');
+        // Check if input is disabled (means already saving) or not currently visible
+        if (!input.prop('disabled') && !input.closest('.ticket-edit-wrapper').hasClass('d-none')) {
+            saveTicketEdit(cell);
+        }
+    });
+
+    function cancelTicketEdit(cell) {
+        const display = cell.find('.ticket-display');
+        const editWrapper = cell.find('.ticket-edit-wrapper');
+        const input = editWrapper.find('.ticket-input');
+        
+        input.val(input.data('old-val'));
+        editWrapper.addClass('d-none');
+        display.removeClass('d-none');
+    }
+
+    function saveTicketEdit(cell) {
+        const display = cell.find('.ticket-display');
+        const editWrapper = cell.find('.ticket-edit-wrapper');
+        const input = editWrapper.find('.ticket-input');
+        const logId = cell.data('log-id');
+        const newValue = input.val().trim();
+        const oldValue = input.data('old-val');
+        
+        if (newValue === oldValue) {
+            editWrapper.addClass('d-none');
+            display.removeClass('d-none');
+            return;
+        }
+        
+        input.prop('disabled', true);
+        input.css('opacity', '0.6');
+        
+        const csrfToken = $('input[name="csrf_test_name"]').val();
+        const url = '<?= site_url("tasks/update-ticket-id") ?>/' + logId;
+        
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data: {
+                ticket_id: newValue,
+                csrf_test_name: csrfToken
+            },
+            dataType: 'json',
+            success: function(response) {
+                input.prop('disabled', false);
+                input.css('opacity', '1');
+                
+                if (response.success) {
+                    input.val(newValue);
+                    input.data('old-val', newValue);
+                    
+                    // Update display
+                    const linkWrapper = cell.find('.ticket-link-wrapper');
+                    if (newValue !== '') {
+                        linkWrapper.html(
+                            `<a href="${response.jira_link}" target="_blank" class="apple-link fw-bold ticket-value">${newValue}</a>`
+                        );
+                    } else {
+                        linkWrapper.html('<span class="text-secondary small ticket-value">—</span>');
+                    }
+                    
+                    showToast('success', response.message);
+                } else {
+                    input.val(oldValue);
+                    showToast('error', response.message || 'Failed to update.');
+                }
+                
+                if (response.csrf_hash) {
+                    $('input[name="csrf_test_name"]').val(response.csrf_hash);
+                }
+                
+                editWrapper.addClass('d-none');
+                display.removeClass('d-none');
+            },
+            error: function() {
+                input.prop('disabled', false);
+                input.css('opacity', '1');
+                input.val(oldValue);
+                showToast('error', 'An error occurred while updating Ticket ID.');
+                
+                editWrapper.addClass('d-none');
+                display.removeClass('d-none');
+            }
+        });
+    }
 
     // Realtime search filtering
     const searchInput = document.getElementById('spreadsheetSearch');

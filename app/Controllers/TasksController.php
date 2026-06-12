@@ -614,6 +614,66 @@ class TasksController extends BaseController
         ]);
     }
 
+    public function updateTicketId($id)
+    {
+        $model = new TasksModel();
+        $commentsModel = new TaskCommentsModel();
+        
+        $log = $model->find($id);
+        if (!$log) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Activity log not found.',
+                'csrf_hash' => csrf_hash()
+            ]);
+        }
+
+        $ticketId = $this->request->getPost('ticket_id');
+        $ticketId = !empty($ticketId) ? trim((string)$ticketId) : null;
+
+        $oldTicketId = !empty($log['ticket_id']) ? trim((string)$log['ticket_id']) : null;
+
+        if ($oldTicketId !== $ticketId) {
+            $from = $oldTicketId ?? 'None';
+            $to = $ticketId ?? 'None';
+
+            $insertedId = $commentsModel->insert([
+                'log_id' => $id,
+                'comment' => "Ticket ID updated from [{$from}] to [{$to}]",
+                'commented_by' => session()->get('user_id'),
+                'type' => Constants::COMMENT_TYPE_UPDATE,
+            ]);
+
+            $model->update($id, [
+                'ticket_id' => $ticketId,
+            ]);
+
+            $insertedComment = $commentsModel->find($insertedId);
+            $commentData = [
+                'comment' => $insertedComment['comment'],
+                'commented_by' => $insertedComment['commented_by'],
+                'created_at' => $insertedComment['created_at'],
+                'user_label' => Constants::USERS[$insertedComment['commented_by']] ?? Constants::USER_SYSTEM_LABEL,
+                'is_system' => ($insertedComment['commented_by'] == Constants::USER_SYSTEM)
+            ];
+
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => "Ticket ID updated successfully.",
+                'ticket_id' => $ticketId,
+                'jira_link' => Constants::JIRA_LINK . $ticketId,
+                'csrf_hash' => csrf_hash(),
+                'comment' => $commentData
+            ]);
+        }
+
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => 'Ticket ID remains unchanged.',
+            'csrf_hash' => csrf_hash()
+        ]);
+    }
+
     public function bulkStatus()
     {
         $model = new TasksModel();

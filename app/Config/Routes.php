@@ -86,6 +86,7 @@ $routes->group('tasks', function ($routes) {
     $routes->post('update-status/(:num)', 'TasksController::updateStatus/$1');
     $routes->post('update-assignee/(:num)', 'TasksController::updateAssignee/$1');
     $routes->post('update-priority/(:num)', 'TasksController::updatePriority/$1');
+    $routes->post('update-ticket-id/(:num)', 'TasksController::updateTicketId/$1');
     $routes->post('bulk-status', 'TasksController::bulkStatus');
     $routes->post('bulk-project', 'TasksController::bulkProject');
     $routes->post('bulk-assignee', 'TasksController::bulkAssignee');
