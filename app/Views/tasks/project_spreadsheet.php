@@ -302,13 +302,21 @@ Project: <?= esc($project_name) ?>
 
 <div class="container-fluid px-0">
     <!-- Page Header -->
-    <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
-        <a href="<?= site_url('tasks') ?>" class="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; padding: 0;" title="Back to Tasks">
-            <i class="bi bi-arrow-left fs-5"></i>
-        </a>
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom flex-wrap gap-3">
+        <div class="d-flex align-items-center gap-3">
+            <a href="<?= site_url('tasks') ?>" class="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; padding: 0; display: inline-flex;" title="Back to Tasks">
+                <i class="bi bi-arrow-left fs-5"></i>
+            </a>
+            <div>
+                <h2 class="mb-0 fw-bold">Project: <?= esc($project_name) ?></h2>
+                <p class="text-secondary small mb-0">Spreadsheet-style task board listing all logs and latest updates for this project.</p>
+            </div>
+        </div>
         <div>
-            <h2 class="mb-0 fw-bold">Project: <?= esc($project_name) ?></h2>
-            <p class="text-secondary small mb-0">Spreadsheet-style task board listing all logs and latest updates for this project.</p>
+            <a href="<?= site_url('tasks/create?project=' . rawurlencode($project_name)) ?>" title="Create a new task for this project" class="apple-btn-primary btn-sm px-3 text-decoration-none d-inline-flex align-items-center gap-1.5 py-2" style="border-radius: 8px;">
+                <i class="bi bi-plus-lg"></i>
+                <span>Add Task</span>
+            </a>
         </div>
     </div>
 

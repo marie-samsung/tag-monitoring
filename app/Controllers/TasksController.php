@@ -67,6 +67,14 @@ class TasksController extends BaseController
                 }
             }
 
+            $projectGet = $this->request->getGet('project');
+            if (!empty($projectGet)) {
+                if ($log === null) {
+                    $log = [];
+                }
+                $log['project'] = trim($projectGet);
+            }
+
             $distinctProjects = $model->select('DISTINCT(project) as project_name')->orderBy('project', 'ASC')->findAll();
             $projectNames = array_column($distinctProjects, 'project_name');
             return view('tasks/create', [
@@ -76,7 +84,7 @@ class TasksController extends BaseController
         }
 
         $post = $this->request->getPost();
-        $assigneeId = $post['assignee'] ?? $log['assignee'];
+        $assigneeId = $post['assignee'] ?? null;
 
         $insertData = [
             'title'           => trim($post['title']),
@@ -101,8 +109,14 @@ class TasksController extends BaseController
 
         $model->insert($insertData);
 
+        $referer = $this->request->getServer('HTTP_REFERER');
+        $redirectUrl = '/tasks';
+        if ($referer && strpos($referer, '/tasks/project/') !== false) {
+            $redirectUrl = '/tasks/project/' . rawurlencode($insertData['project']);
+        }
+
         return redirect()
-            ->to('/tasks')
+            ->to($redirectUrl)
             ->with('success', "Activity log '{$insertData['title']}' created successfully.");
     }
 
