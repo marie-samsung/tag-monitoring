@@ -325,7 +325,10 @@ Tags Renewal: <?= $siteCode ?? null ?>
                 <a href="<?= site_url('tags') ?>" title="Cancel" class="apple-btn-secondary px-4 text-decoration-none">Cancel</a>
                 <button type="submit" 
                     class="apple-btn-primary px-4"
-                    onclick="return confirm('Are you sure you want to renew these tags?');">
+                    data-confirm="Are you sure you want to renew these tags?"
+                    data-confirm-title="Renew Tags"
+                    data-confirm-type="warning"
+                    data-confirm-text="Renew">
                     Renew Tags
                 </button>
             </div>

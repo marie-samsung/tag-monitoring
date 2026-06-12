@@ -872,7 +872,9 @@ Martech TMS
                                             <li><hr class="dropdown-divider"></li>
                                             <li>
                                                 <a class="dropdown-item py-2 text-success" href="<?= site_url('tags/verify/' . $tag['id']) ?>"
-                                                   onclick="return confirm('Have you verified the end date matches in AL?');"
+                                                   data-confirm="Have you verified the end date matches in AL?"
+                                                   data-confirm-title="Verify Tag"
+                                                   data-confirm-type="success"
                                                    style="font-size: 0.85rem; font-weight: 500;">
                                                     <i class="bi bi-check-circle-fill text-success me-2"></i>Verify Tag
                                                 </a>
@@ -903,7 +905,9 @@ Martech TMS
                                             <li><hr class="dropdown-divider"></li>
                                             <li>
                                                 <a class="dropdown-item py-2 text-success" href="<?= site_url('tags/verify/' . $tag['id']) ?>"
-                                                   onclick="return confirm('Have you verified the end date matches in AL?');"
+                                                   data-confirm="Have you verified the end date matches in AL?"
+                                                   data-confirm-title="Verify Tag"
+                                                   data-confirm-type="success"
                                                    style="font-weight: 500;">
                                                     <i class="bi bi-check-circle-fill text-success me-2"></i>Verify Tag
                                                 </a>
@@ -923,7 +927,7 @@ Martech TMS
                                         <i class="bi bi-pencil-fill"></i>
                                     </a>
                                     <?php if ($tag['status'] == Constants::STATUS_PENDING_VERIFICATION): ?>
-                                        <a href="<?= site_url('tags/verify/' . $tag['id']) ?>" class="hover-action-btn btn-verify" data-bs-toggle="tooltip" data-bs-placement="top" title="Verify Tag" onclick="return confirm('Have you verified the end date matches in AL?');">
+                                        <a href="<?= site_url('tags/verify/' . $tag['id']) ?>" class="hover-action-btn btn-verify" data-bs-toggle="tooltip" data-bs-placement="top" title="Verify Tag" data-confirm="Have you verified the end date matches in AL?" data-confirm-title="Verify Tag" data-confirm-type="success">
                                             <i class="bi bi-check-circle-fill"></i>
                                         </a>
                                     <?php endif; ?>
@@ -1196,10 +1200,17 @@ document.addEventListener('DOMContentLoaded', function () {
         if (checkedPending.length === 0) return;
         
         const msg = `Have you verified the end date matches in AL for the selected ${checkedPending.length} tag(s)?`;
-        if (confirm(msg)) {
-            const url = "<?= site_url('tags/verify-multiple') ?>?tags=" + checkedPending.join(',');
-            window.location.href = url;
-        }
+        window.themeConfirm({
+            title: 'Verify Tags',
+            message: msg,
+            confirmText: 'Verify',
+            type: 'success'
+        }).then((confirmed) => {
+            if (confirmed) {
+                const url = "<?= site_url('tags/verify-multiple') ?>?tags=" + checkedPending.join(',');
+                window.location.href = url;
+            }
+        });
     };
 
     if (btnRenew) btnRenew.addEventListener('click', handleRenew);

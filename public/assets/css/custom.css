@@ -894,3 +894,76 @@ table.file-table th:nth-child(3) {
         margin-top: 0 !important;
     }
 }
+
+/* ==========================================
+   9. Custom Theme Dialogs (Alert/Confirm)
+   ========================================== */
+.theme-dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(29, 29, 31, 0.15);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition-fast);
+}
+
+.theme-dialog-overlay.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.theme-dialog-card {
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border-radius: 20px;
+    padding: 28px 24px;
+    width: 90%;
+    max-width: 380px;
+    text-align: center;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    transform: scale(0.9) translateY(10px);
+    opacity: 0;
+    transition: transform var(--transition-medium), opacity var(--transition-medium);
+}
+
+.theme-dialog-overlay.show .theme-dialog-card {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+}
+
+.theme-dialog-icon {
+    font-size: 2.75rem;
+    line-height: 1;
+    margin-bottom: 12px;
+}
+
+.theme-dialog-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--color-text-base);
+    margin-bottom: 8px;
+}
+
+.theme-dialog-message {
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+    margin-bottom: 24px;
+}
+
+.theme-dialog-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}

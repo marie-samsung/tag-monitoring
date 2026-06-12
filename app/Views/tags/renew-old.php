@@ -102,7 +102,10 @@
                 <a href="<?= site_url('tags') ?>" title="Cancel" class="apple-btn-secondary btn-sm">Cancel</a>
                 <button type="submit" 
                     class="apple-btn-primary btn-sm"
-                    onclick="return confirm('Have you updated these tags in AL?');">
+                    data-confirm="Have you updated these tags in AL?"
+                    data-confirm-title="Confirm Update"
+                    data-confirm-type="warning"
+                    data-confirm-text="Renew">
                     Renew Tags
                 </button>
             </div>
