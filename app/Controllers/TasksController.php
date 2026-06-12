@@ -246,6 +246,7 @@ class TasksController extends BaseController
 
     public function comment()
     {
+        helper('custom_functions');
         $commentsModel = new TaskCommentsModel();
         $post = $this->request->getPost();
 
@@ -260,9 +261,11 @@ class TasksController extends BaseController
             return redirect()->back()->with('error', 'No comment data provided.');
         }
 
+        $cleanComment = clean_html_comment($post['comment'] ?? '');
+
         $insertedId = $commentsModel->insert([
             'log_id' => $post['log_id'],
-            'comment' => $post['comment'],
+            'comment' => $cleanComment,
             'commented_by' => $post['commented_by'],
             'type' => Constants::COMMENT_TYPE_COMMENT,
         ]);

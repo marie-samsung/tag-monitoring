@@ -171,6 +171,54 @@
 .remove-related-tag-btn:active i {
     transform: scale(0.9);
 }
+
+/* Comment Rich Text Styles */
+.comment-item table {
+    width: 100% !important;
+    border-collapse: collapse;
+    margin: 10px 0;
+    background: #fff;
+}
+.comment-item table th, 
+.comment-item table td {
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    text-align: left;
+}
+.comment-item table th {
+    background-color: #f1f3f5;
+    font-weight: 600;
+}
+.comment-item ul, 
+.comment-item ol {
+    padding-left: 20px;
+    margin-bottom: 10px;
+}
+.comment-item ul {
+    list-style-type: disc;
+}
+.comment-item ol {
+    list-style-type: decimal;
+}
+.comment-item p {
+    margin-bottom: 8px;
+}
+.comment-item p:last-child {
+    margin-bottom: 0;
+}
+/* Style adjustments for Summernote Lite inside apple-card */
+.note-editor.note-frame {
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    border-radius: 8px !important;
+    overflow: hidden;
+    background: #fff;
+}
+.note-toolbar {
+    background-color: #f5f5f7 !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+    padding: 6px 8px !important;
+}
 </style>
 
 <div class="container-fluid px-0">
@@ -313,7 +361,7 @@
                 <div class="mb-3 pb-2 border-bottom border-light">
                     <span class="d-block text-muted fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Description</span>
                     <div class="mt-1 task-description" style="font-size: 0.9rem; line-height: 1.5; color: var(--color-text-base);">
-                        <?= $log['description'] ?: '—' ?>
+                        <?= clean_html_comment($log['description'] ?: '—') ?>
                     </div>
                 </div>
             <?php endif; ?>
@@ -491,7 +539,7 @@
                                     </span>
                                     <span class="text-muted" style="font-size: 0.75rem;"><?= esc(format_comment_time($comment['created_at'])) ?></span>
                                 </div>
-                                <div style="font-size: 0.875rem; color: var(--color-text-base);"><?= $comment['comment'] ?></div>
+                                <div style="font-size: 0.875rem; color: var(--color-text-base);"><?= clean_html_comment($comment['comment']) ?></div>
                             </div>
                         <?php else: ?>
                             <div class="mb-3 p-3 rounded-3 comment-item" style="background: var(--color-alert-info-bg); border: 1px solid rgba(0, 113, 227, 0.08); display: block;">
@@ -501,7 +549,7 @@
                                     </span>
                                     <span class="text-muted" style="font-size: 0.75rem;"><?= esc(format_comment_time($comment['created_at'])) ?></span>
                                 </div>
-                                <div style="font-size: 0.875rem; color: var(--color-text-base);"><?= $comment['comment'] ?></div>
+                                <div style="font-size: 0.875rem; color: var(--color-text-base);"><?= clean_html_comment($comment['comment']) ?></div>
                             </div>
                         <?php endif; ?>
                     <?php endforeach; ?>
@@ -558,6 +606,9 @@
                 if (textarea && !comment.is_system) {
                     textarea.value = '';
                     textarea.style.height = 'auto';
+                    if ($('#comment').data('summernote')) {
+                        $('#comment').summernote('reset');
+                    }
                 }
                 
                 // Hide empty states
@@ -772,12 +823,20 @@
                 });
             });
 
-            // Auto-resize handler for modern textarea
-            var textarea = document.getElementById('comment');
-            if (textarea) {
-                textarea.addEventListener('input', function() {
-                    this.style.height = 'auto';
-                    this.style.height = (this.scrollHeight) + 'px';
+            // Initialize Summernote on comments textarea
+            if ($('#comment').length > 0) {
+                $('#comment').summernote({
+                    placeholder: 'Write an update...',
+                    height: 150,
+                    toolbar: [
+                        ['style', ['bold', 'italic', 'underline', 'clear']],
+                        ['font', ['strikethrough']],
+                        ['color', ['color']],
+                        ['para', ['ul', 'ol', 'paragraph']],
+                        ['table', ['table']],
+                        ['insert', ['link']],
+                        ['view', ['fullscreen', 'codeview', 'help']]
+                    ]
                 });
             }
 
@@ -786,8 +845,17 @@
                 var form = $(this);
                 var url = form.attr('action');
                 
-                // Ensure textarea is not empty
-                if ($.trim($('#comment').val()) === '') {
+                // Sync Summernote content to the original textarea
+                if ($('#comment').data('summernote')) {
+                    $('#comment').val($('#comment').summernote('code'));
+                }
+                
+                // Ensure textarea is not empty (ignoring empty HTML elements like <p><br></p>)
+                var commentVal = $('#comment').val();
+                var plainText = $('<div>').html(commentVal).text().trim();
+                var hasMedia = $('<div>').html(commentVal).find('img, table, iframe').length > 0;
+                
+                if (plainText === '' && !hasMedia) {
                     alert('Please write an update before posting.');
                     return;
                 }
@@ -809,6 +877,9 @@
                         if (response.success) {
                             // Prepend manual comment
                             prependComment(response.comment);
+                            if ($('#comment').data('summernote')) {
+                                $('#comment').summernote('reset');
+                            }
                         } else {
                             alert(response.message || 'An error occurred.');
                         }
