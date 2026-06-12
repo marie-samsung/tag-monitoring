@@ -212,7 +212,7 @@
 
 <div class="row my-3 g-3">
     <!-- LOG DETAILS & ATTACHMENTS -->
-    <div class="col-lg-8 col-md-12 mx-auto">
+    <div class="col-lg-6 col-md-12">
         <div class="apple-card p-4 h-100">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h5 class="fw-bold mb-0 text-secondary" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;">Task Details</h5>
