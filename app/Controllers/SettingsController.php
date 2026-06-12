@@ -52,11 +52,15 @@ class SettingsController extends BaseController
             return strcmp($b['filename'], $a['filename']);
         });
 
+        $backupHandler = new \App\Libraries\BackupHandler();
+        $autoBackupSettings = $backupHandler->getSettings();
+
         return view('settings/index', [
             'users' => $users,
             'roles' => $roles,
             'rolePermissions' => $rolePermissions,
             'backups' => $backups,
+            'autoBackupSettings' => $autoBackupSettings,
         ]);
     }
 
@@ -250,25 +254,44 @@ class SettingsController extends BaseController
      */
     public function createBackup()
     {
-        $db = \Config\Database::connect();
-        
-        // Ensure backups folder exists
-        $backupDir = WRITEPATH . 'backups/';
-        if (!is_dir($backupDir)) {
-            mkdir($backupDir, 0777, true);
+        $backupHandler = new \App\Libraries\BackupHandler();
+        $result = $backupHandler->runBackup(true);
+
+        session()->setFlashdata('active_tab', 'backups');
+
+        if ($result['success']) {
+            return redirect()->to(site_url('settings'))->with('success', $result['message']);
         }
 
-        $filename = 'backup_' . date('Y-m-d_H-i-s') . '_' . time() . '.sql';
-        $filePath = $backupDir . $filename;
+        return redirect()->to(site_url('settings'))->with('error', $result['message']);
+    }
 
-        // Perform memory-safe pure PHP SQL export
-        $sql = $this->exportDatabase($db);
+    /**
+     * Save auto backup settings.
+     */
+    public function saveBackupSettings()
+    {
+        $backupHandler = new \App\Libraries\BackupHandler();
 
-        if (file_put_contents($filePath, $sql) === false) {
-            return redirect()->to(site_url('settings'))->with('error', 'Could not write backup file.');
+        $enabled = $this->request->getPost('enabled') === '1';
+        $retentionCount = (int)$this->request->getPost('retention_count');
+
+        if ($retentionCount < 1) {
+            session()->setFlashdata('active_tab', 'backups');
+            return redirect()->to(site_url('settings'))->with('error', 'Retention count must be at least 1.');
         }
 
-        return redirect()->to(site_url('settings'))->with('success', 'Database backup "' . esc($filename) . '" created successfully.');
+        $settings = $backupHandler->getSettings();
+        $settings['enabled'] = $enabled;
+        $settings['retention_count'] = $retentionCount;
+
+        session()->setFlashdata('active_tab', 'backups');
+
+        if ($backupHandler->saveSettings($settings)) {
+            return redirect()->to(site_url('settings'))->with('success', 'Daily auto backup settings saved successfully.');
+        }
+
+        return redirect()->to(site_url('settings'))->with('error', 'Failed to save auto backup settings.');
     }
 
     /**

@@ -106,6 +106,7 @@ $routes->group('settings', function ($routes) {
     $routes->post('roles/update/(:num)', 'SettingsController::updateRole/$1');
     $routes->post('permissions/save', 'SettingsController::savePermissions');
     $routes->post('backup/create', 'SettingsController::createBackup');
+    $routes->post('backup/settings', 'SettingsController::saveBackupSettings');
     $routes->get('backup/download/(:any)', 'SettingsController::downloadBackup/$1');
     $routes->post('backup/delete/(:any)', 'SettingsController::deleteBackup/$1');
     $routes->post('backup/restore/(:any)', 'SettingsController::restoreBackup/$1');

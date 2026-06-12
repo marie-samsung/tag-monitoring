@@ -327,21 +327,66 @@ foreach ($roles as $r) {
     <!-- TAB 3: SYSTEM BACKUPS -->
     <!-- ============================================== -->
     <div class="settings-tab-content d-none" id="tab-backups">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h5 class="fw-bold mb-1"><i class="bi bi-cloud-upload-fill text-success me-2"></i>Database Backups &amp; Snapshots</h5>
-                <p class="text-secondary small mb-0">Create database restoration snapshots. Keep copies locally or restore system state.</p>
+        <div class="row mb-4">
+            <!-- Daily Auto Backup Configuration Card -->
+            <div class="col-lg-6 col-md-12 mb-3">
+                <div class="apple-settings-card h-100" style="border-left: 4px solid var(--color-primary);">
+                    <h5 class="fw-bold mb-2"><i class="bi bi-clock-history text-primary me-2"></i>Daily Auto Backup Settings</h5>
+                    <p class="text-secondary small mb-4">Automatically backup the database once a day. Backups are stored locally and pruned based on your retention limit.</p>
+                    
+                    <form action="<?= site_url('settings/backup/settings') ?>" method="post">
+                        <?= csrf_field() ?>
+                        
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input permission-checkbox" type="checkbox" name="enabled" id="autoBackupEnabled" value="1" <?= $autoBackupSettings['enabled'] ? 'checked' : '' ?>>
+                            <label class="form-check-label fw-semibold text-secondary ms-2" for="autoBackupEnabled">Enable Daily Auto Backup</label>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-secondary mb-1">Retention Count (Files)</label>
+                            <input type="number" name="retention_count" class="form-control form-control-xs" style="max-width: 120px;" min="1" max="100" value="<?= esc($autoBackupSettings['retention_count']) ?>" required>
+                            <small class="text-muted d-block mt-1">Keep only the last N backup files. Older backups will be deleted automatically.</small>
+                        </div>
+                        
+                        <div class="bg-light p-3 rounded-3 mb-4" style="font-size: 0.82rem;">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="text-secondary">Last Auto-Backup:</span>
+                                <span class="fw-semibold text-dark font-monospace"><?= esc($autoBackupSettings['last_backup'] ?? 'Never run') ?></span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-start">
+                                <span class="text-secondary">Status Log:</span>
+                                <span class="fw-semibold text-end font-monospace text-secondary" style="max-width: 70%; word-break: break-all;"><?= esc($autoBackupSettings['last_status'] ?? 'Never run') ?></span>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="apple-btn-primary btn-action-hover w-100">
+                            <i class="bi bi-save2 me-1"></i> Save Backup Settings
+                        </button>
+                    </form>
+                </div>
             </div>
-            
-            <form action="<?= site_url('settings/backup/create') ?>" method="post">
-                <?= csrf_field() ?>
-                <button type="submit" class="apple-btn-primary btn-action-hover" style="background-color: #198754; border-color: #198754;">
-                    <i class="bi bi-database-add me-1"></i> Create Database Backup
-                </button>
-            </form>
+
+            <!-- Manual Snapshot Card -->
+            <div class="col-lg-6 col-md-12 mb-3">
+                <div class="apple-settings-card h-100 d-flex flex-column justify-content-between" style="border-left: 4px solid #198754;">
+                    <div>
+                        <h5 class="fw-bold mb-2"><i class="bi bi-cloud-upload-fill text-success me-2"></i>Database Snapshots &amp; Backups</h5>
+                        <p class="text-secondary small mb-3">Create database restoration snapshots. Keep copies locally, download them for safe keeping, or restore system state.</p>
+                        <p class="text-secondary small mb-0">Manual backups also respect the retention limit and will trigger automatic pruning of older files.</p>
+                    </div>
+                    
+                    <form action="<?= site_url('settings/backup/create') ?>" method="post" class="mt-4">
+                        <?= csrf_field() ?>
+                        <button type="submit" class="apple-btn-primary btn-action-hover w-100" style="background-color: #198754; border-color: #198754;">
+                            <i class="bi bi-database-add me-1"></i> Create Manual Backup
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
 
         <div class="apple-settings-card table-responsive">
+            <h6 class="fw-bold mb-3"><i class="bi bi-list-task me-2 text-secondary"></i>Existing Backup Files</h6>
             <table class="table table-hover align-middle mb-0">
                 <thead>
                     <tr style="border-bottom: 2px solid var(--color-border-subtle);">
