@@ -112,15 +112,20 @@ class AuthController extends BaseController
             if ($user && password_verify($password, $user['password'])) {
                 // Determine user role and permissions
                 $userId = (int)$user['id'];
-                $roleId = Constants::USER_ACCESS_LEVELS[$userId] ?? null;
+                $roleId = isset($user['role_id']) && $user['role_id'] !== null ? (int)$user['role_id'] : null;
                 if ($roleId === null) {
-                    if ((int)$user['account_type'] === 1) {
-                        $roleId = Constants::USER_ROLE_ADMIN;
-                    } else {
-                        $roleId = Constants::USER_ROLE_MEDIA_TAGGING;
+                    $roleId = Constants::USER_ACCESS_LEVELS[$userId] ?? null;
+                    if ($roleId === null) {
+                        if ((int)$user['account_type'] === 1) {
+                            $roleId = Constants::USER_ROLE_ADMIN;
+                        } else {
+                            $roleId = Constants::USER_ROLE_MEDIA_TAGGING;
+                        }
                     }
                 }
-                $roleName = Constants::USER_ROLES[$roleId] ?? 'Unknown';
+                $db = \Config\Database::connect();
+                $roleRow = $db->table('roles')->select('name')->where('id', $roleId)->get()->getRowArray();
+                $roleName = $roleRow ? $roleRow['name'] : (Constants::USER_ROLES[$roleId] ?? 'Unknown');
                 $permissions = Constants::USER_ROLES_ACCESS[$roleId] ?? [];
 
                 // Set session variables

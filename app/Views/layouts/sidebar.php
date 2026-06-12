@@ -156,7 +156,43 @@ foreach ($overflowItems as $item) {
 </nav> -->
 
 
-<div class="d-flex justify-content-between align-items-center w-100 px-4 gap-4 py-2">
+<style>
+    /* Responsive Navigation Header styling */
+    @media (max-width: 991px) {
+        .apple-nav-wrapper {
+            flex-direction: column;
+            gap: 16px !important;
+            padding: 16px !important;
+            text-align: center;
+        }
+        .apple-nav-wrapper > div {
+            justify-content: center !important;
+        }
+        .apple-segmented-control {
+            flex-wrap: wrap !important;
+            justify-content: center !important;
+            width: 100% !important;
+        }
+        .apple-segmented-control .nav-item {
+            flex: 1 1 auto;
+            text-align: center;
+        }
+        .sliding-glass-pill {
+            display: none !important; /* Hide sliding pill on wrap to avoid glitches */
+        }
+        .apple-segmented-control .nav-link.active {
+            background-color: var(--color-primary) !important;
+            color: #fff !important;
+            border-radius: 8px;
+        }
+        .user-profile-section {
+            width: 100%;
+            justify-content: center !important;
+        }
+    }
+</style>
+
+<div class="d-flex justify-content-between align-items-center w-100 px-4 gap-4 py-2 apple-nav-wrapper">
     <!-- Branding logo (aligned to the left) -->
     <div class="d-flex align-items-center gap-2" style="flex: 1; min-width: fit-content;">
         <a href="<?= site_url('/') ?>" class="fw-bold text-decoration-none apple-link-dark d-flex align-items-center gap-2" style="font-size: 1.1rem; letter-spacing: -0.5px;">
@@ -225,13 +261,17 @@ foreach ($overflowItems as $item) {
         <?php endif; ?>
     </ul>
 
-    <!-- Logged in User Profile Info & Logout Button (aligned to the right) -->
     <div class="d-flex align-items-center justify-content-end gap-3" style="flex: 1; min-width: fit-content;">
         <?php if (session()->get('isLoggedIn')): ?>
             <span class="text-secondary small d-none d-md-inline-block">
                 <i class="bi bi-person-circle text-primary"></i> 
                 <strong><?= esc(session()->get('user_name')) ?></strong>
             </span>
+            <?php if (session()->get('permissions')['settings'] ?? false): ?>
+                <a href="<?= site_url('settings') ?>" class="apple-btn-secondary btn-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; padding: 0; border-radius: 8px; <?= $segment === 'settings' ? 'border: 1px solid var(--color-primary); color: var(--color-primary); background: var(--color-primary-subtle);' : 'color: var(--color-text-secondary);' ?>" title="System Settings" data-bs-toggle="tooltip" data-bs-placement="bottom">
+                    <i class="bi bi-gear-fill" style="font-size: 1rem;"></i>
+                </a>
+            <?php endif; ?>
             <a href="<?= site_url('logout') ?>" class="apple-btn-secondary btn-sm text-danger d-flex align-items-center gap-1" style="padding: 4px 12px; font-size: 0.8rem; border-radius: 8px;">
                 <i class="bi bi-box-arrow-right"></i> Logout
             </a>

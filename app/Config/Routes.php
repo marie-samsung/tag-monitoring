@@ -93,3 +93,17 @@ $routes->group('tasks', function ($routes) {
     $routes->get('project-export/excel/(:any)', 'TasksController::exportProjectExcel/$1');
     $routes->get('project-export/pdf/(:any)', 'TasksController::exportProjectPDF/$1');
 });
+
+$routes->group('settings', function ($routes) {
+    $routes->get('/', 'SettingsController::index');
+    $routes->post('user/create', 'SettingsController::createUser');
+    $routes->post('user/update/(:num)', 'SettingsController::updateUser/$1');
+    $routes->post('user/delete/(:num)', 'SettingsController::deleteUser/$1');
+    $routes->post('roles/create', 'SettingsController::createRole');
+    $routes->post('roles/update/(:num)', 'SettingsController::updateRole/$1');
+    $routes->post('permissions/save', 'SettingsController::savePermissions');
+    $routes->post('backup/create', 'SettingsController::createBackup');
+    $routes->get('backup/download/(:any)', 'SettingsController::downloadBackup/$1');
+    $routes->post('backup/delete/(:any)', 'SettingsController::deleteBackup/$1');
+    $routes->post('backup/restore/(:any)', 'SettingsController::restoreBackup/$1');
+});

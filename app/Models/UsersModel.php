@@ -14,6 +14,8 @@ class UsersModel extends Model
         'username',
         'password',
         'account_type', // Refer to 'Constants' model for values
+        'role_id',
+        'is_active',
     ];
 
     protected $useTimestamps = true;

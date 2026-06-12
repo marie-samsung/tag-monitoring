@@ -248,7 +248,7 @@ class Constants
 
     public const USER_ACCESS_LEVELS = [
         self::USER_MARIE => self::USER_ROLE_MEDIA_TAGGING,
-        self::USER_LUCKY => self::USER_ROLE_MEDIA_TAGGING,
+        self::USER_LUCKY => self::USER_ROLE_ADMIN,
         self::USER_GEORGE => self::USER_ROLE_MEDIA_TAGGING,
         self::USER_KHRISTINE => self::USER_ROLE_MARTECH,
         self::USER_JANITHA => self::USER_ROLE_MARTECH,
@@ -273,16 +273,27 @@ class Constants
             'vendors' => true,
             'jira' => true,
             'tasks' => true,
+            'settings' => false,
         ],
         self::USER_ROLE_MARTECH => [
             'dashboard' => true,
+            'tags' => false,
+            'tag-requests' => false,
+            'properties' => false,
+            'vendors' => false,
+            'jira' => false,
             'tasks' => true,
+            'settings' => false,
         ],
         self::USER_ROLE_ADMIN => [
             'dashboard' => true,
             'tags' => true,
+            'tag-requests' => true,
+            'properties' => true,
+            'vendors' => true,
             'jira' => true,
             'tasks' => true,
+            'settings' => true,
         ],
     ];
 
