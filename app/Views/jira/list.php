@@ -284,6 +284,7 @@ $hasActiveFilters = ($activeFiltersCount > 0);
                             </a>
                         </th>
                         <th class="form-label-sm fw-semibold text-dark">Comments</th>
+                        <th class="form-label-sm fw-semibold text-dark">Status</th>
                         <th class="form-label-sm fw-semibold">
                             <a href="<?= getSortUrl('created_at', $currentSortBy, $currentSortDir) ?>" class="text-decoration-none text-dark d-inline-flex align-items-center">
                                 Created At <?= getSortIcon('created_at', $currentSortBy, $currentSortDir) ?>
@@ -295,7 +296,7 @@ $hasActiveFilters = ($activeFiltersCount > 0);
                 <tbody>
                     <?php if (empty($jiraTickets)): ?>
                         <tr>
-                            <td colspan="8" class="text-center py-5 text-muted">
+                            <td colspan="9" class="text-center py-5 text-muted">
                                 <i class="bi bi-inbox fs-2 mb-2 d-block text-secondary" style="opacity: 0.5;"></i>
                                 <span class="fw-semibold">No JIRA tickets found</span>
                                 <p class="small text-secondary mb-0">Try adjusting your filters or search keywords.</p>
@@ -325,8 +326,19 @@ $hasActiveFilters = ($activeFiltersCount > 0);
                                     foreach ($ticketTags as $tagId) {
                                         $tagInfo = $tagModel->find($tagId);
                                         if ($tagInfo) {
-                                            $ticketTagsList[$tagInfo['id']] = $tagInfo['name'];
+                                            $ticketTagsList[$tagInfo['id']] = $tagInfo;
                                         }
+                                    }
+                                }
+
+                                // Get status from one of the related tags
+                                $relatedTagStatus = null;
+                                if ($tag) {
+                                    $relatedTagStatus = $tag['status'];
+                                } elseif (!empty($ticketTagsList)) {
+                                    $firstTag = reset($ticketTagsList);
+                                    if ($firstTag) {
+                                        $relatedTagStatus = $firstTag['status'];
                                     }
                                 }
                         ?>
@@ -387,11 +399,21 @@ $hasActiveFilters = ($activeFiltersCount > 0);
                                 <td class="form-label-sm">
                                     <?php if ($ticketTagsList): ?>
 
-                                        <?php foreach ($ticketTagsList as $id => $name): ?>
-                                            <a href="<?= site_url('tags/view/' . $id) ?>" class="apple-link-dark"><?= esc($name) ?></a><br>
+                                        <?php foreach ($ticketTagsList as $id => $tagObj): ?>
+                                            <a href="<?= site_url('tags/view/' . $id) ?>" class="apple-link-dark"><?= esc($tagObj['name']) ?></a><br>
                                         <?php endforeach; ?>
                                     <?php else: ?>
                                         <?= esc($ticket['comments']) ?>
+                                    <?php endif; ?>
+                                </td>
+                                <!-- STATUS -->
+                                <td>
+                                    <?php if ($relatedTagStatus !== null): ?>
+                                        <span class="badge <?= status_class($relatedTagStatus) ?>">
+                                            <?= esc(Constants::STATUS[$relatedTagStatus] ?? 'Unknown') ?>
+                                        </span>
+                                    <?php else: ?>
+                                        <span class="text-muted">—</span>
                                     <?php endif; ?>
                                 </td>
                                 <td class="form-label-sm" style="width:max-content; white-space:nowrap;"><?= esc(date('d-m-Y', strtotime($ticket['created_at']))) ?></td>
