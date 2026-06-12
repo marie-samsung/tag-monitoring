@@ -30,10 +30,21 @@ Tag Request: Create
 
 <?php if (empty($tag_ids)): ?>
     <!-- #region | PART 1 - REQUEST CREATION -->
-     <div class="container">
-        <h2>Add a Tag Request</h2>    
+    <div class="container-fluid px-0">
+        <!-- Page Header -->
+        <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
+            <a href="<?= site_url('tag-requests') ?>" class="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; padding: 0;" title="Back to Requests">
+                <i class="bi bi-arrow-left fs-5"></i>
+            </a>
+            <div>
+                <h2 class="mb-0 fw-bold">Add a Tag Request</h2>
+                <p class="text-secondary small mb-0">Submit a request for tag deployment or rule validation across properties.</p>
+            </div>
+        </div>
+
         <?php if (!empty($extracted_data)): ?>
-        <div class="alert alert-info mt-3">
+        <div class="alert alert-info mb-4">
+            <i class="bi bi-info-circle-fill me-2"></i>
             Data has been extracted from the uploaded Excel file. Please review and complete the form before proceeding.
             <ul class="mb-0 mt-2">
                 <li><strong>Extracted Vendor:</strong> <?= esc($extracted_data['vendor_name']) ?></li>
@@ -50,24 +61,31 @@ Tag Request: Create
             </ul>
         </div>
         <?php endif; ?>
-    </div>
-    <form action="<?= site_url('tag-requests/create') ?>" method="post">
-        <?= csrf_field() ?>
-        <?php if (!empty($extracted_data)): ?>
-            <input type="hidden" name="background" value="<?= esc($extracted_data['background'] ?? '') ?>">
-            <input type="hidden" name="q1" value="<?= esc($extracted_data['q1'] ?? '') ?>">
-            <input type="hidden" name="q2" value="<?= esc($extracted_data['q2'] ?? '') ?>">
-            <input type="hidden" name="q3" value="<?= esc($extracted_data['q3'] ?? '') ?>">
-            <input type="hidden" name="q4" value="<?= esc($extracted_data['q4'] ?? '') ?>">
-            <input type="hidden" name="q5" value="<?= esc($extracted_data['q5'] ?? '') ?>">
-            <input type="hidden" name="excel_file_path" value="<?= esc($extracted_data['excel_file_path'] ?? '') ?>">
-            <input type="hidden" name="excel_file_name" value="<?= esc($extracted_data['excel_file_name'] ?? '') ?>">
-        <?php endif; ?>
-        <div class="container">
-            <div class="card p-3 mt-3">
-                <div class="row mb-2">
-                    <div class="col mb-2">
-                        <label class="form-label-xs text-primary">Property</label>
+
+        <form action="<?= site_url('tag-requests/create') ?>" method="post" style="max-width: 800px;">
+            <?= csrf_field() ?>
+            <?php if (!empty($extracted_data)): ?>
+                <input type="hidden" name="background" value="<?= esc($extracted_data['background'] ?? '') ?>">
+                <input type="hidden" name="q1" value="<?= esc($extracted_data['q1'] ?? '') ?>">
+                <input type="hidden" name="q2" value="<?= esc($extracted_data['q2'] ?? '') ?>">
+                <input type="hidden" name="q3" value="<?= esc($extracted_data['q3'] ?? '') ?>">
+                <input type="hidden" name="q4" value="<?= esc($extracted_data['q4'] ?? '') ?>">
+                <input type="hidden" name="q5" value="<?= esc($extracted_data['q5'] ?? '') ?>">
+                <input type="hidden" name="excel_file_path" value="<?= esc($extracted_data['excel_file_path'] ?? '') ?>">
+                <input type="hidden" name="excel_file_name" value="<?= esc($extracted_data['excel_file_name'] ?? '') ?>">
+            <?php endif; ?>
+
+            <!-- Tag Details Section -->
+            <div class="apple-card mb-4" style="background-color: var(--color-bg-base); border: 1px solid rgba(0, 0, 0, 0.05); box-shadow: none;">
+                <h5 class="mb-4 text-primary d-flex align-items-center gap-2 fw-bold">
+                    <i class="bi bi-tag-fill"></i>
+                    <span>Request Details</span>
+                </h5>
+                
+                <div class="row g-3">
+                    <!-- Property -->
+                    <div class="col-md-6">
+                        <label class="form-label-sm fw-semibold text-secondary mb-1">Property</label>
                         <select name="property_id" class="form-select searchable-select" required>
                             <?php foreach ($propertiesList as $prop): ?>
                                 <option value="<?= esc($prop['id']) ?>"
@@ -79,20 +97,20 @@ Tag Request: Create
                         </select>
                     </div>
 
-                    <div class="col">
-                        <label class="form-label-xs text-primary">Tag(s)</label>
+                    <!-- Tag(s) -->
+                    <div class="col-md-6">
+                        <label class="form-label-sm fw-semibold text-secondary mb-1">Tag(s)</label>
                         <select name="tags[]" class="form-select advanced-select" multiple required>
                         </select>
-                        <small class="form-label-xs text-muted">
-                            Tag names should start with LC-
+                        <small class="form-text text-muted" style="font-size: 0.75rem;">
+                            Tag names should start with <strong>LC-</strong>
                         </small>
                     </div>
-                </div>
-                
-                <div class="row mb-2">
-                    <div class="col">
-                        <label class="form-label-xs text-primary">Request Type</label>
-                        <select name="type" class="form-select" required>
+
+                    <!-- Request Type -->
+                    <div class="col-md-6">
+                        <label class="form-label-sm fw-semibold text-secondary mb-1">Request Type</label>
+                        <select name="type" class="form-select form-select-xs" required>
                             <?php foreach (Constants::REQUEST_TYPES as $value => $label): ?>
                                 <option value="<?= esc($value) ?>"
                                     <?= old('type', $requests['type'] ?? 1) == $value ? 'selected' : '' ?>>
@@ -101,19 +119,20 @@ Tag Request: Create
                             <?php endforeach; ?>
                         </select>
                     </div>
-
-                    <div class="col">
-                        <!-- Launch Expiry Date is automatically set to +60 days -->
-                    </div>
                 </div>
             </div>
 
-            <!-- #region | REQUESTER DETAILS -->
-            <h5 class="mt-4">Requester Details</h5>
-            <div class="card p-3">
-                <div class="row mb-2">
-                    <div class="col">
-                        <label class="form-label-xs text-primary">Organization</label>
+            <!-- Requester Details Section -->
+            <div class="apple-card mb-4" style="background-color: var(--color-bg-base); border: 1px solid rgba(0, 0, 0, 0.05); box-shadow: none;">
+                <h5 class="mb-4 text-primary d-flex align-items-center gap-2 fw-bold">
+                    <i class="bi bi-person-fill"></i>
+                    <span>Requester Details</span>
+                </h5>
+                
+                <div class="row g-3">
+                    <!-- Organization -->
+                    <div class="col-md-4">
+                        <label class="form-label-sm fw-semibold text-secondary mb-1">Organization</label>
                         <select name="requester_organization" class="form-select advanced-select">
                             <?php foreach ($organizations as $value => $label): ?>
                                 <option value="<?= esc($value) ?>"
@@ -124,29 +143,33 @@ Tag Request: Create
                         </select>
                     </div>
 
-                    <div class="col">
-                        <label for="requester_name" class="form-label-xs text-primary">Name</label>
+                    <!-- Name -->
+                    <div class="col-md-4">
+                        <label class="form-label-sm fw-semibold text-secondary mb-1" for="requester_name">Name</label>
                         <input type="text" name="requester_name" id="requester_name"
-                            class="form-control"
-                            value="<?= old('requester_name', $old['requester_name'] ?? ($extracted_data['requester_name'] ?? '')) ?>">
+                            class="form-control form-control-xs"
+                            value="<?= old('requester_name', $old['requester_name'] ?? ($extracted_data['requester_name'] ?? '')) ?>"
+                            placeholder="Requester Name">
                     </div>
 
-                    <div class="col">
-                        <label for="requester_email" class="form-label-xs text-primary">Email Address</label>
-                        <input type="text" name="requester_email" id="requester_email"
-                            class="form-control"
-                            value="<?= old('requester_email', $old['requester_email'] ?? ($extracted_data['requester_email'] ?? '')) ?>">
+                    <!-- Email Address -->
+                    <div class="col-md-4">
+                        <label class="form-label-sm fw-semibold text-secondary mb-1" for="requester_email">Email Address</label>
+                        <input type="email" name="requester_email" id="requester_email"
+                            class="form-control form-control-xs"
+                            value="<?= old('requester_email', $old['requester_email'] ?? ($extracted_data['requester_email'] ?? '')) ?>"
+                            placeholder="email@example.com">
                     </div>
                 </div>
             </div>
 
-            <div class="d-flex justify-content-end gap-2 mt-3">
-                <a href="<?= site_url('tag-requests') ?>" title="Cancel" class="apple-btn-secondary btn-sm">Cancel</a>
-                <button type="submit" class="apple-btn-primary btn-sm">Proceed</button>
+            <!-- Form Actions -->
+            <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                <a href="<?= site_url('tag-requests') ?>" title="Cancel" class="apple-btn-secondary px-4 text-decoration-none">Cancel</a>
+                <button type="submit" class="apple-btn-primary px-4">Proceed</button>
             </div>
-            <!-- #endregion -->
-        </div>
-    </form>
+        </form>
+    </div>
     <!-- #endregion -->
 
 <?php 

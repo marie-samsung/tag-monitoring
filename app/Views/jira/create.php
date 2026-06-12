@@ -7,80 +7,104 @@
     use App\Models\TagsModel;
 ?>
 
-<div class="container mb-2 d-flex justify-content-between align-items-center">
-    <h3>Add a JIRA Ticket</h3>
-    <a href="<?= Constants::JIRA_CREATE_ISSUE ?>" title="Create Issue in JIRA" class="apple-btn-secondary btn-sm" target="_blank">
-        Create Ticket on JIRA
-    </a>
+<div class="container-fluid px-0">
+    <!-- Page Header -->
+    <div class="d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom">
+        <div class="d-flex align-items-center gap-3">
+            <a href="<?= site_url('jira') ?>" class="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; padding: 0;" title="Back to JIRA History">
+                <i class="bi bi-arrow-left fs-5"></i>
+            </a>
+            <div>
+                <h2 class="mb-0 fw-bold">Add a JIRA Ticket</h2>
+                <p class="text-secondary small mb-0">Record a reference to a JIRA ticket associated with tag deployment or renewals.</p>
+            </div>
+        </div>
+        <div>
+            <a href="<?= Constants::JIRA_CREATE_ISSUE ?>" title="Create Issue in JIRA" class="apple-btn-secondary btn-sm d-flex align-items-center gap-2" target="_blank">
+                <i class="bi-plus-circle"></i> Create Ticket on JIRA
+            </a>
+        </div>
+    </div>
+
+    <?php if (isset($validation)): ?>
+        <div class="alert alert-danger mb-4">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <?= $validation->listErrors() ?>
+        </div>
+    <?php endif; ?>
+
+    <form action="<?= site_url('jira/create') ?>" method="post" enctype="multipart/form-data" style="max-width: 800px;">
+        <?= csrf_field() ?>
+
+        <!-- Ticket Details Section -->
+        <div class="apple-card mb-4" style="background-color: var(--color-bg-base); border: 1px solid rgba(0, 0, 0, 0.05); box-shadow: none;">
+            <h5 class="mb-4 text-primary d-flex align-items-center gap-2 fw-bold">
+                <i class="bi bi-jira"></i>
+                <span>Ticket Details</span>
+            </h5>
+            
+            <div class="row g-3">
+                <!-- Subsidiary -->
+                <div class="col-md-4">
+                    <label class="form-label-sm fw-semibold text-secondary mb-1">Subsidiary</label>
+                    <select name="subsidiary_id" class="form-select form-select-xs" required>
+                        <?php foreach (Constants::SUBSIDIARIES as $value => $label): ?>
+                            <option value="<?= esc($value) ?>"
+                                <?= old('subsidiary_id', $tag['subsidiary_id'] ?? 1) == $value ? 'selected' : '' ?>>
+                                <?= esc($label) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <!-- Ticket ID -->
+                <div class="col-md-4">
+                    <label for="ticket_id" class="form-label-sm fw-semibold text-secondary mb-1">Ticket ID</label>
+                    <input type="text" name="ticket_id" id="ticket_id"
+                        class="form-control form-control-xs"
+                        value="<?= old('ticket_id', $old['ticket_id'] ?? '') ?>"
+                        placeholder="GTA-XXXXX"
+                        required>
+                    <small class="form-text text-muted" style="font-size: 0.75rem;">
+                        Should start with <strong>GTA-</strong>
+                    </small>
+                </div>
+
+                <!-- Type -->
+                <div class="col-md-4">
+                    <label class="form-label-sm fw-semibold text-secondary mb-1">Type</label>
+                    <select name="type" class="form-select form-select-xs" required>
+                        <?php foreach (Constants::JIRA_CREATE_TICKET_TYPES as $value => $label): ?>
+                            <option value="<?= esc($value) ?>"
+                                <?= old('type', $tag['type'] ?? 1) == $value ? 'selected' : '' ?>>
+                                <?= esc($label) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <!-- Notes -->
+                <div class="col-12">
+                    <label for="comments" class="form-label-sm fw-semibold text-secondary mb-1">Notes</label>
+                    <textarea
+                        name="comments"
+                        id="comments"
+                        class="form-control form-control-xs"
+                        rows="4"
+                        placeholder="Enter details or comments regarding the ticket..."
+                        required
+                    ><?= esc(old('comments', $tag['comments'] ?? '')) ?></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+            <a href="<?= site_url('jira') ?>" title="Cancel" class="apple-btn-secondary px-4 text-decoration-none">Cancel</a>
+            <button type="submit" class="apple-btn-primary px-4">Create Ticket</button>
+        </div>
+    </form>
 </div>
-
-<?php if (isset($validation)): ?>
-    <div class="alert alert-danger">
-        <?= $validation->listErrors() ?>
-    </div>
-<?php endif; ?>
-
-<form action="<?= site_url('jira/create') ?>" method="post" enctype="multipart/form-data">
-    <?= csrf_field() ?>
-
-    <div class="container card p-3">
-        <div class="row mb-2">
-            <div class="col">
-                <label class="form-label-xs text-primary">Subsidiary</label>
-                <select name="subsidiary_id" class="form-select" required>
-                    <?php foreach (Constants::SUBSIDIARIES as $value => $label): ?>
-                        <option value="<?= esc($value) ?>"
-                            <?= old('subsidiary_id', $tag['subsidiary_id'] ?? 1) == $value ? 'selected' : '' ?>>
-                            <?= esc($label) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-
-            <div class="col mb-2">
-                <label for="ticket_id" class="form-label-xs text-primary">ID</label>
-                <input type="text" name="ticket_id" id="ticket_id"
-                    class="form-control"
-                    value="<?= old('ticket_id', $old['ticket_id'] ?? '') ?>"
-                    required>
-                <small class="form-label-xs text-muted">
-                    Ticket ID should start with GTA-
-                </small>
-            </div>
-
-            <div class="col">
-                <label class="form-label-xs text-primary">Type</label>
-                <select name="type" class="form-select" required>
-                    <?php foreach (Constants::JIRA_CREATE_TICKET_TYPES as $value => $label): ?>
-                        <option value="<?= esc($value) ?>"
-                            <?= old('type', $tag['type'] ?? 1) == $value ? 'selected' : '' ?>>
-                            <?= esc($label) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-        </div>
-
-        <div class="row mb-3">
-            <div class="col">
-                <label class="form-label-xs text-primary" for="comments">Notes</label>
-                <textarea
-                    name="comments"
-                    id="comments"
-                    class="form-control"
-                    rows="4"
-                    placeholder="Enter comments..."
-                    required
-                ><?= esc(old('comments', $tag['comments'] ?? '')) ?></textarea>
-            </div>
-        </div>
-
-        <div class="d-flex justify-content-end gap-2">
-            <a href="<?= site_url('tags') ?>" title="Cancel" class="apple-btn-secondary btn-sm">Cancel</a>
-            <button type="submit" class="apple-btn-primary btn-sm">Create</button>
-        </div>
-    </div>
-</form>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {

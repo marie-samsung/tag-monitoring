@@ -26,7 +26,7 @@ Tag: Create
         use App\Models\TagsModel;
 
         $propertiesModel = new PropertiesModel();
-        $properties = $propertiesModel->Options();
+        $propertiesList = $propertiesModel->select('id, name, is_shop')->findAll();
 
         $vendorsModel = new VendorsModel();
         $vendors = $vendorsModel->Options();
@@ -60,10 +60,11 @@ Tag: Create
                 <div class="col-md-6">
                     <label class="form-label-sm fw-semibold text-secondary mb-1">Property</label>
                     <select name="property_id" class="form-select searchable-select" required>
-                        <?php foreach ($properties as $value => $label): ?>
-                            <option value="<?= esc($value) ?>"
-                                <?= old('property_id', $tag['property_id'] ?? '') == $value ? 'selected' : '' ?>>
-                                <?= esc($label) ?>
+                        <?php foreach ($propertiesList as $prop): ?>
+                            <option value="<?= esc($prop['id']) ?>"
+                                data-is-shop="<?= $prop['is_shop'] == Constants::YES ? 'Shop' : 'AEM' ?>"
+                                <?= old('property_id', $tag['property_id'] ?? '') == $prop['id'] ? 'selected' : '' ?>>
+                                <?= esc($prop['name']) ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
@@ -72,11 +73,13 @@ Tag: Create
                 <!-- Tag Name -->
                 <div class="col-md-6">
                     <label for="name" class="form-label-sm fw-semibold text-secondary mb-1">Tag Name</label>
-                    <input type="text" name="name" id="name"
-                        class="form-control form-control-xs"
-                        value="<?= old('name', $old['name'] ?? '') ?>"
-                        placeholder="LC-XXXX"
-                        required>
+                    <select name="name" id="name" class="form-select advanced-select" required>
+                        <?php if (old('name', $old['name'] ?? '')): ?>
+                            <option value="<?= esc(old('name', $old['name'] ?? '')) ?>" selected>
+                                <?= esc(old('name', $old['name'] ?? '')) ?>
+                            </option>
+                        <?php endif; ?>
+                    </select>
                     <small class="form-text text-muted" style="font-size: 0.75rem;">
                         Tag should start with <strong>LC-</strong>
                     </small>
@@ -154,16 +157,15 @@ Tag: Create
                 <!-- Organization -->
                 <div class="col-md-4">
                     <label class="form-label-sm fw-semibold text-secondary mb-1">Organization</label>
-                    <input type="text" name="requester_organization" id="requester_organization"
-                        class="form-control form-control-xs"
-                        list="organization-list"
-                        value="<?= esc(old('requester_organization', $tag['requester_organization'] ?? '')) ?>"
-                        placeholder="-Select-">
-                    <datalist id="organization-list">
+                    <select name="requester_organization" id="requester_organization" class="form-select advanced-select">
+                        <option value="">-Select-</option>
                         <?php foreach ($organizations as $value => $label): ?>
-                            <option value="<?= esc($label) ?>"></option>
+                            <option value="<?= esc($label) ?>"
+                                <?= old('requester_organization', $tag['requester_organization'] ?? '') == $label ? 'selected' : '' ?>>
+                                <?= esc($label) ?>
+                            </option>
                         <?php endforeach; ?>
-                    </datalist>
+                    </select>
                 </div>
 
                 <!-- Name -->
@@ -233,6 +235,50 @@ Tag: Create
                 }
                 return data.text;
             }
+        });
+
+        $('select[name="property_id"]').on('change', function() {
+            var selectedOption = $(this).find('option:selected');
+            var isShop = selectedOption.data('is-shop') || 'AEM';
+            
+            var $searchField = $('.select2-search__field');
+            if ($searchField.length) {
+                var val = $searchField.val() || '';
+                if (val.startsWith('LC-')) {
+                    var parts = val.split('-');
+                    if (parts.length > 1 && (parts[1] === 'Shop' || parts[1] === 'AEM')) {
+                        parts[1] = isShop;
+                        $searchField.val(parts.join('-')).trigger('input');
+                    }
+                }
+            }
+
+            var currentVal = $('#name').val() || '';
+            if (currentVal.startsWith('LC-')) {
+                var parts = currentVal.split('-');
+                if (parts.length > 1 && (parts[1] === 'Shop' || parts[1] === 'AEM')) {
+                    parts[1] = isShop;
+                    var newVal = parts.join('-');
+                    if ($('#name option[value="' + newVal + '"]').length === 0) {
+                        var newOption = new Option(newVal, newVal, true, true);
+                        $('#name').append(newOption).trigger('change');
+                    } else {
+                        $('#name').val(newVal).trigger('change');
+                    }
+                }
+            }
+        });
+
+        $('#name').on('select2:open', function() {
+            setTimeout(function() {
+                var $searchField = $('.select2-search__field');
+                var currentVal = $('#name').val() || '';
+                if ($searchField.length && !currentVal) {
+                    var selectedOption = $('select[name="property_id"] option:selected');
+                    var isShop = selectedOption.data('is-shop') || 'AEM';
+                    $searchField.val('LC-' + isShop + '-').trigger('input');
+                }
+            }, 50);
         });
     });
 </script>
