@@ -144,18 +144,7 @@
                 <h2 class="mb-0 fw-bold"><?= esc($log['title']) ?></h2>
                 <div class="d-flex gap-2 justify-content-start align-items-center flex-wrap mt-2">
                     <span class="badge" style="<?= random_bg_style($subsidiary) ?>" title="Subsidiary"><?= $subsidiary ?></span>
-                    <span class="badge" style="<?= random_bg_style($team) ?>" title="Team"><?= $team ?></span>
-                    <span class="badge" style="<?= random_bg_style($project) ?>" title="Project"><?= esc($project) ?></span>
                     <span class="badge" style="<?= random_bg_style($type) ?>" title="Task Type"><?= $type ?></span>
-                    <?php if (!$isAdmin): ?>
-                    <select class="badge status-select-badge <?= assignee_class($log['assignee']) ?> assignee-select" data-log-id="<?= $log['id'] ?>" title="Assigned To">
-                        <?php foreach (Constants::USERS as $val => $lbl): ?>
-                            <option value="<?= $val ?>" <?= $log['assignee'] == $val ? 'selected' : '' ?> class="bg-white text-dark text-start">
-                                <?= esc($lbl) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                    <?php endif; ?>
                     <span class="badge <?= size_class($log['size']) ?>" data-bs-toggle="tooltip" data-bs-placement="top" title="<?= esc(size_description($log['size'])) ?>" style="cursor: help;"><?= $size ?></span>
                     <select class="badge status-select-badge <?= priority_class($log['priority']) ?> priority-select" data-log-id="<?= $log['id'] ?>" title="Priority">
                         <?php foreach (Constants::PRIORITIES as $val => $lbl): ?>
@@ -164,6 +153,15 @@
                             </option>
                         <?php endforeach; ?>
                     </select>
+                    <?php if (!$isAdmin): ?>
+                        <select class="badge status-select-badge <?= assignee_class($log['assignee']) ?> assignee-select" data-log-id="<?= $log['id'] ?>" title="Assigned To">
+                            <?php foreach (Constants::USERS as $val => $lbl): ?>
+                                <option value="<?= $val ?>" <?= $log['assignee'] == $val ? 'selected' : '' ?> class="bg-white text-dark text-start">
+                                    <?= esc($lbl) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -188,7 +186,8 @@
                     <?php endforeach; ?>
                 </select>
             </div>
-            
+
+            <!-- Title -->
             <div class="mb-3 pb-2 border-bottom border-light">
                 <span class="d-block text-muted fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Title</span>
                 <div class="fw-semibold mt-1" style="font-size: 0.95rem; color: var(--color-text-base);">
@@ -196,17 +195,30 @@
                 </div>
             </div>
 
+            <!-- Type -->
             <div class="mb-3 pb-2 border-bottom border-light">
-                <span class="d-block text-muted fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Team</span>
-                <div class="fw-semibold mt-1" style="font-size: 0.95rem; color: var(--color-text-base);">
-                    <?= esc($team ?: '—') ?>
+                <span class="d-block text-muted fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">TASK TYPE</span>
+                <div class="fw-semibold mt-1 badge" style="<?= random_bg_style($type) ?>">
+                    <?= esc($type) ?>
+                </div>
+            </div>
+
+            <!-- Size -->
+            <div class="mb-3 pb-2 border-bottom border-light">
+                <span class="d-block text-muted fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">T-SHIRT SIZE</span>
+                <div id="sizeValue" class="fw-semibold mt-1 badge <?= size_class($log['size']) ?>">
+                    <?= esc($size) ?>
+                </div>
+
+                <div class="form-text mt-1 text-muted fw-medium" style="font-size: 0.75rem; min-height: 1.25rem;">
+                    <i class="bi bi-info-circle-fill text-primary"></i> <?= Constants::ACTIVITY_SIZES_DESCRIPTIONS[$log['size']] ?>
                 </div>
             </div>
 
             <div class="mb-3 pb-2 border-bottom border-light">
-                <span class="d-block text-muted fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Project</span>
-                <div class="fw-semibold mt-1" style="font-size: 0.95rem; color: var(--color-text-base);">
-                    <?= esc($project ?: '—') ?>
+                <span class="d-block text-muted fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">PRIORITY</span>
+                <div class="fw-semibold mt-1 badge <?= priority_class($log['priority']) ?>">
+                    <?= esc($priority) ?>
                 </div>
             </div>
 
@@ -217,7 +229,21 @@
                 </div>
             </div>
 
+            <!-- Team -->
+            <div class="mb-3 pb-2 border-bottom border-light">
+                <span class="d-block text-muted fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Team</span>
+                <div class="fw-semibold mt-1 badge" style="<?= random_bg_style($team) ?>">
+                    <?= esc($team ?: '—') ?>
+                </div>
+            </div>
 
+            <!-- Project -->
+            <div class="mb-3 pb-2 border-bottom border-light">
+                <span class="d-block text-muted fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Project</span>
+                <div class="fw-semibold mt-1 badge" style="<?= random_bg_style($project) ?>">
+                    <?= esc($project ?: '—') ?>
+                </div>
+            </div>
 
             <div class="mb-3 pb-2 border-bottom border-light">
                 <span class="d-block text-muted fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Ticket ID</span>

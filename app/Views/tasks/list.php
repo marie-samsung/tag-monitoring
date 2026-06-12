@@ -307,18 +307,18 @@ Tasks
                     </div>
 
                     <!-- Team -->
-                    <div class="col-md-4 col-lg-3">
-                        <label class="form-label-xs fw-semibold text-secondary mb-1">Team</label>
-                        <select name="team_id" class="form-select form-select-xs" style="height: 34px; border-radius: 8px;">
-                            <option value="">All Teams</option>
-                            <?php foreach (Constants::TEAMS as $value => $label): ?>
-                                <option value="<?= esc($value) ?>"
-                                    <?= old('team_id', $filters['team_id'] ?? '') == $value ? 'selected' : '' ?>>
-                                    <?= esc($label) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
+<!--                    <div class="col-md-4 col-lg-3">-->
+<!--                        <label class="form-label-xs fw-semibold text-secondary mb-1">Team</label>-->
+<!--                        <select name="team_id" class="form-select form-select-xs" style="height: 34px; border-radius: 8px;">-->
+<!--                            <option value="">All Teams</option>-->
+<!--                            --><?php //foreach (Constants::TEAMS as $value => $label): ?>
+<!--                                <option value="--><?php //= esc($value) ?><!--"-->
+<!--                                    --><?php //= old('team_id', $filters['team_id'] ?? '') == $value ? 'selected' : '' ?>
+<!--                                    --><?php //= esc($label) ?>
+<!--                                </option>-->
+<!--                            --><?php //endforeach; ?>
+<!--                        </select>-->
+<!--                    </div>-->
 
                     <!-- Project -->
                     <div class="col-md-4 col-lg-3">
@@ -511,11 +511,11 @@ Tasks
                         Subsidiary <?= getSortIcon('subsidiary_id', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>
                     </a>
                 </th>
-                <th class="form-label-sm fw-semibold">
-                    <a href="<?= getSortUrl('team_id', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>" class="text-decoration-none text-dark d-inline-flex align-items-center gap-1">
-                        Team <?= getSortIcon('team_id', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>
-                    </a>
-                </th>
+<!--                <th class="form-label-sm fw-semibold">-->
+<!--                    <a href="--><?php //= getSortUrl('team_id', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?><!--" class="text-decoration-none text-dark d-inline-flex align-items-center gap-1">-->
+<!--                        Team --><?php //= getSortIcon('team_id', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>
+<!--                    </a>-->
+<!--                </th>-->
                 <th class="form-label-sm fw-semibold">
                     <a href="<?= getSortUrl('project', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>" class="text-decoration-none text-dark d-inline-flex align-items-center gap-1">
                         Project <?= getSortIcon('project', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>
@@ -606,11 +606,11 @@ Tasks
                                 <?= $subsidiary ?>
                             </span>
                         </td>
-                        <td>
-                            <span class="badge" style="<?= random_bg_style($team) ?>">
-                                <?= $team ?>
-                            </span>
-                        </td>
+<!--                        <td>-->
+<!--                            <span class="badge" style="--><?php //= random_bg_style($team) ?><!--">-->
+<!--                                --><?php //= $team ?>
+<!--                            </span>-->
+<!--                        </td>-->
                         <td>
                             <a href="<?= site_url('tasks/project/' . rawurlencode($project)) ?>" class="text-decoration-none" title="View Project Spreadsheet">
                                 <span class="badge" style="<?= random_bg_style($project) ?>">

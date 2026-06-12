@@ -255,12 +255,14 @@ class TagRequestsController extends BaseController
         $model = new TagRequestsModel();
         $post = $this->request->getPost();
         $request = $model->find($post['request_id']);
+        $ticketId = $post['new_tag_ticket'];
 
         if ($model->update($request['id'], [
            'new_tag_ticket' => $post['new_tag_ticket'],
         ])) {
 
-            $this->saveJiraHistory($request['tags'], $request['property_id'], $post['new_tag_ticket'], Constants::JIRA_TYPE_NEW_TAG);
+            $this->saveJiraHistory($request['tags'], $request['property_id'], $ticketId, Constants::JIRA_TYPE_NEW_TAG);
+            $this->addTask($request, 'New Tag Request: ', $ticketId);
 
             return redirect()
                 ->to('/tag-requests/view/' . $post['request_id'])
@@ -294,6 +296,7 @@ class TagRequestsController extends BaseController
             }
 
             $this->saveJiraHistory($request['tags'], $request['property_id'], $ticketId, Constants::JIRA_TYPE_NEW_RULE);
+            $this->addTask($request, 'New Rule Request: ', $ticketId);
 
             return view('tag-requests/create', [
                 'request_id' => $request['id'],
@@ -304,15 +307,11 @@ class TagRequestsController extends BaseController
                 'al_end_date' => null, // @TODO: Get from tags
                 'tag_ids' => $request['tags'],
             ]);
-
-//            return redirect()
-//                ->to('/tag-requests/view/' . $post['request_id'])
-//                ->with('success', "Tag Request updated successfully: Added NEW RULE ticket");
         }
 
         return redirect()
             ->to('/tag-requests/view/' . $post['request_id'])
-            ->with('error', "Tag Request was not updated.");
+            ->with('error', "New Rule ticket was not successfully added.");
     }
 
     public function newRuleRequest($id)
@@ -538,6 +537,8 @@ class TagRequestsController extends BaseController
             'size' => Constants::ACTIVITY_SIZE_M,
             'priority' => Constants::PRIORITY_MEDIUM,
             'created_by' => session()->get('user_id') ?? 0,
+            'requested_date' => date('Y-m-d'),
+            'start_date' => date('Y-m-d'),
         ]);
 
         if ($taskId) {

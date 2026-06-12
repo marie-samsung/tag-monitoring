@@ -801,7 +801,7 @@ Martech TMS
                         <!-- Name -->
                         <td class="form-label-sm">
                             <span class="group-hover-container align-items-center">
-                                <a href="<?= $tag['ref_link'] ?>" target="_blank" rel="noopener" class="apple-link-dark">
+                                <a href="<?= $tag['ref_link'] ?>" target="_blank" rel="noopener" class="apple-link-dark form-label-sm ms-1">
                                     <?= esc($tag['name']) ?>
                                 </a>
                                 <a href="javascript:void(0)" onclick="copyTagName('<?= esc($tag['name']) ?>', this)" title="Copy tag name" class="text-muted ms-2" style="transition: color 0.2s; text-decoration: none; line-height: 1;">

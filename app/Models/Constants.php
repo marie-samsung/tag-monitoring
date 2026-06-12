@@ -333,6 +333,14 @@ class Constants
         self::ACTIVITY_SIZE_SPRINT => 'Sprint',
     ];
 
+    public const ACTIVITY_SIZES_DESCRIPTIONS = [
+        self::ACTIVITY_SIZE_S => 'S (Small): Minor tasks / quick fixes (estimated effort < 2 hours)',
+        self::ACTIVITY_SIZE_M => 'M (Medium): Standard tag setups / simple troubleshooting (estimated effort: 2-5 hours)',
+        self::ACTIVITY_SIZE_L => 'L (Large): New tag integrations / complex tracking rules (estimated effort: 1-2 days)',
+        self::ACTIVITY_SIZE_XL => 'XL (Extra Large): Major property setups / migrations / custom JS (estimated effort: 3-5 days)',
+        self::ACTIVITY_SIZE_SPRINT => 'Sprint: Massive undertakings / entire sprint effort (estimated effort: 1-2 weeks)',
+    ];
+
     public const PRIORITY_LOW = 1;
     public const PRIORITY_MEDIUM = 2;
     public const PRIORITY_HIGH = 3;
