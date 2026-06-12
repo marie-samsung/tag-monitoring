@@ -1,84 +1,222 @@
+<?php
+$imagePath = function_exists('base_url') ? base_url('assets/images/404_lost_tag.png') : '/assets/images/404_lost_tag.png';
+$homeUrl = function_exists('base_url') ? base_url('/') : '/';
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= lang('Errors.pageNotFound') ?></title>
-
+    
+    <!-- Premium Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        div.logo {
-            height: 200px;
-            width: 155px;
-            display: inline-block;
-            opacity: 0.08;
-            position: absolute;
-            top: 2rem;
-            left: 50%;
-            margin-left: -73px;
+        :root {
+            --color-bg: #F5F5F7;
+            --color-card: #FFFFFF;
+            --color-primary: #0071E3;
+            --color-primary-hover: #0077ED;
+            --color-text-main: #1D1D1F;
+            --color-text-secondary: #49494D;
+            --color-text-muted: #86868B;
+            --color-border: rgba(0, 0, 0, 0.05);
+            --shadow-card: 0 12px 30px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.02);
+            --transition-smooth: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
+
         body {
-            height: 100%;
-            background: #fafafa;
-            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-            color: #777;
-            font-weight: 300;
+            background-color: var(--color-bg);
+            color: var(--color-text-main);
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            box-sizing: border-box;
         }
-        h1 {
-            font-weight: lighter;
-            letter-spacing: normal;
-            font-size: 3rem;
-            margin-top: 0;
-            margin-bottom: 0;
-            color: #222;
-        }
-        .wrap {
-            max-width: 1024px;
-            margin: 5rem auto;
-            padding: 2rem;
-            background: #fff;
+
+        .error-card {
+            background-color: var(--color-card);
+            border: 1px solid var(--color-border);
+            border-radius: 24px;
+            box-shadow: var(--shadow-card);
+            padding: 48px 32px;
+            max-width: 540px;
+            width: 100%;
             text-align: center;
-            border: 1px solid #efefef;
-            border-radius: 0.5rem;
+            transition: var(--transition-smooth);
+        }
+
+        .error-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06);
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-12px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .image-container {
+            margin-bottom: 32px;
             position: relative;
+            display: inline-block;
         }
-        pre {
-            white-space: normal;
-            margin-top: 1.5rem;
+
+        .lost-tag-img {
+            width: 200px;
+            height: 200px;
+            object-fit: contain;
+            animation: float 4s ease-in-out infinite;
         }
-        code {
-            background: #fafafa;
-            border: 1px solid #efefef;
-            padding: 0.5rem 1rem;
-            border-radius: 5px;
-            display: block;
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0 0 12px 0;
+            letter-spacing: -0.5px;
+            color: var(--color-text-main);
         }
-        p {
-            margin-top: 1.5rem;
+
+        .error-subtitle {
+            color: var(--color-text-secondary);
+            font-size: 1.05rem;
+            line-height: 1.6;
+            margin: 0 auto 24px auto;
+            max-width: 440px;
+            font-weight: 400;
         }
+
+        .funny-checklist {
+            background-color: var(--color-bg);
+            border-radius: 16px;
+            padding: 20px;
+            margin: 0 auto 32px auto;
+            max-width: 400px;
+            text-align: left;
+            list-style: none;
+            border: 1px solid var(--color-border);
+        }
+
+        .funny-checklist li {
+            font-size: 0.92rem;
+            color: var(--color-text-secondary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+        }
+
+        .funny-checklist li:last-child {
+            margin-bottom: 0;
+        }
+
+        .bullet-icon {
+            font-size: 1.1rem;
+            margin-right: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-decoration: none;
+            padding: 12px 28px;
+            border-radius: 9999px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            border: none;
+            box-sizing: border-box;
+        }
+
+        .btn-primary {
+            background-color: var(--color-primary);
+            color: #FFFFFF;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--color-primary-hover);
+            transform: scale(1.02);
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background-color: #E8E8ED;
+            color: var(--color-text-main);
+        }
+
+        .btn-secondary:hover {
+            background-color: #D1D1D6;
+            transform: scale(1.02);
+        }
+
+        .btn-secondary:active {
+            transform: scale(0.98);
+        }
+
         .footer {
-            margin-top: 2rem;
-            border-top: 1px solid #efefef;
-            padding: 1em 2em 0 2em;
-            font-size: 85%;
-            color: #999;
-        }
-        a:active,
-        a:link,
-        a:visited {
-            color: #dd4814;
+            margin-top: 32px;
+            font-size: 0.78rem;
+            color: var(--color-text-muted);
+            border-top: 1px solid var(--color-border);
+            padding-top: 16px;
         }
     </style>
 </head>
 <body>
-    <div class="wrap">
-        <h1>404</h1>
-
-        <p>
-            <?php if (ENVIRONMENT !== 'production') : ?>
-                <?= nl2br(esc($message)) ?>
-            <?php else : ?>
-                <?= lang('Errors.sorryCannotFind') ?>
-            <?php endif; ?>
+    <div class="error-card">
+        <div class="image-container">
+            <img class="lost-tag-img" src="<?= esc($imagePath) ?>" alt="Lost Tag Character">
+        </div>
+        
+        <h1>404: Tag Went Untracked!</h1>
+        
+        <p class="error-subtitle">
+            We fired the request, but our tracking pixels couldn't find this page. It might have expired, been untracked, or got lost in the data stream.
         </p>
+
+        <ul class="funny-checklist">
+            <li><span class="bullet-icon">🔍</span> Did you check the container ID?</li>
+            <li><span class="bullet-icon">🚀</span> Maybe it only fires on production?</li>
+            <li><span class="bullet-icon">😅</span> Or maybe the intern deleted it again...</li>
+        </ul>
+
+        <div class="button-group">
+            <a href="<?= esc($homeUrl) ?>" class="btn btn-primary">
+                🏠 Go to Dashboard
+            </a>
+            <button onclick="history.back()" class="btn btn-secondary">
+                ⬅️ Go Back
+            </button>
+        </div>
+
+        <div class="footer">
+            Martech Media Tagging • Samsung SDS MEA
+        </div>
     </div>
 </body>
 </html>
