@@ -152,7 +152,7 @@ class TasksController extends BaseController
         $assigneeId = $isAdmin ? (int)$log['assignee'] : (int)($post['assignee'] ?? $log['assignee']);
 
         // @NOTE: ACTIVITY LOGS AUTOMATIC UPDATE COMMENTS
-        if ($log['status'] !== $post['status']) {
+        if ($log['status'] != $post['status']) {
             $from = Constants::ACTIVITY_LOGS_STATUS[$log['status']];
             $to = Constants::ACTIVITY_LOGS_STATUS[$post['status']];
 
@@ -168,7 +168,7 @@ class TasksController extends BaseController
             }
         }
 
-        if ($log['assignee'] !== $assigneeId) {
+        if ((int)$log['assignee'] != (int)$assigneeId) {
             $from = $log['assignee'] == Constants::USER_SYSTEM
                 ? Constants::USER_SYSTEM_LABEL
                 : Constants::USERS[$log['assignee']];
@@ -185,7 +185,7 @@ class TasksController extends BaseController
             ]);
         }
 
-        if ($log['priority'] !== $post['priority']) {
+        if ((int)$log['priority'] != (int)$post['priority']) {
             $from = Constants::PRIORITIES[$log['priority']];
             $to = Constants::PRIORITIES[$post['priority']];
 
@@ -703,7 +703,7 @@ class TasksController extends BaseController
 
         foreach ($logIds as $id) {
             $log = $model->find($id);
-            if ($log && (int)$log['status'] !== $status) {
+            if ($log && (int)$log['status'] != $status) {
                 $from = Constants::ACTIVITY_LOGS_STATUS[$log['status']] ?? 'Unknown';
 
                 $commentsModel->insert([
@@ -757,7 +757,7 @@ class TasksController extends BaseController
 
         foreach ($logIds as $id) {
             $log = $model->find($id);
-            if ($log && $log['project'] !== $project) {
+            if ($log && $log['project'] != $project) {
                 $from = $log['project'] ?: 'Generic';
 
                 $commentsModel->insert([
@@ -813,7 +813,7 @@ class TasksController extends BaseController
 
         foreach ($logIds as $id) {
             $log = $model->find($id);
-            if ($log && (int)$log['assignee'] !== $assigneeId) {
+            if ($log && (int)$log['assignee'] != $assigneeId) {
                 $from = $log['assignee'] == Constants::USER_SYSTEM
                     ? Constants::USER_SYSTEM_LABEL
                     : Constants::USERS[$log['assignee']] ?? 'Unknown';
