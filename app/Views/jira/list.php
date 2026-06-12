@@ -243,15 +243,25 @@ $hasActiveFilters = ($activeFiltersCount > 0);
     <!-- #endregion -->
 
     <!-- #region | JIRA HISTORY TABLE -->
-    <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
         <span class="text-secondary small fw-medium">
             Showing <?= count($jiraTickets) ?> of <?= $totalTickets ?> results
         </span>
+        
+        <!-- Action Style Switcher -->
+        <div class="d-flex align-items-center gap-2">
+            <span class="text-secondary" style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.8;">Action Style:</span>
+            <div class="micro-segmented-control" id="actionStyleControl">
+                <button type="button" data-style="original">Original</button>
+                <button type="button" data-style="glassmorphic">Glassmorphic</button>
+                <button type="button" data-style="hover-inline">Hover Inline</button>
+            </div>
+        </div>
     </div>
 
     <div class="apple-table-container">
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
+            <table class="table table-hover align-middle mb-0 style-glassmorphic" id="tblJira">
                 <thead>
                     <tr>
                         <?php
@@ -363,6 +373,9 @@ $hasActiveFilters = ($activeFiltersCount > 0);
                                     <a href="<?= Constants::JIRA_LINK . $ticket['ticket_id'] ?>" target="_blank" rel="noopener" class="apple-link form-label-sm">
                                         <?= $ticket['ticket_id'] ?>
                                     </a>
+                                    <a href="<?= Constants::JIRA_LINK . $ticket['ticket_id'] ?>" target="_blank" rel="noopener" class="text-muted ms-1" style="font-size: 0.75rem;" title="View in JIRA">
+                                        <i class="bi bi-box-arrow-up-right"></i>
+                                    </a>
                                 </td>
                                 <td class="form-label-sm">
                                     <?php
@@ -417,10 +430,38 @@ $hasActiveFilters = ($activeFiltersCount > 0);
                                     <?php endif; ?>
                                 </td>
                                 <td class="form-label-sm" style="width:max-content; white-space:nowrap;"><?= esc(date('d-m-Y', strtotime($ticket['created_at']))) ?></td>
-                                <td class="text-center">
-                                    <a href="<?= site_url('jira/update-tags/' . $ticket['id']) ?>" class="apple-btn-secondary btn-sm px-2 py-1" style="font-size: 0.75rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;" title="Update Related Tags">
-                                        <i class="bi bi-pencil-square"></i>
-                                    </a>
+                                <td class="text-nowrap align-middle actions-cell">
+                                    <!-- Original Style -->
+                                    <div class="action-style-original-wrapper">
+                                        <a href="<?= site_url('jira/update-tags/' . $ticket['id']) ?>" class="apple-btn-secondary btn-sm px-2 py-1" style="font-size: 0.75rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;" title="Update Related Tags">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+                                    </div>
+
+                                    <!-- Style A: Glassmorphic Dropdown -->
+                                    <div class="action-style-glassmorphic-wrapper">
+                                        <div class="dropdown">
+                                            <button class="action-trigger-dot d-inline-flex align-items-center justify-content-center" type="button" id="actionsDropdownA_<?= $ticket['id'] ?>" data-bs-toggle="dropdown" aria-expanded="false" title="Actions">
+                                                <i class="bi bi-three-dots"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end glassmorphic-menu shadow" aria-labelledby="actionsDropdownA_<?= $ticket['id'] ?>" style="z-index: 1050;">
+                                                <li>
+                                                    <a class="dropdown-item py-2" href="<?= site_url('jira/update-tags/' . $ticket['id']) ?>">
+                                                        <i class="bi bi-pencil-square text-warning me-2"></i>Update Related Tags
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+
+                                    <!-- Style B: Hover-Revealed Inline Actions -->
+                                    <div class="action-style-hover-inline-wrapper">
+                                        <div class="hover-actions-container d-inline-flex align-items-center gap-1">
+                                            <a href="<?= site_url('jira/update-tags/' . $ticket['id']) ?>" class="hover-action-btn btn-update" data-bs-toggle="tooltip" data-bs-placement="top" title="Update Related Tags">
+                                                <i class="bi bi-pencil-fill"></i>
+                                            </a>
+                                        </div>
+                                    </div>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -451,7 +492,278 @@ document.addEventListener('DOMContentLoaded', function () {
         placeholder: "All Properties",
         allowClear: true
     });
+
+    // Action Style Switcher logic
+    const actionStyleControl = document.getElementById('actionStyleControl');
+    const table = document.getElementById('tblJira');
+    if (actionStyleControl && table) {
+        const savedStyle = localStorage.getItem('tag_action_style') || 'glassmorphic';
+        table.classList.remove('style-original', 'style-glassmorphic', 'style-hover-inline');
+        table.classList.add(`style-${savedStyle}`);
+        
+        actionStyleControl.querySelectorAll('button').forEach(btn => {
+            if (btn.dataset.style === savedStyle) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+        
+        actionStyleControl.addEventListener('click', function (e) {
+            const btn = e.target.closest('button[data-style]');
+            if (!btn) return;
+            
+            const selectedStyle = btn.dataset.style;
+            actionStyleControl.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            table.classList.remove('style-original', 'style-glassmorphic', 'style-hover-inline');
+            table.classList.add(`style-${selectedStyle}`);
+            
+            localStorage.setItem('tag_action_style', selectedStyle);
+        });
+    }
+
+    // Cell Click Redirection logic
+    if (table) {
+        table.addEventListener('click', function (e) {
+            const td = e.target.closest('td');
+            if (td) {
+                const clickedLinkOrBtn = e.target.closest('a, button, select, label, input');
+                
+                // Redirect Actions Column cell clicks to target buttons
+                if (td.classList.contains('actions-cell')) {
+                    if (!clickedLinkOrBtn) {
+                        let activeStyle = 'glassmorphic';
+                        if (table.classList.contains('style-original')) {
+                            activeStyle = 'original';
+                        } else if (table.classList.contains('style-hover-inline')) {
+                            activeStyle = 'hover-inline';
+                        }
+                        
+                        const wrapper = td.querySelector(`.action-style-${activeStyle}-wrapper`);
+                        if (wrapper) {
+                            const toggleBtn = wrapper.querySelector('[data-bs-toggle="dropdown"]');
+                            if (toggleBtn) {
+                                toggleBtn.click();
+                            } else {
+                                const updateBtn = wrapper.querySelector('.hover-action-btn.btn-update');
+                                if (updateBtn) updateBtn.click();
+                            }
+                        }
+                    }
+                    return;
+                }
+
+                // Redirect clicks inside cells containing primary links
+                const primaryLink = td.querySelector('a:not([onclick]):not(.text-muted)');
+                if (primaryLink) {
+                    if (!clickedLinkOrBtn) {
+                        if (primaryLink.target === '_blank') {
+                            window.open(primaryLink.href, '_blank');
+                        } else {
+                            primaryLink.click();
+                        }
+                    }
+                    return;
+                }
+
+                if (clickedLinkOrBtn) {
+                    return;
+                }
+            }
+        });
+    }
 });
 </script>
+
+<style>
+/* Action Dropdown Style Experiment */
+.actions-cell {
+    position: relative;
+    width: 90px;
+    min-width: 90px;
+    text-align: center;
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+}
+
+.action-style-original-wrapper,
+.action-style-glassmorphic-wrapper,
+.action-style-hover-inline-wrapper {
+    display: none;
+}
+
+#tblJira.style-original .action-style-original-wrapper {
+    display: block;
+}
+
+#tblJira.style-glassmorphic .action-style-glassmorphic-wrapper {
+    display: block;
+}
+
+#tblJira.style-hover-inline .action-style-hover-inline-wrapper {
+    display: flex;
+    justify-content: center;
+}
+
+/* 1. Sleek Minimalist Dot Trigger Styling */
+.action-trigger-dot {
+    background: transparent;
+    border: none;
+    color: var(--color-text-muted);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.action-trigger-dot:hover, 
+.action-trigger-dot[aria-expanded="true"] {
+    background-color: var(--color-secondary-bg);
+    color: var(--color-text-base);
+    transform: scale(1.05);
+}
+.action-trigger-dot:active {
+    transform: scale(0.95);
+}
+
+/* 2. Glassmorphic Dropdown Styling */
+.glassmorphic-menu {
+    background: rgba(255, 255, 255, 0.82) !important;
+    backdrop-filter: blur(12px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(12px) saturate(180%) !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1) !important;
+    border-radius: 12px !important;
+    padding: 6px !important;
+    transform-origin: top right;
+    animation: dropdownFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes dropdownFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.96) translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.glassmorphic-menu .dropdown-item {
+    border-radius: 8px !important;
+    padding: 6px 12px !important;
+    font-size: 0.85rem !important;
+    font-weight: 500 !important;
+    transition: background-color 0.15s ease, color 0.15s ease !important;
+    color: var(--color-text-base) !important;
+}
+
+.glassmorphic-menu .dropdown-item:hover {
+    background-color: var(--color-primary) !important;
+    color: #ffffff !important;
+}
+.glassmorphic-menu .dropdown-item:hover i {
+    color: #ffffff !important;
+}
+
+/* 3. Hover-Revealed Inline Action Buttons Styling */
+.hover-actions-container {
+    opacity: 0;
+    transform: translateX(6px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* When the table row is hovered, show the actions */
+#tblJira tr:hover .hover-actions-container {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Also show them if select check is active or focus is inside */
+#tblJira tr:focus-within .hover-actions-container {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.hover-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    color: var(--color-text-muted);
+    background-color: var(--color-secondary-bg);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    text-decoration: none !important;
+    font-size: 0.75rem;
+}
+
+.hover-action-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.hover-action-btn:active {
+    transform: scale(0.95);
+}
+
+.hover-action-btn.btn-update:hover {
+    background-color: var(--color-badge-warning-bg) !important;
+    color: var(--color-badge-warning-text) !important;
+}
+
+.hover-action-btn.btn-jira:hover {
+    background-color: var(--color-badge-primary-bg) !important;
+    color: var(--color-badge-primary-text) !important;
+}
+
+/* Micro Segmented Control Styling */
+.micro-segmented-control {
+    background-color: var(--color-secondary-bg);
+    border-radius: 20px;
+    padding: 3px;
+    display: inline-flex;
+    gap: 2px;
+    border: 1px solid rgba(0, 0, 0, 0.03);
+}
+
+.micro-segmented-control button {
+    border: none;
+    background: transparent;
+    padding: 4px 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    border-radius: 15px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    outline: none;
+}
+
+.micro-segmented-control button:hover {
+    color: var(--color-text-base);
+}
+
+.micro-segmented-control button.active {
+    background-color: var(--color-card-bg);
+    color: var(--color-text-base);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+#tblJira tbody td.actions-cell,
+#tblJira tbody td:not(.actions-cell):has(a:not([onclick]):not(.text-muted)) {
+    cursor: pointer;
+}
+#tblJira tbody td:not(.actions-cell):has(a:not([onclick]):not(.text-muted)):hover a:not([onclick]):not(.text-muted) {
+    color: var(--color-primary) !important;
+}
+</style>
 
 <?= $this->endSection() ?>
