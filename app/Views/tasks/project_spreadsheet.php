@@ -497,9 +497,9 @@ helper('custom_functions');
                                         <?php endforeach; ?>
                                     </select>
                                 </td>
-                                <td class="comment-cell" title="<?= esc($task['last_comment'] ?? 'No comments posted yet.') ?>"
+                                <td class="comment-cell" title="<?= esc(strip_tags($task['last_comment'] ?? 'No comments posted yet.')) ?>"
                                     data-bs-toggle="tooltip" data-bs-placement="left">
-                                    <?= esc($task['last_comment'] ?: '—') ?>
+                                    <?= esc(strip_tags($task['last_comment'] ?? '') ?: '—') ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
