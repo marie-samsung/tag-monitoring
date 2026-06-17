@@ -13,7 +13,7 @@ class TasksController extends BaseController
     public function index()
     {
         $model = new TasksModel();
-        
+
         $meModeGet = $this->request->getGet('me_mode');
         if ($meModeGet !== null) {
             if ($meModeGet == '1') {
@@ -22,7 +22,7 @@ class TasksController extends BaseController
                 session()->set('al_me_mode', 0);
             }
         }
-        
+
         $meMode = (session()->get('al_me_mode') == 1);
 
         $filters = [
@@ -87,24 +87,24 @@ class TasksController extends BaseController
         $assigneeId = $post['assignee'] ?? null;
 
         $insertData = [
-            'title'           => trim($post['title']),
-            'description'     => $post['description'] ?? null,
-            'subsidiary_id'   => (int)$post['subsidiary_id'],
-            'department_id'   => !empty($post['department_id']) ? (int)$post['department_id'] : null,
-            'team_id'         => (int)$post['team_id'],
-            'project'         => !empty($post['project']) ? trim($post['project']) : 'Generic',
-            'type'            => (int)$post['type'] ?? null,
-            'ticket_id'       => !empty($post['ticket_id']) ? $post['ticket_id'] : null,
-            'assignee'        => $assigneeId,
-            'requested_by'    => $post['requested_by'] ?? null,
-            'status'          => (int)$post['status'],
-            'priority'        => (int)$post['priority'] ?? Constants::PRIORITY_LOW,
-            'size'            => (int)$post['size'] ?? null,
-            'requested_date'  => !empty($post['requested_date']) ? $post['requested_date'] : null,
-            'start_date'      => !empty($post['start_date']) ? $post['start_date'] : null,
-            'finished_date'   => !empty($post['finished_date']) ? $post['finished_date'] : null,
-            'campaign_status' => !empty($post['campaign_status']) ? (int)$post['campaign_status'] : null,
-            'campaign_id'     => $post['campaign_id'] ?? null,
+            'title' => trim($post['title']),
+            'description' => $post['description'] ?? null,
+            'subsidiary_id' => (int) $post['subsidiary_id'],
+            'department_id' => !empty($post['department_id']) ? (int) $post['department_id'] : null,
+            'team_id' => (int) $post['team_id'],
+            'project' => !empty($post['project']) ? trim($post['project']) : 'Generic',
+            'type' => (int) $post['type'] ?? null,
+            'ticket_id' => !empty($post['ticket_id']) ? $post['ticket_id'] : null,
+            'assignee' => $assigneeId,
+            'requested_by' => $post['requested_by'] ?? null,
+            'status' => (int) $post['status'],
+            'priority' => (int) $post['priority'] ?? Constants::PRIORITY_LOW,
+            'size' => (int) $post['size'] ?? null,
+            'requested_date' => !empty($post['requested_date']) ? $post['requested_date'] : null,
+            'start_date' => !empty($post['start_date']) ? $post['start_date'] : null,
+            'finished_date' => !empty($post['finished_date']) ? $post['finished_date'] : null,
+            'campaign_status' => !empty($post['campaign_status']) ? (int) $post['campaign_status'] : null,
+            'campaign_id' => $post['campaign_id'] ?? null,
         ];
 
         $model->insert($insertData);
@@ -161,7 +161,7 @@ class TasksController extends BaseController
         }
 
         $post = $this->request->getPost();
-        $assigneeId = (int)($post['assignee'] ?? $log['assignee']);
+        $assigneeId = (int) ($post['assignee'] ?? $log['assignee']);
 
         // @NOTE: ACTIVITY LOGS AUTOMATIC UPDATE COMMENTS
         if ($log['status'] != $post['status']) {
@@ -180,7 +180,7 @@ class TasksController extends BaseController
             }
         }
 
-        if ((int)$log['assignee'] != (int)$assigneeId) {
+        if ((int) $log['assignee'] != (int) $assigneeId) {
             $from = $log['assignee'] == Constants::USER_SYSTEM
                 ? Constants::USER_SYSTEM_LABEL
                 : Constants::USERS[$log['assignee']];
@@ -197,7 +197,7 @@ class TasksController extends BaseController
             ]);
         }
 
-        if ((int)$log['priority'] != (int)$post['priority']) {
+        if ((int) $log['priority'] != (int) $post['priority']) {
             $from = Constants::PRIORITIES[$log['priority']];
             $to = Constants::PRIORITIES[$post['priority']];
 
@@ -210,24 +210,24 @@ class TasksController extends BaseController
         }
 
         $updateData = [
-            'title'           => trim($post['title']),
-            'description'     => $post['description'] ?? null,
-            'subsidiary_id'   => (int)$post['subsidiary_id'],
-            'department_id'   => !empty($post['department_id']) ? (int)$post['department_id'] : null,
-            'team_id'         => (int)$post['team_id'],
-            'project'         => !empty($post['project']) ? trim($post['project']) : 'Generic',
-            'type'            => (int)$post['type'] ?? null,
-            'ticket_id'       => !empty($post['ticket_id']) ? $post['ticket_id'] : null,
-            'assignee'        => $assigneeId,
-            'requested_by'    => $post['requested_by'] ?? null,
-            'status'          => (int)$post['status'],
-            'size'            => (int)$post['size'] ?? null,
-            'priority'        => (int)$post['priority'] ?? null,
-            'requested_date'  => !empty($post['requested_date']) ? $post['requested_date'] : null,
-            'start_date'      => !empty($post['start_date']) ? $post['start_date'] : null,
-            'finished_date'   => !empty($post['finished_date']) ? $post['finished_date'] : null,
-            'campaign_status' => !empty($post['campaign_status']) ? (int)$post['campaign_status'] : null,
-            'campaign_id'     => $post['campaign_id'] ?? null,
+            'title' => trim($post['title']),
+            'description' => $post['description'] ?? null,
+            'subsidiary_id' => (int) $post['subsidiary_id'],
+            'department_id' => !empty($post['department_id']) ? (int) $post['department_id'] : null,
+            'team_id' => (int) $post['team_id'],
+            'project' => !empty($post['project']) ? trim($post['project']) : 'Generic',
+            'type' => (int) $post['type'] ?? null,
+            'ticket_id' => !empty($post['ticket_id']) ? $post['ticket_id'] : null,
+            'assignee' => $assigneeId,
+            'requested_by' => $post['requested_by'] ?? null,
+            'status' => (int) $post['status'],
+            'size' => (int) $post['size'] ?? null,
+            'priority' => (int) $post['priority'] ?? null,
+            'requested_date' => !empty($post['requested_date']) ? $post['requested_date'] : null,
+            'start_date' => !empty($post['start_date']) ? $post['start_date'] : null,
+            'finished_date' => !empty($post['finished_date']) ? $post['finished_date'] : null,
+            'campaign_status' => !empty($post['campaign_status']) ? (int) $post['campaign_status'] : null,
+            'campaign_id' => $post['campaign_id'] ?? null,
         ];
 
         $model->update($id, $updateData);
@@ -318,7 +318,7 @@ class TasksController extends BaseController
                         ->with('success', "File successfully uploaded.");
                 }
             }
-        } catch(FileException|\ReflectionException $e) {
+        } catch (FileException | \ReflectionException $e) {
             var_dump($e);
         }
 
@@ -331,7 +331,7 @@ class TasksController extends BaseController
     {
         helper('custom_functions');
         $logsModel = new TasksModel();
-        
+
         $meModeGet = $this->request->getGet('me_mode');
         if ($meModeGet !== null) {
             $meMode = ($meModeGet == '1');
@@ -354,7 +354,7 @@ class TasksController extends BaseController
             'sort_dir' => $this->request->getGet('sort_dir') ?? 'desc',
             'show_completed' => $this->request->getGet('show_completed'),
         ];
-        
+
         $logs = $logsModel->filterLogs($filters);
 
         $subsidiary = (!empty($filters['subsidiary_id']))
@@ -437,7 +437,7 @@ class TasksController extends BaseController
     {
         $model = new TasksModel();
         $commentsModel = new TaskCommentsModel();
-        
+
         $log = $model->find($id);
         if (!$log) {
             return $this->response->setJSON([
@@ -447,7 +447,7 @@ class TasksController extends BaseController
             ]);
         }
 
-        $status = (int)$this->request->getPost('status');
+        $status = (int) $this->request->getPost('status');
         if (!array_key_exists($status, Constants::ACTIVITY_LOGS_STATUS)) {
             return $this->response->setJSON([
                 'success' => false,
@@ -456,7 +456,7 @@ class TasksController extends BaseController
             ]);
         }
 
-        if ((int)$log['status'] !== $status) {
+        if ((int) $log['status'] !== $status) {
             $from = Constants::ACTIVITY_LOGS_STATUS[$log['status']] ?? 'Unknown';
             $to = Constants::ACTIVITY_LOGS_STATUS[$status] ?? 'Unknown';
 
@@ -514,7 +514,7 @@ class TasksController extends BaseController
     {
         $model = new TasksModel();
         $commentsModel = new TaskCommentsModel();
-        
+
         $log = $model->find($id);
         if (!$log) {
             return $this->response->setJSON([
@@ -524,7 +524,7 @@ class TasksController extends BaseController
             ]);
         }
 
-        $assigneeId = (int)$this->request->getPost('assignee');
+        $assigneeId = (int) $this->request->getPost('assignee');
         if (!array_key_exists($assigneeId, Constants::USERS) && $assigneeId !== Constants::USER_SYSTEM) {
             return $this->response->setJSON([
                 'success' => false,
@@ -533,7 +533,7 @@ class TasksController extends BaseController
             ]);
         }
 
-        if ((int)$log['assignee'] !== $assigneeId) {
+        if ((int) $log['assignee'] !== $assigneeId) {
             $from = $log['assignee'] == Constants::USER_SYSTEM
                 ? Constants::USER_SYSTEM_LABEL
                 : Constants::USERS[$log['assignee']] ?? 'Unknown';
@@ -583,7 +583,7 @@ class TasksController extends BaseController
     {
         $model = new TasksModel();
         $commentsModel = new TaskCommentsModel();
-        
+
         $log = $model->find($id);
         if (!$log) {
             return $this->response->setJSON([
@@ -593,7 +593,7 @@ class TasksController extends BaseController
             ]);
         }
 
-        $priority = (int)$this->request->getPost('priority');
+        $priority = (int) $this->request->getPost('priority');
         if (!array_key_exists($priority, Constants::PRIORITIES)) {
             return $this->response->setJSON([
                 'success' => false,
@@ -602,7 +602,7 @@ class TasksController extends BaseController
             ]);
         }
 
-        if ((int)$log['priority'] !== $priority) {
+        if ((int) $log['priority'] !== $priority) {
             $from = Constants::PRIORITIES[$log['priority']] ?? 'Unknown';
             $to = Constants::PRIORITIES[$priority] ?? 'Unknown';
 
@@ -647,7 +647,7 @@ class TasksController extends BaseController
     {
         $model = new TasksModel();
         $commentsModel = new TaskCommentsModel();
-        
+
         $log = $model->find($id);
         if (!$log) {
             return $this->response->setJSON([
@@ -658,9 +658,9 @@ class TasksController extends BaseController
         }
 
         $ticketId = $this->request->getPost('ticket_id');
-        $ticketId = !empty($ticketId) ? trim((string)$ticketId) : null;
+        $ticketId = !empty($ticketId) ? trim((string) $ticketId) : null;
 
-        $oldTicketId = !empty($log['ticket_id']) ? trim((string)$log['ticket_id']) : null;
+        $oldTicketId = !empty($log['ticket_id']) ? trim((string) $log['ticket_id']) : null;
 
         if ($oldTicketId !== $ticketId) {
             $from = $oldTicketId ?? 'None';
@@ -715,7 +715,7 @@ class TasksController extends BaseController
             ]);
         }
 
-        $tagIdToRemove = (int)$this->request->getPost('tag_id');
+        $tagIdToRemove = (int) $this->request->getPost('tag_id');
         if (empty($tagIdToRemove)) {
             return $this->response->setJSON([
                 'success' => false,
@@ -745,7 +745,7 @@ class TasksController extends BaseController
 
         $updatedCount = 0;
         foreach ($jiraTickets as $jt) {
-            $jtTagId = !empty($jt['tag_id']) ? (int)$jt['tag_id'] : null;
+            $jtTagId = !empty($jt['tag_id']) ? (int) $jt['tag_id'] : null;
 
             // Retrieve tag IDs from comments
             $commentsTagIds = [];
@@ -753,14 +753,14 @@ class TasksController extends BaseController
                 $rawIds = explode(',', $jt['comments']);
                 foreach ($rawIds as $rid) {
                     if (is_numeric(trim($rid))) {
-                        $commentsTagIds[] = (int)trim($rid);
+                        $commentsTagIds[] = (int) trim($rid);
                     }
                 }
             }
 
             // Remove tag ID from the list
             $newCommentsTagIds = array_diff($commentsTagIds, [$tagIdToRemove]);
-            
+
             // Determine new tag_id (first from new list, or null if empty)
             $newTagId = $jtTagId;
             if ($jtTagId === $tagIdToRemove) {
@@ -813,7 +813,7 @@ class TasksController extends BaseController
         $commentsModel = new TaskCommentsModel();
 
         $logIds = $this->request->getPost('log_ids');
-        $status = (int)$this->request->getPost('status');
+        $status = (int) $this->request->getPost('status');
 
         if (empty($logIds) || !is_array($logIds)) {
             return $this->response->setJSON([
@@ -836,7 +836,7 @@ class TasksController extends BaseController
 
         foreach ($logIds as $id) {
             $log = $model->find($id);
-            if ($log && (int)$log['status'] != $status) {
+            if ($log && (int) $log['status'] != $status) {
                 $from = Constants::ACTIVITY_LOGS_STATUS[$log['status']] ?? 'Unknown';
 
                 $commentsModel->insert([
@@ -880,7 +880,7 @@ class TasksController extends BaseController
         $commentsModel = new TaskCommentsModel();
 
         $logIds = $this->request->getPost('log_ids');
-        $project = trim((string)$this->request->getPost('project'));
+        $project = trim((string) $this->request->getPost('project'));
 
         if (empty($logIds) || !is_array($logIds)) {
             return $this->response->setJSON([
@@ -928,7 +928,7 @@ class TasksController extends BaseController
         $commentsModel = new TaskCommentsModel();
 
         $logIds = $this->request->getPost('log_ids');
-        $assigneeId = (int)$this->request->getPost('assignee');
+        $assigneeId = (int) $this->request->getPost('assignee');
 
         if (empty($logIds) || !is_array($logIds)) {
             return $this->response->setJSON([
@@ -954,7 +954,7 @@ class TasksController extends BaseController
 
         foreach ($logIds as $id) {
             $log = $model->find($id);
-            if ($log && (int)$log['assignee'] != $assigneeId) {
+            if ($log && (int) $log['assignee'] != $assigneeId) {
                 $from = $log['assignee'] == Constants::USER_SYSTEM
                     ? Constants::USER_SYSTEM_LABEL
                     : Constants::USERS[$log['assignee']] ?? 'Unknown';
@@ -984,21 +984,21 @@ class TasksController extends BaseController
     {
         $projectName = urldecode($projectName);
         $model = new TasksModel();
-        
+
         $tasks = $model->getProjectLogs($projectName, 25);
 
         $distinctProjects = $model->select('DISTINCT(project) as project_name')->orderBy('project', 'ASC')->findAll();
         $projectNames = array_column($distinctProjects, 'project_name');
         // Ensure no empty values, and if so default to Generic
-        $projectNames = array_map(function($p) {
+        $projectNames = array_map(function ($p) {
             return !empty($p) ? $p : 'Generic';
         }, $projectNames);
         $projectNames = array_unique($projectNames);
 
         return view('tasks/project_spreadsheet', [
-            'project_name'  => $projectName,
-            'tasks'         => $tasks,
-            'pager'         => $model->pager,
+            'project_name' => $projectName,
+            'tasks' => $tasks,
+            'pager' => $model->pager,
             'project_names' => $projectNames,
         ]);
     }
@@ -1013,11 +1013,11 @@ class TasksController extends BaseController
 
         header('Content-Type: text/csv; charset=utf-8');
         header('Content-Disposition: attachment; filename="' . $filename . '"');
-        
+
         $output = fopen('php://output', 'w');
-        
+
         // Output BOM for Excel UTF-8 support
-        fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
+        fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
         // Header row
         fputcsv($output, [
@@ -1028,7 +1028,7 @@ class TasksController extends BaseController
             'Assignee',
             'Created Date',
             'Status',
-            'Last Comment'
+            'Latest Update'
         ]);
 
         foreach ($tasks as $task) {
@@ -1062,7 +1062,7 @@ class TasksController extends BaseController
 
         return view('tasks/project_pdf', [
             'project_name' => $projectName,
-            'tasks'        => $tasks,
+            'tasks' => $tasks,
         ]);
     }
 
@@ -1076,13 +1076,13 @@ class TasksController extends BaseController
                     $tagIds = [];
                     foreach ($jiraTickets as $jt) {
                         if (!empty($jt['tag_id'])) {
-                            $tagIds[] = (int)$jt['tag_id'];
+                            $tagIds[] = (int) $jt['tag_id'];
                         }
                         if (!empty($jt['comments'])) {
                             $rawIds = explode(',', $jt['comments']);
                             foreach ($rawIds as $rid) {
                                 if (is_numeric(trim($rid))) {
-                                    $tagIds[] = (int)trim($rid);
+                                    $tagIds[] = (int) trim($rid);
                                 }
                             }
                         }

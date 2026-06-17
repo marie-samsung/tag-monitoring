@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title><?= $this->renderSection('title') ?? 'Martech TMS' ?></title>
     <link href="<?= base_url('assets/bootstrap/css/bootstrap.min.css') ?>" rel="stylesheet">
@@ -23,12 +24,12 @@
         <!-- MAIN CONTENT -->
         <div class="row mt-4">
             <div class="col container apple-card my-3">
-                <?php if (session()->getFlashdata('success')) : ?>
+                <?php if (session()->getFlashdata('success')): ?>
                     <div class="container alert alert-success alert-dismissible fade show mt-3" role="alert">
                         <?= esc(session()->getFlashdata('success')) ?>
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
-                <?php elseif (session()->getFlashdata('error')) : ?>
+                <?php elseif (session()->getFlashdata('error')): ?>
                     <div class="container alert alert-danger alert-dismissible fade show mt-3" role="alert">
                         <?= esc(session()->getFlashdata('error')) ?>
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -40,11 +41,13 @@
         </div>
 
         <!-- FOOTER -->
-        <footer class="d-flex flex-column flex-md-row justify-content-between align-items-center py-4 mt-2 mb-4 gap-3" style="border-top: 1px solid var(--color-border-subtle); opacity: 0.85;">
+        <footer class="d-flex flex-column flex-md-row justify-content-between align-items-center py-4 mt-2 mb-4 gap-3"
+            style="border-top: 1px solid var(--color-border-subtle); opacity: 0.85;">
             <!-- Left side: Samsung logo -->
             <div class="d-flex align-items-center justify-content-center justify-content-md-start" style="flex: 1;">
                 <div class="d-flex align-items-center" style="opacity: 0.85;">
-                    <img src="https://images.samsung.com/is/image/samsung/assets/ae/about-us/brand/logo/pc/300_186_1.png?$568_N_PNG$" alt="Samsung Logo" style="height: 80px; object-fit: contain;">
+                    <img src="https://images.samsung.com/is/image/samsung/assets/ae/about-us/brand/logo/pc/300_186_1.png?$568_N_PNG$"
+                        alt="Samsung Logo" style="height: 80px; object-fit: contain;">
                 </div>
             </div>
 
@@ -80,11 +83,11 @@
         });
 
         // Custom Theme Modal Helper Functions (to replace native alert/confirm)
-        window.themeConfirm = function({ title = 'Confirm', message = '', confirmText = 'Confirm', cancelText = 'Cancel', type = 'primary' }) {
+        window.themeConfirm = function ({ title = 'Confirm', message = '', confirmText = 'Confirm', cancelText = 'Cancel', type = 'primary' }) {
             return new Promise((resolve) => {
                 const overlay = document.createElement('div');
                 overlay.className = 'theme-dialog-overlay';
-                
+
                 let iconClass = 'bi-exclamation-circle-fill text-primary';
                 if (type === 'danger') {
                     iconClass = 'bi-exclamation-triangle-fill text-danger';
@@ -93,7 +96,7 @@
                 } else if (type === 'warning') {
                     iconClass = 'bi-exclamation-triangle-fill text-warning';
                 }
-                
+
                 overlay.innerHTML = `
                     <div class="theme-dialog-card">
                         <div class="theme-dialog-icon">
@@ -107,13 +110,13 @@
                         </div>
                     </div>
                 `;
-                
+
                 document.body.appendChild(overlay);
-                
+
                 // Trigger reflow
                 overlay.offsetHeight;
                 overlay.classList.add('show');
-                
+
                 const cleanup = (result) => {
                     overlay.classList.remove('show');
                     setTimeout(() => {
@@ -121,24 +124,24 @@
                     }, 300);
                     resolve(result);
                 };
-                
+
                 overlay.querySelector('.theme-dialog-btn-confirm').addEventListener('click', () => cleanup(true));
                 overlay.querySelector('.theme-dialog-btn-cancel').addEventListener('click', () => cleanup(false));
             });
         };
 
-        window.themeAlert = function({ title = 'Alert', message = '', buttonText = 'OK', type = 'primary' }) {
+        window.themeAlert = function ({ title = 'Alert', message = '', buttonText = 'OK', type = 'primary' }) {
             return new Promise((resolve) => {
                 const overlay = document.createElement('div');
                 overlay.className = 'theme-dialog-overlay';
-                
+
                 let iconClass = 'bi-info-circle-fill text-primary';
                 if (type === 'danger') {
                     iconClass = 'bi-exclamation-octagon-fill text-danger';
                 } else if (type === 'success') {
                     iconClass = 'bi-check-circle-fill text-success';
                 }
-                
+
                 overlay.innerHTML = `
                     <div class="theme-dialog-card">
                         <div class="theme-dialog-icon">
@@ -151,13 +154,13 @@
                         </div>
                     </div>
                 `;
-                
+
                 document.body.appendChild(overlay);
-                
+
                 // Trigger reflow
                 overlay.offsetHeight;
                 overlay.classList.add('show');
-                
+
                 const cleanup = () => {
                     overlay.classList.remove('show');
                     setTimeout(() => {
@@ -165,25 +168,25 @@
                     }, 300);
                     resolve();
                 };
-                
+
                 overlay.querySelector('.theme-dialog-btn-confirm').addEventListener('click', cleanup);
             });
         };
 
         // Declarative handlers for elements with data-confirm
-        document.addEventListener('click', function(e) {
+        document.addEventListener('click', function (e) {
             const confirmEl = e.target.closest('[data-confirm]');
             if (!confirmEl) return;
-            
+
             e.preventDefault();
             e.stopImmediatePropagation();
-            
+
             const message = confirmEl.getAttribute('data-confirm');
             const title = confirmEl.getAttribute('data-confirm-title') || 'Confirm Action';
             const type = confirmEl.getAttribute('data-confirm-type') || 'primary';
             const confirmText = confirmEl.getAttribute('data-confirm-text') || 'Confirm';
             const cancelText = confirmEl.getAttribute('data-confirm-cancel') || 'Cancel';
-            
+
             window.themeConfirm({
                 title: title,
                 message: message,
@@ -208,19 +211,19 @@
             });
         }, true);
 
-        document.addEventListener('submit', function(e) {
+        document.addEventListener('submit', function (e) {
             const form = e.target;
             const confirmMsg = form.getAttribute('data-confirm');
             if (!confirmMsg) return;
-            
+
             e.preventDefault();
             e.stopImmediatePropagation();
-            
+
             const title = form.getAttribute('data-confirm-title') || 'Confirm Submission';
             const type = form.getAttribute('data-confirm-type') || 'primary';
             const confirmText = form.getAttribute('data-confirm-text') || 'Submit';
             const cancelText = form.getAttribute('data-confirm-cancel') || 'Cancel';
-            
+
             window.themeConfirm({
                 title: title,
                 message: confirmMsg,
@@ -239,7 +242,7 @@
 
     <?= $this->renderSection('scripts') ?>
 
-    <?php if (\App\Models\Constants::IS_DEV) : ?>
+    <?php if (\App\Models\Constants::IS_DEV): ?>
         <div class="dev-mode-badge-container">
             <span class="badge dev-mode-badge">
                 DEVELOPMENT MODE
@@ -247,5 +250,5 @@
         </div>
     <?php endif; ?>
 </body>
+
 </html>
- 

@@ -110,6 +110,20 @@ Vendors List
         font-weight: 500;
         color: var(--color-text-base);
     }
+
+    /* Sticky Table Header */
+    .apple-table-container .table-responsive {
+        max-height: 65vh;
+        overflow-y: auto;
+    }
+
+    #tblProperties thead th {
+        position: sticky;
+        top: 0;
+        background-color: var(--color-bg-base, #ffffff);
+        z-index: 10;
+        box-shadow: inset 0 -1px 0 var(--bs-border-color, rgba(0, 0, 0, 0.1));
+    }
 </style>
 
 <?= csrf_field() ?>
