@@ -15,6 +15,7 @@ class UsersModel extends Model
         'password',
         'account_type', // Refer to 'Constants' model for values
         'role_id',
+        'profile_photo',
         'is_active',
     ];
 

@@ -41,5 +41,17 @@ abstract class BaseController extends Controller
 
         // Preload any models, libraries, etc, here.
         // $this->session = service('session');
+
+        // Check and run daily auto-backup if enabled and 24 hours elapsed
+        if (ENVIRONMENT !== 'testing' && !is_cli()) {
+            $backupHandler = new \App\Libraries\BackupHandler();
+            $backupSettings = $backupHandler->getSettings();
+            if ($backupSettings['enabled']) {
+                $lastTime = !empty($backupSettings['last_backup']) ? strtotime($backupSettings['last_backup']) : 0;
+                if (time() - $lastTime >= 86400) {
+                    $backupHandler->runBackup();
+                }
+            }
+        }
     }
 }

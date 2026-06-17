@@ -78,6 +78,163 @@
                 return new bootstrap.Tooltip(tooltipTriggerEl);
             });
         });
+
+        // Custom Theme Modal Helper Functions (to replace native alert/confirm)
+        window.themeConfirm = function({ title = 'Confirm', message = '', confirmText = 'Confirm', cancelText = 'Cancel', type = 'primary' }) {
+            return new Promise((resolve) => {
+                const overlay = document.createElement('div');
+                overlay.className = 'theme-dialog-overlay';
+                
+                let iconClass = 'bi-exclamation-circle-fill text-primary';
+                if (type === 'danger') {
+                    iconClass = 'bi-exclamation-triangle-fill text-danger';
+                } else if (type === 'success') {
+                    iconClass = 'bi-check-circle-fill text-success';
+                } else if (type === 'warning') {
+                    iconClass = 'bi-exclamation-triangle-fill text-warning';
+                }
+                
+                overlay.innerHTML = `
+                    <div class="theme-dialog-card">
+                        <div class="theme-dialog-icon">
+                            <i class="bi ${iconClass}"></i>
+                        </div>
+                        <h4 class="theme-dialog-title">${title}</h4>
+                        <p class="theme-dialog-message px-2">${message}</p>
+                        <div class="theme-dialog-actions">
+                            <button type="button" class="apple-btn-secondary btn-sm flex-grow-1 theme-dialog-btn-cancel py-2" style="border-radius: 20px;">${cancelText}</button>
+                            <button type="button" class="apple-btn-primary btn-sm flex-grow-1 theme-dialog-btn-confirm py-2" style="border-radius: 20px;">${confirmText}</button>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(overlay);
+                
+                // Trigger reflow
+                overlay.offsetHeight;
+                overlay.classList.add('show');
+                
+                const cleanup = (result) => {
+                    overlay.classList.remove('show');
+                    setTimeout(() => {
+                        overlay.remove();
+                    }, 300);
+                    resolve(result);
+                };
+                
+                overlay.querySelector('.theme-dialog-btn-confirm').addEventListener('click', () => cleanup(true));
+                overlay.querySelector('.theme-dialog-btn-cancel').addEventListener('click', () => cleanup(false));
+            });
+        };
+
+        window.themeAlert = function({ title = 'Alert', message = '', buttonText = 'OK', type = 'primary' }) {
+            return new Promise((resolve) => {
+                const overlay = document.createElement('div');
+                overlay.className = 'theme-dialog-overlay';
+                
+                let iconClass = 'bi-info-circle-fill text-primary';
+                if (type === 'danger') {
+                    iconClass = 'bi-exclamation-octagon-fill text-danger';
+                } else if (type === 'success') {
+                    iconClass = 'bi-check-circle-fill text-success';
+                }
+                
+                overlay.innerHTML = `
+                    <div class="theme-dialog-card">
+                        <div class="theme-dialog-icon">
+                            <i class="bi ${iconClass}"></i>
+                        </div>
+                        <h4 class="theme-dialog-title">${title}</h4>
+                        <p class="theme-dialog-message px-2">${message}</p>
+                        <div class="theme-dialog-actions">
+                            <button type="button" class="apple-btn-primary btn-sm flex-grow-1 theme-dialog-btn-confirm py-2" style="border-radius: 20px;">${buttonText}</button>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(overlay);
+                
+                // Trigger reflow
+                overlay.offsetHeight;
+                overlay.classList.add('show');
+                
+                const cleanup = () => {
+                    overlay.classList.remove('show');
+                    setTimeout(() => {
+                        overlay.remove();
+                    }, 300);
+                    resolve();
+                };
+                
+                overlay.querySelector('.theme-dialog-btn-confirm').addEventListener('click', cleanup);
+            });
+        };
+
+        // Declarative handlers for elements with data-confirm
+        document.addEventListener('click', function(e) {
+            const confirmEl = e.target.closest('[data-confirm]');
+            if (!confirmEl) return;
+            
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            
+            const message = confirmEl.getAttribute('data-confirm');
+            const title = confirmEl.getAttribute('data-confirm-title') || 'Confirm Action';
+            const type = confirmEl.getAttribute('data-confirm-type') || 'primary';
+            const confirmText = confirmEl.getAttribute('data-confirm-text') || 'Confirm';
+            const cancelText = confirmEl.getAttribute('data-confirm-cancel') || 'Cancel';
+            
+            window.themeConfirm({
+                title: title,
+                message: message,
+                confirmText: confirmText,
+                cancelText: cancelText,
+                type: type
+            }).then((confirmed) => {
+                if (confirmed) {
+                    if (confirmEl.tagName === 'A') {
+                        window.location.href = confirmEl.href;
+                    } else if (confirmEl.tagName === 'BUTTON' && confirmEl.type === 'submit') {
+                        const form = confirmEl.closest('form');
+                        if (form) form.submit();
+                    } else {
+                        // For generic button triggers
+                        const originalConfirm = confirmEl.getAttribute('data-confirm');
+                        confirmEl.removeAttribute('data-confirm');
+                        confirmEl.click();
+                        confirmEl.setAttribute('data-confirm', originalConfirm);
+                    }
+                }
+            });
+        }, true);
+
+        document.addEventListener('submit', function(e) {
+            const form = e.target;
+            const confirmMsg = form.getAttribute('data-confirm');
+            if (!confirmMsg) return;
+            
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            
+            const title = form.getAttribute('data-confirm-title') || 'Confirm Submission';
+            const type = form.getAttribute('data-confirm-type') || 'primary';
+            const confirmText = form.getAttribute('data-confirm-text') || 'Submit';
+            const cancelText = form.getAttribute('data-confirm-cancel') || 'Cancel';
+            
+            window.themeConfirm({
+                title: title,
+                message: confirmMsg,
+                confirmText: confirmText,
+                cancelText: cancelText,
+                type: type
+            }).then((confirmed) => {
+                if (confirmed) {
+                    form.removeAttribute('data-confirm');
+                    form.submit();
+                    form.setAttribute('data-confirm', confirmMsg);
+                }
+            });
+        }, true);
     </script>
 
     <?= $this->renderSection('scripts') ?>

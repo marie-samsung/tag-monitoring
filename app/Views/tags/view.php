@@ -92,7 +92,10 @@ $tagRequestsModel = new TagRequestsModel();
                         <?php if ($tag['status'] == Constants::STATUS_PENDING_VERIFICATION): ?>
                             <a href="<?= site_url('tags/verify/' . $tag['id']) ?>" 
                                 class="badge bg-primary text-decoration-none"
-                                onclick="return confirm('Have you verified the end date matches in AL?');">
+                                data-confirm="Have you verified the end date matches in AL?"
+                                data-confirm-title="Verify Tag"
+                                data-confirm-type="success"
+                                data-confirm-text="Verify">
                                 Verify
                             </a>
                         <?php endif; ?>

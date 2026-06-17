@@ -141,7 +141,7 @@ Upload Renewal Justifications
             </div>
         </form>
     <?php else: ?>
-        <form action="<?= site_url('tags/parse-renewal-justifications') ?>" method="post" enctype="multipart/form-data" onsubmit="return confirm('Are you sure you want to update the renewal justifications?');" style="max-width: 600px;">
+        <form action="<?= site_url('tags/parse-renewal-justifications') ?>" method="post" enctype="multipart/form-data" data-confirm="Are you sure you want to update the renewal justifications?" data-confirm-title="Confirm Upload" data-confirm-type="warning" style="max-width: 600px;">
             <?= csrf_field() ?>
             
             <!-- Upload Card Container -->

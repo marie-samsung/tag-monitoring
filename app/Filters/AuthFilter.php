@@ -36,7 +36,7 @@ class AuthFilter implements FilterInterface
             $db = \Config\Database::connect();
 
             // Auto-heal database: run migration check
-            if (!$db->fieldExists('role_id', 'users') || !$db->tableExists('role_permissions') || !$db->tableExists('roles')) {
+            if (!$db->fieldExists('role_id', 'users') || !$db->fieldExists('profile_photo', 'users') || !$db->tableExists('role_permissions') || !$db->tableExists('roles')) {
                 self::autoMigrate($db);
             }
 
@@ -164,6 +164,11 @@ class AuthFilter implements FilterInterface
             $db->query("UPDATE `users` SET `role_id` = 2 WHERE `id` = 4");  // janitha -> Martech
             $db->query("UPDATE `users` SET `role_id` = 1 WHERE `id` = 5");  // george -> Media Tagging
             $db->query("UPDATE `users` SET `role_id` = 3 WHERE `id` = 6");  // other -> Admin
+        }
+
+        // Add profile_photo column to users
+        if (!$db->fieldExists('profile_photo', 'users')) {
+            $db->query("ALTER TABLE `users` ADD COLUMN `profile_photo` VARCHAR(255) DEFAULT NULL AFTER `role_id`");
         }
 
         // 3. Create role_permissions table
