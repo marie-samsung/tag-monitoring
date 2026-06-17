@@ -224,10 +224,10 @@ class TagRequestsController extends BaseController
         } else {
             $tagRequest = $model->find($id);
             $ticketColumn = 'new_tag_ticket';
-            $title = "New Tag Request: ";
+            $title = "New Tag Request ";
             if ($tagRequest['type'] == Constants::JIRA_TYPE_NEW_RULE) {
                 $ticketColumn = 'new_rule_ticket';
-                $title = "New Rule Request: ";
+                $title = "New Rule Request ";
             }
 
             $this->addTask($tagRequest, $title, $ticketId);

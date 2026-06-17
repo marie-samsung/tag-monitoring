@@ -129,7 +129,7 @@ Tags Renewal: <?= $siteCode ?? null ?>
             </tbody>
         </table>';
 
-    $commentHtml = 'Hi <a href="' . Constants::JIRA_TAGGING_SUPPORT . '" target="_blank">TAGGING JIRA SUPPORT</a>,
+    $commentHtml = 'Hi <a href="' . Constants::JIRA_TAGGING_SUPPORT . '" target="_blank">Tagging Support</a>,
 <br/>Kindly refer to the date extension approval confirmation here: 
 <a href="' . Constants::JIRA_LINK . $subsidiaryTicketId . '" target="_blank">' . Constants::JIRA_LINK . $subsidiaryTicketId . '</a>
 <br/><br/>Regards,

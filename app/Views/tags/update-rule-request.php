@@ -238,7 +238,7 @@
                                     <tr>
                                         <td><?= esc($tag['id']) ?></td>
                                         <td>
-                                            <a href="<?= esc($properties[$tag['property_id']]['ref_link'] ?? '#') ?>" target="_blank" class="apple-link-dark text-decoration-none fw-semibold">
+                                            <a href="<?= esc($properties[$tag['property_id']]['ref_link'] . Constants::AL_LIBRARY_CREATE ?? '#') ?>" target="_blank" class="apple-link-dark text-decoration-none fw-semibold">
                                                 <?= esc($properties[$tag['property_id']]['name'] ?? 'Unknown') ?>
                                             </a>
                                         </td>

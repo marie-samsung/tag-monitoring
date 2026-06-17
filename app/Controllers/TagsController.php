@@ -608,7 +608,7 @@ class TagsController extends BaseController
 
     public function addTask($propertyId, $tagIds, $info, $isRenewal = true)
     {
-        $$tasksModel = new TasksModel();
+        $tasksModel = new TasksModel();
         $propertyModel = new PropertiesModel();
         $tagsModel = new TagsModel();
         $property = $propertyModel->find($propertyId);

@@ -217,6 +217,9 @@ Properties List
                             </a>
                         </th>
                         <th class="form-label-sm fw-semibold">
+                            Site URL
+                        </th>
+                        <th class="form-label-sm fw-semibold">
                             <a href="<?= getSortUrl('is_epp', $currentSortBy, $currentSortDir) ?>" class="text-decoration-none text-dark d-inline-flex align-items-center">
                                 Is EPP? <?= getSortIcon('is_epp', $currentSortBy, $currentSortDir) ?>
                             </a>
@@ -249,6 +252,16 @@ Properties List
                                             <?= $property['name'] ?>
                                         </a>
                                         <a href="javascript:void(0)" onclick="copyName('<?= esc($property['name']) ?>', this)" title="Copy property name" class="text-muted ms-2" style="transition: color 0.2s; text-decoration: none; line-height: 1;">
+                                            <i class="bi bi-copy" style="font-size: 0.85rem;"></i>
+                                        </a>
+                                    </span>
+                                </td>
+                                <td class="form-label-sm">
+                                    <span class="group-hover-container align-items-center">
+                                        <a href="<?= $property['website'] ?>" target="_blank" rel="noopener" class="apple-link-dark form-label-sm ms-1">
+                                            <?= $property['website'] ?>
+                                        </a>
+                                        <a href="javascript:void(0)" onclick="copyWebsite('<?= esc($property['website']) ?>', this)" title="Copy site URL" class="text-muted ms-2" style="transition: color 0.2s; text-decoration: none; line-height: 1;">
                                             <i class="bi bi-copy" style="font-size: 0.85rem;"></i>
                                         </a>
                                     </span>
@@ -286,6 +299,29 @@ Properties List
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         window.copyName = function(text, el) {
+            const temp = document.createElement('textarea');
+            temp.value = text;
+
+            temp.style.position = 'fixed';
+            temp.style.left = '-9999px';
+
+            document.body.appendChild(temp);
+
+            temp.focus();
+            temp.select();
+
+            document.execCommand('copy');
+
+            document.body.removeChild(temp);
+
+            el.innerHTML = '<i class="bi bi-check-lg text-success fs-7"></i>';
+
+            setTimeout(() => {
+                el.innerHTML = '<i class="bi bi-copy text-secondary fs-7"></i>';
+            }, 1200);
+        };
+
+        window.copyWebsite = function(text, el) {
             const temp = document.createElement('textarea');
             temp.value = text;
 
