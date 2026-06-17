@@ -32,7 +32,9 @@ $tagRequestsModel = new TagRequestsModel();
 <div class="container-fluid px-0">
     <!-- Page Header -->
     <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
-        <a href="<?= site_url('tags') ?>" onclick="if (document.referrer) { window.history.back(); return false; }" class="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; padding: 0;" title="Back to Inventory">
+        <a href="<?= site_url('tags') ?>" onclick="if (document.referrer) { window.history.back(); return false; }"
+            class="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center"
+            style="width: 36px; height: 36px; padding: 0;" title="Back to Inventory">
             <i class="bi bi-arrow-left fs-5"></i>
         </a>
         <div>
@@ -44,7 +46,8 @@ $tagRequestsModel = new TagRequestsModel();
     <div class="row g-4">
         <!-- Tag Details Card -->
         <div class="col-lg-4">
-            <div class="apple-card" style="background-color: var(--color-bg-base); border: 1px solid rgba(0, 0, 0, 0.05); box-shadow: none;">
+            <div class="apple-card"
+                style="background-color: var(--color-bg-base); border: 1px solid rgba(0, 0, 0, 0.05); box-shadow: none;">
                 <h5 class="mb-4 text-primary d-flex align-items-center gap-2 fw-bold">
                     <i class="bi bi-info-circle-fill"></i>
                     <span>Specifications</span>
@@ -53,7 +56,8 @@ $tagRequestsModel = new TagRequestsModel();
                 <div class="mb-3">
                     <label class="form-label-xs fw-semibold text-secondary mb-1 d-block">Property</label>
                     <span class="fw-medium text-dark ms-1" style="font-size: 0.9rem;">
-                        <a href="<?= esc($properties[$tag['property_id']]['ref_link'] ?? '#') ?>" target="_blank" class="apple-link-dark text-decoration-none fw-semibold">
+                        <a href="<?= esc($properties[$tag['property_id']]['ref_link'] ?? '#') ?>" target="_blank"
+                            class="apple-link-dark text-decoration-none fw-semibold">
                             <i class="bi bi-tag-fill text-muted me-1"></i>
                             <?= esc($properties[$tag['property_id']]['name'] ?? '—') ?>
                         </a>
@@ -70,7 +74,8 @@ $tagRequestsModel = new TagRequestsModel();
                 <div class="mb-3">
                     <label class="form-label-xs fw-semibold text-secondary mb-1 d-block">Tag Name</label>
                     <span class="fw-medium text-dark ms-1" style="font-size: 0.9rem;">
-                        <a href="<?= esc($tag['ref_link'] ?? '#') ?>" target="_blank" class="apple-link text-decoration-none fw-semibold">
+                        <a href="<?= esc($tag['ref_link'] ?? '#') ?>" target="_blank"
+                            class="apple-link text-decoration-none fw-semibold">
                             <?= esc($tag['name']) ?>
                         </a>
                     </span>
@@ -90,12 +95,10 @@ $tagRequestsModel = new TagRequestsModel();
                             <?= esc(Constants::STATUS[$tag['status']] ?? 'Unknown') ?>
                         </span>
                         <?php if ($tag['status'] == Constants::STATUS_PENDING_VERIFICATION): ?>
-                            <a href="<?= site_url('tags/verify/' . $tag['id']) ?>" 
+                            <a href="<?= site_url('tags/verify/' . $tag['id']) ?>"
                                 class="badge bg-primary text-decoration-none"
-                                data-confirm="Have you verified the end date matches in AL?"
-                                data-confirm-title="Verify Tag"
-                                data-confirm-type="success"
-                                data-confirm-text="Verify">
+                                data-confirm="Have you verified the end date matches in AL?" data-confirm-title="Verify Tag"
+                                data-confirm-type="success" data-confirm-text="Verify">
                                 Verify
                             </a>
                         <?php endif; ?>
@@ -104,9 +107,10 @@ $tagRequestsModel = new TagRequestsModel();
 
                 <div class="mb-3">
                     <label class="form-label-xs fw-semibold text-secondary mb-1 d-block">Adobe Launch End Date</label>
-                    <span class="fw-medium ms-1 <?= date_class($tag['al_end_date'], $tag['status']) ?>" style="font-size: 0.9rem;">
+                    <span class="fw-medium ms-1 <?= date_class($tag['al_end_date'], $tag['status']) ?>"
+                        style="font-size: 0.9rem;">
                         <?= esc($tag['al_end_date'] ?: '—') ?>
-                        <?php if ($tag['requested_date']) : ?>
+                        <?php if ($tag['requested_date']): ?>
                             <small class="text-muted ms-1">[<?= esc($tag['requested_date']) ?>]</small>
                         <?php endif; ?>
                     </span>
@@ -143,24 +147,70 @@ $tagRequestsModel = new TagRequestsModel();
                 </div>
 
                 <div class="d-flex align-items-center gap-2 mt-4 pt-3 border-top">
-                    <a href="<?= site_url('tags') ?>" onclick="if (document.referrer) { window.history.back(); return false; }" class="apple-btn-secondary btn-sm px-3 text-decoration-none">Back</a>
-                    <a href="<?= site_url('tags/update/' . $tag['id']) ?>" class="apple-btn-primary btn-sm px-3 text-decoration-none ms-auto">Edit Details</a>
+                    <a href="<?= site_url('tags') ?>"
+                        onclick="if (document.referrer) { window.history.back(); return false; }"
+                        class="apple-btn-secondary btn-sm px-3 text-decoration-none">Back</a>
+                    <a href="<?= site_url('tags/update/' . $tag['id']) ?>"
+                        class="apple-btn-primary btn-sm px-3 text-decoration-none ms-auto">Edit Details</a>
                 </div>
             </div>
         </div>
 
         <!-- JIRA References Section -->
         <div class="col-lg-8">
+            <!-- JS Code Section -->
+            <div class="mb-4">
+                <div class="accordion" id="jsCodeAccordion">
+                    <div class="accordion-item"
+                        style="border: 1px solid rgba(0,0,0,0.05); border-radius: 8px; overflow: hidden;">
+                        <h4 class="accordion-header" id="headingJsCode">
+                            <button
+                                class="accordion-button collapsed fw-bold text-primary d-flex align-items-center gap-2"
+                                type="button" data-bs-toggle="collapse" data-bs-target="#collapseJsCode"
+                                aria-expanded="false" aria-controls="collapseJsCode"
+                                style="background-color: var(--color-bg-base); box-shadow: none;">
+                                <i class="bi bi-code-slash"></i>
+                                <span>Script</span>
+                            </button>
+                        </h4>
+                        <div id="collapseJsCode" class="accordion-collapse collapse" aria-labelledby="headingJsCode"
+                            data-bs-parent="#jsCodeAccordion">
+                            <div class="accordion-body p-0">
+                                <div id="jsEditor"
+                                    style="height: 400px; width: 100%; border-top: 1px solid rgba(0,0,0,0.05); border-bottom: 1px solid rgba(0,0,0,0.05);">
+                                </div>
+                                <div id="jsValidationPanel" class="p-2 border-bottom" style="font-size: 0.85rem; max-height: 150px; overflow-y: auto; background-color: var(--color-bg-base);">
+                                    <div class="text-muted"><i class="bi bi-hourglass-split me-1"></i> Validating...</div>
+                                </div>
+                                <div class="p-3 bg-light d-flex justify-content-between align-items-center">
+                                    <div class="form-check form-switch ms-2 mb-0">
+                                        <input class="form-check-input" type="checkbox" id="themeToggle" style="cursor: pointer;">
+                                        <label class="form-check-label text-muted" for="themeToggle" style="font-size: 0.9rem; cursor: pointer;">
+                                            <i class="bi bi-moon-stars me-1"></i> Dark Mode
+                                        </label>
+                                    </div>
+                                    <button type="button" class="apple-btn-primary btn-sm px-4" id="saveJsCodeBtn"
+                                        style="border-radius: 20px;">
+                                        <i class="bi bi-save me-1"></i> Save
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h4 class="mb-0 text-primary d-flex align-items-center gap-2 fw-bold">
                     <i class="bi bi-jira"></i>
                     <span>JIRA References</span>
                 </h4>
-                <a href="<?= site_url('jira/add-entry?tag_id='.$tag['id']) ?>" target="_blank" title="Add a new JIRA ticket" class="apple-btn-primary btn-sm px-3 text-decoration-none">
+                <a href="<?= site_url('jira/add-entry?tag_id=' . $tag['id']) ?>" target="_blank"
+                    title="Add a new JIRA ticket" class="apple-btn-primary btn-sm px-3 text-decoration-none">
                     <i class="bi bi-plus-lg me-1"></i> Add Entry
                 </a>
             </div>
-            
+
             <div class="apple-table-container">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
@@ -175,86 +225,93 @@ $tagRequestsModel = new TagRequestsModel();
                         </thead>
 
                         <tbody>
-                            <?php 
-                                $hasTickets = false;
-                                foreach ($jiraTickets as $jira) {
-                                    if ($jira['tag_id'] == $tag['id']) {
-                                        $hasTickets = true;
-                                        break;
-                                    }
+                            <?php
+                            $hasTickets = false;
+                            foreach ($jiraTickets as $jira) {
+                                if ($jira['tag_id'] == $tag['id']) {
+                                    $hasTickets = true;
+                                    break;
                                 }
+                            }
                             ?>
                             <?php if (!$hasTickets): ?>
                                 <tr>
                                     <td colspan="5" class="text-center py-4 text-muted">
-                                        <i class="bi bi-info-circle d-block fs-4 mb-2 text-secondary" style="opacity: 0.5;"></i>
+                                        <i class="bi bi-info-circle d-block fs-4 mb-2 text-secondary"
+                                            style="opacity: 0.5;"></i>
                                         No JIRA references associated with this tag.
                                     </td>
                                 </tr>
                             <?php else: ?>
-                                <?php 
-                                    $displayedTickets = [];
-                                    foreach ($jiraTickets as $jira):
-                                        if ($jira['tag_id'] != $tag['id']) {
-                                            continue;
-                                        }
-                                        if (in_array($jira['ticket_id'], $displayedTickets)) {
-                                            continue;
-                                        }
-                                        $displayedTickets[] = $jira['ticket_id'];
-                                        $ticketTagsList = [];
-                                        $type = $jira['type'];
-                                        if ($type == Constants::JIRA_TYPE_DATE_EXTENSION_RULE ||
-                                                $type == Constants::JIRA_TYPE_NEW_TAG ||
-                                                $type == Constants::JIRA_TYPE_NEW_RULE ||
-                                                $type == Constants::JIRA_TYPE_UPDATE_RULE) {
-                                            $ticketTags = explode(',', $jira['comments']);
-                                            
-                                            foreach ($ticketTags as $tagId) {
-                                                $tagInfo = $tagModel->find($tagId);
-                                                if ($tagInfo) {
-                                                    $ticketTagsList[$tagInfo['name']] = $tagInfo['ref_link'];
-                                                }
+                                <?php
+                                $displayedTickets = [];
+                                foreach ($jiraTickets as $jira):
+                                    if ($jira['tag_id'] != $tag['id']) {
+                                        continue;
+                                    }
+                                    if (in_array($jira['ticket_id'], $displayedTickets)) {
+                                        continue;
+                                    }
+                                    $displayedTickets[] = $jira['ticket_id'];
+                                    $ticketTagsList = [];
+                                    $type = $jira['type'];
+                                    if (
+                                        $type == Constants::JIRA_TYPE_DATE_EXTENSION_RULE ||
+                                        $type == Constants::JIRA_TYPE_NEW_TAG ||
+                                        $type == Constants::JIRA_TYPE_NEW_RULE ||
+                                        $type == Constants::JIRA_TYPE_UPDATE_RULE
+                                    ) {
+                                        $ticketTags = explode(',', $jira['comments']);
+
+                                        foreach ($ticketTags as $tagId) {
+                                            $tagInfo = $tagModel->find($tagId);
+                                            if ($tagInfo) {
+                                                $ticketTagsList[$tagInfo['name']] = $tagInfo['ref_link'];
                                             }
                                         }
-                                ?>
+                                    }
+                                    ?>
                                     <tr>
                                         <td class="fw-semibold"><?= $jira['id'] ?: '-' ?></td>
                                         <td>
-                                            <a href="<?= Constants::JIRA_LINK ?><?= $jira['ticket_id'] ?: '#' ?>" target="_blank" class="apple-link text-decoration-none fw-semibold">
+                                            <a href="<?= Constants::JIRA_LINK ?><?= $jira['ticket_id'] ?: '#' ?>"
+                                                target="_blank" class="apple-link text-decoration-none fw-semibold">
                                                 <?= $jira['ticket_id'] ?: '-' ?>
                                             </a>
                                         </td>
                                         <!-- TYPE -->
                                         <td>
                                             <?php
-                                                if ($type == Constants::JIRA_TYPE_NEW_TAG || $type == Constants::JIRA_TYPE_NEW_RULE) {
-                                                    $request_id = $tagRequestsModel->getRequestByTicketId($jira['ticket_id']);
-     
-                                                    if ($request_id) {
-                                            ?>
-                                                        <a href="<?= site_url('/tag-requests/view/' . $request_id) ?>" target="_blank" class="apple-link-dark text-decoration-none fw-semibold">
-                                                            <?= Constants::JIRA_TICKET_TYPES[$type] ?>
-                                                        </a>
+                                            if ($type == Constants::JIRA_TYPE_NEW_TAG || $type == Constants::JIRA_TYPE_NEW_RULE) {
+                                                $request_id = $tagRequestsModel->getRequestByTicketId($jira['ticket_id']);
+
+                                                if ($request_id) {
+                                                    ?>
+                                                    <a href="<?= site_url('/tag-requests/view/' . $request_id) ?>" target="_blank"
+                                                        class="apple-link-dark text-decoration-none fw-semibold">
+                                                        <?= Constants::JIRA_TICKET_TYPES[$type] ?>
+                                                    </a>
                                                 <?php } else { ?>
                                                     <?= Constants::JIRA_TICKET_TYPES[$type] ?>
                                                 <?php } ?>
-     
-                                            <?php
-                                                } elseif ($type == Constants::JIRA_TYPE_UPDATE_RULE) {
-                                                    $activityLogsModel = new TasksModel();
-                                                    $activityLog = $activityLogsModel->where('ticket_id', $jira['ticket_id'])->first();
-     
-                                                    if ($activityLog) {
-                                            ?>
-                                                    <a href="<?= site_url('/tasks/view/' . $activityLog['id']) ?>" target="_blank" class="apple-link-dark text-decoration-none fw-semibold">
+
+                                                <?php
+                                            } elseif ($type == Constants::JIRA_TYPE_UPDATE_RULE) {
+                                                $activityLogsModel = new TasksModel();
+                                                $activityLog = $activityLogsModel->where('ticket_id', $jira['ticket_id'])->first();
+
+                                                if ($activityLog) {
+                                                    ?>
+                                                    <a href="<?= site_url('/tasks/view/' . $activityLog['id']) ?>" target="_blank"
+                                                        class="apple-link-dark text-decoration-none fw-semibold">
                                                         <?= Constants::JIRA_TICKET_TYPES[$type] ?>
                                                     </a>
-     
-                                                    <?php } else { ?>
-                                                        <?= Constants::JIRA_TICKET_TYPES[$type] ?>
-     
-                                            <?php }} else { ?>
+
+                                                <?php } else { ?>
+                                                    <?= Constants::JIRA_TICKET_TYPES[$type] ?>
+
+                                                <?php }
+                                            } else { ?>
                                                 <?= Constants::JIRA_TICKET_TYPES[$type] ?>
                                             <?php } ?>
                                         </td>
@@ -262,7 +319,8 @@ $tagRequestsModel = new TagRequestsModel();
                                         <td>
                                             <?php if ($ticketTagsList): ?>
                                                 <?php foreach ($ticketTagsList as $name => $link): ?>
-                                                    <a href="<?= $link ?>" target="_blank" class="apple-link text-decoration-none"><?= esc($name) ?></a><br>
+                                                    <a href="<?= $link ?>" target="_blank"
+                                                        class="apple-link text-decoration-none"><?= esc($name) ?></a><br>
                                                 <?php endforeach; ?>
                                             <?php else: ?>
                                                 <span class="text-secondary"><?= esc($jira['comments']) ?></span>
@@ -270,7 +328,10 @@ $tagRequestsModel = new TagRequestsModel();
                                         </td>
                                         <!-- ACTIONS -->
                                         <td class="text-center">
-                                            <a href="<?= site_url('jira/update-tags/' . $jira['id']) ?>" class="apple-btn-secondary btn-sm px-2 py-1" style="font-size: 0.75rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;" title="Update Related Tags">
+                                            <a href="<?= site_url('jira/update-tags/' . $jira['id']) ?>"
+                                                class="apple-btn-secondary btn-sm px-2 py-1"
+                                                style="font-size: 0.75rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;"
+                                                title="Update Related Tags">
                                                 <i class="bi bi-pencil-square"></i>
                                             </a>
                                         </td>
@@ -285,4 +346,338 @@ $tagRequestsModel = new TagRequestsModel();
     </div>
 </div>
 
+<?= $this->endSection() ?>
+
+<?= $this->section('scripts') ?>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.7/ace.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var editor = ace.edit("jsEditor");
+        editor.setTheme("ace/theme/github");
+        editor.session.setMode("ace/mode/javascript");
+                    <label class="form-label-xs fw-semibold text-secondary mb-1 d-block">Email Address</label>
+                    <span class="fw-medium text-dark ms-1" style="font-size: 0.9rem;">
+                        <?php if (!empty($tag['requester_email'])): ?>
+                                        <a href="mailto:<?= esc($tag['requester_email']) ?>" class="apple-link text-decoration-none">
+                                            <?= esc($tag['requester_email']) ?>
+                                        </a>
+                        <?php else: ?>
+                                        —
+                        <?php endif; ?>
+                    </span>
+                </div >
+
+                <div class="mb-3">
+                    <label class="form-label-xs fw-semibold text-secondary mb-1 d-block">Organization</label>
+                    <span class="fw-medium text-dark ms-1" style="font-size: 0.9rem;">
+                        <?= esc($organizations[$tag['requester_organization']] ?? '—') ?>
+                    </span>
+                </div>
+
+                <div class="d-flex align-items-center gap-2 mt-4 pt-3 border-top">
+                    <a href="<?= site_url('tags') ?>" onclick="if (document.referrer) { window.history.back(); return false; }" class="apple-btn-secondary btn-sm px-3 text-decoration-none">Back</a>
+                    <a href="<?= site_url('tags/update/' . $tag['id']) ?>" class="apple-btn-primary btn-sm px-3 text-decoration-none ms-auto">Edit Details</a>
+                </div>
+            </div >
+        </div >
+
+            <!-- JIRA References Section -->
+            <div class="col-lg-8">
+                <!-- JS Code Section -->
+                <div class="mb-4">
+                    <div class="accordion" id="jsCodeAccordion">
+                        <div class="accordion-item" style="border: 1px solid rgba(0,0,0,0.05); border-radius: 8px; overflow: hidden;">
+                            <h4 class="accordion-header" id="headingJsCode">
+                                <button class="accordion-button collapsed fw-bold text-primary d-flex align-items-center gap-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapseJsCode" aria-expanded="false" aria-controls="collapseJsCode" style="background-color: var(--color-bg-base); box-shadow: none;">
+                                    <i class="bi bi-code-slash"></i>
+                                    <span>JavaScript Code</span>
+                                </button>
+                            </h4>
+                            <div id="collapseJsCode" class="accordion-collapse collapse" aria-labelledby="headingJsCode" data-bs-parent="#jsCodeAccordion">
+                                <div class="accordion-body p-0">
+                                    <div id="jsEditor" style="height: 400px; width: 100%; border-top: 1px solid rgba(0,0,0,0.05); border-bottom: 1px solid rgba(0,0,0,0.05);"></div>
+                                    <div class="p-3 bg-light d-flex justify-content-end">
+                                        <button type="button" class="apple-btn-primary btn-sm px-4" id="saveJsCodeBtn" style="border-radius: 20px;">
+                                            <i class="bi bi-save me-1"></i> Save Code
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="mb-0 text-primary d-flex align-items-center gap-2 fw-bold">
+                        <i class="bi bi-jira"></i>
+                        <span>JIRA References</span>
+                    </h4>
+                    <a href="<?= site_url('jira/add-entry?tag_id=' . $tag['id']) ?>" target="_blank" title="Add a new JIRA ticket" class="apple-btn-primary btn-sm px-3 text-decoration-none">
+                        <i class="bi bi-plus-lg me-1"></i> Add Entry
+                    </a>
+                </div>
+
+                <div class="apple-table-container">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="form-label-sm fw-semibold">#</th>
+                                    <th class="form-label-sm fw-semibold">Ticket ID</th>
+                                    <th class="form-label-sm fw-semibold">Type</th>
+                                    <th class="form-label-sm fw-semibold">Comments</th>
+                                    <th class="form-label-sm fw-semibold text-center">Actions</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                <?php
+                                $hasTickets = false;
+                                foreach ($jiraTickets as $jira) {
+                                    if ($jira['tag_id'] == $tag['id']) {
+                                        $hasTickets = true;
+                                        break;
+                                    }
+                                }
+                                ?>
+                                <?php if (!$hasTickets): ?>
+                                    <tr>
+                                        <td colspan="5" class="text-center py-4 text-muted">
+                                            <i class="bi bi-info-circle d-block fs-4 mb-2 text-secondary" style="opacity: 0.5;"></i>
+                                            No JIRA references associated with this tag.
+                                        </td>
+                                    </tr>
+                                <?php else: ?>
+                                    <?php
+                                    $displayedTickets = [];
+                                    foreach ($jiraTickets as $jira):
+                                        if ($jira['tag_id'] != $tag['id']) {
+                                            continue;
+                                        }
+                                        if (in_array($jira['ticket_id'], $displayedTickets)) {
+                                            continue;
+                                        }
+                                        $displayedTickets[] = $jira['ticket_id'];
+                                        $ticketTagsList = [];
+                                        $type = $jira['type'];
+                                        if (
+                                            $type == Constants::JIRA_TYPE_DATE_EXTENSION_RULE ||
+                                            $type == Constants::JIRA_TYPE_NEW_TAG ||
+                                            $type == Constants::JIRA_TYPE_NEW_RULE ||
+                                            $type == Constants::JIRA_TYPE_UPDATE_RULE
+                                        ) {
+                                            $ticketTags = explode(',', $jira['comments']);
+
+                                            foreach ($ticketTags as $tagId) {
+                                                $tagInfo = $tagModel->find($tagId);
+                                                if ($tagInfo) {
+                                                    $ticketTagsList[$tagInfo['name']] = $tagInfo['ref_link'];
+                                                }
+                                            }
+                                        }
+                                        ?>
+                                        <tr>
+                                            <td class="fw-semibold"><?= $jira['id'] ?: '-' ?></td>
+                                            <td>
+                                                <a href="<?= Constants::JIRA_LINK ?><?= $jira['ticket_id'] ?: '#' ?>" target="_blank" class="apple-link text-decoration-none fw-semibold">
+                                                    <?= $jira['ticket_id'] ?: '-' ?>
+                                                </a>
+                                            </td>
+                                            <!-- TYPE -->
+                                            <td>
+                                                <?php
+                                                if ($type == Constants::JIRA_TYPE_NEW_TAG || $type == Constants::JIRA_TYPE_NEW_RULE) {
+                                                    $request_id = $tagRequestsModel->getRequestByTicketId($jira['ticket_id']);
+
+                                                    if ($request_id) {
+                                                        ?>
+                                                        <a href="<?= site_url('/tag-requests/view/' . $request_id) ?>" target="_blank" class="apple-link-dark text-decoration-none fw-semibold">
+                                                            <?= Constants::JIRA_TICKET_TYPES[$type] ?>
+                                                        </a>
+                                                                                    <?php } else { ?>
+                                                        <?= Constants::JIRA_TICKET_TYPES[$type] ?>
+                                                                                    <?php } ?>
+
+                                                    <?php
+                                                } elseif ($type == Constants::JIRA_TYPE_UPDATE_RULE) {
+                                                    $activityLogsModel = new TasksModel();
+                                                    $activityLog = $activityLogsModel->where('ticket_id', $jira['ticket_id'])->first();
+
+                                                    if ($activityLog) {
+                                                        ?>
+                                                        <a href="<?= site_url('/tasks/view/' . $activityLog['id']) ?>" target="_blank" class="apple-link-dark text-decoration-none fw-semibold">
+                                                            <?= Constants::JIRA_TICKET_TYPES[$type] ?>
+                                                        </a>
+     
+                                                                                        <?php } else { ?>
+                                                        <?= Constants::JIRA_TICKET_TYPES[$type] ?>
+
+                                                    <?php }
+                                                } else { ?>
+                                                    <?= Constants::JIRA_TICKET_TYPES[$type] ?>
+                                                                    <?php } ?>
+                                            </td>
+                                            <!-- COMMENTS -->
+                                            <td>
+                                                <?php if ($ticketTagsList): ?>
+                                                    <?php foreach ($ticketTagsList as $name => $link): ?>
+                                                        <a href="<?= $link ?>" target="_blank" class="apple-link text-decoration-none"><?= esc($name) ?></a><br>
+                                                        <?php endforeach; ?>
+                                                    <?php else: ?>
+                                                        <span class="text-secondary"><?= esc($jira['comments']) ?></span>
+                                                    <?php endif; ?>
+                                            </td>
+                                            <!-- ACTIONS -->
+                                            <td class="text-center">
+                                                <a href="<?= site_url('jira/update-tags/' . $jira['id']) ?>" class="apple-btn-secondary btn-sm px-2 py-1" style="font-size: 0.75rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;" title="Update Related Tags">
+                                                    <i class="bi bi-pencil-square"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+    </div >
+</div >
+
+            <?= $this->endSection() ?>
+
+        <?= $this->section('scripts') ?>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.7/ace.js"></script>
+<script>
+            document.addEventListener('DOMContentLoaded', function () {
+                ace.config.set('basePath', 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.7/');
+                var editor = ace.edit("jsEditor");
+                var currentTheme = localStorage.getItem('aceTheme') || 'ace/theme/github';
+                editor.setTheme(currentTheme);
+                
+                var themeToggle = document.getElementById('themeToggle');
+                if (currentTheme === 'ace/theme/twilight') {
+                    themeToggle.checked = true;
+                }
+                
+                themeToggle.addEventListener('change', function() {
+                    var newTheme = this.checked ? 'ace/theme/twilight' : 'ace/theme/github';
+                    editor.setTheme(newTheme);
+                    localStorage.setItem('aceTheme', newTheme);
+                });
+
+                editor.session.setMode("ace/mode/javascript");
+                editor.setOptions({
+                    useWorker: true // Enables syntax validation
+                });
+
+                var initialCode = <?= json_encode($tag['js_code'] ?? '') ?>;
+                editor.setValue(initialCode, -1);
+
+                editor.commands.addCommand({
+                    name: 'save',
+                    bindKey: {win: "Ctrl-S", "mac": "Cmd-S"},
+                    exec: function(editor) {
+                        document.getElementById('saveJsCodeBtn').click();
+                    }
+                });
+
+                editor.getSession().on("changeAnnotation", function() {
+                    var annotations = editor.getSession().getAnnotations();
+                    var panel = document.getElementById('jsValidationPanel');
+                    
+                    if (annotations.length === 0) {
+                        panel.innerHTML = '<div class="text-success fw-medium"><i class="bi bi-check-circle-fill me-1"></i> No errors or warnings</div>';
+                    } else {
+                        var html = '';
+                        annotations.forEach(function(a) {
+                            var icon = a.type === 'error' ? '<i class="bi bi-x-circle-fill text-danger me-1"></i>' : '<i class="bi bi-exclamation-triangle-fill text-warning me-1"></i>';
+                            var colorClass = a.type === 'error' ? 'text-danger' : 'text-warning';
+                            html += `<div class="${colorClass} mb-1" style="font-family: monospace;">${icon} Line ${a.row + 1}: ${a.text}</div>`;
+                        });
+                        panel.innerHTML = html;
+                    }
+                });
+
+                var isDirty = false;
+                editor.on('change', function() {
+                    isDirty = true;
+                });
+
+                window.addEventListener('beforeunload', function(e) {
+                    if (isDirty) {
+                        var msg = "You have unsaved changes in the JavaScript code. Are you sure you want to leave?";
+                        e.returnValue = msg;
+                        return msg;
+                    }
+                });
+
+                document.getElementById('saveJsCodeBtn').addEventListener('click', function () {
+                    var annotations = editor.getSession().getAnnotations();
+
+                    var formatList = function (list) {
+                        var html = list.map(item => `Line ${item.row + 1}: ${item.text}`).join('<br>');
+                        return `<div style="max-height: 150px; overflow-y: auto; text-align: left; background: rgba(0,0,0,0.03); padding: 10px; border-radius: 4px; font-family: monospace; font-size: 0.85rem; border: 1px solid rgba(0,0,0,0.05); margin-top: 10px;">${html}</div>`;
+                    };
+
+                    var proceedWithSave = () => {
+                        var btn = this;
+                        var originalText = btn.innerHTML;
+                        btn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i> Saving...';
+                        btn.disabled = true;
+
+                        var code = editor.getValue();
+                        var formData = new FormData();
+                        formData.append('js_code', code);
+
+                        fetch('<?= site_url('tags/save-js-code/' . $tag['id']) ?>', {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.status === 'success') {
+                                    isDirty = false;
+                                    window.themeAlert({
+                                        title: 'Success',
+                                        message: data.message,
+                                        type: 'success'
+                                    });
+                                } else {
+                                    window.themeAlert({
+                                        title: 'Error',
+                                        message: data.message || 'Failed to save code.',
+                                        type: 'danger'
+                                    });
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                window.themeAlert({
+                                    title: 'Error',
+                                    message: 'An unexpected error occurred.',
+                                    type: 'danger'
+                                });
+                            })
+                            .finally(() => {
+                                btn.innerHTML = originalText;
+                                btn.disabled = false;
+                            });
+                    };
+
+                    if (annotations.length > 0) {
+                        window.themeAlert({
+                            title: 'Syntax Issues Detected',
+                            message: 'Cannot save! Please fix all JavaScript errors and warnings:' + formatList(annotations),
+                            type: 'danger'
+                        });
+                    } else {
+                        proceedWithSave();
+                    }
+                });
+            });
+</script>
 <?= $this->endSection() ?>

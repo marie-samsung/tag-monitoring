@@ -13,6 +13,7 @@ class TagsModel extends Model
         'property_id', // Refers to 'Properties' table
         'vendor_id', // Refer to 'Vendors' table
         'conditions', // (.*)
+        'js_code',
         'status', // Refer to 'Constants' model for values
         'is_active', // bool
         'al_end_date',

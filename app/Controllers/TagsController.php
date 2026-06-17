@@ -969,4 +969,21 @@ class TagsController extends BaseController
         
         return redirect()->to('/tags/renewal-justifications')->with('success', 'Renewal justification updated successfully.');
     }
+    public function saveJsCode($id)
+    {
+        $model = new TagsModel();
+        $tag = $model->find($id);
+
+        if (!$tag) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Tag not found.']);
+        }
+
+        $jsCode = $this->request->getPost('js_code');
+
+        $model->update($id, [
+            'js_code' => $jsCode
+        ]);
+
+        return $this->response->setJSON(['status' => 'success', 'message' => 'JavaScript code saved successfully.']);
+    }
 }
