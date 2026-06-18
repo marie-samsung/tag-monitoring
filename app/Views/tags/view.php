@@ -156,7 +156,7 @@ $tagRequestsModel = new TagRequestsModel();
             </div>
         </div>
 
-        <!-- Script Editor Section -->
+        <!-- JIRA References Section -->
         <div class="col-lg-8">
             <!-- JS Code Section -->
             <div class="mb-4">
@@ -165,15 +165,15 @@ $tagRequestsModel = new TagRequestsModel();
                         style="border: 1px solid rgba(0,0,0,0.05); border-radius: 8px; overflow: hidden;">
                         <h4 class="accordion-header" id="headingJsCode">
                             <button
-                                class="accordion-button fw-bold text-primary d-flex align-items-center gap-2"
+                                class="accordion-button collapsed fw-bold text-primary d-flex align-items-center gap-2"
                                 type="button" data-bs-toggle="collapse" data-bs-target="#collapseJsCode"
-                                aria-expanded="true" aria-controls="collapseJsCode"
+                                aria-expanded="false" aria-controls="collapseJsCode"
                                 style="background-color: var(--color-bg-base); box-shadow: none;">
                                 <i class="bi bi-code-slash"></i>
                                 <span>Script</span>
                             </button>
                         </h4>
-                        <div id="collapseJsCode" class="accordion-collapse collapse show" aria-labelledby="headingJsCode"
+                        <div id="collapseJsCode" class="accordion-collapse collapse" aria-labelledby="headingJsCode"
                             data-bs-parent="#jsCodeAccordion">
                             <div class="accordion-body p-0">
                                 <div id="jsEditor"
@@ -192,12 +192,7 @@ $tagRequestsModel = new TagRequestsModel();
                     </div>
                 </div>
             </div>
-        </div>
-    </div> <!-- End Row -->
 
-    <!-- JIRA References Section -->
-    <div class="row mb-4">
-        <div class="col-12">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h4 class="mb-0 text-primary d-flex align-items-center gap-2 fw-bold">
                     <i class="bi bi-jira"></i>
