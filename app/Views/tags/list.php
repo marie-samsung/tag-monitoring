@@ -801,8 +801,11 @@ Martech TMS
                         <!-- Name -->
                         <td class="form-label-sm">
                             <span class="group-hover-container align-items-center">
-                                <a href="<?= $tag['ref_link'] ?>" target="_blank" rel="noopener" class="apple-link-dark form-label-sm ms-1">
+                                <a href="<?= site_url('tags/view/'.$tag['id']) ?>" class="apple-link-dark form-label-sm ms-1">
                                     <?= esc($tag['name']) ?>
+                                </a>
+                                <a href="<?= $tag['ref_link'] ?>" target="_blank" rel="noopener" class="text-muted ms-1" style="font-size: 0.75rem; text-decoration: none;" title="View in Adobe Launch">
+                                    <i class="bi bi-box-arrow-up-right"></i>
                                 </a>
                                 <a href="javascript:void(0)" onclick="copyTagName('<?= esc($tag['name']) ?>', this)" title="Copy tag name" class="text-muted ms-2" style="transition: color 0.2s; text-decoration: none; line-height: 1;">
                                     <i class="bi bi-copy" style="font-size: 0.85rem;"></i>
