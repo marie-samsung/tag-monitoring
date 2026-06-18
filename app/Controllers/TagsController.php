@@ -390,12 +390,8 @@ class TagsController extends BaseController
             'requested_date' => null,
         ]);
 
-//        return redirect()
-//            ->to('/tags/view/' . $id)
-//            ->with('success', 'Tag renewal has been verified.');
-
         return redirect()
-            ->to('/tags')
+            ->back()
             ->with('success', "Tag renewal [{$tag['id']}] [{$tag['name']}] has been verified.");
     }
 
