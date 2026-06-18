@@ -36,7 +36,7 @@ class AuthFilter implements FilterInterface
             $db = \Config\Database::connect();
 
             // Auto-heal database: run migration check
-            if (!$db->fieldExists('role_id', 'users') || !$db->fieldExists('profile_photo', 'users') || !$db->tableExists('role_permissions') || !$db->tableExists('roles')) {
+            if (!$db->fieldExists('role_id', 'users') || !$db->fieldExists('profile_photo', 'users') || !$db->tableExists('role_permissions') || !$db->tableExists('roles') || !$db->fieldExists('js_code', 'tags')) {
                 self::autoMigrate($db);
             }
 
@@ -205,6 +205,11 @@ class AuthFilter implements FilterInterface
                     ]);
                 }
             }
+        }
+
+        // Add js_code column to tags
+        if (!$db->fieldExists('js_code', 'tags')) {
+            $db->query("ALTER TABLE `tags` ADD COLUMN `js_code` LONGTEXT NULL DEFAULT NULL");
         }
     }
 
