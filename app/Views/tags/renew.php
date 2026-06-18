@@ -557,6 +557,11 @@ Tags Renewal: <?= $siteCode ?? null ?>
                 
                 row.remove();
 
+                // Re-index row numbers
+                tbody.find('tr').each(function(index) {
+                    $(this).find('td:first').text(index + 1);
+                });
+
                 // Update JIRA title
                 if (vendorToRemove) {
                     let hasOtherTagsForVendor = false;
