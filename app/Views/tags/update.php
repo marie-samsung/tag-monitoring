@@ -45,11 +45,15 @@
         </div>
     <?php endif; ?>
 
-    <form action="<?= site_url("tags/update/{$tag['id']}") ?>" method="post" style="max-width: 800px;">
+    <form action="<?= site_url("tags/update/{$tag['id']}") ?>" method="post">
         <?= csrf_field() ?>
         <input type="hidden" name="vendor_id" value="<?= esc($tag['vendor_id']) ?>" />
 
-        <!-- Tag Details Section -->
+        <div class="row g-4">
+            <!-- Left Column: Form Details -->
+            <div class="col-lg-5">
+
+                <!-- Tag Details Section -->
         <div class="apple-card mb-4" style="background-color: var(--color-bg-base); border: 1px solid rgba(0, 0, 0, 0.05); box-shadow: none;">
             <h5 class="mb-4 text-primary d-flex align-items-center gap-2 fw-bold">
                 <i class="bi bi-tag-fill"></i>
@@ -192,10 +196,64 @@
         </div>
 
         <!-- Form Actions -->
-        <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+        <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top mb-4">
             <a href="<?= site_url('tags') ?>" onclick="if (document.referrer) { window.history.back(); return false; }" title="Cancel" class="apple-btn-secondary px-4 text-decoration-none">Cancel</a>
             <button type="submit" class="apple-btn-primary px-4">Update Tag</button>
         </div>
+
+            </div> <!-- End Left Column -->
+
+            <!-- Right Column: JS Code Section -->
+            <div class="col-lg-7">
+                <!-- JS Code Section -->
+                <div class="apple-card mb-4" style="background-color: var(--color-bg-base); border: 1px solid rgba(0, 0, 0, 0.05); box-shadow: none;">
+                    <h5 class="mb-4 text-primary d-flex align-items-center gap-2 fw-bold">
+                        <i class="bi bi-code-slash"></i>
+                        <span>Script</span>
+                    </h5>
+                    <div class="mb-4">
+                        <div class="accordion" id="jsCodeAccordion">
+                            <div class="accordion-item"
+                                style="border: 1px solid rgba(0,0,0,0.05); border-radius: 8px; overflow: hidden;">
+                                <h4 class="accordion-header" id="headingJsCode">
+                                    <button
+                                        class="accordion-button fw-bold text-primary d-flex align-items-center gap-2"
+                                        type="button" data-bs-toggle="collapse" data-bs-target="#collapseJsCode"
+                                        aria-expanded="true" aria-controls="collapseJsCode"
+                                        style="background-color: var(--color-bg-base); box-shadow: none;">
+                                        <i class="bi bi-code-slash"></i>
+                                        <span>Script Editor</span>
+                                    </button>
+                                </h4>
+                                <div id="collapseJsCode" class="accordion-collapse collapse show" aria-labelledby="headingJsCode"
+                                    data-bs-parent="#jsCodeAccordion">
+                                    <div class="accordion-body p-0">
+                                        <div id="jsEditor"
+                                            style="height: 500px; width: 100%; border-top: 1px solid rgba(0,0,0,0.05); border-bottom: 1px solid rgba(0,0,0,0.05);">
+                                        </div>
+                                        <div id="jsValidationPanel" class="p-2 border-bottom" style="font-size: 0.85rem; max-height: 150px; overflow-y: auto; background-color: var(--color-bg-base);">
+                                            <div class="text-muted"><i class="bi bi-hourglass-split me-1"></i> Validating...</div>
+                                        </div>
+                                        <div class="p-3 bg-light d-flex justify-content-between align-items-center">
+                                            <div class="form-check form-switch ms-2 mb-0">
+                                                <input class="form-check-input" type="checkbox" id="themeToggle" style="cursor: pointer;">
+                                                <label class="form-check-label text-muted" for="themeToggle" style="font-size: 0.9rem; cursor: pointer;">
+                                                    <i class="bi bi-moon-stars me-1"></i> Dark Mode
+                                                </label>
+                                            </div>
+                                            <button type="button" class="apple-btn-primary btn-sm px-4" id="saveJsCodeBtn"
+                                                style="border-radius: 20px;">
+                                                <i class="bi bi-save me-1"></i> Save Script
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div> <!-- End Right Column -->
+        </div> <!-- End Row -->
     </form>
 </div>
 
@@ -283,6 +341,238 @@
         });
     });
 </script>
+<?= $this->endSection() ?>
 
+<?= $this->section('scripts') ?>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Configure the Monaco AMD loader path
+        require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs' } });
+
+        require(['vs/editor/editor.main'], function () {
+            // Set compiler options specifically for JavaScript autocomplete and diagnostics
+            monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
+                target: monaco.languages.typescript.ScriptTarget.ES2020,
+                allowNonTsExtensions: true,
+                checkJs: true,
+                allowReturnOutsideFunction: true, // Crucial for standalone JS tagging snippets
+                lib: ['es2020', 'dom'] // Provide standard JS and DOM API definitions
+            });
+
+            // Set diagnostics options
+            monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
+                noSemanticValidation: false,
+                noSyntaxValidation: false
+            });
+
+            // Add dedicated global definitions for common tagging scripts (Adobe Launch, Google Tag Manager, etc.)
+            const tagGlobals = `
+                /**
+                 * Adobe Launch _satellite object for tracking and utility methods.
+                 */
+                declare const _satellite: {
+                    track: (eventName: string, detail?: any) => void;
+                    getVar: (variableName: string) => any;
+                    setVar: (variableName: string, value: any) => void;
+                    getVisitorId: () => any;
+                    notify: (message: string, level?: number) => void;
+                    cookie: {
+                        get: (name: string) => string | null;
+                        set: (name: string, value: string, options?: any) => void;
+                        remove: (name: string) => void;
+                    };
+                    logger: {
+                        log: (...args: any[]) => void;
+                        warn: (...args: any[]) => void;
+                        error: (...args: any[]) => void;
+                    };
+                };
+
+                /**
+                 * Google Tag Manager / Generic Data Layer array.
+                 */
+                declare const dataLayer: any[];
+
+                /**
+                 * Global Adobe object.
+                 */
+                declare const adobe: any;
+            `;
+
+            monaco.languages.typescript.javascriptDefaults.addExtraLib(
+                tagGlobals,
+                'ts:tag-globals.d.ts'
+            );
+
+            // Determine initial theme from local storage (default is vs-dark/twilight theme)
+            var localTheme = localStorage.getItem('monacoTheme') || 'vs';
+            var themeToggle = document.getElementById('themeToggle');
+            
+            if (localTheme === 'vs-dark' && themeToggle) {
+                themeToggle.checked = true;
+            }
+
+            var initialCode = <?= json_encode($tag['js_code'] ?? '') ?>;
+            var container = document.getElementById('jsEditor');
+
+            if (!container) return; // In case the editor container doesn't exist
+
+            // Create Monaco Editor
+            var editor = monaco.editor.create(container, {
+                value: initialCode,
+                language: 'javascript',
+                theme: localTheme,
+                automaticLayout: true,
+                minimap: { enabled: false },
+                fontSize: 14,
+                fontFamily: 'Fira Code, Menlo, Monaco, Consolas, monospace',
+                lineHeight: 20,
+                tabSize: 4,
+                insertSpaces: true,
+                wordWrap: 'on',
+                cursorBlinking: 'smooth',
+                smoothScrolling: true,
+                padding: { top: 10, bottom: 10 },
+                roundedSelection: true
+            });
+
+            // Make editor globally accessible if needed for saving
+            window.editorInstance = editor;
+
+            // Handle theme toggle changes
+            if (themeToggle) {
+                themeToggle.addEventListener('change', function() {
+                    var newTheme = this.checked ? 'vs-dark' : 'vs';
+                    monaco.editor.setTheme(newTheme);
+                    localStorage.setItem('monacoTheme', newTheme);
+                });
+            }
+
+            // Recalculate editor layout when the Bootstrap accordion is shown
+            var collapseElement = document.getElementById('collapseJsCode');
+            if (collapseElement) {
+                collapseElement.addEventListener('shown.bs.collapse', function () {
+                    editor.layout();
+                });
+            }
+
+            // Track dirty state
+            var isDirty = false;
+            editor.onDidChangeModelContent(function () {
+                isDirty = true;
+            });
+
+            // Prevent closing page if unsaved
+            window.addEventListener('beforeunload', function(e) {
+                if (isDirty) {
+                    var msg = "You have unsaved changes in the JavaScript code. Are you sure you want to leave?";
+                    e.returnValue = msg;
+                    return msg;
+                }
+            });
+
+            // Register Ctrl-S / Cmd-S save keybinding inside Monaco
+            editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, function () {
+                var btn = document.getElementById('saveJsCodeBtn');
+                if(btn) btn.click();
+            });
+
+            // Listen to markers/errors dynamically for the validation panel
+            monaco.editor.onDidChangeMarkers(function() {
+                var model = editor.getModel();
+                if (!model) return;
+                var markers = monaco.editor.getModelMarkers({ resource: model.uri });
+                var panel = document.getElementById('jsValidationPanel');
+                if (!panel) return;
+                
+                if (markers.length === 0) {
+                    panel.innerHTML = '<div class="text-success fw-medium"><i class="bi bi-check-circle-fill me-1"></i> No errors or warnings</div>';
+                } else {
+                    var html = '';
+                    markers.forEach(function(marker) {
+                        // severity: 8 = Error, 4 = Warning, 2 = Info, 1 = Hint
+                        var isError = marker.severity === 8;
+                        var icon = isError ? '<i class="bi bi-x-circle-fill text-danger me-1"></i>' : '<i class="bi bi-exclamation-triangle-fill text-warning me-1"></i>';
+                        var colorClass = isError ? 'text-danger' : 'text-warning';
+                        html += `<div class="${colorClass} mb-1" style="font-family: monospace;">${icon} Line ${marker.startLineNumber}: ${marker.message}</div>`;
+                    });
+                    panel.innerHTML = html;
+                }
+            });
+
+            // Handle Save action
+            var saveBtn = document.getElementById('saveJsCodeBtn');
+            if (saveBtn) {
+                saveBtn.addEventListener('click', function () {
+                    var model = editor.getModel();
+                    var markers = model ? monaco.editor.getModelMarkers({ resource: model.uri }) : [];
+                    var errors = markers.filter(function(m) { return m.severity === 8; });
+
+                    var formatList = function (list) {
+                        var html = list.map(item => `Line ${item.startLineNumber}: ${item.message}`).join('<br>');
+                        return `<div style="max-height: 150px; overflow-y: auto; text-align: left; background: rgba(0,0,0,0.03); padding: 10px; border-radius: 4px; font-family: monospace; font-size: 0.85rem; border: 1px solid rgba(0,0,0,0.05); margin-top: 10px;">${html}</div>`;
+                    };
+
+                    // Block save ONLY if there are compile/syntax errors (allow warnings)
+                    if (errors.length > 0) {
+                        window.themeAlert({
+                            title: 'Syntax Errors Detected',
+                            message: 'Cannot save! Please fix all JavaScript errors before saving:' + formatList(errors),
+                            type: 'danger'
+                        });
+                        return;
+                    }
+
+                    var btn = this;
+                    var originalText = btn.innerHTML;
+                    btn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i> Saving...';
+                    btn.disabled = true;
+
+                    var code = editor.getValue();
+                    var formData = new FormData();
+                    formData.append('js_code', code);
+
+                    fetch('<?= site_url('tags/save-js-code/' . $tag['id']) ?>', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'success') {
+                                isDirty = false;
+                                window.themeAlert({
+                                    title: 'Success',
+                                    message: data.message,
+                                    type: 'success'
+                                });
+                            } else {
+                                window.themeAlert({
+                                    title: 'Error',
+                                    message: data.message || 'Failed to save code.',
+                                    type: 'danger'
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            window.themeAlert({
+                                title: 'Error',
+                                message: 'An unexpected error occurred.',
+                                type: 'danger'
+                            });
+                        })
+                        .finally(() => {
+                            btn.innerHTML = originalText;
+                            btn.disabled = false;
+                        });
+                });
+            }
+        });
+    });
+</script>
 <?= $this->endSection() ?>
 

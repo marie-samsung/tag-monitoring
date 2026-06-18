@@ -156,7 +156,7 @@ $tagRequestsModel = new TagRequestsModel();
             </div>
         </div>
 
-        <!-- JIRA References Section -->
+        <!-- Script Editor Section -->
         <div class="col-lg-8">
             <!-- JS Code Section -->
             <div class="mb-4">
@@ -165,22 +165,19 @@ $tagRequestsModel = new TagRequestsModel();
                         style="border: 1px solid rgba(0,0,0,0.05); border-radius: 8px; overflow: hidden;">
                         <h4 class="accordion-header" id="headingJsCode">
                             <button
-                                class="accordion-button collapsed fw-bold text-primary d-flex align-items-center gap-2"
+                                class="accordion-button fw-bold text-primary d-flex align-items-center gap-2"
                                 type="button" data-bs-toggle="collapse" data-bs-target="#collapseJsCode"
-                                aria-expanded="false" aria-controls="collapseJsCode"
+                                aria-expanded="true" aria-controls="collapseJsCode"
                                 style="background-color: var(--color-bg-base); box-shadow: none;">
                                 <i class="bi bi-code-slash"></i>
                                 <span>Script</span>
                             </button>
                         </h4>
-                        <div id="collapseJsCode" class="accordion-collapse collapse" aria-labelledby="headingJsCode"
+                        <div id="collapseJsCode" class="accordion-collapse collapse show" aria-labelledby="headingJsCode"
                             data-bs-parent="#jsCodeAccordion">
                             <div class="accordion-body p-0">
                                 <div id="jsEditor"
                                     style="height: 400px; width: 100%; border-top: 1px solid rgba(0,0,0,0.05); border-bottom: 1px solid rgba(0,0,0,0.05);">
-                                </div>
-                                <div id="jsValidationPanel" class="p-2 border-bottom" style="font-size: 0.85rem; max-height: 150px; overflow-y: auto; background-color: var(--color-bg-base);">
-                                    <div class="text-muted"><i class="bi bi-hourglass-split me-1"></i> Validating...</div>
                                 </div>
                                 <div class="p-3 bg-light d-flex justify-content-between align-items-center">
                                     <div class="form-check form-switch ms-2 mb-0">
@@ -189,17 +186,18 @@ $tagRequestsModel = new TagRequestsModel();
                                             <i class="bi bi-moon-stars me-1"></i> Dark Mode
                                         </label>
                                     </div>
-                                    <button type="button" class="apple-btn-primary btn-sm px-4" id="saveJsCodeBtn"
-                                        style="border-radius: 20px;">
-                                        <i class="bi bi-save me-1"></i> Save
-                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
+    </div> <!-- End Row -->
 
+    <!-- JIRA References Section -->
+    <div class="row mb-4">
+        <div class="col-12">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h4 class="mb-0 text-primary d-flex align-items-center gap-2 fw-bold">
                     <i class="bi bi-jira"></i>
@@ -427,6 +425,7 @@ $tagRequestsModel = new TagRequestsModel();
                 language: 'javascript',
                 theme: localTheme,
                 automaticLayout: true,
+                readOnly: true,
                 minimap: { enabled: false },
                 fontSize: 14,
                 fontFamily: 'Fira Code, Menlo, Monaco, Consolas, monospace',
@@ -439,9 +438,6 @@ $tagRequestsModel = new TagRequestsModel();
                 padding: { top: 10, bottom: 10 },
                 roundedSelection: true
             });
-
-            // Make editor globally accessible if needed for saving
-            window.editorInstance = editor;
 
             // Handle theme toggle changes
             themeToggle.addEventListener('change', function() {
@@ -457,117 +453,6 @@ $tagRequestsModel = new TagRequestsModel();
                     editor.layout();
                 });
             }
-
-            // Track dirty state
-            var isDirty = false;
-            editor.onDidChangeModelContent(function () {
-                isDirty = true;
-            });
-
-            // Prevent closing page if unsaved
-            window.addEventListener('beforeunload', function(e) {
-                if (isDirty) {
-                    var msg = "You have unsaved changes in the JavaScript code. Are you sure you want to leave?";
-                    e.returnValue = msg;
-                    return msg;
-                }
-            });
-
-            // Register Ctrl-S / Cmd-S save keybinding inside Monaco
-            editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, function () {
-                document.getElementById('saveJsCodeBtn').click();
-            });
-
-            // Listen to markers/errors dynamically for the validation panel
-            monaco.editor.onDidChangeMarkers(function() {
-                var model = editor.getModel();
-                if (!model) return;
-                var markers = monaco.editor.getModelMarkers({ resource: model.uri });
-                var panel = document.getElementById('jsValidationPanel');
-                if (!panel) return;
-                
-                if (markers.length === 0) {
-                    panel.innerHTML = '<div class="text-success fw-medium"><i class="bi bi-check-circle-fill me-1"></i> No errors or warnings</div>';
-                } else {
-                    var html = '';
-                    markers.forEach(function(marker) {
-                        // severity: 8 = Error, 4 = Warning, 2 = Info, 1 = Hint
-                        var isError = marker.severity === 8;
-                        var icon = isError ? '<i class="bi bi-x-circle-fill text-danger me-1"></i>' : '<i class="bi bi-exclamation-triangle-fill text-warning me-1"></i>';
-                        var colorClass = isError ? 'text-danger' : 'text-warning';
-                        html += `<div class="${colorClass} mb-1" style="font-family: monospace;">${icon} Line ${marker.startLineNumber}: ${marker.message}</div>`;
-                    });
-                    panel.innerHTML = html;
-                }
-            });
-
-            // Handle Save action
-            document.getElementById('saveJsCodeBtn').addEventListener('click', function () {
-                var model = editor.getModel();
-                var markers = model ? monaco.editor.getModelMarkers({ resource: model.uri }) : [];
-                var errors = markers.filter(function(m) { return m.severity === 8; });
-
-                var formatList = function (list) {
-                    var html = list.map(item => `Line ${item.startLineNumber}: ${item.message}`).join('<br>');
-                    return `<div style="max-height: 150px; overflow-y: auto; text-align: left; background: rgba(0,0,0,0.03); padding: 10px; border-radius: 4px; font-family: monospace; font-size: 0.85rem; border: 1px solid rgba(0,0,0,0.05); margin-top: 10px;">${html}</div>`;
-                };
-
-                // Block save ONLY if there are compile/syntax errors (allow warnings)
-                if (errors.length > 0) {
-                    window.themeAlert({
-                        title: 'Syntax Errors Detected',
-                        message: 'Cannot save! Please fix all JavaScript errors before saving:' + formatList(errors),
-                        type: 'danger'
-                    });
-                    return;
-                }
-
-                var btn = this;
-                var originalText = btn.innerHTML;
-                btn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i> Saving...';
-                btn.disabled = true;
-
-                var code = editor.getValue();
-                var formData = new FormData();
-                formData.append('js_code', code);
-
-                fetch('<?= site_url('tags/save-js-code/' . $tag['id']) ?>', {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.status === 'success') {
-                            isDirty = false;
-                            window.themeAlert({
-                                title: 'Success',
-                                message: data.message,
-                                type: 'success'
-                            });
-                        } else {
-                            window.themeAlert({
-                                title: 'Error',
-                                message: data.message || 'Failed to save code.',
-                                type: 'danger'
-                            });
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        window.themeAlert({
-                            title: 'Error',
-                            message: 'An unexpected error occurred.',
-                            type: 'danger'
-                        });
-                    })
-                    .finally(() => {
-                        btn.innerHTML = originalText;
-                        btn.disabled = false;
-                    });
-            });
         });
     });
 </script>
