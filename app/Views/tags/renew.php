@@ -225,7 +225,7 @@ Tags Renewal: <?= $siteCode ?? null ?>
                             </thead>
                             <tbody>
                                 <?php foreach ($tags as $tag): $count++; ?>
-                                    <tr>
+                                    <tr data-vendor="<?= esc($vendors[$tag['vendor_id']]) ?>">
                                         <td class="fw-semibold"><?= $count ?></td>
                                         <td><?= esc($tag['id']) ?></td>
                                         <td>
@@ -551,8 +551,32 @@ Tags Renewal: <?= $siteCode ?? null ?>
             type: 'danger'
         }).then((confirmed) => {
             if (confirmed) {
-                let tbody = $(button).closest('tbody');
-                $(button).closest('tr').remove();
+                let row = $(button).closest('tr');
+                let tbody = row.closest('tbody');
+                let vendorToRemove = row.data('vendor');
+                
+                row.remove();
+
+                // Update JIRA title
+                if (vendorToRemove) {
+                    let hasOtherTagsForVendor = false;
+                    tbody.find('tr').each(function() {
+                        if ($(this).data('vendor') == vendorToRemove) {
+                            hasOtherTagsForVendor = true;
+                            return false;
+                        }
+                    });
+
+                    if (!hasOtherTagsForVendor) {
+                        let titleEl = $('#jiraTitle');
+                        let newTitle = titleEl.text().replace(/\] - \[(.*?)\] - \[Date Extension Rule\]$/, function(match, vendorsGroup) {
+                            let vendorList = vendorsGroup.split(', ');
+                            vendorList = vendorList.filter(v => v !== vendorToRemove);
+                            return '] - [' + vendorList.join(', ') + '] - [Date Extension Rule]';
+                        });
+                        titleEl.text(newTitle).attr('title', newTitle);
+                    }
+                }
 
                 if (tbody.find('tr').length === 0) {
                     let submitBtn = $('button[type="submit"]');
