@@ -220,6 +220,7 @@ Tags Renewal: <?= $siteCode ?? null ?>
                                     <th class="form-label-sm fw-semibold">Name</th>
                                     <th class="form-label-sm fw-semibold text-center">Updated in AL?</th>
                                     <th class="form-label-sm fw-semibold">Next End Date</th>
+                                    <th class="form-label-sm fw-semibold text-center"></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -261,6 +262,11 @@ Tags Renewal: <?= $siteCode ?? null ?>
                                             <?php endif; ?>
                                         </td>
                                         <td><?= esc($nextExpDate) ?></td>
+                                        <td class="text-center">
+                                            <button type="button" class="btn btn-sm btn-outline-danger border-0" title="Remove" onclick="removeTagRow(this, <?= $tag['id'] ?>, '<?= esc($tag['name']) ?>')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
 
                                         <input type="hidden" name="tags[<?= $tag['id'] ?>][id]" value="<?= $tag['id'] ?>">
                                         <input type="hidden" name="tags[<?= $tag['id'] ?>][library_name]" class="library-name-input" value="<?= $libraryName ?>">
@@ -534,6 +540,78 @@ Tags Renewal: <?= $siteCode ?? null ?>
         setTimeout(() => {
             element.innerHTML = '<i class="bi bi-copy text-secondary fs-7"></i>';
         }, 1200);
+    }
+
+    function removeTagRow(button, tagId, tagName) {
+        window.themeConfirm({
+            title: 'Remove Tag',
+            message: 'Are you sure you want to remove ' + tagName + ' from the renewal list?',
+            confirmText: 'Remove',
+            cancelText: 'Cancel',
+            type: 'danger'
+        }).then((confirmed) => {
+            if (confirmed) {
+                let tbody = $(button).closest('tbody');
+                $(button).closest('tr').remove();
+
+                if (tbody.find('tr').length === 0) {
+                    let submitBtn = $('button[type="submit"]');
+                    submitBtn.removeAttr('data-confirm');
+                    submitBtn.off('click.emptyCheck').on('click.emptyCheck', function(e) {
+                        e.preventDefault();
+                        window.themeAlert({
+                            title: 'Cannot Proceed',
+                            message: 'No tags have been selected for renewal',
+                            type: 'warning'
+                        });
+                    });
+                }
+
+                if (tagId) {
+                    let urlParams = new URLSearchParams(window.location.search);
+                    
+                    // Handle comma-separated tags=1,2,3
+                    if (urlParams.has('tags')) {
+                        let tagsParam = urlParams.get('tags');
+                        let tagsArray = tagsParam.split(',');
+                        tagsArray = tagsArray.filter(id => id != tagId);
+                        
+                        if (tagsArray.length > 0) {
+                            urlParams.set('tags', tagsArray.join(','));
+                        } else {
+                            urlParams.delete('tags');
+                        }
+                    }
+
+                    // Handle array format tags[]=1&tags[]=2
+                    if (urlParams.has('tags[]')) {
+                        let tags = urlParams.getAll('tags[]');
+                        urlParams.delete('tags[]');
+                        tags.forEach(id => {
+                            if (id != tagId) {
+                                urlParams.append('tags[]', id);
+                            }
+                        });
+                    }
+
+                    // Handle indexed array format tags[0]=1&tags[1]=2
+                    let keysToDelete = [];
+                    for (let [key, value] of urlParams.entries()) {
+                        if (key.match(/^tags\[\d+\]$/) && value == tagId) {
+                            keysToDelete.push(key);
+                        }
+                    }
+                    keysToDelete.forEach(key => urlParams.delete(key));
+
+                    let newUrl = window.location.pathname;
+                    let queryString = urlParams.toString();
+                    if (queryString) {
+                        newUrl += '?' + queryString;
+                    }
+                    window.history.replaceState(null, '', newUrl);
+                }
+            }
+        });
     }
 
 </script>
