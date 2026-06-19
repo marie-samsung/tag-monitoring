@@ -275,7 +275,7 @@
 
             <!-- Title -->
             <div class="mb-3 pb-2 border-bottom border-light">
-                <span class="d-block text-muted fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Title</span>
+                <span class="d-block text-primary fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Title</span>
                 <div class="fw-semibold mt-1" style="font-size: 0.95rem; color: var(--color-text-base);">
                     <?= esc($log['title'] ?: '—') ?>
                 </div>
@@ -283,7 +283,7 @@
 
             <!-- Type -->
             <div class="mb-3 pb-2 border-bottom border-light">
-                <span class="d-block text-muted fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">TASK TYPE</span>
+                <span class="d-block text-primary fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">TASK TYPE</span>
                 <div class="fw-semibold mt-1 badge" style="<?= random_bg_style($type) ?>">
                     <?= esc($type) ?>
                 </div>
@@ -291,7 +291,7 @@
 
             <!-- Size -->
             <div class="mb-3 pb-2 border-bottom border-light">
-                <span class="d-block text-muted fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">T-SHIRT SIZE</span>
+                <span class="d-block text-primary fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">T-SHIRT SIZE</span>
                 <div id="sizeValue" class="fw-semibold mt-1 badge <?= size_class($log['size']) ?>">
                     <?= esc($size) ?>
                 </div>
@@ -302,7 +302,7 @@
             </div>
 
             <div class="mb-3 pb-2 border-bottom border-light">
-                <span class="d-block text-muted fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">PRIORITY</span>
+                <span class="d-block text-primary fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">PRIORITY</span>
                 <div class="fw-semibold mt-1 badge <?= priority_class($log['priority']) ?>">
                     <?= esc($priority) ?>
                 </div>
@@ -311,7 +311,7 @@
             <?php if ($showRelatedTags): ?>
                 <div class="mb-3 pb-2 border-bottom border-light">
                     <div class="d-flex align-items-center justify-content-between">
-                        <span class="text-muted fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Related Tags</span>
+                        <span class="text-primary fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Related Tags</span>
                         <?php if ($jiraTicketRecord): ?>
                             <a href="<?= site_url('jira/update-tags/' . $jiraTicketRecord['id']) ?>" class="apple-btn-secondary btn-sm py-1 px-2.5 d-inline-flex align-items-center gap-1.5" style="font-size: 0.75rem; border-radius: 8px; font-weight: 500; height: auto;">
                                 <i class="bi bi-pencil-square"></i>
@@ -359,7 +359,7 @@
                 </div>
             <?php else: ?>
                 <div class="mb-3 pb-2 border-bottom border-light">
-                    <span class="d-block text-muted fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Description</span>
+                    <span class="d-block text-primary fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Description</span>
                     <div class="mt-1 task-description" style="font-size: 0.9rem; line-height: 1.5; color: var(--color-text-base);">
                         <?= clean_html_comment($log['description'] ?: '—') ?>
                     </div>
@@ -368,7 +368,7 @@
 
             <!-- Team -->
             <div class="mb-3 pb-2 border-bottom border-light">
-                <span class="d-block text-muted fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Team</span>
+                <span class="d-block text-primary fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Team</span>
                 <div class="fw-semibold mt-1 badge" style="<?= random_bg_style($team) ?>">
                     <?= esc($team ?: '—') ?>
                 </div>
@@ -376,14 +376,14 @@
 
             <!-- Project -->
             <div class="mb-3 pb-2 border-bottom border-light">
-                <span class="d-block text-muted fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Project</span>
+                <span class="d-block text-primary fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Project</span>
                 <div class="fw-semibold mt-1 badge" style="<?= random_bg_style($project) ?>">
                     <?= esc($project ?: '—') ?>
                 </div>
             </div>
 
             <div class="mb-3 pb-2 border-bottom border-light">
-                <span class="d-block text-muted fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Ticket ID</span>
+                <span class="d-block text-primary fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Ticket ID</span>
                 <div class="mt-1 d-flex align-items-center gap-2" style="font-size: 0.9rem; color: var(--color-text-base);">
                     <?php if (!empty($log['ticket_id'])) : ?>
                         <a href="<?= Constants::JIRA_LINK . $log['ticket_id'] ?>" target="_blank" class="apple-link" id="ticket-id-link">
@@ -401,42 +401,42 @@
             <h5 class="fw-bold mt-4 mb-3 text-secondary" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;">Request Details</h5>
             
             <div class="mb-3 pb-2 border-bottom border-light">
-                <span class="d-block text-muted fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Requested By</span>
+                <span class="d-block text-primary fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Requested By</span>
                 <div class="mt-1" style="font-size: 0.9rem; color: var(--color-text-base);">
                     <?= esc($log['requested_by'] ?: '—') ?>
                 </div>
             </div>
 
             <div class="mb-3 pb-2 border-bottom border-light">
-                <span class="d-block text-muted fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Requested Date</span>
+                <span class="d-block text-primary fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Requested Date</span>
                 <div class="mt-1" style="font-size: 0.9rem; color: var(--color-text-base);">
                     <?= esc($log['requested_date'] ?: '—') ?>
                 </div>
             </div>
 
             <div class="mb-3 pb-2 border-bottom border-light">
-                <span class="d-block text-muted fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Start Date</span>
+                <span class="d-block text-primary fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Start Date</span>
                 <div class="mt-1" style="font-size: 0.9rem; color: var(--color-text-base);">
                     <?= esc($log['start_date'] ?: '—') ?>
                 </div>
             </div>
 
             <div class="mb-3 pb-2 border-bottom border-light">
-                <span class="d-block text-muted fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Finished Date</span>
+                <span class="d-block text-primary fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Finished Date</span>
                 <div class="mt-1" id="finished-date-value" style="font-size: 0.9rem; color: var(--color-text-base);">
                     <?= esc($log['finished_date'] ?: '—') ?>
                 </div>
             </div>
 
             <div class="mb-3 pb-2 border-bottom border-light">
-                <span class="d-block text-muted fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Created At</span>
+                <span class="d-block text-primary fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Created At</span>
                 <div class="mt-1" style="font-size: 0.9rem; color: var(--color-text-base);">
                     <?= esc($log['created_at'] ?: '—') ?>
                 </div>
             </div>
 
             <div class="mb-3 pb-2 border-bottom border-light">
-                <span class="d-block text-muted fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Updated At</span>
+                <span class="d-block text-primary fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Updated At</span>
                 <div class="mt-1" style="font-size: 0.9rem; color: var(--color-text-base);">
                     <?= esc($log['updated_at'] ?: '—') ?>
                 </div>
@@ -445,21 +445,21 @@
             <h5 class="fw-bold mt-4 mb-3 text-secondary" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;">Campaign Details</h5>
             
             <div class="mb-3 pb-2 border-bottom border-light">
-                <span class="d-block text-muted fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Department</span>
+                <span class="d-block text-primary fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Department</span>
                 <div class="mt-1" style="font-size: 0.9rem; color: var(--color-text-base);">
                     <?= esc($log['department_id'] ?? '—') ?>
                 </div>
             </div>
             
             <div class="mb-3 pb-2 border-bottom border-light">
-                <span class="d-block text-muted fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Campaign Status</span>
+                <span class="d-block text-primary fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Campaign Status</span>
                 <div class="mt-1" style="font-size: 0.9rem; color: var(--color-text-base);">
                     <?= esc(Constants::CAMPAIGN_STATUS[$log['campaign_status']] ?? '—') ?>
                 </div>
             </div>
 
             <div class="mb-3 pb-2 border-bottom border-light">
-                <span class="d-block text-muted fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Campaign ID</span>
+                <span class="d-block text-primary fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Campaign ID</span>
                 <div class="mt-1" style="font-size: 0.9rem; color: var(--color-text-base);">
                     <?= esc($log['campaign_id'] ?: '—') ?>
                 </div>
