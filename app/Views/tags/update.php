@@ -399,6 +399,11 @@
                 declare const adobe: any;
 
                 /**
+                 * Global digitalData object (commonly used for data layers).
+                 */
+                declare const digitalData: any;
+
+                /**
                  * Allow custom properties on the window object.
                  */
                 interface Window {
