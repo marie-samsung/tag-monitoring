@@ -396,6 +396,13 @@ $tagRequestsModel = new TagRequestsModel();
                  * Global Adobe object.
                  */
                 declare const adobe: any;
+
+                /**
+                 * Allow custom properties on the window object.
+                 */
+                interface Window {
+                    [key: string]: any;
+                }
             `;
 
             monaco.languages.typescript.javascriptDefaults.addExtraLib(
