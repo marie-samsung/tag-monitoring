@@ -991,9 +991,27 @@ class TasksController extends BaseController
         $projectName = urldecode($projectName);
         $model = new TasksModel();
 
-        $tasks = $model->getProjectLogs($projectName, 25);
+        $meModeGet = $this->request->getGet('me_mode');
+        if ($meModeGet !== null) {
+            if ($meModeGet == '1') {
+                session()->set('al_me_mode', 1);
+            } else {
+                session()->set('al_me_mode', 0);
+            }
+        }
+        $meMode = (session()->get('al_me_mode') == 1);
 
-        $distinctProjects = $model->select('DISTINCT(project) as project_name')->orderBy('project', 'ASC')->findAll();
+        $tasks = $model->getProjectLogs($projectName, 25, $meMode);
+
+        if ($meMode) {
+            $userId = session()->get('user_id');
+            $distinctProjects = $model->select('DISTINCT(project) as project_name')
+                ->where('assignee', $userId)
+                ->orderBy('project', 'ASC')
+                ->findAll();
+        } else {
+            $distinctProjects = $model->select('DISTINCT(project) as project_name')->orderBy('project', 'ASC')->findAll();
+        }
         $projectNames = array_column($distinctProjects, 'project_name');
         // Ensure no empty values, and if so default to Generic
         $projectNames = array_map(function ($p) {
@@ -1006,6 +1024,7 @@ class TasksController extends BaseController
             'tasks' => $tasks,
             'pager' => $model->pager,
             'project_names' => $projectNames,
+            'me_mode' => $meMode,
         ]);
     }
 
@@ -1013,7 +1032,8 @@ class TasksController extends BaseController
     {
         $projectName = urldecode($projectName);
         $model = new TasksModel();
-        $tasks = $model->getProjectLogs($projectName);
+        $meMode = (session()->get('al_me_mode') == 1);
+        $tasks = $model->getProjectLogs($projectName, null, $meMode);
 
         $filename = str_replace(' ', '_', $projectName) . '_Tasks_Export_' . date('Y-m-d') . '.csv';
 
@@ -1064,7 +1084,8 @@ class TasksController extends BaseController
     {
         $projectName = urldecode($projectName);
         $model = new TasksModel();
-        $tasks = $model->getProjectLogs($projectName);
+        $meMode = (session()->get('al_me_mode') == 1);
+        $tasks = $model->getProjectLogs($projectName, null, $meMode);
 
         return view('tasks/project_pdf', [
             'project_name' => $projectName,

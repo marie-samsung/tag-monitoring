@@ -190,11 +190,19 @@ class TasksModel extends Model
         return $counts;
     }
 
-    public function getProjectLogs($projectName, $limit = null)
+    public function getProjectLogs($projectName, $limit = null, $meMode = false)
     {
         $query = $this->select('activity_logs.*, (SELECT comment FROM activity_log_comments WHERE activity_log_comments.log_id = activity_logs.id ORDER BY activity_log_comments.created_at DESC, activity_log_comments.id DESC LIMIT 1) as last_comment')
-            ->where('project', $projectName)
-            ->orderBy('created_at', 'DESC');
+            ->where('project', $projectName);
+
+        if ($meMode) {
+            $userId = session()->get('user_id');
+            if ($userId !== null) {
+                $query->where('assignee', $userId);
+            }
+        }
+
+        $query->orderBy('created_at', 'DESC');
 
         if ($limit !== null) {
             return $query->paginate($limit);
