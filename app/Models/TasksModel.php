@@ -65,6 +65,10 @@ class TasksModel extends Model
             $this->where('priority', $filters['priority']);
         }
 
+        if (!empty($filters['campaign_status'])) {
+            $this->where('campaign_status', $filters['campaign_status']);
+        }
+
         if (!empty($filters['me_mode'])) {
             $userId = session()->get('user_id');
             if ($userId !== null) {
@@ -99,7 +103,7 @@ class TasksModel extends Model
         $sortDir = $filters['sort_dir'] ?? 'desc';
         
         $allowedSortColumns = [
-            'id', 'subsidiary_id', 'team_id', 'project', 'title', 'ticket_id', 'assignee', 'status', 'priority', 'type', 'size', 'created_at', 'requested_date', 'start_date'
+            'id', 'subsidiary_id', 'team_id', 'project', 'title', 'ticket_id', 'assignee', 'status', 'priority', 'type', 'size', 'created_at', 'requested_date', 'start_date', 'requested_by', 'campaign_status'
         ];
         if (!in_array($sortBy, $allowedSortColumns)) {
             $sortBy = 'created_at';
@@ -170,6 +174,10 @@ class TasksModel extends Model
 
         if (!empty($filters['priority'])) {
             $this->where('priority', $filters['priority']);
+        }
+
+        if (!empty($filters['campaign_status'])) {
+            $this->where('campaign_status', $filters['campaign_status']);
         }
 
         if (!empty($filters['me_mode'])) {

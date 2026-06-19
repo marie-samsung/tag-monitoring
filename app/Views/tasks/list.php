@@ -68,9 +68,22 @@ Tasks
 
     $isMeMode = isset($_GET['me_mode']) ? ($_GET['me_mode'] == '1') : (session()->get('al_me_mode') == 1);
 
+    $isDWF = false;
+    $currentUserId = session()->get('user_id');
+    if ($currentUserId !== null) {
+        $userTeamId = Constants::USER_TEAMS[$currentUserId] ?? null;
+        if ($userTeamId === Constants::TEAM_DWF) {
+            $isDWF = true;
+        }
+    }
+
     // Advanced filters inside the collapsible panel
     $advancedFiltersCount = 0;
     $advancedFilterKeys = ['subsidiary_id', 'team_id', 'project', 'assignee', 'status', 'priority', 'type'];
+    if ($isDWF) {
+        $advancedFilterKeys[] = 'campaign_status';
+    }
+    
     foreach ($advancedFilterKeys as $key) {
         if (!empty($_GET[$key]) || (isset($_GET[$key]) && $_GET[$key] !== '')) {
             $advancedFiltersCount++;
@@ -92,6 +105,9 @@ Tasks
     
     // For general filter key rendering (like filter pills)
     $allFilterKeys = ['subsidiary_id', 'team_id', 'project', 'assignee', 'status', 'priority', 'type', 'status_group', 'me_mode', 'show_completed'];
+    if ($isDWF) {
+        $allFilterKeys[] = 'campaign_status';
+    }
 ?>
 
 <?= csrf_field() ?>
@@ -389,6 +405,22 @@ Tasks
                         </select>
                     </div>
 
+                    <?php if ($isDWF): ?>
+                    <!-- Campaign Status -->
+                    <div class="col-md-4 col-lg-3">
+                        <label class="form-label-xs fw-semibold text-secondary mb-1">Campaign Status</label>
+                        <select name="campaign_status" class="form-select form-select-xs" style="height: 34px; border-radius: 8px;">
+                            <option value="">All Campaign Statuses</option>
+                            <?php foreach (Constants::CAMPAIGN_STATUS as $value => $label): ?>
+                                <option value="<?= esc($value) ?>"
+                                    <?= old('campaign_status', $filters['campaign_status'] ?? null) == $value ? 'selected' : '' ?>>
+                                    <?= esc($label) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <?php endif; ?>
+
                     <!-- Show Completed -->
                     <div class="col-md-4 col-lg-3">
                         <label class="form-label-xs fw-semibold text-secondary mb-1">&nbsp;</label>
@@ -452,6 +484,8 @@ Tasks
                         $label = 'Assigned To Me: Enabled';
                     } elseif ($key === 'show_completed') {
                         $label = 'Show Completed: Enabled';
+                    } elseif ($key === 'campaign_status') {
+                        $label = 'Campaign Status: ' . (Constants::CAMPAIGN_STATUS[$val] ?? $val);
                     }
                     
                     $tempParams = $_GET;
@@ -548,6 +582,18 @@ Tasks
                         Type <?= getSortIcon('type', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>
                     </a>
                 </th>
+                <?php if ($isDWF): ?>
+                <th class="form-label-sm fw-semibold">
+                    <a href="<?= getSortUrl('requested_by', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>" class="text-decoration-none text-dark d-inline-flex align-items-center gap-1">
+                        Requested By <?= getSortIcon('requested_by', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>
+                    </a>
+                </th>
+                <th class="form-label-sm fw-semibold">
+                    <a href="<?= getSortUrl('campaign_status', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>" class="text-decoration-none text-dark d-inline-flex align-items-center gap-1">
+                        Campaign Status <?= getSortIcon('campaign_status', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>
+                    </a>
+                </th>
+                <?php endif; ?>
                 <th class="form-label-sm fw-semibold">
                     <a href="<?= getSortUrl('size', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>" class="text-decoration-none text-dark d-inline-flex align-items-center gap-1">
                         Size <?= getSortIcon('size', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>
@@ -570,7 +616,7 @@ Tasks
         <tbody>
             <?php if (empty($logs)): ?>
                 <tr>
-                    <td colspan="14" class="text-center py-5 text-muted">
+                    <td colspan="<?= $isDWF ? '16' : '14' ?>" class="text-center py-5 text-muted">
                         <i class="bi bi-inbox fs-2 mb-2 d-block text-secondary" style="opacity: 0.5;"></i>
                         <span class="fw-semibold">No tasks found</span>
                         <p class="small text-secondary mb-0">Try adjusting your filters or search keywords.</p>
@@ -659,6 +705,22 @@ Tasks
                                 <?= $type ?>
                             </span>
                         </td>
+                        <?php if ($isDWF): ?>
+                        <td class="form-label-sm" style="width:max-content; white-space:nowrap;">
+                            <?= esc($log['requested_by'] ?? '—') ?>
+                        </td>
+                        <td>
+                            <?php
+                                $cStatus = Constants::CAMPAIGN_STATUS[$log['campaign_status']] ?? '—';
+                                if (empty($log['campaign_status'])) {
+                                    $cStatus = '—';
+                                }
+                            ?>
+                            <span class="badge" style="<?= random_bg_style($cStatus) ?>">
+                                <?= esc($cStatus) ?>
+                            </span>
+                        </td>
+                        <?php endif; ?>
                         <td>
                             <span class="badge <?= size_class($log['size']) ?>" data-bs-toggle="tooltip" data-bs-placement="top" title="<?= esc(size_description($log['size'])) ?>" style="cursor: help;">
                                 <?= $size ?>
