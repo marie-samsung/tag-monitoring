@@ -276,6 +276,32 @@ class TasksController extends BaseController
             'type' => Constants::COMMENT_TYPE_COMMENT,
         ]);
 
+        // Process Mentions
+        preg_match_all('/@(\w+)/', $cleanComment, $matches);
+        if (!empty($matches[1])) {
+            $notificationsModel = new \App\Models\NotificationsModel();
+            $mentionedNames = array_unique($matches[1]);
+            foreach ($mentionedNames as $name) {
+                $userId = null;
+                foreach (Constants::USERS as $id => $uName) {
+                    if (strcasecmp($uName, $name) === 0) {
+                        $userId = $id;
+                        break;
+                    }
+                }
+                
+                if ($userId && $userId != $post['commented_by']) {
+                    $notificationsModel->insert([
+                        'user_id' => $userId,
+                        'sender_id' => $post['commented_by'],
+                        'task_id' => $post['log_id'],
+                        'message' => 'mentioned you in an update.',
+                        'is_read' => 0
+                    ]);
+                }
+            }
+        }
+
         if ($this->request->isAJAX()) {
             $insertedComment = $commentsModel->find($insertedId);
             return $this->response->setJSON([

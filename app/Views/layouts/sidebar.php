@@ -282,6 +282,24 @@ foreach ($overflowItems as $item) {
 
     <div class="d-flex align-items-center justify-content-end gap-3" style="flex: 1; min-width: fit-content;">
         <?php if (session()->get('isLoggedIn')): ?>
+            <!-- Notifications Dropdown -->
+            <div class="dropdown">
+                <a href="#" class="apple-btn-secondary btn-sm d-flex align-items-center justify-content-center position-relative" id="notificationsDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="width: 32px; height: 32px; padding: 0; color: var(--color-text-secondary);" title="Notifications">
+                    <i class="bi bi-bell-fill" style="font-size: 1rem;"></i>
+                    <span id="notificationBadge" class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" style="display: none;">
+                        <span class="visually-hidden">New alerts</span>
+                    </span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="notificationsDropdown" style="width: 320px; max-height: 400px; overflow-y: auto; border-radius: 12px; border: 1px solid var(--color-border-input); padding: 0;">
+                    <li class="dropdown-header text-uppercase px-3 pt-3 pb-2 text-muted" style="font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px; border-bottom: 1px solid rgba(0,0,0,0.05); background: var(--color-secondary-bg); border-top-left-radius: 12px; border-top-right-radius: 12px;">
+                        Notifications
+                    </li>
+                    <div id="notificationsList">
+                        <li><span class="dropdown-item py-3 text-center text-muted" style="font-size: 0.85rem;">Loading...</span></li>
+                    </div>
+                </ul>
+            </div>
+
             <?php $hasPhoto = !empty(session()->get('profile_photo')); ?>
             <a href="<?= site_url('profile') ?>" class="apple-btn-secondary btn-sm d-flex align-items-center gap-2 text-decoration-none apple-profile-link <?= $hasPhoto ? 'has-photo' : '' ?>" title="My Profile" data-bs-toggle="tooltip" data-bs-placement="bottom" style="height: 32px; font-size: 0.82rem; overflow: hidden;">
                 <?php if ($hasPhoto): ?>
@@ -373,6 +391,80 @@ document.addEventListener('DOMContentLoaded', () => {
                 hasMovedOnce = false; // Reset so next hover snaps instantly
             }
         }, 400); // 400ms delay feels patient and premium
+    });
+
+    // Notifications Logic
+    const fetchNotifications = () => {
+        $.ajax({
+            url: '<?= site_url("notifications/unread") ?>',
+            method: 'GET',
+            dataType: 'json',
+            success: function(res) {
+                if(res.success) {
+                    if(res.count > 0) {
+                        $('#notificationBadge').show();
+                    } else {
+                        $('#notificationBadge').hide();
+                    }
+                    
+                    let html = '';
+                    if(res.notifications.length === 0) {
+                        html = '<li><span class="dropdown-item py-3 text-center text-muted" style="font-size: 0.85rem;">No notifications</span></li>';
+                    } else {
+                        res.notifications.forEach(n => {
+                            let isUnread = n.is_read == 0;
+                            let bgStyle = isUnread ? 'background-color: var(--color-primary-subtle);' : 'background-color: transparent; opacity: 0.75;';
+                            let iconClass = isUnread ? 'bi-person-circle text-primary' : 'bi-person-circle text-muted';
+                            
+                            html += `
+                                <li>
+                                    <a class="dropdown-item py-2 border-bottom notification-item" href="#" data-id="${n.id}" data-task="${n.task_id}" style="white-space: normal; ${bgStyle} transition: all 0.2s ease;">
+                                        <div class="d-flex align-items-start gap-2">
+                                            <i class="bi ${iconClass} mt-1"></i>
+                                            <div>
+                                                <div style="font-size: 0.85rem; line-height: 1.3; color: var(--color-text-base);">
+                                                    <strong style="${isUnread ? '' : 'font-weight: 500;'}">${n.sender_name}</strong> ${n.message}
+                                                </div>
+                                                <div class="text-muted" style="font-size: 0.7rem; margin-top: 2px;">
+                                                    ${n.time_ago}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </li>
+                            `;
+                        });
+                    }
+                    $('#notificationsList').html(html);
+                }
+            }
+        });
+    };
+
+    fetchNotifications();
+
+    $(document).on('click', '.notification-item', function(e) {
+        e.preventDefault();
+        const notifId = $(this).data('id');
+        const taskId = $(this).data('task');
+        
+        let csrfVal = '';
+        if($('input[name="csrf_test_name"]').length > 0) {
+            csrfVal = $('input[name="csrf_test_name"]').val();
+        }
+        
+        $.ajax({
+            url: '<?= site_url("notifications/mark-read/") ?>' + notifId,
+            method: 'POST',
+            data: { csrf_test_name: csrfVal },
+            dataType: 'json',
+            success: function(res) {
+                window.location.href = '<?= site_url("tasks/view/") ?>' + taskId;
+            },
+            error: function() {
+                window.location.href = '<?= site_url("tasks/view/") ?>' + taskId;
+            }
+        });
     });
 });
 </script>
