@@ -36,6 +36,7 @@ class TasksModel extends Model
 
     public function filterLogs($filters = [], $paginate = 0)
     {
+        $this->applyRoleFilters();
         if (!empty($filters['keyword'])) {
             $this->groupStart()
                  ->like('title', $filters['keyword'])
@@ -62,6 +63,10 @@ class TasksModel extends Model
 
         if (!empty($filters['priority'])) {
             $this->where('priority', $filters['priority']);
+        }
+
+        if (!empty($filters['campaign_status'])) {
+            $this->where('campaign_status', $filters['campaign_status']);
         }
 
         if (!empty($filters['me_mode'])) {
@@ -98,7 +103,7 @@ class TasksModel extends Model
         $sortDir = $filters['sort_dir'] ?? 'desc';
         
         $allowedSortColumns = [
-            'id', 'subsidiary_id', 'team_id', 'project', 'title', 'ticket_id', 'assignee', 'status', 'priority', 'type', 'size', 'created_at', 'requested_date', 'start_date'
+            'id', 'subsidiary_id', 'team_id', 'project', 'title', 'ticket_id', 'assignee', 'status', 'priority', 'type', 'size', 'created_at', 'requested_date', 'start_date', 'requested_by', 'campaign_status'
         ];
         if (!in_array($sortBy, $allowedSortColumns)) {
             $sortBy = 'created_at';
@@ -138,6 +143,7 @@ class TasksModel extends Model
 
     public function getStatusCounts($filters = [])
     {
+        $this->applyRoleFilters();
         // Remove status and status_group filters to count across all statuses
         unset($filters['status']);
         unset($filters['status_group']);
@@ -170,6 +176,10 @@ class TasksModel extends Model
             $this->where('priority', $filters['priority']);
         }
 
+        if (!empty($filters['campaign_status'])) {
+            $this->where('campaign_status', $filters['campaign_status']);
+        }
+
         if (!empty($filters['me_mode'])) {
             $userId = session()->get('user_id');
             if ($userId !== null) {
@@ -190,16 +200,54 @@ class TasksModel extends Model
         return $counts;
     }
 
-    public function getProjectLogs($projectName, $limit = null)
+    public function getProjectLogs($projectName, $limit = null, $meMode = false)
     {
+        $this->applyRoleFilters();
+        
         $query = $this->select('activity_logs.*, (SELECT comment FROM activity_log_comments WHERE activity_log_comments.log_id = activity_logs.id ORDER BY activity_log_comments.created_at DESC, activity_log_comments.id DESC LIMIT 1) as last_comment')
-            ->where('project', $projectName)
-            ->orderBy('created_at', 'DESC');
+            ->where('project', $projectName);
+
+        if ($meMode) {
+            $userId = session()->get('user_id');
+            if ($userId !== null) {
+                $query->where('assignee', $userId);
+            }
+        }
+
+        $query->orderBy('created_at', 'DESC');
 
         if ($limit !== null) {
             return $query->paginate($limit);
         }
         return $query->findAll();
+    }
+
+    public function getDistinctProjects($userId = null)
+    {
+        $this->select('DISTINCT(project) as project_name')->orderBy('project', 'ASC');
+        
+        $this->applyRoleFilters();
+
+        if ($userId !== null) {
+            $this->where('assignee', $userId);
+        }
+
+        return $this->findAll();
+    }
+
+    protected function applyRoleFilters()
+    {
+        $userId = session()->get('user_id');
+        if ($userId !== null) {
+            $userRole = Constants::USER_ACCESS_LEVELS[$userId] ?? null;
+            if ($userRole !== Constants::USER_ROLE_ADMIN) {
+                $userTeam = Constants::USER_TEAMS[$userId] ?? null;
+                if ($userTeam !== null) {
+                    $this->where('team_id', $userTeam);
+                }
+            }
+        }
+        return $this;
     }
 
     protected $beforeInsert = ['setCreatedBy'];

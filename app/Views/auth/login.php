@@ -1,21 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login | Martech TMS</title>
-    
+
     <!-- CSS Dependencies -->
     <link href="<?= base_url('assets/bootstrap/css/bootstrap.min.css') ?>" rel="stylesheet">
     <link href="<?= base_url('assets/bootstrap-icons/bootstrap-icons.css') ?>" rel="stylesheet">
-    
+
     <style>
         :root {
             --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             --color-primary: #0071E3;
             --color-primary-hover: #0077ED;
         }
-        
+
         body {
             font-family: var(--font-sans);
             background: linear-gradient(135deg, #090a0f 0%, #12131c 50%, #1e112a 100%);
@@ -38,6 +39,7 @@
             z-index: 0;
             pointer-events: none;
         }
+
         .orb-1 {
             width: 450px;
             height: 450px;
@@ -45,6 +47,7 @@
             top: -100px;
             left: -100px;
         }
+
         .orb-2 {
             width: 500px;
             height: 500px;
@@ -68,7 +71,7 @@
             color: #f5f5f7;
             transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        
+
         .glass-card:hover {
             transform: translateY(-4px);
             box-shadow: 0 20px 50px 0 rgba(0, 0, 0, 0.6);
@@ -87,7 +90,7 @@
             gap: 12px;
             filter: drop-shadow(0 2px 8px rgba(0, 113, 227, 0.3));
         }
-        
+
         .brand-subtitle {
             font-size: 0.9rem;
             color: rgba(255, 255, 255, 0.5);
@@ -101,7 +104,7 @@
             position: relative;
             margin-bottom: 20px;
         }
-        
+
         .glass-input-group i.input-icon {
             position: absolute;
             left: 18px;
@@ -112,7 +115,7 @@
             transition: color 0.3s ease;
             pointer-events: none;
         }
-        
+
         .glass-input {
             background: rgba(255, 255, 255, 0.04) !important;
             border: 1px solid rgba(255, 255, 255, 0.08) !important;
@@ -123,19 +126,19 @@
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
             width: 100%;
         }
-        
+
         .glass-input::placeholder {
             color: rgba(255, 255, 255, 0.3);
         }
-        
+
         .glass-input:focus {
             border-color: var(--color-primary) !important;
             background: rgba(255, 255, 255, 0.08) !important;
             box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.25) !important;
             outline: none;
         }
-        
-        .glass-input:focus + i.input-icon {
+
+        .glass-input:focus+i.input-icon {
             color: var(--color-primary);
         }
 
@@ -156,7 +159,7 @@
             align-items: center;
             justify-content: center;
         }
-        
+
         .password-toggle:hover {
             color: #ffffff;
         }
@@ -179,13 +182,13 @@
             justify-content: center;
             gap: 8px;
         }
-        
+
         .glass-btn:hover {
             background: var(--color-primary-hover);
             box-shadow: 0 6px 22px rgba(0, 113, 227, 0.45);
             transform: translateY(-1px);
         }
-        
+
         .glass-btn:active {
             transform: translateY(1px);
         }
@@ -302,6 +305,7 @@
         }
     </style>
 </head>
+
 <body>
 
     <!-- Glowing Background Elements -->
@@ -334,14 +338,16 @@
         <!-- Login Form -->
         <form action="<?= site_url('login') ?>" method="post">
             <?= csrf_field() ?>
-            
+
             <div class="glass-input-group">
-                <input type="text" name="username" id="username" class="glass-input" placeholder="Username" required value="<?= old('username') ?>" autocomplete="username">
+                <input type="text" name="username" id="username" class="glass-input" placeholder="Username" required
+                    value="<?= old('username') ?>" autocomplete="username">
                 <i class="bi bi-person-fill input-icon"></i>
             </div>
-            
+
             <div class="glass-input-group">
-                <input type="password" name="password" id="password" class="glass-input" placeholder="Password" required autocomplete="current-password">
+                <input type="password" name="password" id="password" class="glass-input" placeholder="Password" required
+                    autocomplete="current-password">
                 <i class="bi bi-lock-fill input-icon"></i>
                 <button type="button" class="password-toggle" id="togglePasswordBtn">
                     <i class="bi bi-eye-slash" id="togglePasswordIcon"></i>
@@ -355,6 +361,8 @@
         </form>
 
         <!-- Developer Test Account Drawer -->
+
+        <!--
         <div class="drawer-toggle-container">
             <a href="#" class="drawer-toggle-btn" id="toggleDrawerBtn">
                 <i class="bi bi-info-circle"></i> View Demo Accounts
@@ -375,19 +383,20 @@
                 <i class="bi bi-key-fill text-primary"></i> Password for all: <code class="text-white bg-dark px-1 py-0.5 rounded">Password123</code>
             </div>
         </div>
+        -->
     </div>
 
     <!-- JS Dependencies -->
     <script src="<?= base_url('assets/jquery/js/jquery.min.js') ?>"></script>
     <script src="<?= base_url('assets/bootstrap/js/bootstrap.bundle.min.js') ?>"></script>
-    
+
     <script>
-        $(document).ready(function() {
+        $(document).ready(function () {
             // Password visibility toggle
-            $('#togglePasswordBtn').on('click', function() {
+            $('#togglePasswordBtn').on('click', function () {
                 const passwordField = $('#password');
                 const icon = $('#togglePasswordIcon');
-                
+
                 if (passwordField.attr('type') === 'password') {
                     passwordField.attr('type', 'text');
                     icon.removeClass('bi-eye-slash').addClass('bi-eye');
@@ -398,17 +407,17 @@
             });
 
             // Toggle Demo Accounts Drawer
-            $('#toggleDrawerBtn').on('click', function(e) {
+            $('#toggleDrawerBtn').on('click', function (e) {
                 e.preventDefault();
                 $('#usersDrawer').toggleClass('show');
             });
 
             // Auto-fill user from pills
-            $('.user-pill').on('click', function() {
+            $('.user-pill').on('click', function () {
                 const username = $(this).data('username');
                 $('#username').val(username);
                 $('#password').val('Password123');
-                
+
                 // Add a subtle flash effect to fields
                 $('#username, #password').css('border-color', 'var(--color-primary)');
                 setTimeout(() => {
@@ -418,4 +427,5 @@
         });
     </script>
 </body>
+
 </html>

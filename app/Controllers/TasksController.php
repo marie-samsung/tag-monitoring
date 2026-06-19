@@ -45,7 +45,7 @@ class TasksController extends BaseController
         $data['pager'] = $model->pager;
         $data['filters'] = $filters;
 
-        $distinctProjects = $model->select('DISTINCT(project) as project_name')->orderBy('project', 'ASC')->findAll();
+        $distinctProjects = $model->getDistinctProjects();
         $data['project_names'] = array_column($distinctProjects, 'project_name');
 
         return view('tasks/list', $data);
@@ -75,10 +75,13 @@ class TasksController extends BaseController
                 $log['project'] = trim($projectGet);
             }
 
-            $distinctProjects = $model->select('DISTINCT(project) as project_name')->orderBy('project', 'ASC')->findAll();
+            $distinctProjects = $model->getDistinctProjects();
             $projectNames = array_column($distinctProjects, 'project_name');
+            $distinctDepartments = $model->select('DISTINCT(department_id) as department_name')->where('department_id IS NOT NULL')->where("department_id != ''")->orderBy('department_id', 'ASC')->findAll();
+            $departmentNames = array_column($distinctDepartments, 'department_name');
             return view('tasks/create', [
                 'project_names' => $projectNames,
+                'department_names' => $departmentNames,
                 'log' => $log
             ]);
         }
@@ -90,7 +93,7 @@ class TasksController extends BaseController
             'title' => trim($post['title']),
             'description' => $post['description'] ?? null,
             'subsidiary_id' => (int) $post['subsidiary_id'],
-            'department_id' => !empty($post['department_id']) ? (int) $post['department_id'] : null,
+            'department_id' => !empty($post['department_id']) ? trim((string) $post['department_id']) : null,
             'team_id' => (int) $post['team_id'],
             'project' => !empty($post['project']) ? trim($post['project']) : 'Generic',
             'type' => (int) $post['type'] ?? null,
@@ -152,11 +155,14 @@ class TasksController extends BaseController
         }
 
         if ($this->request->getMethod() === 'GET') {
-            $distinctProjects = $model->select('DISTINCT(project) as project_name')->orderBy('project', 'ASC')->findAll();
+            $distinctProjects = $model->getDistinctProjects();
             $projectNames = array_column($distinctProjects, 'project_name');
+            $distinctDepartments = $model->select('DISTINCT(department_id) as department_name')->where('department_id IS NOT NULL')->where("department_id != ''")->orderBy('department_id', 'ASC')->findAll();
+            $departmentNames = array_column($distinctDepartments, 'department_name');
             return view('tasks/update', [
                 'log' => $log,
-                'project_names' => $projectNames
+                'project_names' => $projectNames,
+                'department_names' => $departmentNames
             ]);
         }
 
@@ -213,7 +219,7 @@ class TasksController extends BaseController
             'title' => trim($post['title']),
             'description' => $post['description'] ?? null,
             'subsidiary_id' => (int) $post['subsidiary_id'],
-            'department_id' => !empty($post['department_id']) ? (int) $post['department_id'] : null,
+            'department_id' => !empty($post['department_id']) ? trim((string) $post['department_id']) : null,
             'team_id' => (int) $post['team_id'],
             'project' => !empty($post['project']) ? trim($post['project']) : 'Generic',
             'type' => (int) $post['type'] ?? null,
@@ -417,7 +423,7 @@ class TasksController extends BaseController
                 Constants::ACTIVITY_LOGS_STATUS[$log['status']] ?? 'Unknown',
                 Constants::ACTIVITY_SIZES[$log['size']] ?? 'Unknown',
                 $log['ticket_id'] ?? '-',
-                Constants::DWF_DEPARTMENTS[$log['department_id']] ?? '-',
+                $log['department_id'] ?? '-',
                 Constants::CAMPAIGN_STATUS[$log['campaign_status']] ?? '-',
                 $log['campaign_id'] ?? '-',
                 '\'' . $log['requested_by'] ?? '-',
@@ -985,9 +991,24 @@ class TasksController extends BaseController
         $projectName = urldecode($projectName);
         $model = new TasksModel();
 
-        $tasks = $model->getProjectLogs($projectName, 25);
+        $meModeGet = $this->request->getGet('me_mode');
+        if ($meModeGet !== null) {
+            if ($meModeGet == '1') {
+                session()->set('al_me_mode', 1);
+            } else {
+                session()->set('al_me_mode', 0);
+            }
+        }
+        $meMode = (session()->get('al_me_mode') == 1);
 
-        $distinctProjects = $model->select('DISTINCT(project) as project_name')->orderBy('project', 'ASC')->findAll();
+        $tasks = $model->getProjectLogs($projectName, 25, $meMode);
+
+        if ($meMode) {
+            $userId = session()->get('user_id');
+            $distinctProjects = $model->getDistinctProjects($userId);
+        } else {
+            $distinctProjects = $model->getDistinctProjects();
+        }
         $projectNames = array_column($distinctProjects, 'project_name');
         // Ensure no empty values, and if so default to Generic
         $projectNames = array_map(function ($p) {
@@ -1000,6 +1021,7 @@ class TasksController extends BaseController
             'tasks' => $tasks,
             'pager' => $model->pager,
             'project_names' => $projectNames,
+            'me_mode' => $meMode,
         ]);
     }
 
@@ -1007,7 +1029,8 @@ class TasksController extends BaseController
     {
         $projectName = urldecode($projectName);
         $model = new TasksModel();
-        $tasks = $model->getProjectLogs($projectName);
+        $meMode = (session()->get('al_me_mode') == 1);
+        $tasks = $model->getProjectLogs($projectName, null, $meMode);
 
         $filename = str_replace(' ', '_', $projectName) . '_Tasks_Export_' . date('Y-m-d') . '.csv';
 
@@ -1058,7 +1081,8 @@ class TasksController extends BaseController
     {
         $projectName = urldecode($projectName);
         $model = new TasksModel();
-        $tasks = $model->getProjectLogs($projectName);
+        $meMode = (session()->get('al_me_mode') == 1);
+        $tasks = $model->getProjectLogs($projectName, null, $meMode);
 
         return view('tasks/project_pdf', [
             'project_name' => $projectName,

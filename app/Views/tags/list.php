@@ -783,6 +783,8 @@ Martech TMS
                                 name="tag_ids[]"
                                 value="<?= htmlspecialchars($tag['id']) ?>"
                                 data-status="<?= htmlspecialchars($tag['status']) ?>"
+                                data-ticket-id="<?= htmlspecialchars($ticketId ?? '') ?>"
+                                data-requested-date="<?= htmlspecialchars($tag['requested_date'] ?? '') ?>"
                                 class="form-check-input">
                         </td>
                         <!-- Subsidiary -->
@@ -904,7 +906,7 @@ Martech TMS
                                                 <i class="bi bi-pencil-square text-warning me-2"></i>Update Details
                                             </a>
                                         </li>
-                                        <?php if ($tag['status'] == Constants::STATUS_PENDING_VERIFICATION): ?>
+                                        <?php if ($tag['status'] == Constants::STATUS_PENDING_VERIFICATION || ($tag['status'] == Constants::STATUS_ON_HOLD && !empty($ticketId) && !empty($tag['requested_date']))): ?>
                                             <li><hr class="dropdown-divider"></li>
                                             <li>
                                                 <a class="dropdown-item py-2 text-success" href="<?= site_url('tags/verify/' . $tag['id']) ?>"
@@ -929,7 +931,7 @@ Martech TMS
                                     <a href="<?= site_url('tags/update/'.$tag['id']) ?>" class="hover-action-btn btn-update" data-bs-toggle="tooltip" data-bs-placement="top" title="Update Details">
                                         <i class="bi bi-pencil-fill"></i>
                                     </a>
-                                    <?php if ($tag['status'] == Constants::STATUS_PENDING_VERIFICATION): ?>
+                                    <?php if ($tag['status'] == Constants::STATUS_PENDING_VERIFICATION || ($tag['status'] == Constants::STATUS_ON_HOLD && !empty($ticketId) && !empty($tag['requested_date']))): ?>
                                         <a href="<?= site_url('tags/verify/' . $tag['id']) ?>" class="hover-action-btn btn-verify" data-bs-toggle="tooltip" data-bs-placement="top" title="Verify Tag" data-confirm="Have you verified the end date matches in AL?" data-confirm-title="Verify Tag" data-confirm-type="success">
                                             <i class="bi bi-check-circle-fill"></i>
                                         </a>
@@ -1019,7 +1021,16 @@ document.addEventListener('DOMContentLoaded', function () {
         const anyChecked = checkedCount > 0;
         
         const pendingCheckedCount = [...table.querySelectorAll('input[name="tag_ids[]"]:checked')]
-            .filter(cb => cb.getAttribute('data-status') === '4').length;
+            .filter(cb => {
+                const status = cb.getAttribute('data-status');
+                if (status === '4') return true;
+                if (status === '9') {
+                    const ticketId = cb.getAttribute('data-ticket-id');
+                    const requestedDate = cb.getAttribute('data-requested-date');
+                    return ticketId && requestedDate;
+                }
+                return false;
+            }).length;
         const anyPendingChecked = pendingCheckedCount > 0;
         
         if (btnRenew) btnRenew.style.display = anyChecked ? 'block' : 'none';

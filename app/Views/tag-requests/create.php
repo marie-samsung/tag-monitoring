@@ -11,15 +11,19 @@ Tag Request: Create
     use App\Models\PropertiesModel;
     use App\Models\VendorsModel;
     use App\Models\OrganizationsModel;
+    use App\Models\TasksModel;
 
     $propertiesModel = new PropertiesModel();
     $propertiesList = $propertiesModel->select('id, name, is_shop')->findAll();
+    $property = isset($property_id) ? $propertiesModel->find($property_id) : null;
 
     $vendorsModel = new VendorsModel();
     $vendors = $vendorsModel->Options();
 
     $organizationsModel = new OrganizationsModel();
     $organizations = $organizationsModel->Options();
+
+    $tasksModel = new TasksModel();
 ?>
 
 <?php if (session()->getFlashdata('error')): ?>
@@ -307,9 +311,12 @@ Tag Request: Create
                     </h5>
                     <div class="mb-3">
                         <label class="form-label-xs fw-semibold text-secondary mb-1 d-block">Property</label>
-                        <span class="fw-semibold text-dark ms-1" style="font-size: 0.9rem;">
-                            <a href="<?= esc($properties[$property_id]['ref_link'] . Constants::AL_LIBRARY_CREATE ?? '#') ?>" target="_blank" class="apple-link-dark text-decoration-none">
+                        <span class="fw-semibold text-dark ms-1 group-hover-container align-items-center" style="font-size: 0.9rem;">
+                            <a href="<?= esc((isset($property['ref_link']) ? $property['ref_link'] . Constants::AL_LIBRARY_CREATE : '#')) ?>" target="_blank" class="apple-link-dark text-decoration-none">
                                 <?= esc($property['name'] ?? '—') ?>
+                            </a>
+                            <a href="javascript:void(0)" onclick="copyName('<?= esc($property['name'] ?? '—') ?>', this)" title="Copy property name" class="text-muted ms-2" style="transition: color 0.2s; text-decoration: none; line-height: 1;">
+                                <i class="bi bi-copy" style="font-size: 0.85rem;"></i>
                             </a>
                         </span>
                     </div>
@@ -511,7 +518,21 @@ Tag Request: Create
                                 Format: GTA-XXXXX
                             </small>
                         <?php else: ?>
-                            <div class="fw-bold text-dark fs-5 mb-2"><?= esc($ticket_id) ?></div>
+                            <div class="fw-bold text-dark fs-5 mb-2 d-flex align-items-center gap-2">
+                                <?php $relatedTask = $tasksModel->where('ticket_id', $ticket_id)->first(); ?>
+                                <?php if ($relatedTask): ?>
+                                    <a href="<?= site_url('tasks/view/' . $relatedTask['id']) ?>" class="apple-link text-decoration-none" title="View related Task">
+                                        <?= esc($ticket_id) ?>
+                                    </a>
+                                <?php else: ?>
+                                    <a href="<?= Constants::JIRA_LINK . $ticket_id ?>" target="_blank" rel="noopener" class="apple-link text-decoration-none">
+                                        <?= esc($ticket_id) ?>
+                                    </a>
+                                <?php endif; ?>
+                                <a href="<?= Constants::JIRA_LINK . $ticket_id ?>" target="_blank" rel="noopener" class="text-muted" style="font-size: 0.85rem; text-decoration: none;" title="View in JIRA">
+                                    <i class="bi bi-box-arrow-up-right"></i>
+                                </a>
+                            </div>
                             <input type="hidden" name="ticket_id" value="<?= esc($ticket_id) ?>">
                         <?php endif; ?>
                     </div>
@@ -525,9 +546,12 @@ Tag Request: Create
                     </h5>
                     <div class="mb-3">
                         <label class="form-label-xs fw-semibold text-secondary mb-1 d-block">Property</label>
-                        <span class="fw-semibold text-dark ms-1" style="font-size: 0.9rem;">
-                            <a href="<?= esc($properties[$property_id]['ref_link'] ?? '#') ?>" target="_blank" class="apple-link-dark text-decoration-none">
+                        <span class="fw-semibold text-dark ms-1 group-hover-container align-items-center" style="font-size: 0.9rem;">
+                            <a href="<?= esc($property['ref_link'] ?? '#') ?>" target="_blank" class="apple-link-dark text-decoration-none">
                                 <?= esc($property['name'] ?? '—') ?>
+                            </a>
+                            <a href="javascript:void(0)" onclick="copyName('<?= esc($property['name'] ?? '—') ?>', this)" title="Copy property name" class="text-muted ms-2" style="transition: color 0.2s; text-decoration: none; line-height: 1;">
+                                <i class="bi bi-copy" style="font-size: 0.85rem;"></i>
                             </a>
                         </span>
                     </div>
@@ -539,9 +563,17 @@ Tag Request: Create
                     </div>
                     <div class="mb-3">
                         <label class="form-label-xs fw-semibold text-secondary mb-1 d-block">Library Name</label>
-                        <span class="fw-mono text-dark ms-1" style="font-size: 0.85rem;">
-                            <code><?= esc($libraryName) ?></code>
-                        </span>
+                        <div class="d-flex align-items-center gap-2 ms-1">
+                            <span class="fw-mono text-dark" style="font-size: 0.85rem;">
+                                <code id="libraryNameVal"><?= esc($libraryName) ?></code>
+                            </span>
+                            <a href="javascript:void(0)" onclick="copyLibraryName()" class="text-primary text-decoration-none d-flex align-items-center" title="Copy Library Name">
+                                <i class="bi bi-copy fs-6"></i>
+                            </a>
+                            <span id="copyLibraryStatus" class="badge bg-success" style="opacity:0; transition: opacity .6s; font-size:10px;">
+                                Copied!
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -678,6 +710,50 @@ Tag Request: Create
 
         const temp = document.createElement('textarea');
         temp.value = title;
+
+        temp.style.position = 'fixed';
+        temp.style.left = '-9999px';
+        document.body.appendChild(temp);
+
+        temp.focus();
+        temp.select();
+
+        document.execCommand('copy');
+        document.body.removeChild(temp);
+
+        status.style.opacity = 1;
+        setTimeout(() => status.style.opacity = 0, 1000);
+    }
+
+    window.copyName = function(text, el) {
+        const temp = document.createElement('textarea');
+        temp.value = text;
+
+        temp.style.position = 'fixed';
+        temp.style.left = '-9999px';
+
+        document.body.appendChild(temp);
+
+        temp.focus();
+        temp.select();
+
+        document.execCommand('copy');
+
+        document.body.removeChild(temp);
+
+        el.innerHTML = '<i class="bi bi-check-lg text-success fs-7"></i>';
+
+        setTimeout(() => {
+            el.innerHTML = '<i class="bi bi-copy text-secondary fs-7"></i>';
+        }, 1200);
+    };
+
+    function copyLibraryName() {
+        const libName = document.getElementById('libraryNameVal').innerText;
+        const status = document.getElementById('copyLibraryStatus');
+
+        const temp = document.createElement('textarea');
+        temp.value = libName;
 
         temp.style.position = 'fixed';
         temp.style.left = '-9999px';

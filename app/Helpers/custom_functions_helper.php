@@ -13,6 +13,7 @@ function status_label(int $id): string
         Constants::STATUS_NEW_TAG_SUBMITTED => 'New Tag Request Submitted',
         Constants::STATUS_NEW_RULE_SUBMITTED => 'New Rule Request Submitted',
         Constants::STATUS_ON_HOLD => 'On-Hold / Blocked',
+        Constants::STATUS_ENDED => 'Ended',
     ];
     return $map[$id] ?? 'Unknown';
 }
@@ -22,7 +23,7 @@ function status_class(int $id): string
     return match ($id) {
         Constants::STATUS_ENABLED => 'bg-success text-white',
         Constants::STATUS_DISABLED, Constants::STATUS_ON_HOLD => 'bg-danger text-white',
-        Constants::STATUS_EXPIRED, Constants::STATUS_NEW_RULE_SUBMITTED => 'bg-secondary text-white',
+        Constants::STATUS_EXPIRED, Constants::STATUS_ENDED, Constants::STATUS_NEW_RULE_SUBMITTED => 'bg-secondary text-white',
         Constants::STATUS_PENDING_VERIFICATION, Constants::STATUS_NEW_TAG_SUBMITTED => 'bg-warning text-dark',
         Constants::STATUS_UPDATED_IN_AL => 'bg-info text-dark',
         default => 'bg-secondary text-dark',

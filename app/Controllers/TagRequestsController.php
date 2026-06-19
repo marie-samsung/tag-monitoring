@@ -53,7 +53,7 @@ class TagRequestsController extends BaseController
             'request' => $request,
             'tags' => $model->getTags($id),
             'files' => $filesModel->getRelatedFiles($id),
-        ] );
+        ]);
     }
 
     public function create()
@@ -80,14 +80,14 @@ class TagRequestsController extends BaseController
         $excelFileName = $post['excel_file_name'] ?? null;
         $jiraType = $post['type'];
         $endDate = date('Y-m-d', strtotime('+61 days'));
-        
+
         $background = $post['background'] ?? null;
         $q1 = $post['q1'] ?? null;
         $q2 = $post['q2'] ?? null;
         $q3 = $post['q3'] ?? null;
         $q4 = $post['q4'] ?? null;
         $q5 = $post['q5'] ?? null;
-        
+
         $tagIds = [];
         $vendorId = null;
         $organizationId = null;
@@ -204,7 +204,7 @@ class TagRequestsController extends BaseController
         } else {
             return redirect()
                 ->to('/tag-requests')
-                ->with('error', "Tags were not successfully created."); 
+                ->with('error', "Tags were not successfully created.");
         }
     }
 
@@ -257,9 +257,11 @@ class TagRequestsController extends BaseController
         $request = $model->find($post['request_id']);
         $ticketId = $post['new_tag_ticket'];
 
-        if ($model->update($request['id'], [
-           'new_tag_ticket' => $post['new_tag_ticket'],
-        ])) {
+        if (
+            $model->update($request['id'], [
+                'new_tag_ticket' => $post['new_tag_ticket'],
+            ])
+        ) {
 
             $this->saveJiraHistory($request['tags'], $request['property_id'], $ticketId, Constants::JIRA_TYPE_NEW_TAG);
             $this->addTask($request, 'New Tag Request: ', $ticketId);
@@ -282,10 +284,12 @@ class TagRequestsController extends BaseController
         $ticketId = $post['new_rule_ticket'];
         $request = $model->find($post['request_id']);
 
-        if ($model->update($request['id'], [
-            'new_rule_ticket' => $ticketId,
-            'status' => Constants::STATUS_REQUEST_NEW_RULE_REQUEST_SUBMITTED,
-        ])) {
+        if (
+            $model->update($request['id'], [
+                'new_rule_ticket' => $ticketId,
+                'status' => Constants::STATUS_REQUEST_NEW_RULE_REQUEST_SUBMITTED,
+            ])
+        ) {
 
             $tags = explode(',', $request['tags']);
 
@@ -296,7 +300,7 @@ class TagRequestsController extends BaseController
             }
 
             $this->saveJiraHistory($request['tags'], $request['property_id'], $ticketId, Constants::JIRA_TYPE_NEW_RULE);
-            $this->addTask($request, 'New Rule Request: ', $ticketId);
+            $this->addTask($request, 'New Rule Request ', $ticketId);
 
             return view('tag-requests/create', [
                 'request_id' => $request['id'],
@@ -439,7 +443,7 @@ class TagRequestsController extends BaseController
                 $subsidiary['name'] ?? 'N/A',
                 $property['name'] ?? 'N/A',
                 $request[$ticketColumn] ?? 'N/A',
-                request_type_label((int)$request['type'], (int)$request['status']),
+                request_type_label((int) $request['type'], (int) $request['status']),
                 Constants::STATUS_REQUESTS[$request['status']] ?? 'Unknown',
                 "'" . date_ymd($request['created_at']),
             ]);
@@ -458,30 +462,30 @@ class TagRequestsController extends BaseController
         $requestId = $post['request_id'];
         $file = $this->request->getFile('file_path');
 
-         try {
-             if ($file && $file->isValid()) {
-                 $upload_path = Constants::NEW_TAG_FILE_WRITE_PATH . $model->fileUploadPath($post['property_id'], $post['vendor_name']);
-                 $file_name = $file->getClientName();
+        try {
+            if ($file && $file->isValid()) {
+                $upload_path = Constants::NEW_TAG_FILE_WRITE_PATH . $model->fileUploadPath($post['property_id'], $post['vendor_name']);
+                $file_name = $file->getClientName();
 
-                 if ($file->move($upload_path, $file_name)) {
-                     $file_path = $upload_path . '/' . $file_name;
+                if ($file->move($upload_path, $file_name)) {
+                    $file_path = $upload_path . '/' . $file_name;
 
-                     $filesModel->insert([
-                         'file_name' => $file_name,
-                         'file_path' => $file_path,
-                         'type' => $post['type'],
-                         'request_id' => $requestId,
-                         'created_by' => session()->get('user_id') ?? 0,
-                     ]);
+                    $filesModel->insert([
+                        'file_name' => $file_name,
+                        'file_path' => $file_path,
+                        'type' => $post['type'],
+                        'request_id' => $requestId,
+                        'created_by' => session()->get('user_id') ?? 0,
+                    ]);
 
-                     return redirect()
-                         ->to('/tag-requests/view/' . $post['request_id'])
-                         ->with('success', "File successfully uploaded.");
-                 }
-             }
-         } catch(FileException|\ReflectionException $e) {
-             var_dump($e);
-         }
+                    return redirect()
+                        ->to('/tag-requests/view/' . $post['request_id'])
+                        ->with('success', "File successfully uploaded.");
+                }
+            }
+        } catch (FileException | \ReflectionException $e) {
+            var_dump($e);
+        }
 
         return redirect()
             ->to('/tag-requests/view/' . $post['request_id'])
@@ -545,8 +549,8 @@ class TagRequestsController extends BaseController
         if ($taskId) {
             $filesModel = new TagRequestFilesModel();
             $relatedFiles = $filesModel->where('request_id', $request['id'])
-                                       ->where('type', Constants::ATTACHMENT_REQUEST_FORM)
-                                       ->findAll();
+                ->where('type', Constants::ATTACHMENT_REQUEST_FORM)
+                ->findAll();
 
             if (!empty($relatedFiles)) {
                 $taskFilesModel = new TaskFilesModel();
@@ -578,7 +582,7 @@ class TagRequestsController extends BaseController
         require_once APPPATH . 'Libraries/SimpleXLSX.php';
 
         $xlsx = \Shuchkin\SimpleXLSX::parse($file->getTempName());
-        
+
         if (!$xlsx) {
             return redirect()->back()->with('error', 'Failed to parse Excel file: ' . \Shuchkin\SimpleXLSX::parseError());
         }
@@ -593,7 +597,7 @@ class TagRequestsController extends BaseController
         $originalName = $file->getClientName();
         $tempFileName = uniqid() . '_' . $originalName;
         $tempFilePath = $tempFolder . '/' . $tempFileName;
-        
+
         $fileSaved = false;
         if ($file->move($tempFolder, $tempFileName)) {
             $fileSaved = true;
@@ -624,8 +628,9 @@ class TagRequestsController extends BaseController
         ];
 
         foreach ($rows as $row) {
-            if (count($row) < 3) continue;
-            
+            if (count($row) < 3)
+                continue;
+
             $key = $row[1] ?? '';
             $value = $row[2] ?? '';
 
@@ -662,7 +667,8 @@ class TagRequestsController extends BaseController
 
         $hasData = false;
         foreach ($extractedData as $field => $val) {
-            if ($field === 'property_id' || $field === 'default_tag' || $field === 'excel_file_path' || $field === 'excel_file_name') continue;
+            if ($field === 'property_id' || $field === 'default_tag' || $field === 'excel_file_path' || $field === 'excel_file_name')
+                continue;
             if (trim((string) $val) !== '') {
                 $hasData = true;
                 break;
@@ -680,7 +686,7 @@ class TagRequestsController extends BaseController
         if (!empty($extractedData['target_properties'])) {
             $urls = preg_split('/[\s,;]+/', $extractedData['target_properties']);
             $urls = array_filter(array_map('trim', $urls));
-            
+
             $normalizeUrl = function ($url) {
                 $url = trim($url);
                 $url = preg_replace('#^https?://(www\.)?#', '', $url);
@@ -693,9 +699,10 @@ class TagRequestsController extends BaseController
                 $bestMatchId = null;
 
                 foreach ($properties as $property) {
-                    if (empty($property['website'])) continue;
+                    if (empty($property['website']))
+                        continue;
                     $normalizedPropWebsite = $normalizeUrl($property['website']);
-                    
+
                     if (strpos($normalizedUrl, $normalizedPropWebsite) === 0) {
                         $len = strlen($normalizedPropWebsite);
                         if ($len > $bestMatchLen) {
@@ -704,7 +711,7 @@ class TagRequestsController extends BaseController
                         }
                     }
                 }
-                
+
                 if ($bestMatchId) {
                     $extractedData['property_id'] = $bestMatchId;
                     break;
@@ -721,12 +728,16 @@ class TagRequestsController extends BaseController
             }
         }
         $vendorName = !empty($extractedData['vendor_name']) ? $extractedData['vendor_name'] : 'Vendor';
-        $uuid = sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
-            mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+        $uuid = sprintf(
+            '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
             mt_rand(0, 0xffff),
             mt_rand(0, 0x0fff) | 0x4000,
             mt_rand(0, 0x3fff) | 0x8000,
-            mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff)
         );
         $extractedData['default_tag'] = "LC-{$shopOrAem}-AD({$vendorName})-CM-ALL-WL-SDSME_{$uuid}";
 

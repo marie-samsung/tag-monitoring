@@ -319,7 +319,13 @@ helper('custom_functions');
                     for this project.</p>
             </div>
         </div>
-        <div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="<?= site_url('tasks/project/' . rawurlencode($project_name)) . (isset($me_mode) && $me_mode ? '?me_mode=0' : '?me_mode=1') ?>"
+                class="<?= isset($me_mode) && $me_mode ? 'apple-btn-primary' : 'apple-btn-secondary' ?> btn-sm px-3 text-decoration-none d-inline-flex align-items-center gap-1.5 py-2"
+                style="border-radius: 8px;">
+                <i class="bi <?= isset($me_mode) && $me_mode ? 'bi-person-fill' : 'bi-person' ?> me-1"></i> Assigned To
+                Me
+            </a>
             <a href="<?= site_url('tasks/create?project=' . rawurlencode($project_name)) ?>"
                 title="Create a new task for this project"
                 class="apple-btn-primary btn-sm px-3 text-decoration-none d-inline-flex align-items-center gap-1.5 py-2"
@@ -497,7 +503,8 @@ helper('custom_functions');
                                         <?php endforeach; ?>
                                     </select>
                                 </td>
-                                <td class="comment-cell" title="<?= esc(strip_tags($task['last_comment'] ?? 'No comments posted yet.')) ?>"
+                                <td class="comment-cell"
+                                    title="<?= esc(strip_tags($task['last_comment'] ?? 'No comments posted yet.')) ?>"
                                     data-bs-toggle="tooltip" data-bs-placement="left">
                                     <?= esc(strip_tags($task['last_comment'] ?? '') ?: '—') ?>
                                 </td>
