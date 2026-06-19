@@ -77,8 +77,11 @@ class TasksController extends BaseController
 
             $distinctProjects = $model->select('DISTINCT(project) as project_name')->orderBy('project', 'ASC')->findAll();
             $projectNames = array_column($distinctProjects, 'project_name');
+            $distinctDepartments = $model->select('DISTINCT(department_id) as department_name')->where('department_id IS NOT NULL')->where("department_id != ''")->orderBy('department_id', 'ASC')->findAll();
+            $departmentNames = array_column($distinctDepartments, 'department_name');
             return view('tasks/create', [
                 'project_names' => $projectNames,
+                'department_names' => $departmentNames,
                 'log' => $log
             ]);
         }
@@ -90,7 +93,7 @@ class TasksController extends BaseController
             'title' => trim($post['title']),
             'description' => $post['description'] ?? null,
             'subsidiary_id' => (int) $post['subsidiary_id'],
-            'department_id' => !empty($post['department_id']) ? (int) $post['department_id'] : null,
+            'department_id' => !empty($post['department_id']) ? trim((string) $post['department_id']) : null,
             'team_id' => (int) $post['team_id'],
             'project' => !empty($post['project']) ? trim($post['project']) : 'Generic',
             'type' => (int) $post['type'] ?? null,
@@ -154,9 +157,12 @@ class TasksController extends BaseController
         if ($this->request->getMethod() === 'GET') {
             $distinctProjects = $model->select('DISTINCT(project) as project_name')->orderBy('project', 'ASC')->findAll();
             $projectNames = array_column($distinctProjects, 'project_name');
+            $distinctDepartments = $model->select('DISTINCT(department_id) as department_name')->where('department_id IS NOT NULL')->where("department_id != ''")->orderBy('department_id', 'ASC')->findAll();
+            $departmentNames = array_column($distinctDepartments, 'department_name');
             return view('tasks/update', [
                 'log' => $log,
-                'project_names' => $projectNames
+                'project_names' => $projectNames,
+                'department_names' => $departmentNames
             ]);
         }
 
@@ -213,7 +219,7 @@ class TasksController extends BaseController
             'title' => trim($post['title']),
             'description' => $post['description'] ?? null,
             'subsidiary_id' => (int) $post['subsidiary_id'],
-            'department_id' => !empty($post['department_id']) ? (int) $post['department_id'] : null,
+            'department_id' => !empty($post['department_id']) ? trim((string) $post['department_id']) : null,
             'team_id' => (int) $post['team_id'],
             'project' => !empty($post['project']) ? trim($post['project']) : 'Generic',
             'type' => (int) $post['type'] ?? null,
@@ -417,7 +423,7 @@ class TasksController extends BaseController
                 Constants::ACTIVITY_LOGS_STATUS[$log['status']] ?? 'Unknown',
                 Constants::ACTIVITY_SIZES[$log['size']] ?? 'Unknown',
                 $log['ticket_id'] ?? '-',
-                Constants::DWF_DEPARTMENTS[$log['department_id']] ?? '-',
+                $log['department_id'] ?? '-',
                 Constants::CAMPAIGN_STATUS[$log['campaign_status']] ?? '-',
                 $log['campaign_id'] ?? '-',
                 '\'' . $log['requested_by'] ?? '-',

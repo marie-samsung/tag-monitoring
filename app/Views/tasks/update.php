@@ -102,12 +102,17 @@
                         <!-- Department -->
                         <div class="col-md-4">
                             <label class="form-label-sm fw-semibold text-secondary mb-1">Department</label>
-                            <select name="department_id" class="form-select form-select-xs">
+                            <select name="department_id" id="department-select" class="form-select form-select-xs">
                                 <option value="">-Select-</option>
-                                <?php foreach (Constants::DWF_DEPARTMENTS as $value => $label): ?>
-                                    <option value="<?= esc($value) ?>"
-                                            <?= ($log['department_id'] == $value) ? 'selected' : '' ?>>
-                                        <?= esc($label) ?>
+                                <?php 
+                                    $selectedDepartment = old('department_id', $log['department_id'] ?? '');
+                                    if (!empty($selectedDepartment) && !in_array($selectedDepartment, $department_names)): 
+                                ?>
+                                    <option value="<?= esc($selectedDepartment) ?>" selected><?= esc($selectedDepartment) ?></option>
+                                <?php endif; ?>
+                                <?php foreach ($department_names as $dName): ?>
+                                    <option value="<?= esc($dName) ?>" <?= $selectedDepartment === $dName ? 'selected' : '' ?>>
+                                        <?= esc($dName) ?>
                                     </option>
                                 <?php endforeach; ?>
                             </select>
@@ -307,6 +312,13 @@
             tags: true,
             width: '100%',
             placeholder: 'Select or type a project name...'
+        });
+
+        $('#department-select').select2({
+            tags: true,
+            width: '100%',
+            placeholder: '-Select or type a department-',
+            allowClear: true
         });
 
         const sizeDescriptions = {

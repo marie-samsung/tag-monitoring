@@ -185,21 +185,6 @@ class Constants
         '4) After the event occurs, there is no impact on the expected User Journey' => 'Y / N',
     ];
 
-    public const DWF_DEPT_CRM = 1;
-    public const DWF_DEPT_CS = 2;
-    public const DWF_DEPT_ESTORE = 3;
-    public const DWF_DEPT_MX = 4;
-    public const DWF_DEPT_MENA_RHQ = 5;
-    public const DWF_DEPT_OTHER = 6;
-    public const DWF_DEPARTMENTS = [
-        self::DWF_DEPT_CRM => 'CRM',
-        self::DWF_DEPT_CS => 'CS',
-        self::DWF_DEPT_ESTORE => 'eStore',
-        self::DWF_DEPT_MX => 'MX',
-        self::DWF_DEPT_MENA_RHQ => 'MENA RHQ',
-        self::DWF_DEPT_OTHER => 'Other',
-    ];
-
     public const TEAM_MEDIA_TAGGING = 1;
     public const TEAM_DWF = 2;
     public const TEAM_CRM = 3;

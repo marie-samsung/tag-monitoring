@@ -447,7 +447,7 @@
             <div class="mb-3 pb-2 border-bottom border-light">
                 <span class="d-block text-muted fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Department</span>
                 <div class="mt-1" style="font-size: 0.9rem; color: var(--color-text-base);">
-                    <?= esc(Constants::DWF_DEPARTMENTS[$log['department_id']] ?? '—') ?>
+                    <?= esc($log['department_id'] ?? '—') ?>
                 </div>
             </div>
             
