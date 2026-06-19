@@ -45,7 +45,7 @@ class TasksController extends BaseController
         $data['pager'] = $model->pager;
         $data['filters'] = $filters;
 
-        $distinctProjects = $model->select('DISTINCT(project) as project_name')->orderBy('project', 'ASC')->findAll();
+        $distinctProjects = $model->getDistinctProjects();
         $data['project_names'] = array_column($distinctProjects, 'project_name');
 
         return view('tasks/list', $data);
@@ -75,7 +75,7 @@ class TasksController extends BaseController
                 $log['project'] = trim($projectGet);
             }
 
-            $distinctProjects = $model->select('DISTINCT(project) as project_name')->orderBy('project', 'ASC')->findAll();
+            $distinctProjects = $model->getDistinctProjects();
             $projectNames = array_column($distinctProjects, 'project_name');
             $distinctDepartments = $model->select('DISTINCT(department_id) as department_name')->where('department_id IS NOT NULL')->where("department_id != ''")->orderBy('department_id', 'ASC')->findAll();
             $departmentNames = array_column($distinctDepartments, 'department_name');
@@ -155,7 +155,7 @@ class TasksController extends BaseController
         }
 
         if ($this->request->getMethod() === 'GET') {
-            $distinctProjects = $model->select('DISTINCT(project) as project_name')->orderBy('project', 'ASC')->findAll();
+            $distinctProjects = $model->getDistinctProjects();
             $projectNames = array_column($distinctProjects, 'project_name');
             $distinctDepartments = $model->select('DISTINCT(department_id) as department_name')->where('department_id IS NOT NULL')->where("department_id != ''")->orderBy('department_id', 'ASC')->findAll();
             $departmentNames = array_column($distinctDepartments, 'department_name');
@@ -1005,12 +1005,9 @@ class TasksController extends BaseController
 
         if ($meMode) {
             $userId = session()->get('user_id');
-            $distinctProjects = $model->select('DISTINCT(project) as project_name')
-                ->where('assignee', $userId)
-                ->orderBy('project', 'ASC')
-                ->findAll();
+            $distinctProjects = $model->getDistinctProjects($userId);
         } else {
-            $distinctProjects = $model->select('DISTINCT(project) as project_name')->orderBy('project', 'ASC')->findAll();
+            $distinctProjects = $model->getDistinctProjects();
         }
         $projectNames = array_column($distinctProjects, 'project_name');
         // Ensure no empty values, and if so default to Generic

@@ -36,6 +36,7 @@ class TasksModel extends Model
 
     public function filterLogs($filters = [], $paginate = 0)
     {
+        $this->applyRoleFilters();
         if (!empty($filters['keyword'])) {
             $this->groupStart()
                  ->like('title', $filters['keyword'])
@@ -138,6 +139,7 @@ class TasksModel extends Model
 
     public function getStatusCounts($filters = [])
     {
+        $this->applyRoleFilters();
         // Remove status and status_group filters to count across all statuses
         unset($filters['status']);
         unset($filters['status_group']);
@@ -192,6 +194,8 @@ class TasksModel extends Model
 
     public function getProjectLogs($projectName, $limit = null, $meMode = false)
     {
+        $this->applyRoleFilters();
+        
         $query = $this->select('activity_logs.*, (SELECT comment FROM activity_log_comments WHERE activity_log_comments.log_id = activity_logs.id ORDER BY activity_log_comments.created_at DESC, activity_log_comments.id DESC LIMIT 1) as last_comment')
             ->where('project', $projectName);
 
@@ -208,6 +212,34 @@ class TasksModel extends Model
             return $query->paginate($limit);
         }
         return $query->findAll();
+    }
+
+    public function getDistinctProjects($userId = null)
+    {
+        $this->select('DISTINCT(project) as project_name')->orderBy('project', 'ASC');
+        
+        $this->applyRoleFilters();
+
+        if ($userId !== null) {
+            $this->where('assignee', $userId);
+        }
+
+        return $this->findAll();
+    }
+
+    protected function applyRoleFilters()
+    {
+        $userId = session()->get('user_id');
+        if ($userId !== null) {
+            $userRole = Constants::USER_ACCESS_LEVELS[$userId] ?? null;
+            if ($userRole !== Constants::USER_ROLE_ADMIN) {
+                $userTeam = Constants::USER_TEAMS[$userId] ?? null;
+                if ($userTeam !== null) {
+                    $this->where('team_id', $userTeam);
+                }
+            }
+        }
+        return $this;
     }
 
     protected $beforeInsert = ['setCreatedBy'];
