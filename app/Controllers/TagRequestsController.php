@@ -296,7 +296,7 @@ class TagRequestsController extends BaseController
             }
 
             $this->saveJiraHistory($request['tags'], $request['property_id'], $ticketId, Constants::JIRA_TYPE_NEW_RULE);
-            $this->addTask($request, 'New Rule Request: ', $ticketId);
+            $this->addTask($request, 'New Rule Request ', $ticketId);
 
             return view('tag-requests/create', [
                 'request_id' => $request['id'],
