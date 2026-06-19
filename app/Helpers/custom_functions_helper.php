@@ -304,6 +304,15 @@ function clean_html_comment(string $html): string
         $cleanedHtml = $html;
     }
 
+    // Format mentions for valid users
+    foreach (\App\Models\Constants::USERS as $userLabel) {
+        $cleanedHtml = preg_replace(
+            '/(?<=^|\s|>)(@' . preg_quote($userLabel, '/') . ')\b/i',
+            '<span class="badge bg-primary-subtle text-primary fw-medium px-2 py-1 rounded-pill" style="font-size: 0.8rem;">$1</span>',
+            $cleanedHtml
+        );
+    }
+
     return $cleanedHtml;
 }
 

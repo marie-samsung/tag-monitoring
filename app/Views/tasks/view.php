@@ -825,6 +825,7 @@
 
             // Initialize Summernote on comments textarea
             if ($('#comment').length > 0) {
+                const userList = <?= json_encode(array_values(\App\Models\Constants::USERS)) ?>;
                 $('#comment').summernote({
                     placeholder: 'Write an update...',
                     height: 150,
@@ -836,7 +837,19 @@
                         ['table', ['table']],
                         ['insert', ['link']],
                         ['view', ['fullscreen', 'codeview', 'help']]
-                    ]
+                    ],
+                    hint: {
+                        mentions: userList,
+                        match: /\B@(\w*)$/,
+                        search: function (keyword, callback) {
+                            callback($.grep(this.mentions, function (item) {
+                                return item.toLowerCase().indexOf(keyword.toLowerCase()) == 0;
+                            }));
+                        },
+                        content: function (item) {
+                            return '@' + item;
+                        }
+                    }
                 });
             }
 

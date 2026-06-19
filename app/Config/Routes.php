@@ -13,6 +13,11 @@ $routes->get('testdb', 'TestDB::index');
 $routes->match(['get', 'post'], 'login', 'AuthController::login');
 $routes->get('logout', 'AuthController::logout');
 
+$routes->group('notifications', function ($routes) {
+    $routes->get('unread', 'NotificationsController::getUnread');
+    $routes->post('mark-read/(:num)', 'NotificationsController::markAsRead/$1');
+});
+
 $routes->group('tags', function ($routes) {
     $routes->get('/', 'TagsController::index');
     $routes->get('export', 'TagsController::exportAsCSV');
