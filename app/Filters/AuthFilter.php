@@ -36,7 +36,7 @@ class AuthFilter implements FilterInterface
             $db = \Config\Database::connect();
 
             // Auto-heal database: run migration check
-            if (!$db->fieldExists('role_id', 'users') || !$db->fieldExists('profile_photo', 'users') || !$db->tableExists('role_permissions') || !$db->tableExists('roles') || !$db->fieldExists('js_code', 'tags')) {
+            if (!$db->fieldExists('role_id', 'users') || !$db->fieldExists('profile_photo', 'users') || !$db->tableExists('role_permissions') || !$db->tableExists('roles') || !$db->fieldExists('js_code', 'tags') || !$db->tableExists('notifications')) {
                 self::autoMigrate($db);
             }
 
@@ -210,6 +210,20 @@ class AuthFilter implements FilterInterface
         // Add js_code column to tags
         if (!$db->fieldExists('js_code', 'tags')) {
             $db->query("ALTER TABLE `tags` ADD COLUMN `js_code` LONGTEXT NULL DEFAULT NULL");
+        }
+
+        // Create notifications table
+        if (!$db->tableExists('notifications')) {
+            $db->query("CREATE TABLE `notifications` (
+                `id` INT(11) NOT NULL AUTO_INCREMENT,
+                `user_id` INT(11) NOT NULL,
+                `sender_id` INT(11) NOT NULL,
+                `task_id` INT(11) NOT NULL,
+                `message` VARCHAR(255) NOT NULL,
+                `is_read` TINYINT(1) DEFAULT 0,
+                `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (`id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;");
         }
     }
 
