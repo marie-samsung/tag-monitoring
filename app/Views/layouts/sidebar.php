@@ -54,7 +54,7 @@ if ($hasTagsPermissions) {
             'active' => ($segment === 'properties'),
         ];
     }
-    
+
     $menuItems[] = [
         'type' => 'dropdown',
         'id' => 'navbarTags',
@@ -96,7 +96,7 @@ if ($permissions['tasks'] ?? false) {
     $uri = service('uri');
     $isProjectsActive = ($segment === 'tasks' && $uri->getTotalSegments() >= 2 && $uri->getSegment(2) === 'project');
     $isTasksActive = ($segment === 'tasks' && !$isProjectsActive);
-    
+
     $subItems = [
         [
             'label' => 'Tasks',
@@ -111,7 +111,7 @@ if ($permissions['tasks'] ?? false) {
             'active' => $isProjectsActive,
         ]
     ];
-    
+
     $menuItems[] = [
         'type' => 'dropdown',
         'id' => 'navbarTasks',
@@ -172,39 +172,46 @@ foreach ($overflowItems as $item) {
             padding: 16px !important;
             text-align: center;
         }
-        .apple-nav-wrapper > div {
+
+        .apple-nav-wrapper>div {
             justify-content: center !important;
         }
+
         .apple-segmented-control {
             flex-wrap: wrap !important;
             justify-content: center !important;
             width: 100% !important;
         }
+
         .apple-segmented-control .nav-item {
             flex: 1 1 auto;
             text-align: center;
         }
+
         .sliding-glass-pill {
-            display: none !important; /* Hide sliding pill on wrap to avoid glitches */
+            display: none !important;
+            /* Hide sliding pill on wrap to avoid glitches */
         }
+
         .apple-segmented-control .nav-link.active {
             background-color: var(--color-primary) !important;
             color: #fff !important;
             border-radius: 8px;
         }
+
         .user-profile-section {
             width: 100%;
             justify-content: center !important;
         }
     }
-    
+
     .apple-profile-link {
         background-color: var(--color-secondary-bg) !important;
         color: var(--color-text-base) !important;
         transition: all 0.2s ease;
         padding: 0 12px 0 0 !important;
     }
-    
+
     .apple-profile-link:hover {
         background-color: var(--color-secondary-hover) !important;
         color: var(--color-primary) !important;
@@ -214,32 +221,41 @@ foreach ($overflowItems as $item) {
 <div class="d-flex justify-content-between align-items-center w-100 px-4 gap-4 py-2 apple-nav-wrapper">
     <!-- Branding logo (aligned to the left) -->
     <div class="d-flex align-items-center gap-2" style="flex: 1; min-width: fit-content;">
-        <a href="<?= site_url('/') ?>" class="fw-bold text-decoration-none apple-link-dark d-flex align-items-center gap-2" style="font-size: 1.1rem; letter-spacing: -0.5px;">
+        <a href="<?= site_url('/') ?>"
+            class="fw-bold text-decoration-none apple-link-dark d-flex align-items-center gap-2"
+            style="font-size: 1.1rem; letter-spacing: -0.5px;">
             <i class="bi bi-shield-lock-fill text-primary"></i>
             <span>Martech TMS</span>
         </a>
     </div>
 
     <!-- Main Navigation pills (centered) -->
-    <ul class="nav nav-pills justify-content-center apple-segmented-control flex-nowrap" style="white-space: nowrap; overflow: visible;" id="appleNav">
+    <ul class="nav nav-pills justify-content-center apple-segmented-control flex-nowrap"
+        style="white-space: nowrap; overflow: visible;" id="appleNav">
         <li class="sliding-glass-pill" id="navSlidingPill"></li>
-        
+
         <?php foreach ($visibleItems as $item): ?>
             <?php if ($item['type'] === 'link'): ?>
                 <li class="nav-item">
-                    <a class="nav-link <?= $item['active'] ? 'active' : '' ?>" href="<?= $item['url'] ?>" id="<?= $item['id'] ?>">
+                    <a class="nav-link <?= $item['active'] ? 'active' : '' ?>" href="<?= $item['url'] ?>"
+                        id="<?= $item['id'] ?>">
                         <i class="<?= $item['icon'] ?>"></i> <?= esc($item['label']) ?>
                     </a>
                 </li>
             <?php elseif ($item['type'] === 'dropdown'): ?>
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle <?= $item['active'] ? 'active' : '' ?>" href="<?= !empty($item['subItems']) ? $item['subItems'][0]['url'] : '#' ?>" id="<?= $item['id'] ?>" role="button" aria-expanded="false">
-                        <i class="<?= $item['icon'] ?>"></i> <?= esc($item['label']) ?> <i class="bi bi-chevron-down" style="font-size: 0.7rem;"></i>
+                    <a class="nav-link dropdown-toggle <?= $item['active'] ? 'active' : '' ?>"
+                        href="<?= !empty($item['subItems']) ? $item['subItems'][0]['url'] : '#' ?>" id="<?= $item['id'] ?>"
+                        role="button" aria-expanded="false">
+                        <i class="<?= $item['icon'] ?>"></i> <?= esc($item['label']) ?> <i class="bi bi-chevron-down"
+                            style="font-size: 0.7rem;"></i>
                     </a>
-                    <ul class="dropdown-menu shadow" aria-labelledby="<?= $item['id'] ?>" style="border-radius: 12px; border: 1px solid var(--color-border-input); padding: 6px 0;">
+                    <ul class="dropdown-menu shadow" aria-labelledby="<?= $item['id'] ?>"
+                        style="border-radius: 12px; border: 1px solid var(--color-border-input); padding: 6px 0;">
                         <?php foreach ($item['subItems'] as $sub): ?>
                             <li>
-                                <a class="dropdown-item py-2 d-flex align-items-center gap-2 <?= $sub['active'] ? 'active' : '' ?>" href="<?= $sub['url'] ?>" style="font-size: 0.85rem;">
+                                <a class="dropdown-item py-2 d-flex align-items-center gap-2 <?= $sub['active'] ? 'active' : '' ?>"
+                                    href="<?= $sub['url'] ?>" style="font-size: 0.85rem;">
                                     <i class="<?= $sub['icon'] ?>"></i> <?= esc($sub['label']) ?>
                                 </a>
                             </li>
@@ -251,24 +267,29 @@ foreach ($overflowItems as $item) {
 
         <?php if (!empty($overflowItems)): ?>
             <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle <?= $isOverflowActive ? 'active' : '' ?>" href="#" id="navbarMore" role="button" data-bs-toggle="dropdown" aria-expanded="false" title="More Options">
+                <a class="nav-link dropdown-toggle <?= $isOverflowActive ? 'active' : '' ?>" href="#" id="navbarMore"
+                    role="button" data-bs-toggle="dropdown" aria-expanded="false" title="More Options">
                     <i class="bi bi-three-dots" style="font-size: 1.1rem; line-height: 1;"></i>
                 </a>
-                <ul class="dropdown-menu shadow dropdown-menu-end" aria-labelledby="navbarMore" style="border-radius: 12px; border: 1px solid var(--color-border-input); padding: 6px 0; min-width: 160px;">
+                <ul class="dropdown-menu shadow dropdown-menu-end" aria-labelledby="navbarMore"
+                    style="border-radius: 12px; border: 1px solid var(--color-border-input); padding: 6px 0; min-width: 160px;">
                     <?php foreach ($overflowItems as $item): ?>
                         <?php if ($item['type'] === 'link'): ?>
                             <li>
-                                <a class="dropdown-item py-2 d-flex align-items-center gap-2 <?= $item['active'] ? 'active' : '' ?>" href="<?= $item['url'] ?>" style="font-size: 0.85rem;">
+                                <a class="dropdown-item py-2 d-flex align-items-center gap-2 <?= $item['active'] ? 'active' : '' ?>"
+                                    href="<?= $item['url'] ?>" style="font-size: 0.85rem;">
                                     <i class="<?= $item['dropdownIcon'] ?? $item['icon'] ?>"></i> <?= esc($item['label']) ?>
                                 </a>
                             </li>
                         <?php elseif ($item['type'] === 'dropdown'): ?>
-                            <li class="dropdown-header text-uppercase px-3 pt-2 pb-1 text-muted" style="font-size: 0.7rem; font-weight: 700; letter-spacing: 0.5px; border-bottom: 1px solid rgba(0,0,0,0.03);">
+                            <li class="dropdown-header text-uppercase px-3 pt-2 pb-1 text-muted"
+                                style="font-size: 0.7rem; font-weight: 700; letter-spacing: 0.5px; border-bottom: 1px solid rgba(0,0,0,0.03);">
                                 <?= esc($item['label']) ?>
                             </li>
                             <?php foreach ($item['subItems'] as $sub): ?>
                                 <li>
-                                    <a class="dropdown-item py-2 d-flex align-items-center gap-2 <?= $sub['active'] ? 'active' : '' ?>" href="<?= $sub['url'] ?>" style="font-size: 0.85rem; padding-left: 24px;">
+                                    <a class="dropdown-item py-2 d-flex align-items-center gap-2 <?= $sub['active'] ? 'active' : '' ?>"
+                                        href="<?= $sub['url'] ?>" style="font-size: 0.85rem; padding-left: 24px;">
                                         <i class="<?= $sub['icon'] ?>"></i> <?= esc($sub['label']) ?>
                                     </a>
                                 </li>
@@ -282,39 +303,56 @@ foreach ($overflowItems as $item) {
 
     <div class="d-flex align-items-center justify-content-end gap-3" style="flex: 1; min-width: fit-content;">
         <?php if (session()->get('isLoggedIn')): ?>
-            <!-- Notifications Dropdown -->
-            <div class="dropdown">
-                <a href="#" class="apple-btn-secondary btn-sm d-flex align-items-center justify-content-center position-relative" id="notificationsDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="width: 32px; height: 32px; padding: 0; color: var(--color-text-secondary);" title="Notifications">
-                    <i class="bi bi-bell-fill" style="font-size: 1rem;"></i>
-                    <span id="notificationBadge" class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" style="display: none;">
-                        <span class="visually-hidden">New alerts</span>
-                    </span>
-                </a>
-                <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="notificationsDropdown" style="width: 320px; max-height: 400px; overflow-y: auto; border-radius: 12px; border: 1px solid var(--color-border-input); padding: 0;">
-                    <li class="dropdown-header text-uppercase px-3 pt-3 pb-2 text-muted" style="font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px; border-bottom: 1px solid rgba(0,0,0,0.05); background: var(--color-secondary-bg); border-top-left-radius: 12px; border-top-right-radius: 12px;">
-                        Notifications
-                    </li>
-                    <div id="notificationsList">
-                        <li><span class="dropdown-item py-3 text-center text-muted" style="font-size: 0.85rem;">Loading...</span></li>
-                    </div>
-                </ul>
-            </div>
-
             <?php $hasPhoto = !empty(session()->get('profile_photo')); ?>
-            <a href="<?= site_url('profile') ?>" class="apple-btn-secondary btn-sm d-flex align-items-center gap-2 text-decoration-none apple-profile-link <?= $hasPhoto ? 'has-photo' : '' ?>" title="My Profile" data-bs-toggle="tooltip" data-bs-placement="bottom" style="height: 32px; font-size: 0.82rem; overflow: hidden;">
+            <a href="<?= site_url('profile') ?>"
+                class="apple-btn-secondary btn-sm d-flex align-items-center gap-2 text-decoration-none apple-profile-link <?= $hasPhoto ? 'has-photo' : '' ?>"
+                title="My Profile" data-bs-toggle="tooltip" data-bs-placement="bottom"
+                style="height: 32px; font-size: 0.82rem; overflow: hidden;">
                 <?php if ($hasPhoto): ?>
-                    <img src="<?= base_url('uploads/profile_photos/' . esc(session()->get('profile_photo'))) ?>" alt="Avatar" style="width: 32px; height: 32px; object-fit: cover; border-radius: 0;">
+                    <img src="<?= base_url('uploads/profile_photos/' . esc(session()->get('profile_photo'))) ?>" alt="Avatar"
+                        style="width: 32px; height: 32px; object-fit: cover; border-radius: 0;">
                 <?php else: ?>
-                    <i class="bi bi-person-circle text-primary" style="font-size: 1.05rem; line-height: 1;"></i> 
+                    <i class="bi bi-person-circle text-primary" style="font-size: 1.05rem; line-height: 1;"></i>
                 <?php endif; ?>
                 <strong><?= esc(session()->get('user_name')) ?></strong>
             </a>
             <?php if (session()->get('permissions')['settings'] ?? false): ?>
-                <a href="<?= site_url('settings') ?>" class="apple-btn-secondary btn-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; padding: 0; <?= $segment === 'settings' ? 'border: 1px solid var(--color-primary); color: var(--color-primary); background: var(--color-primary-subtle);' : 'color: var(--color-text-secondary);' ?>" title="System Settings" data-bs-toggle="tooltip" data-bs-placement="bottom">
+                <a href="<?= site_url('settings') ?>"
+                    class="apple-btn-secondary btn-sm d-flex align-items-center justify-content-center"
+                    style="width: 32px; height: 32px; padding: 0; <?= $segment === 'settings' ? 'border: 1px solid var(--color-primary); color: var(--color-primary); background: var(--color-primary-subtle);' : 'color: var(--color-text-secondary);' ?>"
+                    title="System Settings" data-bs-toggle="tooltip" data-bs-placement="bottom">
                     <i class="bi bi-gear-fill" style="font-size: 1rem;"></i>
                 </a>
             <?php endif; ?>
-            <a href="<?= site_url('logout') ?>" class="apple-btn-secondary btn-sm text-danger d-flex align-items-center gap-1.5" style="height: 32px; padding: 0 12px; font-size: 0.82rem;">
+            <!-- Notifications Dropdown -->
+            <div class="dropdown">
+                <a href="#"
+                    class="apple-btn-secondary btn-sm d-flex align-items-center justify-content-center position-relative"
+                    id="notificationsDropdown" data-bs-toggle="dropdown" aria-expanded="false"
+                    style="width: 32px; height: 32px; padding: 0; color: var(--color-text-secondary);"
+                    title="Notifications">
+                    <i class="bi bi-bell-fill" style="font-size: 1rem;"></i>
+                    <span id="notificationBadge"
+                        class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
+                        style="display: none;">
+                        <span class="visually-hidden">New alerts</span>
+                    </span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="notificationsDropdown"
+                    style="width: 320px; max-height: 400px; overflow-y: auto; border-radius: 12px; border: 1px solid var(--color-border-input); padding: 0;">
+                    <li class="dropdown-header text-uppercase px-3 pt-3 pb-2 text-muted"
+                        style="font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px; border-bottom: 1px solid rgba(0,0,0,0.05); background: var(--color-secondary-bg); border-top-left-radius: 12px; border-top-right-radius: 12px;">
+                        Notifications
+                    </li>
+                    <div id="notificationsList">
+                        <li><span class="dropdown-item py-3 text-center text-muted"
+                                style="font-size: 0.85rem;">Loading...</span></li>
+                    </div>
+                </ul>
+            </div>
+            <a href="<?= site_url('logout') ?>"
+                class="apple-btn-secondary btn-sm text-danger d-flex align-items-center gap-1.5"
+                style="height: 32px; padding: 0 12px; font-size: 0.82rem;">
                 <i class="bi bi-box-arrow-right" style="font-size: 1rem; line-height: 1;"></i> <strong>Logout</strong>
             </a>
         <?php endif; ?>
@@ -322,101 +360,101 @@ foreach ($overflowItems as $item) {
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-    const nav = document.getElementById('appleNav');
-    const pill = document.getElementById('navSlidingPill');
-    if (!nav || !pill) return;
-    
-    const links = nav.querySelectorAll('.nav-link');
-    
-    // Find the currently active link on page load
-    let activeLink = nav.querySelector('.nav-link.active');
-    let hasMovedOnce = false;
+    document.addEventListener('DOMContentLoaded', () => {
+        const nav = document.getElementById('appleNav');
+        const pill = document.getElementById('navSlidingPill');
+        if (!nav || !pill) return;
 
-    function movePill(target, instant = false) {
-        if (!target) return;
-        const targetRect = target.getBoundingClientRect();
-        const navRect = nav.getBoundingClientRect();
-        
-        // Calculate relative position inside the ul
-        const offsetLeft = targetRect.left - navRect.left;
-        
-        if (instant) {
-            pill.style.transition = 'none';
-        }
-        
-        pill.style.opacity = '1';
-        pill.style.transform = `translateX(${offsetLeft}px)`;
-        pill.style.width = `${targetRect.width}px`;
+        const links = nav.querySelectorAll('.nav-link');
 
-        if (instant) {
-            pill.offsetHeight; // Force reflow
-            pill.style.transition = '';
-        }
-        
-        hasMovedOnce = true;
-    }
+        // Find the currently active link on page load
+        let activeLink = nav.querySelector('.nav-link.active');
+        let hasMovedOnce = false;
 
-    // Initialize pill position instantly without animation
-    if (activeLink) {
-        // Need a slight delay to ensure fonts/layout are fully rendered
-        setTimeout(() => movePill(activeLink, true), 150);
-    }
+        function movePill(target, instant = false) {
+            if (!target) return;
+            const targetRect = target.getBoundingClientRect();
+            const navRect = nav.getBoundingClientRect();
 
-    let leaveTimeout;
-    let enterTimeout;
+            // Calculate relative position inside the ul
+            const offsetLeft = targetRect.left - navRect.left;
 
-    links.forEach(link => {
-        link.addEventListener('mouseenter', (e) => {
-            clearTimeout(leaveTimeout);
-            clearTimeout(enterTimeout);
-            const target = e.currentTarget;
-            enterTimeout = setTimeout(() => {
-                // If the pill was completely hidden (e.g., no active link), instantly snap it to the hovered item first
-                movePill(target, !hasMovedOnce);
-            }, 75); // 75ms delay prevents jitter if scrubbing across links quickly
-        });
-
-        link.addEventListener('mouseleave', () => {
-            clearTimeout(enterTimeout);
-        });
-    });
-
-    nav.addEventListener('mouseleave', () => {
-        leaveTimeout = setTimeout(() => {
-            if (activeLink) {
-                movePill(activeLink);
-            } else {
-                pill.style.opacity = '0';
-                hasMovedOnce = false; // Reset so next hover snaps instantly
+            if (instant) {
+                pill.style.transition = 'none';
             }
-        }, 400); // 400ms delay feels patient and premium
-    });
 
-    // Notifications Logic
-    const fetchNotifications = () => {
-        $.ajax({
-            url: '<?= site_url("notifications/unread") ?>',
-            method: 'GET',
-            dataType: 'json',
-            success: function(res) {
-                if(res.success) {
-                    if(res.count > 0) {
-                        $('#notificationBadge').show();
-                    } else {
-                        $('#notificationBadge').hide();
-                    }
-                    
-                    let html = '';
-                    if(res.notifications.length === 0) {
-                        html = '<li><span class="dropdown-item py-3 text-center text-muted" style="font-size: 0.85rem;">No notifications</span></li>';
-                    } else {
-                        res.notifications.forEach(n => {
-                            let isUnread = n.is_read == 0;
-                            let bgStyle = isUnread ? 'background-color: var(--color-primary-subtle);' : 'background-color: transparent; opacity: 0.75;';
-                            let iconClass = isUnread ? 'bi-person-circle text-primary' : 'bi-person-circle text-muted';
-                            
-                            html += `
+            pill.style.opacity = '1';
+            pill.style.transform = `translateX(${offsetLeft}px)`;
+            pill.style.width = `${targetRect.width}px`;
+
+            if (instant) {
+                pill.offsetHeight; // Force reflow
+                pill.style.transition = '';
+            }
+
+            hasMovedOnce = true;
+        }
+
+        // Initialize pill position instantly without animation
+        if (activeLink) {
+            // Need a slight delay to ensure fonts/layout are fully rendered
+            setTimeout(() => movePill(activeLink, true), 150);
+        }
+
+        let leaveTimeout;
+        let enterTimeout;
+
+        links.forEach(link => {
+            link.addEventListener('mouseenter', (e) => {
+                clearTimeout(leaveTimeout);
+                clearTimeout(enterTimeout);
+                const target = e.currentTarget;
+                enterTimeout = setTimeout(() => {
+                    // If the pill was completely hidden (e.g., no active link), instantly snap it to the hovered item first
+                    movePill(target, !hasMovedOnce);
+                }, 75); // 75ms delay prevents jitter if scrubbing across links quickly
+            });
+
+            link.addEventListener('mouseleave', () => {
+                clearTimeout(enterTimeout);
+            });
+        });
+
+        nav.addEventListener('mouseleave', () => {
+            leaveTimeout = setTimeout(() => {
+                if (activeLink) {
+                    movePill(activeLink);
+                } else {
+                    pill.style.opacity = '0';
+                    hasMovedOnce = false; // Reset so next hover snaps instantly
+                }
+            }, 400); // 400ms delay feels patient and premium
+        });
+
+        // Notifications Logic
+        const fetchNotifications = () => {
+            $.ajax({
+                url: '<?= site_url("notifications/unread") ?>',
+                method: 'GET',
+                dataType: 'json',
+                success: function (res) {
+                    if (res.success) {
+                        if (res.count > 0) {
+                            $('#notificationBadge').show();
+                        } else {
+                            $('#notificationBadge').hide();
+                        }
+
+                        let html = '';
+                        if (res.notifications.length === 0) {
+                            html = '<li><span class="dropdown-item py-3 text-center text-muted" style="font-size: 0.85rem;">No notifications</span></li>';
+                        } else {
+                            res.notifications.forEach(n => {
+                                let isUnread = n.is_read == 0;
+                                let bgStyle = isUnread ? 'background-color: var(--color-primary-subtle);' : 'background-color: transparent; opacity: 0.75;';
+                                let iconClass = isUnread ? 'bi-person-circle text-primary' : 'bi-person-circle text-muted';
+
+                                html += `
                                 <li>
                                     <a class="dropdown-item py-2 border-bottom notification-item" href="#" data-id="${n.id}" data-task="${n.task_id}" style="white-space: normal; ${bgStyle} transition: all 0.2s ease;">
                                         <div class="d-flex align-items-start gap-2">
@@ -433,38 +471,38 @@ document.addEventListener('DOMContentLoaded', () => {
                                     </a>
                                 </li>
                             `;
-                        });
+                            });
+                        }
+                        $('#notificationsList').html(html);
                     }
-                    $('#notificationsList').html(html);
                 }
-            }
-        });
-    };
+            });
+        };
 
-    fetchNotifications();
+        fetchNotifications();
 
-    $(document).on('click', '.notification-item', function(e) {
-        e.preventDefault();
-        const notifId = $(this).data('id');
-        const taskId = $(this).data('task');
-        
-        let csrfVal = '';
-        if($('input[name="csrf_test_name"]').length > 0) {
-            csrfVal = $('input[name="csrf_test_name"]').val();
-        }
-        
-        $.ajax({
-            url: '<?= site_url("notifications/mark-read/") ?>' + notifId,
-            method: 'POST',
-            data: { csrf_test_name: csrfVal },
-            dataType: 'json',
-            success: function(res) {
-                window.location.href = '<?= site_url("tasks/view/") ?>' + taskId;
-            },
-            error: function() {
-                window.location.href = '<?= site_url("tasks/view/") ?>' + taskId;
+        $(document).on('click', '.notification-item', function (e) {
+            e.preventDefault();
+            const notifId = $(this).data('id');
+            const taskId = $(this).data('task');
+
+            let csrfVal = '';
+            if ($('input[name="csrf_test_name"]').length > 0) {
+                csrfVal = $('input[name="csrf_test_name"]').val();
             }
+
+            $.ajax({
+                url: '<?= site_url("notifications/mark-read/") ?>' + notifId,
+                method: 'POST',
+                data: { csrf_test_name: csrfVal },
+                dataType: 'json',
+                success: function (res) {
+                    window.location.href = '<?= site_url("tasks/view/") ?>' + taskId;
+                },
+                error: function () {
+                    window.location.href = '<?= site_url("tasks/view/") ?>' + taskId;
+                }
+            });
         });
     });
-});
 </script>
