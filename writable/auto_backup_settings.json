@@ -1,6 +1,0 @@
-{
-    "enabled": true,
-    "retention_count": 10,
-    "last_backup": "2026-06-18 17:39:50",
-    "last_status": "Success: Backup \"backup_2026-06-18_17-39-49_1781789989.sql\" created. Pruned 0 old file(s)."
-}
