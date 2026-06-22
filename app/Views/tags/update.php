@@ -525,14 +525,11 @@
                         return `<div style="max-height: 150px; overflow-y: auto; text-align: left; background: rgba(0,0,0,0.03); padding: 10px; border-radius: 4px; font-family: monospace; font-size: 0.85rem; border: 1px solid rgba(0,0,0,0.05); margin-top: 10px;">${html}</div>`;
                     };
 
-                    // Block save ONLY if there are compile/syntax errors (allow warnings)
+                    // Warn about compile/syntax errors but allow saving
                     if (errors.length > 0) {
-                        window.themeAlert({
-                            title: 'Syntax Errors Detected',
-                            message: 'Cannot save! Please fix all JavaScript errors before saving:' + formatList(errors),
-                            type: 'danger'
-                        });
-                        return;
+                        if (!confirm('Syntax Errors Detected:\n\nThere are JavaScript errors in your code. Are you sure you want to save anyway?')) {
+                            return;
+                        }
                     }
 
                     var btn = this;
