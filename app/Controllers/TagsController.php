@@ -435,16 +435,20 @@ class TagsController extends BaseController
                 continue;
             }
 
-            // Only verify tags in STATUS_PENDING_VERIFICATION
+            $jiraTicket = $jiraModel->getRelatedTags($id);
+            $hasTicketId = !empty($jiraTicket) && !empty($jiraTicket[0]['ticket_id']);
+
+            // Only verify tags in STATUS_PENDING_VERIFICATION or (STATUS_ON_HOLD with a ticket ID)
             if ($tag['status'] != Constants::STATUS_PENDING_VERIFICATION) {
-                $skippedCount++;
-                continue;
+                if ($tag['status'] != Constants::STATUS_ON_HOLD || !$hasTicketId) {
+                    $skippedCount++;
+                    continue;
+                }
             }
 
             $requestedDate = $tag['requested_date'];
 
-            $jiraTicket = $jiraModel->getRelatedTags($id);
-            if (!empty($jiraTicket)) {
+            if ($hasTicketId) {
                 $activityLog = $activityLogModel->where('ticket_id', $jiraTicket[0]['ticket_id'])->first();
 
                 if ($activityLog) {
@@ -487,7 +491,7 @@ class TagsController extends BaseController
         } else {
             return redirect()
                 ->to('/tags')
-                ->with('error', "No tags were verified. Make sure the selected tags are in 'Pending Verification' status.");
+                ->with('error', "No tags were verified. Make sure the selected tags are in 'Pending Verification' or 'Blocked' status with a valid ticket ID.");
         }
     }
 

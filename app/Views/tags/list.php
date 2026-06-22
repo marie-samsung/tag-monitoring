@@ -873,7 +873,7 @@ Martech TMS
                                                 <i class="bi bi-pencil-square text-warning me-2"></i>Update Details
                                             </a>
                                         </li>
-                                        <?php if ($tag['status'] == Constants::STATUS_PENDING_VERIFICATION): ?>
+                                        <?php if ($tag['status'] == Constants::STATUS_PENDING_VERIFICATION || ($tag['status'] == Constants::STATUS_ON_HOLD && !empty($ticketId) && !empty($tag['requested_date']))): ?>
                                             <li><hr class="dropdown-divider"></li>
                                             <li>
                                                 <a class="dropdown-item py-2 text-success" href="<?= site_url('tags/verify/' . $tag['id']) ?>"
@@ -1208,7 +1208,16 @@ document.addEventListener('DOMContentLoaded', function () {
     const handleVerify = (e) => {
         if (e) e.preventDefault();
         const checkedPending = [...document.querySelectorAll('input[name="tag_ids[]"]:checked')]
-            .filter(cb => cb.getAttribute('data-status') === '4')
+            .filter(cb => {
+                const status = cb.getAttribute('data-status');
+                if (status === '4') return true;
+                if (status === '9') {
+                    const ticketId = cb.getAttribute('data-ticket-id');
+                    const requestedDate = cb.getAttribute('data-requested-date');
+                    return ticketId && requestedDate;
+                }
+                return false;
+            })
             .map(cb => cb.value);
             
         if (checkedPending.length === 0) return;
