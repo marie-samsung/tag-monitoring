@@ -70,7 +70,7 @@ $hasActiveFilters = ($activeFiltersCount > 0);
             <p class="text-secondary small mb-0">Overview of GTA JIRA tickets created for approvals, new tags, date extensions, and updates.</p>
         </div>
         <div class="d-flex align-items-center gap-2">
-            <a href="<?= site_url('jira/export?' . http_build_query($_GET)) ?>" class="apple-btn-secondary btn-sm px-3">Export as CSV</a>
+            <a href="<?= site_url('jira/export?' . http_build_query($_GET)) ?>" class="apple-btn-secondary btn-sm px-3">Export as Excel</a>
             <a href="<?= site_url('jira/create') ?>" title="Create new JIRA ticket" class="apple-btn-primary btn-sm px-3">Add a JIRA Ticket</a>
         </div>
     </div>

@@ -396,7 +396,7 @@ class TagRequestsController extends BaseController
             ->with('success', "[{$ticketId}] Tag Request approved, and associated tags are now enabled.");
     }
 
-    public function exportAsCSV()
+    public function exportAsExcel()
     {
         helper('custom_functions');
         $filters = $this->request->getGet();
@@ -414,42 +414,42 @@ class TagRequestsController extends BaseController
             ? '(' . Constants::SUBSIDIARIES[$filters['subsidiary_id']] . ')'
             : null;
 
-        $filename = 'TagRequests' . $subsidiary . $vendor . '_' . date('Ymd') . '.csv';
+        $filename = 'TagRequests' . $subsidiary . $vendor . '_' . date('Ymd') . '.xls';
 
-        $csv = fopen('php://output', 'w');
-
-        // Headers
-        header('Content-Type: text/csv');
+        header('Content-Type: application/vnd.ms-excel; charset=utf-8');
         header('Content-Disposition: attachment; filename="' . $filename . '"');
 
-        // CSV column headers
-        fputcsv($csv, [
-            'Subsidiary',
-            'Property Name',
-            'Ticket ID',
-            'Ticket Type',
-            'Status',
-            'Created At',
-        ]);
+        echo '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">';
+        echo '<head><meta charset="UTF-8"></head>';
+        echo '<body><table border="1">';
+
+        // Headers
+        $headers = [ 'Subsidiary', 'Property Name', 'Ticket ID', 'Ticket Type', 'Status', 'Created At' ];
+        
+        echo '<tr>';
+        foreach ($headers as $header) {
+            echo '<th style="background-color:#f2f2f2;">' . esc($header) . '</th>';
+        }
+        echo '</tr>';
 
         // Rows
         foreach ($requests as $request) {
             $propertyId = $request['property_id'];
             $property = $propertiesModel->find($propertyId);
-            $subsidiary = $subsidiariesModel->find($property['subsidiary_id'] ?? 0);
+            $subsidiaryData = $subsidiariesModel->find($property['subsidiary_id'] ?? 0);
             $ticketColumn = $request['type'] == Constants::JIRA_TYPE_NEW_RULE ? 'new_rule_ticket' : 'new_tag_ticket';
 
-            fputcsv($csv, [
-                $subsidiary['name'] ?? 'N/A',
-                $property['name'] ?? 'N/A',
-                $request[$ticketColumn] ?? 'N/A',
-                request_type_label((int) $request['type'], (int) $request['status']),
-                Constants::STATUS_REQUESTS[$request['status']] ?? 'Unknown',
-                "'" . date_ymd($request['created_at']),
-            ]);
+            echo '<tr>';
+            echo '<td>' . esc($subsidiaryData['name'] ?? 'N/A') . '</td>';
+            echo '<td>' . esc($property['name'] ?? 'N/A') . '</td>';
+            echo '<td>' . esc($request[$ticketColumn] ?? 'N/A') . '</td>';
+            echo '<td>' . esc(request_type_label((int) $request['type'], (int) $request['status'])) . '</td>';
+            echo '<td>' . esc(Constants::STATUS_REQUESTS[$request['status']] ?? 'Unknown') . '</td>';
+            echo '<td>' . esc(date_ymd($request['created_at'])) . '</td>';
+            echo '</tr>';
         }
 
-        fclose($csv);
+        echo '</table></body></html>';
         exit;
     }
 

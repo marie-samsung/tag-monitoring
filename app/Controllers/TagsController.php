@@ -645,7 +645,7 @@ class TagsController extends BaseController
         ]);
     }
 
-    public function exportAsCSV()
+    public function exportAsExcel()
     {
         helper('custom_functions');
         $filters = $this->request->getGet();
@@ -667,26 +667,25 @@ class TagsController extends BaseController
         $tagsModel = new TagsModel();
         $tags = $tagsModel->filterTags($filters);
 
-        $filename = 'TagsExport_' . date('Ymd') . '.csv';
+        $filename = 'TagsExport_' . date('Ymd') . '.xls';
 
-        $csv = fopen('php://output', 'w');
-
-        // Headers
-        header('Content-Type: text/csv');
+        header('Content-Type: application/vnd.ms-excel; charset=utf-8');
         header('Content-Disposition: attachment; filename="' . $filename . '"');
 
-        // CSV column headers
-        fputcsv($csv, [
-//            'Tag ID',
-            'Subsidiary',
-            'Property Name',
-            'Tag Name',
-            'Days',
-            'AL End Date',
-            'Requested Date',
-            'Updated',
-            'Status',
-        ]);
+        echo '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">';
+        echo '<head><meta charset="UTF-8"></head>';
+        echo '<body><table border="1">';
+
+        // Headers
+        $headers = [
+            'Subsidiary', 'Property Name', 'Tag Name', 'Days', 'AL End Date', 'Requested Date', 'Updated', 'Status'
+        ];
+        
+        echo '<tr>';
+        foreach ($headers as $header) {
+            echo '<th style="background-color:#f2f2f2;">' . esc($header) . '</th>';
+        }
+        echo '</tr>';
 
         // Rows
         foreach ($tags as $tag) {
@@ -696,20 +695,19 @@ class TagsController extends BaseController
             $property = $propertiesModel->find($propertyId);
             $subsidiary = $subsidiariesModel->find($property['subsidiary_id'] ?? 0);
 
-            fputcsv($csv, [
-//                $tag['id'],
-                $subsidiary['name'] ?? 'N/A',
-                $property['name'] ?? 'N/A',
-                $tag['name'],
-                isset($tag['al_end_date']) ? ceil((strtotime($tag['al_end_date']) - time()) / 86400) : 'N/A',
-                "'" . date_ymd($tag['al_end_date']),
-                "'" . date_ymd($tag['requested_date']) ?? date_ymd($tag['al_end_date']) ?? '-',
-                "'" . date_ymd($tag['updated_at']) ?? '-',
-                status_label($tag['status']) ?? 'Unknown',
-            ]);
+            echo '<tr>';
+            echo '<td>' . esc($subsidiary['name'] ?? 'N/A') . '</td>';
+            echo '<td>' . esc($property['name'] ?? 'N/A') . '</td>';
+            echo '<td>' . esc($tag['name']) . '</td>';
+            echo '<td>' . esc(isset($tag['al_end_date']) ? ceil((strtotime($tag['al_end_date']) - time()) / 86400) : 'N/A') . '</td>';
+            echo '<td>' . esc(date_ymd($tag['al_end_date'])) . '</td>';
+            echo '<td>' . esc($tag['requested_date'] ? date_ymd($tag['requested_date']) : (date_ymd($tag['al_end_date']) ?? '-')) . '</td>';
+            echo '<td>' . esc($tag['updated_at'] ? date_ymd($tag['updated_at']) : '-') . '</td>';
+            echo '<td>' . esc(status_label($tag['status']) ?? 'Unknown') . '</td>';
+            echo '</tr>';
         }
 
-        fclose($csv);
+        echo '</table></body></html>';
         exit;
     }
 

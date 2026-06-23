@@ -20,7 +20,7 @@ $routes->group('notifications', function ($routes) {
 
 $routes->group('tags', function ($routes) {
     $routes->get('/', 'TagsController::index');
-    $routes->get('export', 'TagsController::exportAsCSV');
+    $routes->get('export', 'TagsController::exportAsExcel');
     $routes->get('view/(:num)', 'TagsController::view/$1');
     $routes->get('verify/(:num)', 'TagsController::verify/$1');
     $routes->match(['get', 'post'], 'verify-multiple', 'TagsController::verifyMultiple');
@@ -42,7 +42,7 @@ $routes->group('tags', function ($routes) {
 
 $routes->group('tag-requests', function ($routes) {
     $routes->get('/', 'TagRequestsController::index');
-    $routes->get('export', 'TagRequestsController::exportAsCSV');
+    $routes->get('export', 'TagRequestsController::exportAsExcel');
     $routes->get('upload-excel', 'TagRequestsController::uploadExcel');
     $routes->post('parse-excel', 'TagRequestsController::parseExcel');
     $routes->post('prefill', 'TagRequestsController::prefill');
@@ -66,7 +66,7 @@ $routes->group('properties', function ($routes) {
 $routes->group('vendors', function ($routes) {
     $routes->get('/', 'VendorsController::index');
     $routes->get('view/(:num)', 'VendorsController::view/$1');
-    $routes->get('export/(:num)', 'VendorsController::exportAsCSV/$1');
+    $routes->get('export/(:num)', 'VendorsController::exportAsExcel/$1');
     $routes->match(['get', 'post'], 'create', 'VendorsController::create');
     $routes->match(['get', 'post'], 'update/(:num)', 'VendorsController::update/$1');
     // $routes->post('delete/(:num)', 'VendorsController::delete/$1');
@@ -74,7 +74,7 @@ $routes->group('vendors', function ($routes) {
 
 $routes->group('jira', function ($routes) {
     $routes->get('/', 'JiraController::index');
-    $routes->get('export', 'JiraController::exportAsCSV');
+    $routes->get('export', 'JiraController::exportAsExcel');
     $routes->get('download', 'JiraController::download');
     $routes->match(['get', 'post'], 'add-entry', 'JiraController::addEntry');
     $routes->match(['get', 'post'], 'create', 'JiraController::create');
@@ -85,7 +85,7 @@ $routes->group('jira', function ($routes) {
 $routes->group('tasks', function ($routes) {
     $routes->get('/', 'TasksController::index');
     $routes->get('project/(:any)', 'TasksController::projectView/$1');
-    $routes->get('export', 'TasksController::exportAsCSV');
+    $routes->get('export', 'TasksController::exportAsExcel');
     $routes->get('view/(:num)', 'TasksController::view/$1');
     $routes->post('comment', 'TasksController::comment');
     $routes->post('upload', 'TasksController::uploadFile');

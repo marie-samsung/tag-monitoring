@@ -87,6 +87,18 @@ class TagsModel extends Model
             $sortDir = 'desc';
         }
 
+        $hasActiveFilters = false;
+        if (!empty($filters['keyword']) || !empty($filters['property_id']) || !empty($filters['subsidiary_id']) || !empty($filters['vendor_id']) || !empty($filters['al_end_date_from']) || !empty($filters['al_end_date_to'])) {
+            $hasActiveFilters = true;
+        }
+        if (!empty($filters['status']) && !is_array($filters['status']) && $filters['status'] !== 'all' && $filters['status'] != 145) {
+            $hasActiveFilters = true;
+        }
+
+        if ($hasActiveFilters) {
+            $this->orderBy('properties.name', 'ASC');
+        }
+
         if (!empty($sortBy)) {
             if ($sortBy === 'id') {
                 $this->orderBy('tags.id', $sortDir);
