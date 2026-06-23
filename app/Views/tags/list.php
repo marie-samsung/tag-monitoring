@@ -402,7 +402,7 @@ foreach ($advancedFilterKeys as $key) {
         }
     }
 }
-$hasActiveFilters = ($activeFiltersCount > 0);
+$hasActiveFilters = ($activeFiltersCount > 0) || !empty($_GET['keyword']);
 ?>
 
 <?= csrf_field() ?>
