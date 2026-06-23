@@ -274,7 +274,7 @@ Tag: Requests (New Rule, New Tag)
                     </li>
                     <li>
                         <a class="dropdown-item py-2" href="<?= site_url('tag-requests/export?' . http_build_query($_GET)) ?>" style="font-size: 0.9rem;">
-                            <i class="bi bi-file-earmark-arrow-down-fill text-secondary me-2"></i>Export as CSV
+                            <i class="bi bi-file-earmark-arrow-down-fill text-secondary me-2"></i>Export as Excel
                         </a>
                     </li>
                 </ul>

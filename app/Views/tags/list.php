@@ -468,7 +468,7 @@ $hasActiveFilters = ($activeFiltersCount > 0);
                     <li>
                         <a class="dropdown-item py-2" href="<?= site_url('tags/export?' . http_build_query($_GET)) ?>"
                             style="font-size: 0.9rem;">
-                            <i class="bi bi-file-earmark-arrow-down-fill text-secondary me-2"></i>Export as CSV
+                            <i class="bi bi-file-earmark-arrow-down-fill text-secondary me-2"></i>Export as Excel
                         </a>
                     </li>
                 </ul>

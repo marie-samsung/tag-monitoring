@@ -39,7 +39,7 @@
                 Update Vendor Info
             </a>
             <a href="<?= site_url('vendors/export/' . $vendor['id'] . '?' . http_build_query($_GET)) ?>" class="apple-btn-secondary btn-sm text-decoration-none">
-                Export as CSV
+                Export as Excel
             </a>
         </div>
     </div>

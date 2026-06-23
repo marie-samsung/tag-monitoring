@@ -110,7 +110,7 @@ class JiraController extends BaseController
             ->with('success', 'JIRA entry created successfully.');
     }
 
-    public function exportAsCSV()
+    public function exportAsExcel()
     {
         $filters = $this->request->getGet();
 
@@ -122,21 +122,23 @@ class JiraController extends BaseController
         $jiraTickets = $jiraModel->filterJiraTickets($filters);
 
         // CSV filename
-        $filename = "JIRA_Tickets_" . date('Ymd') . ".csv";
+        $filename = "JIRA_Tickets_" . date('Ymd') . ".xls";
 
-        header('Content-Type: text/csv');
+        header('Content-Type: application/vnd.ms-excel; charset=utf-8');
         header('Content-Disposition: attachment; filename="' . $filename . '"');
 
-        $csv = fopen('php://output', 'w');
+        echo '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">';
+        echo '<head><meta charset="UTF-8"></head>';
+        echo '<body><table border="1">';
 
         // CSV headers
-        fputcsv($csv, [
-            'Subsidiary', 
-            'Property', 
-            'Ticket ID', 
-            'Type', 
-            'Comments'
-        ]);
+        $headers = [ 'Subsidiary', 'Property', 'Ticket ID', 'Type', 'Comments' ];
+        
+        echo '<tr>';
+        foreach ($headers as $header) {
+            echo '<th style="background-color:#f2f2f2;">' . esc($header) . '</th>';
+        }
+        echo '</tr>';
 
         foreach ($jiraTickets as $ticket) {
             $subsidiary = $subsidiaryModel->find($ticket['subsidiary_id']);
@@ -158,16 +160,16 @@ class JiraController extends BaseController
                 $comments = implode(', ', $names);
             }
 
-            fputcsv($csv, [
-                $subsidiary['name'] ?? 'N/A',
-                $property['name'] ?? 'N/A',
-                $ticket['ticket_id'],
-                Constants::JIRA_TICKET_TYPES[$ticket['type']],
-                $comments,
-            ]);
+            echo '<tr>';
+            echo '<td>' . esc($subsidiary['name'] ?? 'N/A') . '</td>';
+            echo '<td>' . esc($property['name'] ?? 'N/A') . '</td>';
+            echo '<td>' . esc($ticket['ticket_id']) . '</td>';
+            echo '<td>' . esc(Constants::JIRA_TICKET_TYPES[$ticket['type']]) . '</td>';
+            echo '<td>' . esc($comments) . '</td>';
+            echo '</tr>';
         }
 
-        fclose($csv);
+        echo '</table></body></html>';
         exit;
     }
 

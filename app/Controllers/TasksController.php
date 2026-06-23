@@ -364,7 +364,7 @@ class TasksController extends BaseController
             ->with('error', "An error occurred. File was not uploaded successfully.");
     }
 
-    public function exportAsCSV()
+    public function exportAsExcel()
     {
         helper('custom_functions');
         $logsModel = new TasksModel();
@@ -410,63 +410,50 @@ class TasksController extends BaseController
             ? '(' . Constants::USERS[$filters['assignee']] . ')'
             : null;
 
-        $filename = 'ActivityLogs' . $subsidiary . $team . $project . $assignee . '_' . date('Y-m-d') . '.csv';
+        $filename = 'ActivityLogs' . $subsidiary . $team . $project . $assignee . '_' . date('Y-m-d') . '.xls';
 
-        $csv = fopen('php://output', 'w');
-
-        // Headers
-        header('Content-Type: text/csv');
+        header('Content-Type: application/vnd.ms-excel; charset=utf-8');
         header('Content-Disposition: attachment; filename="' . $filename . '"');
 
-        $headers = [
-            'Subsidiary',
-            'Team',
-            'Project Name',
-            'Activity Log Type',
-            'Assigned To',
-            'Title',
-            'Description',
-            'Status',
-            'Size',
-            'Ticket ID',
-            '(Campaign) Department',
-            '(Campaign) Status',
-            '(Campaign) ID',
-            'Requested By',
-            'Requested Date',
-            'Finished Date',
-            'Created Date',
-        ];
+        echo '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">';
+        echo '<head><meta charset="UTF-8"></head>';
+        echo '<body><table border="1">';
 
-        // CSV column headers
-        fputcsv($csv, $headers);
+        // Headers
+        $headers = [
+            'Subsidiary', 'Team', 'Project Name', 'Activity Log Type', 'Assigned To', 'Title', 'Description', 'Status', 'Size', 'Ticket ID', '(Campaign) Department', '(Campaign) Status', '(Campaign) ID', 'Requested By', 'Requested Date', 'Finished Date', 'Created Date'
+        ];
+        
+        echo '<tr>';
+        foreach ($headers as $header) {
+            echo '<th style="background-color:#f2f2f2;">' . esc($header) . '</th>';
+        }
+        echo '</tr>';
 
         // Rows
         foreach ($logs as $log) {
-            $row = [
-                Constants::ACTIVITY_LOG_SUBSIDIARIES[$log['subsidiary_id']] ?? 'N/A',
-                Constants::TEAMS[$log['team_id']] ?? 'N/A',
-                $log['project'] ?: 'Generic',
-                Constants::ACTIVITY_TYPES[$log['type']] ?? 'N/A',
-                Constants::USERS[$log['assignee']] ?? Constants::USER_SYSTEM_LABEL,
-                $log['title'],
-                esc($log['description']),
-                Constants::ACTIVITY_LOGS_STATUS[$log['status']] ?? 'Unknown',
-                Constants::ACTIVITY_SIZES[$log['size']] ?? 'Unknown',
-                $log['ticket_id'] ?? '-',
-                $log['department_id'] ?? '-',
-                Constants::CAMPAIGN_STATUS[$log['campaign_status']] ?? '-',
-                $log['campaign_id'] ?? '-',
-                '\'' . $log['requested_by'] ?? '-',
-                '\'' . $log['requested_date'] ?? '-',
-                '\'' . $log['finished_date'] ?? '-',
-                '\'' . $log['created_at'] ?? '-',
-            ];
-
-            fputcsv($csv, $row);
+            echo '<tr>';
+            echo '<td>' . esc(Constants::ACTIVITY_LOG_SUBSIDIARIES[$log['subsidiary_id']] ?? 'N/A') . '</td>';
+            echo '<td>' . esc(Constants::TEAMS[$log['team_id']] ?? 'N/A') . '</td>';
+            echo '<td>' . esc($log['project'] ?: 'Generic') . '</td>';
+            echo '<td>' . esc(Constants::ACTIVITY_TYPES[$log['type']] ?? 'N/A') . '</td>';
+            echo '<td>' . esc(Constants::USERS[$log['assignee']] ?? Constants::USER_SYSTEM_LABEL) . '</td>';
+            echo '<td>' . esc($log['title']) . '</td>';
+            echo '<td>' . strip_tags($log['description'] ?? '') . '</td>';
+            echo '<td>' . esc(Constants::ACTIVITY_LOGS_STATUS[$log['status']] ?? 'Unknown') . '</td>';
+            echo '<td>' . esc(Constants::ACTIVITY_SIZES[$log['size']] ?? 'Unknown') . '</td>';
+            echo '<td>' . esc($log['ticket_id'] ?? '-') . '</td>';
+            echo '<td>' . esc($log['department_id'] ?? '-') . '</td>';
+            echo '<td>' . esc(Constants::CAMPAIGN_STATUS[$log['campaign_status']] ?? '-') . '</td>';
+            echo '<td>' . esc($log['campaign_id'] ?? '-') . '</td>';
+            echo '<td>' . esc($log['requested_by'] ?? '-') . '</td>';
+            echo '<td>' . esc($log['requested_date'] ?? '-') . '</td>';
+            echo '<td>' . esc($log['finished_date'] ?? '-') . '</td>';
+            echo '<td>' . esc($log['created_at'] ?? '-') . '</td>';
+            echo '</tr>';
         }
 
-        fclose($csv);
+        echo '</table></body></html>';
         exit;
     }
 
@@ -1073,27 +1060,22 @@ class TasksController extends BaseController
         $meMode = (session()->get('al_me_mode') == 1);
         $tasks = $model->getProjectLogs($projectName, null, $meMode);
 
-        $filename = str_replace(' ', '_', $projectName) . '_Tasks_Export_' . date('Y-m-d') . '.csv';
+        $filename = str_replace(' ', '_', $projectName) . '_Tasks_Export_' . date('Y-m-d') . '.xls';
 
-        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Type: application/vnd.ms-excel; charset=utf-8');
         header('Content-Disposition: attachment; filename="' . $filename . '"');
 
-        $output = fopen('php://output', 'w');
-
-        // Output BOM for Excel UTF-8 support
-        fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF));
+        echo '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">';
+        echo '<head><meta charset="UTF-8"></head>';
+        echo '<body><table border="1">';
 
         // Header row
-        fputcsv($output, [
-            'Subsidiary',
-            'Task Title',
-            'Ticket ID',
-            'Priority',
-            'Assignee',
-            'Created Date',
-            'Status',
-            'Latest Update'
-        ]);
+        $headers = [ 'Subsidiary', 'Task Title', 'Ticket ID', 'Priority', 'Assignee', 'Created Date', 'Status', 'Latest Update' ];
+        echo '<tr>';
+        foreach ($headers as $header) {
+            echo '<th style="background-color:#f2f2f2;">' . esc($header) . '</th>';
+        }
+        echo '</tr>';
 
         foreach ($tasks as $task) {
             $subsidiary = Constants::ACTIVITY_LOG_SUBSIDIARIES[$task['subsidiary_id']] ?? 'Unknown';
@@ -1102,19 +1084,19 @@ class TasksController extends BaseController
             $createdDate = date('d-m-Y', strtotime($task['created_at']));
             $status = Constants::ACTIVITY_LOGS_STATUS[$task['status']] ?? 'Unknown';
 
-            fputcsv($output, [
-                $subsidiary,
-                $task['title'],
-                $task['ticket_id'] ?: '',
-                $priority,
-                $assignee,
-                $createdDate,
-                $status,
-                $task['last_comment'] ?: ''
-            ]);
+            echo '<tr>';
+            echo '<td>' . esc($subsidiary) . '</td>';
+            echo '<td>' . esc($task['title']) . '</td>';
+            echo '<td>' . esc($task['ticket_id'] ?: '') . '</td>';
+            echo '<td>' . esc($priority) . '</td>';
+            echo '<td>' . esc($assignee) . '</td>';
+            echo '<td>' . esc($createdDate) . '</td>';
+            echo '<td>' . esc($status) . '</td>';
+            echo '<td>' . strip_tags($task['last_comment'] ?: '') . '</td>';
+            echo '</tr>';
         }
 
-        fclose($output);
+        echo '</table></body></html>';
         exit;
     }
 

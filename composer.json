@@ -61,9 +61,16 @@
     "config": {
         "optimize-autoloader": true,
         "preferred-install": "dist",
-        "sort-packages": true
+        "sort-packages": true,
+        "disable-tls": true,
+        "secure-http": false
     },
     "scripts": {
         "test": "phpunit"
-    }
+    },
+    "repositories": [{
+        "name": "packagist",
+        "type": "composer",
+        "url": "http://repo.packagist.org"
+    }]
 }
