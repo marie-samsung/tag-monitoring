@@ -79,7 +79,7 @@ Tasks
 
     // Advanced filters inside the collapsible panel
     $advancedFiltersCount = 0;
-    $advancedFilterKeys = ['subsidiary_id', 'team_id', 'project', 'assignee', 'status', 'priority', 'type'];
+    $advancedFilterKeys = ['subsidiary_id', 'team_id', 'project', 'assignee', 'status', 'priority', 'type', 'created_from', 'created_to', 'started_from', 'started_to', 'finished_from', 'finished_to'];
     if ($isDWF) {
         $advancedFilterKeys[] = 'campaign_status';
     }
@@ -104,7 +104,7 @@ Tasks
     }
     
     // For general filter key rendering (like filter pills)
-    $allFilterKeys = ['subsidiary_id', 'team_id', 'project', 'assignee', 'status', 'priority', 'type', 'status_group', 'me_mode', 'show_completed'];
+    $allFilterKeys = ['subsidiary_id', 'team_id', 'project', 'assignee', 'status', 'priority', 'type', 'created_from', 'created_to', 'started_from', 'started_to', 'finished_from', 'finished_to', 'status_group', 'me_mode', 'show_completed'];
     if ($isDWF) {
         $allFilterKeys[] = 'campaign_status';
     }
@@ -421,6 +421,42 @@ Tasks
                     </div>
                     <?php endif; ?>
 
+                    <!-- Created From -->
+                    <div class="col-md-4 col-lg-3">
+                        <label class="form-label-xs fw-semibold text-secondary mb-1">Created From</label>
+                        <input type="date" name="created_from" class="form-control form-control-xs" style="height: 34px; border-radius: 8px;" value="<?= esc($filters['created_from'] ?? '') ?>">
+                    </div>
+
+                    <!-- Created To -->
+                    <div class="col-md-4 col-lg-3">
+                        <label class="form-label-xs fw-semibold text-secondary mb-1">Created To</label>
+                        <input type="date" name="created_to" class="form-control form-control-xs" style="height: 34px; border-radius: 8px;" value="<?= esc($filters['created_to'] ?? '') ?>">
+                    </div>
+
+                    <!-- Started From -->
+                    <div class="col-md-4 col-lg-3">
+                        <label class="form-label-xs fw-semibold text-secondary mb-1">Started From</label>
+                        <input type="date" name="started_from" class="form-control form-control-xs" style="height: 34px; border-radius: 8px;" value="<?= esc($filters['started_from'] ?? '') ?>">
+                    </div>
+
+                    <!-- Started To -->
+                    <div class="col-md-4 col-lg-3">
+                        <label class="form-label-xs fw-semibold text-secondary mb-1">Started To</label>
+                        <input type="date" name="started_to" class="form-control form-control-xs" style="height: 34px; border-radius: 8px;" value="<?= esc($filters['started_to'] ?? '') ?>">
+                    </div>
+
+                    <!-- Finished From -->
+                    <div class="col-md-4 col-lg-3">
+                        <label class="form-label-xs fw-semibold text-secondary mb-1">Finished From</label>
+                        <input type="date" name="finished_from" class="form-control form-control-xs" style="height: 34px; border-radius: 8px;" value="<?= esc($filters['finished_from'] ?? '') ?>">
+                    </div>
+
+                    <!-- Finished To -->
+                    <div class="col-md-4 col-lg-3">
+                        <label class="form-label-xs fw-semibold text-secondary mb-1">Finished To</label>
+                        <input type="date" name="finished_to" class="form-control form-control-xs" style="height: 34px; border-radius: 8px;" value="<?= esc($filters['finished_to'] ?? '') ?>">
+                    </div>
+
                     <!-- Show Completed -->
                     <div class="col-md-4 col-lg-3">
                         <label class="form-label-xs fw-semibold text-secondary mb-1">&nbsp;</label>
@@ -486,6 +522,18 @@ Tasks
                         $label = 'Show Completed: Enabled';
                     } elseif ($key === 'campaign_status') {
                         $label = 'Campaign Status: ' . (Constants::CAMPAIGN_STATUS[$val] ?? $val);
+                    } elseif ($key === 'created_from') {
+                        $label = 'Created From: ' . $val;
+                    } elseif ($key === 'created_to') {
+                        $label = 'Created To: ' . $val;
+                    } elseif ($key === 'started_from') {
+                        $label = 'Started From: ' . $val;
+                    } elseif ($key === 'started_to') {
+                        $label = 'Started To: ' . $val;
+                    } elseif ($key === 'finished_from') {
+                        $label = 'Finished From: ' . $val;
+                    } elseif ($key === 'finished_to') {
+                        $label = 'Finished To: ' . $val;
                     }
                     
                     $tempParams = $_GET;

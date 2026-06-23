@@ -39,6 +39,12 @@ class TasksController extends BaseController
             'sort_by' => $this->request->getGet('sort_by') ?? 'created_at',
             'sort_dir' => $this->request->getGet('sort_dir') ?? 'desc',
             'show_completed' => $this->request->getGet('show_completed'),
+            'created_from' => $this->request->getGet('created_from'),
+            'created_to' => $this->request->getGet('created_to'),
+            'started_from' => $this->request->getGet('started_from'),
+            'started_to' => $this->request->getGet('started_to'),
+            'finished_from' => $this->request->getGet('finished_from'),
+            'finished_to' => $this->request->getGet('finished_to'),
         ];
         $data['status_counts'] = $model->getStatusCounts($filters);
         $data['logs'] = $model->filterLogs($filters, 25);
@@ -390,6 +396,12 @@ class TasksController extends BaseController
             'sort_by' => $this->request->getGet('sort_by') ?? 'created_at',
             'sort_dir' => $this->request->getGet('sort_dir') ?? 'desc',
             'show_completed' => $this->request->getGet('show_completed'),
+            'created_from' => $this->request->getGet('created_from'),
+            'created_to' => $this->request->getGet('created_to'),
+            'started_from' => $this->request->getGet('started_from'),
+            'started_to' => $this->request->getGet('started_to'),
+            'finished_from' => $this->request->getGet('finished_from'),
+            'finished_to' => $this->request->getGet('finished_to'),
         ];
 
         $logs = $logsModel->filterLogs($filters);

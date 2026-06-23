@@ -69,6 +69,30 @@ class TasksModel extends Model
             $this->where('campaign_status', $filters['campaign_status']);
         }
 
+        if (!empty($filters['created_from'])) {
+            $this->where('DATE(created_at) >=', $filters['created_from']);
+        }
+
+        if (!empty($filters['created_to'])) {
+            $this->where('DATE(created_at) <=', $filters['created_to']);
+        }
+
+        if (!empty($filters['started_from'])) {
+            $this->where('DATE(start_date) >=', $filters['started_from']);
+        }
+
+        if (!empty($filters['started_to'])) {
+            $this->where('DATE(start_date) <=', $filters['started_to']);
+        }
+
+        if (!empty($filters['finished_from'])) {
+            $this->where('DATE(finished_date) >=', $filters['finished_from']);
+        }
+
+        if (!empty($filters['finished_to'])) {
+            $this->where('DATE(finished_date) <=', $filters['finished_to']);
+        }
+
         if (!empty($filters['me_mode'])) {
             $userId = session()->get('user_id');
             if ($userId !== null) {
@@ -178,6 +202,30 @@ class TasksModel extends Model
 
         if (!empty($filters['campaign_status'])) {
             $this->where('campaign_status', $filters['campaign_status']);
+        }
+
+        if (!empty($filters['created_from'])) {
+            $this->where('DATE(created_at) >=', $filters['created_from']);
+        }
+
+        if (!empty($filters['created_to'])) {
+            $this->where('DATE(created_at) <=', $filters['created_to']);
+        }
+
+        if (!empty($filters['started_from'])) {
+            $this->where('DATE(start_date) >=', $filters['started_from']);
+        }
+
+        if (!empty($filters['started_to'])) {
+            $this->where('DATE(start_date) <=', $filters['started_to']);
+        }
+
+        if (!empty($filters['finished_from'])) {
+            $this->where('DATE(finished_date) >=', $filters['finished_from']);
+        }
+
+        if (!empty($filters['finished_to'])) {
+            $this->where('DATE(finished_date) <=', $filters['finished_to']);
         }
 
         if (!empty($filters['me_mode'])) {
