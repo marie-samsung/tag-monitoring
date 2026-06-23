@@ -421,7 +421,7 @@ class TasksController extends BaseController
 
         // Headers
         $headers = [
-            'Subsidiary', 'Team', 'Project Name', 'Activity Log Type', 'Assigned To', 'Title', 'Description', 'Status', 'Size', 'Ticket ID', '(Campaign) Department', '(Campaign) Status', '(Campaign) ID', 'Requested By', 'Requested Date', 'Finished Date', 'Created Date'
+            'Subsidiary', 'Team', 'Project Name', 'Activity Log Type', 'Assigned To', 'Title', 'Description', 'Status', 'Priority', 'Size', 'Ticket ID', '(Campaign) Department', '(Campaign) Status', '(Campaign) ID', 'Requested By', 'Requested Date', 'Finished Date', 'Created Date'
         ];
         
         echo '<tr>';
@@ -441,6 +441,7 @@ class TasksController extends BaseController
             echo '<td>' . esc($log['title']) . '</td>';
             echo '<td>' . strip_tags($log['description'] ?? '') . '</td>';
             echo '<td>' . esc(Constants::ACTIVITY_LOGS_STATUS[$log['status']] ?? 'Unknown') . '</td>';
+            echo '<td>' . esc(Constants::PRIORITIES[$log['priority']] ?? 'Unknown') . '</td>';
             echo '<td>' . esc(Constants::ACTIVITY_SIZES[$log['size']] ?? 'Unknown') . '</td>';
             echo '<td>' . esc($log['ticket_id'] ?? '-') . '</td>';
             echo '<td>' . esc($log['department_id'] ?? '-') . '</td>';
