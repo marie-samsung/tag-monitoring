@@ -749,4 +749,37 @@ class TagRequestsController extends BaseController
         $extractedData = $this->request->getPost();
         return view('tag-requests/create', ['extracted_data' => $extractedData]);
     }
+
+    public function updateProperty($id)
+    {
+        $model = new TagRequestsModel();
+        $propertyId = $this->request->getPost('property_id');
+        
+        if ($model->update($id, ['property_id' => $propertyId])) {
+            return $this->response->setJSON(['success' => true]);
+        }
+        return $this->response->setJSON(['success' => false, 'message' => 'Failed to update property']);
+    }
+
+    public function updateStatus($id)
+    {
+        $model = new TagRequestsModel();
+        $status = $this->request->getPost('status');
+        
+        if ($model->update($id, ['status' => $status])) {
+            return $this->response->setJSON(['success' => true]);
+        }
+        return $this->response->setJSON(['success' => false, 'message' => 'Failed to update status']);
+    }
+
+    public function updateType($id)
+    {
+        $model = new TagRequestsModel();
+        $type = $this->request->getPost('type');
+        
+        if ($model->update($id, ['type' => $type])) {
+            return $this->response->setJSON(['success' => true]);
+        }
+        return $this->response->setJSON(['success' => false, 'message' => 'Failed to update type']);
+    }
 }

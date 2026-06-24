@@ -30,6 +30,70 @@ $hasNewRule = !empty($request['new_rule_ticket']);
 
 ?>
 
+<style>
+.status-select-badge {
+    display: inline-block;
+    padding: 0.3em 1.6em 0.3em 0.6em !important;
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    line-height: 1.25 !important;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    border-radius: 6px !important;
+    cursor: pointer;
+    width: auto !important;
+    height: auto !important;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-repeat: no-repeat;
+    background-position: right 0.45rem center;
+    background-size: 8px 10px;
+    transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.status-select-badge:focus {
+    outline: none;
+    box-shadow: 0 0 0 0.15rem rgba(0, 123, 255, 0.25) !important;
+}
+
+.status-select-badge.bg-success {
+    background-color: var(--color-badge-success-bg) !important;
+    color: var(--color-badge-success-text) !important;
+    border: 1px solid var(--color-badge-success-border) !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%232E7D32' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+}
+
+.status-select-badge.bg-danger {
+    background-color: var(--color-badge-danger-bg) !important;
+    color: var(--color-badge-danger-text) !important;
+    border: 1px solid var(--color-badge-danger-border) !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23C62828' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+}
+
+.status-select-badge.bg-warning {
+    background-color: var(--color-badge-warning-bg) !important;
+    color: var(--color-badge-warning-text) !important;
+    border: 1px solid var(--color-badge-warning-border) !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23F57F17' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+}
+
+.status-select-badge.bg-secondary {
+    background-color: var(--color-badge-secondary-bg) !important;
+    color: var(--color-badge-secondary-text) !important;
+    border: 1px solid var(--color-badge-secondary-border) !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%2349494D' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+}
+
+.status-select-badge.bg-info {
+    background-color: var(--color-badge-primary-bg) !important;
+    color: var(--color-badge-primary-text) !important;
+    border: 1px solid var(--color-badge-primary-border) !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%231565C0' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+}
+</style>
+
 <div class="container-fluid px-0">
     <!-- Page Header -->
     <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
@@ -68,12 +132,18 @@ $hasNewRule = !empty($request['new_rule_ticket']);
 
                 <div class="mb-3">
                     <label class="form-label-xs fw-semibold text-secondary mb-1 d-block">Property</label>
-                    <span class="fw-medium text-dark ms-1" style="font-size: 0.9rem;">
-                        <a href="<?= esc($properties[$request['property_id']]['ref_link'] ?? '#') ?>" target="_blank" class="apple-link-dark text-decoration-none fw-semibold">
-                            <i class="bi bi-globe2 text-muted me-1"></i>
-                            <?= esc($properties[$request['property_id']]['name'] ?? '—') ?>
+                    <div class="d-flex align-items-center ms-1 gap-2">
+                        <select class="badge status-select-badge bg-secondary" style="margin: 0; max-width: 250px;" onchange="updateTagRequestField(<?= esc($request['id']) ?>, 'property_id', this.value)">
+                            <?php foreach ($properties as $propId => $prop): ?>
+                                <option value="<?= esc($propId) ?>" <?= $propId == $request['property_id'] ? 'selected' : '' ?> class="bg-white text-dark text-start">
+                                    <?= esc($prop['name']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <a href="<?= esc($properties[$request['property_id']]['ref_link'] ?? '#') ?>" target="_blank" class="apple-link-dark text-decoration-none" id="property-link" title="Open Property URL">
+                            <i class="bi bi-globe2 text-muted"></i>
                         </a>
-                    </span>
+                    </div>
                 </div>
 
                 <div class="mb-3">
@@ -84,11 +154,25 @@ $hasNewRule = !empty($request['new_rule_ticket']);
                 </div>
 
                 <div class="mb-3">
+                    <label class="form-label-xs fw-semibold text-secondary mb-1 d-block">Type</label>
+                    <div class="d-flex align-items-center gap-2 ms-1">
+                        <select class="badge status-select-badge bg-secondary" style="margin: 0; max-width: 250px;" onchange="updateTagRequestField(<?= esc($request['id']) ?>, 'type', this.value)">
+                            <option value="<?= esc(Constants::JIRA_TYPE_NEW_TAG) ?>" <?= $request['type'] == Constants::JIRA_TYPE_NEW_TAG ? 'selected' : '' ?> class="bg-white text-dark text-start">New Tag</option>
+                            <option value="<?= esc(Constants::JIRA_TYPE_NEW_RULE) ?>" <?= $request['type'] == Constants::JIRA_TYPE_NEW_RULE ? 'selected' : '' ?> class="bg-white text-dark text-start">New Rule</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-3">
                     <label class="form-label-xs fw-semibold text-secondary mb-1 d-block">Status</label>
                     <div class="d-flex align-items-center gap-2 ms-1">
-                        <span class="badge <?= status_request_class($request['status']) ?>">
-                            <?= esc(Constants::STATUS_REQUESTS[$request['status']] ?? 'Unknown') ?>
-                        </span>
+                        <select class="badge status-select-badge <?= status_request_class($request['status']) ?>" style="margin: 0; max-width: 250px;" onchange="updateTagRequestField(<?= esc($request['id']) ?>, 'status', this.value)">
+                            <?php foreach (Constants::STATUS_REQUESTS as $statusValue => $statusLabel): ?>
+                                <option value="<?= esc($statusValue) ?>" <?= $statusValue == $request['status'] ? 'selected' : '' ?> class="bg-white text-dark text-start">
+                                    <?= esc($statusLabel) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
 
                         <?php if ($request['status'] == Constants::STATUS_REQUEST_NEW_RULE_REQUEST_SUBMITTED ||
                                 ($request['status'] == Constants::STATUS_REQUEST_HQ_REVIEW && $request['type'] == Constants::JIRA_TYPE_NEW_RULE)): ?>
@@ -319,4 +403,35 @@ $hasNewRule = !empty($request['new_rule_ticket']);
         </div>
     </div>
 </div>
+<?= $this->endSection() ?>
+
+<?= $this->section('scripts') ?>
+<script>
+function updateTagRequestField(id, field, value) {
+    let url = '';
+    if (field === 'property_id') url = '<?= site_url('tag-requests/update-property/') ?>' + id;
+    else if (field === 'status') url = '<?= site_url('tag-requests/update-status/') ?>' + id;
+    else if (field === 'type') url = '<?= site_url('tag-requests/update-type/') ?>' + id;
+        
+    const data = new FormData();
+    data.append(field, value);
+
+    fetch(url, {
+        method: 'POST',
+        body: data
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            window.location.reload();
+        } else {
+            alert(data.message || 'Failed to update.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while updating.');
+    });
+}
+</script>
 <?= $this->endSection() ?>
