@@ -24,6 +24,9 @@ Tag Request: Create
     $organizations = $organizationsModel->Options();
 
     $tasksModel = new TasksModel();
+
+    $tagsModel = new \App\Models\TagsModel();
+    $allTags = $tagsModel->select('name')->findAll();
 ?>
 
 <?php if (session()->getFlashdata('error')): ?>
@@ -66,7 +69,7 @@ Tag Request: Create
         </div>
         <?php endif; ?>
 
-        <form action="<?= site_url('tag-requests/create') ?>" method="post" style="max-width: 800px;">
+        <form action="<?= site_url('tag-requests/create') ?>" method="post">
             <?= csrf_field() ?>
             <?php if (!empty($extracted_data)): ?>
                 <input type="hidden" name="background" value="<?= esc($extracted_data['background'] ?? '') ?>">
@@ -78,6 +81,9 @@ Tag Request: Create
                 <input type="hidden" name="excel_file_path" value="<?= esc($extracted_data['excel_file_path'] ?? '') ?>">
                 <input type="hidden" name="excel_file_name" value="<?= esc($extracted_data['excel_file_name'] ?? '') ?>">
             <?php endif; ?>
+
+            <div class="row">
+                <div class="col-lg-8">
 
             <!-- Tag Details Section -->
             <div class="apple-card mb-4" style="background-color: var(--color-bg-base); border: 1px solid rgba(0, 0, 0, 0.05); box-shadow: none;">
@@ -171,6 +177,39 @@ Tag Request: Create
             <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
                 <a href="<?= site_url('tag-requests') ?>" title="Cancel" class="apple-btn-secondary px-4 text-decoration-none">Cancel</a>
                 <button type="submit" class="apple-btn-primary px-4">Proceed</button>
+            </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <!-- UUID Generator Section -->
+                    <div class="apple-card mb-4" style="background-color: var(--color-bg-base); border: 1px solid rgba(0, 0, 0, 0.05); box-shadow: none;">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0 text-primary d-flex align-items-center gap-2 fw-bold" style="font-size: 1rem;">
+                                <i class="bi bi-key-fill"></i>
+                                <span>UUID Generator</span>
+                            </h5>
+                            <a href="javascript:void(0)" onclick="generateUUID()" class="text-secondary" title="Regenerate UUID">
+                                <i class="bi bi-arrow-clockwise fs-5"></i>
+                            </a>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <input type="text" id="uuid_display" class="form-control form-control-sm text-center fw-mono bg-light" readonly value="">
+                            <a href="javascript:void(0)" onclick="copyUUID()" class="btn btn-outline-secondary btn-sm d-flex align-items-center justify-content-center" title="Copy UUID" style="width: 32px; height: 32px;">
+                                <i class="bi bi-copy"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="apple-card mb-4" style="background-color: var(--color-bg-base); border: 1px solid rgba(0, 0, 0, 0.05); box-shadow: none;">
+                        <h5 class="mb-4 text-primary d-flex align-items-center gap-2 fw-bold">
+                            <i class="bi bi-tags-fill"></i>
+                            <span>Related Tag(s) on Vendor</span>
+                        </h5>
+                        <div id="related_tags_container">
+                            <p class="text-muted small mb-0">Select a tag to see other tags with the same vendor.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </form>
     </div>
@@ -664,6 +703,62 @@ Tag Request: Create
             }
         });
 
+        var allExistingTags = <?= json_encode(array_column($allTags, 'name')) ?>;
+
+        function updateRelatedTags() {
+            var selectedTags = $('select[name="tags[]"]').val() || [];
+            var vendors = new Set();
+            
+            selectedTags.forEach(function(tag) {
+                var matches = tag.match(/\(([^)]+)\)/g);
+                if (matches) {
+                    matches.forEach(function(match) {
+                        var vendorName = match.replace(/[()]/g, '').trim();
+                        if (vendorName) {
+                            vendors.add(vendorName);
+                        }
+                    });
+                }
+            });
+
+            var currentInput = $('.select2-search__field').val() || '';
+            var partialMatch = currentInput.match(/\(([^)]*)/g);
+            if (partialMatch) {
+                partialMatch.forEach(function(match) {
+                    var vendorName = match.replace('(', '').replace(')', '').trim();
+                    if (vendorName) {
+                        vendors.add(vendorName);
+                    }
+                });
+            }
+            
+            var relatedTags = [];
+            vendors.forEach(function(vendor) {
+                var vendorLower = vendor.toLowerCase();
+                allExistingTags.forEach(function(existingTag) {
+                    var existingLower = existingTag.toLowerCase();
+                    if (existingLower.includes('(' + vendorLower)) {
+                        relatedTags.push(existingTag);
+                    }
+                });
+            });
+            
+            var uniqueRelatedTags = [...new Set(relatedTags)];
+            
+            var $container = $('#related_tags_container');
+            if (uniqueRelatedTags.length > 0) {
+                var list = uniqueRelatedTags.map(function(t) {
+                    return '<div class="badge bg-secondary me-1 mb-1" style="font-weight: 500; font-size: 0.8rem;">' + t + '</div>';
+                }).join('');
+                $container.html(list);
+            } else {
+                $container.html('<p class="text-muted small mb-0">No related tags found.</p>');
+            }
+        }
+
+        $('select[name="tags[]"]').on('change', updateRelatedTags);
+        $(document).on('input', '.select2-search__field', updateRelatedTags);
+
         var defaultTag = `<?= $extracted_data['default_tag'] ?? '' ?>`;
         if (defaultTag) {
             $('.select2-search__field').val(defaultTag).css('width', '100%');
@@ -794,5 +889,26 @@ Tag Request: Create
         status.style.opacity = 1;
         setTimeout(() => status.style.opacity = 0, 1000);
     }
+
+    function generateUUID() {
+        var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+        document.getElementById('uuid_display').value = uuid;
+    }
+
+    function copyUUID() {
+        var copyText = document.getElementById("uuid_display");
+        copyText.select();
+        copyText.setSelectionRange(0, 99999);
+        document.execCommand("copy");
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        if(document.getElementById('uuid_display')) {
+            generateUUID();
+        }
+    });
 </script>
 <?= $this->endSection() ?>
