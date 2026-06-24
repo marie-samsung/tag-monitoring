@@ -95,7 +95,7 @@ $tagRequestsModel = new TagRequestsModel();
                             <?= esc(Constants::STATUS[$tag['status']] ?? 'Unknown') ?>
                         </span>
                         <?php if ($tag['status'] == Constants::STATUS_PENDING_VERIFICATION): ?>
-                            <a href="<?= site_url('tags/verify/' . $tag['id']) ?>"
+                            <a href="<?= site_url('tags/verify/' . $tag['id']) . '?return_url=' . urlencode(site_url('tags/view/' . $tag['id'])) ?>"
                                 class="badge bg-primary text-decoration-none"
                                 data-confirm="Have you verified the end date matches in AL?" data-confirm-title="Verify Tag"
                                 data-confirm-type="success" data-confirm-text="Verify">

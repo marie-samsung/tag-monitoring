@@ -16,6 +16,52 @@ class DashboardController extends BaseController
         $tasksModel = new TasksModel();
         $db = \Config\Database::connect();
 
+        // Date Filter Setup
+        $startDateParam = $this->request->getGet('start_date');
+        $endDateParam = $this->request->getGet('end_date');
+        $dateRange = $this->request->getGet('date_range');
+
+        if (empty($dateRange)) {
+            $dateRange = '30d';
+        }
+
+        $todayStr = date('Y-m-d');
+
+        if ($dateRange === '7d') {
+            $startDate = date('Y-m-d', strtotime('-6 days'));
+            $endDate = $todayStr;
+        } elseif ($dateRange === '3m') {
+            $startDate = date('Y-m-d', strtotime('-3 months'));
+            $endDate = $todayStr;
+        } elseif ($dateRange === '1y') {
+            $startDate = date('Y-m-d', strtotime('-1 year'));
+            $endDate = $todayStr;
+        } elseif ($dateRange === 'custom' && !empty($startDateParam)) {
+            $startDate = $startDateParam;
+            $endDate = !empty($endDateParam) ? $endDateParam : $todayStr;
+        } else {
+            $dateRange = '30d';
+            $startDate = date('Y-m-d', strtotime('-29 days'));
+            $endDate = $todayStr;
+        }
+
+        // Cap endDate to today to strictly prevent future dates
+        if (strtotime($endDate) > strtotime($todayStr)) {
+            $endDate = $todayStr;
+        }
+        
+        // Ensure startDate is not after endDate
+        if (strtotime($startDate) > strtotime($endDate)) {
+            $startDate = $endDate;
+        }
+
+        $startDateQuery = $startDate . ' 00:00:00';
+        $endDateQuery = $endDate . ' 23:59:59';
+
+        $data['start_date'] = $startDate;
+        $data['end_date'] = $endDate;
+        $data['date_range'] = $dateRange;
+
         // 1. Metric Counts
         $data['active_tags'] = $tagsModel->countActiveTags();
         $data['expiring_tags'] = $tagsModel->countExpiringTags();
@@ -29,7 +75,10 @@ class DashboardController extends BaseController
             ])
             ->countAllResults();
 
-        $data['total_requests'] = $tagRequestsModel->countAllRequests();
+        $data['total_requests'] = $tagRequestsModel
+            ->where('created_at >=', $startDateQuery)
+            ->where('created_at <=', $endDateQuery)
+            ->countAllResults();
 
         // System Health Index calculation
         $today = date('Y-m-d');
@@ -117,19 +166,19 @@ class DashboardController extends BaseController
         $data['expiring_soon_count'] = $attention_active + $attention_pending;
 
         $data['activities_last_30_days'] = $tasksModel
-            ->where('created_at >=', date('Y-m-d H:i:s', strtotime('-30 days')))
+            ->where('created_at >=', $startDateQuery)
+            ->where('created_at <=', $endDateQuery)
             ->countAllResults();
 
-        // 2. 30-Day Activity Trends
-        $thirtyDaysAgo = date('Y-m-d H:i:s', strtotime('-30 days'));
-
+        // 2. Activity Trends
         $tagsQuery = $db->table('tag_requests')
             ->select("DATE(COALESCE(jh.created_at, tag_requests.created_at)) as date, SUM(LENGTH(tag_requests.tags) - LENGTH(REPLACE(tag_requests.tags, ',', '')) + 1) as count", false)
             ->join('(SELECT ticket_id, MIN(created_at) as created_at FROM jira_history GROUP BY ticket_id) jh', 'jh.ticket_id = tag_requests.new_tag_ticket', 'left')
             ->where('tag_requests.new_tag_ticket IS NOT NULL')
             ->where('tag_requests.new_tag_ticket !=', '')
             ->where('tag_requests.tags !=', '')
-            ->where('COALESCE(jh.created_at, tag_requests.created_at) >=', $thirtyDaysAgo)
+            ->where('COALESCE(jh.created_at, tag_requests.created_at) >=', $startDateQuery)
+            ->where('COALESCE(jh.created_at, tag_requests.created_at) <=', $endDateQuery)
             ->where('tag_requests.deleted_at', null)
             ->groupBy("DATE(COALESCE(jh.created_at, tag_requests.created_at))")
             ->orderBy("date", "ASC")
@@ -142,7 +191,8 @@ class DashboardController extends BaseController
             ->where('tag_requests.new_rule_ticket IS NOT NULL')
             ->where('tag_requests.new_rule_ticket !=', '')
             ->where('tag_requests.tags !=', '')
-            ->where('COALESCE(jh.created_at, tag_requests.created_at) >=', $thirtyDaysAgo)
+            ->where('COALESCE(jh.created_at, tag_requests.created_at) >=', $startDateQuery)
+            ->where('COALESCE(jh.created_at, tag_requests.created_at) <=', $endDateQuery)
             ->where('tag_requests.deleted_at', null)
             ->groupBy("DATE(COALESCE(jh.created_at, tag_requests.created_at))")
             ->orderBy("date", "ASC")
@@ -158,7 +208,8 @@ class DashboardController extends BaseController
                 ->orWhere('new_rule_ticket', '')
             ->groupEnd()
             ->where('tags !=', '')
-            ->where('created_at >=', $thirtyDaysAgo)
+            ->where('created_at >=', $startDateQuery)
+            ->where('created_at <=', $endDateQuery)
             ->where('deleted_at', null)
             ->groupBy("DATE(created_at)")
             ->orderBy("date", "ASC")
@@ -169,7 +220,8 @@ class DashboardController extends BaseController
             ->select("DATE(jira_history.created_at) as date, COUNT(tags.status) as count", false)
             ->join('tags', 'tags.id = jira_history.tag_id', 'inner')
             ->where('jira_history.type', \App\Models\Constants::JIRA_TYPE_DATE_EXTENSION_RULE)
-            ->where('jira_history.created_at >=', $thirtyDaysAgo)
+            ->where('jira_history.created_at >=', $startDateQuery)
+            ->where('jira_history.created_at <=', $endDateQuery)
             ->where('tags.deleted_at', null)
             ->groupBy("DATE(jira_history.created_at)")
             ->orderBy("date", "ASC")
@@ -178,14 +230,15 @@ class DashboardController extends BaseController
 
         $activitiesQuery = $db->table('activity_logs')
             ->select("DATE(created_at) as date, COUNT(*) as count")
-            ->where('created_at >=', $thirtyDaysAgo)
+            ->where('created_at >=', $startDateQuery)
+            ->where('created_at <=', $endDateQuery)
             ->where('deleted_at', null)
             ->groupBy("DATE(created_at)")
             ->orderBy("date", "ASC")
             ->get()
             ->getResultArray();
 
-        // Setup 30-day bucket
+        // Setup dynamic date bucket
         $dates = [];
         $datesFull = [];
         $tagsData = [];
@@ -194,9 +247,27 @@ class DashboardController extends BaseController
         $newRulesData = [];
         $pendingData = [];
 
-        for ($i = 29; $i >= 0; $i--) {
-            $dateStr = date('Y-m-d', strtotime("-$i days"));
-            $dates[] = date('d M', strtotime($dateStr));
+        $startDateTime = new \DateTime($startDate);
+        $endDateTime = new \DateTime($endDate);
+        
+        // Prevent huge ranges from breaking memory (cap at 365 days)
+        $interval = $startDateTime->diff($endDateTime);
+        if ($interval->days > 366) {
+            $startDateTime = (clone $endDateTime)->modify('-365 days');
+        }
+
+        $todayObj = new \DateTime(date('Y-m-d'));
+        if ($endDateTime > $todayObj) {
+            $endDateTime = clone $todayObj;
+        }
+
+        $dateRangePeriod = new \DatePeriod($startDateTime, new \DateInterval('P1D'), (clone $endDateTime)->modify('+1 day'));
+
+        foreach ($dateRangePeriod as $dt) {
+            if ($dt > $todayObj) continue; // Double check no future dates are added
+            
+            $dateStr = $dt->format('Y-m-d');
+            $dates[] = $dt->format('d M y');
             $datesFull[] = $dateStr;
             $tagsData[$dateStr] = 0;
             $requestsData[$dateStr] = 0;
@@ -249,9 +320,15 @@ class DashboardController extends BaseController
         $data['blocked_renewal_requests'] = $tasksModel
             ->where('type', Constants::ACTIVITY_TYPE_RENEWAL)
             ->where('status', Constants::ACTIVITY_LOGS_STATUS_BLOCKED)
+            ->where('created_at >=', $startDateQuery)
+            ->where('created_at <=', $endDateQuery)
             ->countAllResults();
 
-        $data['pending_review_renewals'] = $data['pending_verification'];
+        $data['pending_review_renewals'] = $tagsModel
+            ->where('status', Constants::STATUS_PENDING_VERIFICATION)
+            ->where('updated_at >=', $startDateQuery)
+            ->where('updated_at <=', $endDateQuery)
+            ->countAllResults();
 
         $data['pending_new_tag_requests'] = $tagRequestsModel
             ->where('type', Constants::JIRA_TYPE_NEW_TAG)
@@ -260,6 +337,8 @@ class DashboardController extends BaseController
                 Constants::STATUS_REQUEST_REJECTED,
                 Constants::STATUS_REQUEST_NEW_RULE_REQUEST_SUBMITTED
             ])
+            ->where('created_at >=', $startDateQuery)
+            ->where('created_at <=', $endDateQuery)
             ->countAllResults();
 
         $data['pending_new_rule_requests'] = $tagRequestsModel
@@ -274,6 +353,8 @@ class DashboardController extends BaseController
                 ->where('type', Constants::JIRA_TYPE_NEW_TAG)
                 ->where('status', Constants::STATUS_REQUEST_NEW_RULE_REQUEST_SUBMITTED)
             ->groupEnd()
+            ->where('created_at >=', $startDateQuery)
+            ->where('created_at <=', $endDateQuery)
             ->countAllResults();
 
         // 4. Subsidiary Distribution
@@ -361,6 +442,8 @@ class DashboardController extends BaseController
         // 7. Tag Requests Status Distribution
         $requestStatusCounts = $db->table('tag_requests')
             ->select('status, COUNT(*) as count')
+            ->where('created_at >=', $startDateQuery)
+            ->where('created_at <=', $endDateQuery)
             ->where('deleted_at', null)
             ->groupBy('status')
             ->get()
@@ -381,6 +464,8 @@ class DashboardController extends BaseController
         // 8. Activity Logs Analytics (by Status, Priority, Project)
         $activityStatusCounts = $db->table('activity_logs')
             ->select('status, COUNT(*) as count')
+            ->where('created_at >=', $startDateQuery)
+            ->where('created_at <=', $endDateQuery)
             ->where('deleted_at', null)
             ->groupBy('status')
             ->get()
@@ -400,6 +485,8 @@ class DashboardController extends BaseController
 
         $activityPriorityCounts = $db->table('activity_logs')
             ->select('priority, COUNT(*) as count')
+            ->where('created_at >=', $startDateQuery)
+            ->where('created_at <=', $endDateQuery)
             ->where('deleted_at', null)
             ->groupBy('priority')
             ->get()
@@ -419,6 +506,8 @@ class DashboardController extends BaseController
 
         $activityTeamCounts = $db->table('activity_logs')
             ->select('team_id, COUNT(*) as count')
+            ->where('created_at >=', $startDateQuery)
+            ->where('created_at <=', $endDateQuery)
             ->where('deleted_at', null)
             ->groupBy('team_id')
             ->get()
