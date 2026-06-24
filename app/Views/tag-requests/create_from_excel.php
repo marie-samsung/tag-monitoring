@@ -65,18 +65,7 @@ Tag Request: Create
                         </select>
                     </div>
 
-                    <div class="col">
-                        <label class="form-label-xs text-primary">Tag(s)</label>
-                        <select name="tags[]" class="form-select advanced-select" multiple required>
-                        </select>
-                        <small class="form-label-xs text-muted">
-                            Tag names should start with LC-
-                        </small>
-                    </div>
-                </div>
-                
-                <div class="row mb-2">
-                    <div class="col">
+                    <div class="col mb-2">
                         <label class="form-label-xs text-primary">Request Type</label>
                         <select name="type" class="form-select" required>
                             <?php foreach (Constants::REQUEST_TYPES as $value => $label): ?>
@@ -88,7 +77,7 @@ Tag Request: Create
                         </select>
                     </div>
 
-                    <div class="col">
+                    <div class="col mb-2">
                         <label class="form-label-xs text-primary" for="al_end_date">Launch Expiry Date</label>
                         <input type="date"
                             name="al_end_date"
@@ -96,6 +85,17 @@ Tag Request: Create
                             class="form-control"
                             value="<?= esc(old('al_end_date', $request['al_end_date'] ?? '')) ?>"
                             required>
+                    </div>
+                </div>
+                
+                <div class="row mb-2">
+                    <div class="col">
+                        <label class="form-label-xs text-primary">Tag(s)</label>
+                        <select name="tags[]" class="form-select advanced-select" multiple required>
+                        </select>
+                        <small class="form-label-xs text-muted">
+                            Tag names should start with LC-
+                        </small>
                     </div>
                 </div>
             </div>
