@@ -64,7 +64,7 @@
             <!-- Right side: Version -->
             <div class="d-flex align-items-center justify-content-center justify-content-md-end" style="flex: 1;">
                 <span class="text-muted" style="font-size: 0.72rem; font-weight: 600; letter-spacing: 0.5px;">
-                    V2.3
+                    V<?= file_exists(APPPATH . 'version.txt') ? esc(trim(file_get_contents(APPPATH . 'version.txt'))) : '2.3' ?>
                 </span>
             </div>
         </footer>

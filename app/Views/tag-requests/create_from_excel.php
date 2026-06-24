@@ -22,7 +22,9 @@ Tag Request: Create
     $organizations = $organizationsModel->Options();
 
     $tagsModel = new \App\Models\TagsModel();
-    $allTags = $tagsModel->select('name')->findAll();
+    $allTags = $tagsModel->select('tags.name as tag_name, properties.name as property_name')
+                         ->join('properties', 'properties.id = tags.property_id', 'left')
+                         ->findAll();
 ?>
 
 <?php if (session()->getFlashdata('error')): ?>
@@ -511,7 +513,21 @@ Tag Request: Create
             }
         });
 
-        var allExistingTags = <?= json_encode(array_column($allTags, 'name')) ?>;
+        var tempSearchValue = '';
+        $('select[name="tags[]"]').on('select2:closing', function (e) {
+            tempSearchValue = $('.select2-search__field').val();
+        });
+
+        $('select[name="tags[]"]').on('select2:close', function (e) {
+            if (tempSearchValue) {
+                setTimeout(function() {
+                    $('.select2-search__field').val(tempSearchValue);
+                    updateRelatedTags();
+                }, 10);
+            }
+        });
+
+        var allExistingTags = <?= json_encode($allTags) ?>;
 
         function updateRelatedTags() {
             var selectedTags = $('select[name="tags[]"]').val() || [];
@@ -544,21 +560,36 @@ Tag Request: Create
             vendors.forEach(function(vendor) {
                 var vendorLower = vendor.toLowerCase();
                 allExistingTags.forEach(function(existingTag) {
-                    var existingLower = existingTag.toLowerCase();
+                    var existingLower = (existingTag.tag_name || '').toLowerCase();
                     if (existingLower.includes('(' + vendorLower)) {
                         relatedTags.push(existingTag);
                     }
                 });
             });
             
-            var uniqueRelatedTags = [...new Set(relatedTags)];
+            var groupedTags = {};
+            relatedTags.forEach(function(tagObj) {
+                var propName = tagObj.property_name || 'Unknown Property';
+                var tagName = tagObj.tag_name;
+                if (!groupedTags[propName]) {
+                    groupedTags[propName] = new Set();
+                }
+                groupedTags[propName].add(tagName);
+            });
             
             var $container = $('#related_tags_container');
-            if (uniqueRelatedTags.length > 0) {
-                var list = uniqueRelatedTags.map(function(t) {
-                    return '<div class="badge bg-secondary me-1 mb-1" style="font-weight: 500; font-size: 0.8rem;">' + t + '</div>';
-                }).join('');
-                $container.html(list);
+            if (Object.keys(groupedTags).length > 0) {
+                var html = '';
+                Object.keys(groupedTags).sort().forEach(function(prop) {
+                    html += '<div class="mb-2">';
+                    html += '<div class="fw-bold text-dark small mb-1"><i class="bi bi-building me-1 text-muted"></i>' + prop + '</div>';
+                    html += '<div class="ms-2">';
+                    Array.from(groupedTags[prop]).forEach(function(t) {
+                        html += '<div class="badge bg-secondary me-1 mb-1" style="font-weight: 500; font-size: 0.8rem; user-select: text; cursor: text;">' + t + '</div>';
+                    });
+                    html += '</div></div>';
+                });
+                $container.html(html);
             } else {
                 $container.html('<p class="text-muted small mb-0">No related tags found.</p>');
             }
