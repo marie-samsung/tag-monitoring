@@ -201,9 +201,24 @@ Dashboard | Martech TMS
     <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom flex-wrap gap-3">
         <div>
             <h2 class="mb-0 fw-bold">Dashboard</h2>
-            <p class="text-secondary small mb-0">System status and activity overview for the last 30 days</p>
+            <p class="text-secondary small mb-0">System status and activity overview</p>
         </div>
-        <div>
+        <div class="d-flex align-items-center gap-3">
+            <form method="get" id="dateFilterForm" class="d-flex align-items-center gap-2 m-0">
+                <select name="date_range" id="dateRange" class="form-select form-select-sm" style="width: auto;" onchange="toggleCustomDates()">
+                    <option value="7d" <?= $date_range === '7d' ? 'selected' : '' ?>>Past 7 days</option>
+                    <option value="30d" <?= $date_range === '30d' ? 'selected' : '' ?>>Past 30 days</option>
+                    <option value="3m" <?= $date_range === '3m' ? 'selected' : '' ?>>Past 3 months</option>
+                    <option value="1y" <?= $date_range === '1y' ? 'selected' : '' ?>>Past 1 year</option>
+                    <option value="custom" <?= $date_range === 'custom' ? 'selected' : '' ?>>Custom Date Range</option>
+                </select>
+                <div id="customDateGroup" class="d-flex align-items-center gap-2" style="<?= $date_range === 'custom' ? '' : 'display: none !important;' ?>">
+                    <input type="date" name="start_date" id="startDate" class="form-control form-control-sm" value="<?= htmlspecialchars($start_date) ?>" max="<?= date('Y-m-d') ?>">
+                    <span class="text-secondary small">to</span>
+                    <input type="date" name="end_date" id="endDate" class="form-control form-control-sm" value="<?= htmlspecialchars($end_date) ?>" max="<?= date('Y-m-d') ?>">
+                </div>
+                <button type="submit" class="btn btn-sm btn-primary">Apply</button>
+            </form>
             <span class="badge bg-secondary text-secondary" style="font-size: 0.85rem; font-weight: 600; padding: 0.5em 1em; border-radius: 20px;">
                 <i class="bi bi-clock-history me-1"></i> Last updated: <?= date('d M Y, h:i A') ?>
             </span>
@@ -527,7 +542,7 @@ Dashboard | Martech TMS
         <div class="col-lg-8">
             <div class="apple-card h-100">
                 <h6 class="text-secondary fw-semibold mb-3" style="font-size: 0.85rem; letter-spacing: 0.5px; text-transform: uppercase;">
-                    <i class="bi bi-graph-up me-2 text-primary"></i>Ingestion Trend (Last 30 Days)
+                    <i class="bi bi-graph-up me-2 text-primary"></i>Ingestion Trend (<?= $date_range === 'custom' ? 'Custom Range' : ($date_range === '7d' ? 'Last 7 Days' : ($date_range === '3m' ? 'Last 3 Months' : ($date_range === '1y' ? 'Last 1 Year' : 'Last 30 Days'))) ?>)
                 </h6>
                 <div style="position: relative; height: 320px; width: 100%;">
                     <canvas id="activityTrendChart"></canvas>
@@ -1350,6 +1365,17 @@ document.addEventListener('DOMContentLoaded', function () {
         return `background-color: ${color}; color: ${textColor}; font-weight: 600; font-size: 0.75rem;`;
     }
 });
+
+function toggleCustomDates() {
+    var range = document.getElementById('dateRange').value;
+    var customGroup = document.getElementById('customDateGroup');
+    if (range === 'custom') {
+        customGroup.style.setProperty('display', 'flex', 'important');
+    } else {
+        customGroup.style.setProperty('display', 'none', 'important');
+        document.getElementById('dateFilterForm').submit();
+    }
+}
 </script>
 
 <?= $this->endSection() ?>

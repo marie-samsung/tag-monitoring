@@ -364,7 +364,7 @@ class TagsController extends BaseController
         }
 
         $jiraTicket = $jiraModel->getRelatedTags($id);
-        $activityLog = $activityLogModel->where('ticket_id', $jiraTicket[0]['ticket_id'])->first();
+        $activityLog = !empty($jiraTicket) && !empty($jiraTicket[0]['ticket_id']) ? $activityLogModel->where('ticket_id', $jiraTicket[0]['ticket_id'])->first() : null;
 
         if ($activityLog) {
             if ($activityLog['status'] != Constants::ACTIVITY_LOGS_STATUS_COMPLETED) {
@@ -389,6 +389,13 @@ class TagsController extends BaseController
             'al_end_date' => $requestedDate,
             'requested_date' => null,
         ]);
+
+        $returnUrl = $this->request->getGet('return_url');
+        if ($returnUrl) {
+            return redirect()
+                ->to($returnUrl)
+                ->with('success', "Tag renewal [{$tag['id']}] [{$tag['name']}] has been verified.");
+        }
 
         return redirect()
             ->back()
@@ -480,15 +487,27 @@ class TagsController extends BaseController
             $verifiedNames[] = "#{$tag['id']} {$tag['name']}";
         }
 
+        $returnUrl = $this->request->getGet('return_url');
+
         if ($verifiedCount > 0) {
             $msg = "Successfully verified {$verifiedCount} tag(s).";
             if ($skippedCount > 0) {
                 $msg .= " Skipped {$skippedCount} tag(s) that were not pending verification.";
             }
+            if ($returnUrl) {
+                return redirect()
+                    ->to($returnUrl)
+                    ->with('success', $msg);
+            }
             return redirect()
                 ->to('/tags')
                 ->with('success', $msg);
         } else {
+            if ($returnUrl) {
+                return redirect()
+                    ->to($returnUrl)
+                    ->with('error', "No tags were verified. Make sure the selected tags are in 'Pending Verification' or 'Blocked' status with a valid ticket ID.");
+            }
             return redirect()
                 ->to('/tags')
                 ->with('error', "No tags were verified. Make sure the selected tags are in 'Pending Verification' or 'Blocked' status with a valid ticket ID.");

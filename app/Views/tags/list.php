@@ -797,7 +797,10 @@ $hasActiveFilters = ($activeFiltersCount > 0) || !empty($_GET['keyword']);
                     </tr>
                 </thead>
                 <tbody>
-                    <?php if (empty($tags)): ?>
+                    <?php 
+                    $currentQuery = $_SERVER['QUERY_STRING'] ?? '';
+                    $returnUrlList = site_url('tags') . ($currentQuery ? '?' . $currentQuery : '');
+                    if (empty($tags)): ?>
                         <tr>
                             <td colspan="10" class="text-center py-5 text-muted">
                                 <i class="bi bi-inbox fs-2 mb-2 d-block text-secondary" style="opacity: 0.5;"></i>
@@ -938,7 +941,7 @@ $hasActiveFilters = ($activeFiltersCount > 0) || !empty($_GET['keyword']);
                                                     </li>
                                                     <li>
                                                         <a class="dropdown-item py-2 text-success"
-                                                            href="<?= site_url('tags/verify/' . $tag['id']) ?>"
+                                                            href="<?= site_url('tags/verify/' . $tag['id']) . '?return_url=' . urlencode($returnUrlList) ?>"
                                                             data-confirm="Have you verified the end date matches in AL?"
                                                             data-confirm-title="Verify Tag" data-confirm-type="success"
                                                             style="font-size: 0.85rem; font-weight: 500;">
@@ -979,7 +982,7 @@ $hasActiveFilters = ($activeFiltersCount > 0) || !empty($_GET['keyword']);
                                                     </li>
                                                     <li>
                                                         <a class="dropdown-item py-2 text-success"
-                                                            href="<?= site_url('tags/verify/' . $tag['id']) ?>"
+                                                            href="<?= site_url('tags/verify/' . $tag['id']) . '?return_url=' . urlencode($returnUrlList) ?>"
                                                             data-confirm="Have you verified the end date matches in AL?"
                                                             data-confirm-title="Verify Tag" data-confirm-type="success"
                                                             style="font-weight: 500;">
@@ -1005,7 +1008,7 @@ $hasActiveFilters = ($activeFiltersCount > 0) || !empty($_GET['keyword']);
                                                 <i class="bi bi-pencil-fill"></i>
                                             </a>
                                             <?php if ($tag['status'] == Constants::STATUS_PENDING_VERIFICATION || ($tag['status'] == Constants::STATUS_ON_HOLD && !empty($ticketId) && !empty($tag['requested_date']))): ?>
-                                                <a href="<?= site_url('tags/verify/' . $tag['id']) ?>"
+                                                <a href="<?= site_url('tags/verify/' . $tag['id']) . '?return_url=' . urlencode($returnUrlList) ?>"
                                                     class="hover-action-btn btn-verify" data-bs-toggle="tooltip"
                                                     data-bs-placement="top" title="Verify Tag"
                                                     data-confirm="Have you verified the end date matches in AL?"
@@ -1311,7 +1314,8 @@ $hasActiveFilters = ($activeFiltersCount > 0) || !empty($_GET['keyword']);
                 type: 'success'
             }).then((confirmed) => {
                 if (confirmed) {
-                    const url = "<?= site_url('tags/verify-multiple') ?>?tags=" + checkedPending.join(',');
+                    const currentUrl = encodeURIComponent(window.location.href);
+                    const url = "<?= site_url('tags/verify-multiple') ?>?tags=" + checkedPending.join(',') + "&return_url=" + currentUrl;
                     window.location.href = url;
                 }
             });
