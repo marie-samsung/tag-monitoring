@@ -101,16 +101,6 @@ Tag Request: Create
                         </select>
                     </div>
 
-                    <!-- Tag(s) -->
-                    <div class="col-md-6">
-                        <label class="form-label-sm fw-semibold text-secondary mb-1">Tag(s)</label>
-                        <select name="tags[]" class="form-select advanced-select" multiple required>
-                        </select>
-                        <small class="form-text text-muted" style="font-size: 0.75rem;">
-                            Tag names should start with <strong>LC-</strong>
-                        </small>
-                    </div>
-
                     <!-- Request Type -->
                     <div class="col-md-6">
                         <label class="form-label-sm fw-semibold text-secondary mb-1">Request Type</label>
@@ -122,6 +112,16 @@ Tag Request: Create
                                 </option>
                             <?php endforeach; ?>
                         </select>
+                    </div>
+
+                    <!-- Tag(s) -->
+                    <div class="col-md-12">
+                        <label class="form-label-sm fw-semibold text-secondary mb-1">Tag(s)</label>
+                        <select name="tags[]" class="form-select advanced-select" multiple required>
+                        </select>
+                        <small class="form-text text-muted" style="font-size: 0.75rem;">
+                            Tag names should start with <strong>LC-</strong>
+                        </small>
                     </div>
                 </div>
             </div>
