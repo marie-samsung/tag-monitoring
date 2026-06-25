@@ -20,6 +20,11 @@ Tag Request: Create
 
     $organizationsModel = new OrganizationsModel();
     $organizations = $organizationsModel->Options();
+
+    $tagsModel = new \App\Models\TagsModel();
+    $allTags = $tagsModel->select('tags.name as tag_name, properties.name as property_name')
+                         ->join('properties', 'properties.id = tags.property_id', 'left')
+                         ->findAll();
 ?>
 
 <?php if (session()->getFlashdata('error')): ?>
@@ -50,6 +55,8 @@ Tag Request: Create
             <input type="hidden" name="excel_file_name" value="<?= esc($extracted_data['excel_file_name'] ?? '') ?>">
         <?php endif; ?>
         <div class="container">
+            <div class="row">
+                <div class="col-lg-8">
             <div class="card p-3 mt-3">
                 <div class="row mb-2">
                     <div class="col mb-2">
@@ -89,7 +96,7 @@ Tag Request: Create
                 </div>
                 
                 <div class="row mb-2">
-                    <div class="col">
+                    <div class="col-md-12">
                         <label class="form-label-xs text-primary">Tag(s)</label>
                         <select name="tags[]" class="form-select advanced-select" multiple required>
                         </select>
@@ -133,10 +140,42 @@ Tag Request: Create
             </div>
 
             <div class="d-flex justify-content-end gap-2 mt-3">
-                <a href="<?= site_url('tag-requests') ?>" title="Cancel" class="apple-btn-secondary btn-sm">Cancel</a>
-                <button type="submit" class="apple-btn-primary btn-sm">Proceed</button>
+                <a href="<?= site_url('tag-requests') ?>" title="Cancel" class="btn btn-secondary btn-sm">Cancel</a>
+                <button type="submit" class="btn btn-primary btn-sm">Proceed</button>
             </div>
             <!-- #endregion -->
+                </div>
+                
+                <div class="col-lg-4 mt-3">
+                    <div class="card p-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5 class="mb-0 text-primary d-flex align-items-center gap-2" style="font-size: 1rem;">
+                                <i class="bi bi-key-fill"></i>
+                                <span>UUID Generator</span>
+                            </h5>
+                            <a href="javascript:void(0)" onclick="generateUUID()" class="text-secondary" title="Regenerate UUID">
+                                <i class="bi bi-arrow-clockwise fs-5"></i>
+                            </a>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <input type="text" id="uuid_display" class="form-control form-control-sm text-center fw-mono bg-light" readonly value="">
+                            <a href="javascript:void(0)" onclick="copyUUID()" class="btn btn-outline-secondary btn-sm d-flex align-items-center justify-content-center" title="Copy UUID" style="width: 32px; height: 32px;">
+                                <i class="bi bi-copy"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="card p-3">
+                        <h5 class="mb-3 text-primary d-flex align-items-center gap-2">
+                            <i class="bi bi-tags-fill"></i>
+                            <span>Related Tag(s) on Vendor</span>
+                        </h5>
+                        <div id="related_tags_container">
+                            <p class="text-muted small mb-0">Select a tag to see other tags with the same vendor.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </form>
     <!-- #endregion -->
@@ -474,6 +513,91 @@ Tag Request: Create
             }
         });
 
+        var tempSearchValue = '';
+        $('select[name="tags[]"]').on('select2:closing', function (e) {
+            tempSearchValue = $('.select2-search__field').val();
+        });
+
+        $('select[name="tags[]"]').on('select2:close', function (e) {
+            if (tempSearchValue) {
+                setTimeout(function() {
+                    $('.select2-search__field').val(tempSearchValue);
+                    updateRelatedTags();
+                }, 10);
+            }
+        });
+
+        var allExistingTags = <?= json_encode($allTags) ?>;
+
+        function updateRelatedTags() {
+            var selectedTags = $('select[name="tags[]"]').val() || [];
+            var vendors = new Set();
+            
+            selectedTags.forEach(function(tag) {
+                var matches = tag.match(/\(([^)]+)\)/g);
+                if (matches) {
+                    matches.forEach(function(match) {
+                        var vendorName = match.replace(/[()]/g, '').trim();
+                        if (vendorName) {
+                            vendors.add(vendorName);
+                        }
+                    });
+                }
+            });
+
+            var currentInput = $('.select2-search__field').val() || '';
+            var partialMatch = currentInput.match(/\(([^)]*)/g);
+            if (partialMatch) {
+                partialMatch.forEach(function(match) {
+                    var vendorName = match.replace('(', '').replace(')', '').trim();
+                    if (vendorName) {
+                        vendors.add(vendorName);
+                    }
+                });
+            }
+            
+            var relatedTags = [];
+            vendors.forEach(function(vendor) {
+                var vendorLower = vendor.toLowerCase();
+                allExistingTags.forEach(function(existingTag) {
+                    var existingLower = (existingTag.tag_name || '').toLowerCase();
+                    if (existingLower.includes('(' + vendorLower)) {
+                        relatedTags.push(existingTag);
+                    }
+                });
+            });
+            
+            var groupedTags = {};
+            relatedTags.forEach(function(tagObj) {
+                var propName = tagObj.property_name || 'Unknown Property';
+                var tagName = tagObj.tag_name;
+                if (!groupedTags[propName]) {
+                    groupedTags[propName] = new Set();
+                }
+                groupedTags[propName].add(tagName);
+            });
+            
+            var $container = $('#related_tags_container');
+            if (Object.keys(groupedTags).length > 0) {
+                var html = '';
+                Object.keys(groupedTags).sort().forEach(function(prop) {
+                    html += '<div class="mb-2">';
+                    html += '<div class="fw-bold text-dark small mb-1"><i class="bi bi-building me-1 text-muted"></i>' + prop + '</div>';
+                    html += '<div class="ms-2">';
+                    Array.from(groupedTags[prop]).forEach(function(t) {
+                        html += '<div class="badge bg-secondary me-1 mb-1" style="font-weight: 500; font-size: 0.8rem; user-select: text; cursor: text;">' + t + '</div>';
+                    });
+                    html += '</div></div>';
+                });
+                $container.html(html);
+            } else {
+                $container.html('<p class="text-muted small mb-0">No related tags found.</p>');
+            }
+        }
+
+        $('select[name="tags[]"]').on('change', updateRelatedTags);
+        $(document).on('input', '.select2-search__field', updateRelatedTags);
+
         var defaultTag = `<?= $extracted_data['default_tag'] ?? '' ?>`;
         if (defaultTag) {
             $('.select2-search__field').val(defaultTag).css('width', '100%');
@@ -560,5 +684,26 @@ Tag Request: Create
         status.style.opacity = 1;
         setTimeout(() => status.style.opacity = 0, 1000);
     }
+
+    function generateUUID() {
+        var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+        document.getElementById('uuid_display').value = uuid;
+    }
+
+    function copyUUID() {
+        var copyText = document.getElementById("uuid_display");
+        copyText.select();
+        copyText.setSelectionRange(0, 99999);
+        document.execCommand("copy");
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        if(document.getElementById('uuid_display')) {
+            generateUUID();
+        }
+    });
 </script>
 <?= $this->endSection() ?>
