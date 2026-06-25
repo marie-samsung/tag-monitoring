@@ -797,7 +797,7 @@ $hasActiveFilters = ($activeFiltersCount > 0) || !empty($_GET['keyword']);
                     </tr>
                 </thead>
                 <tbody>
-                    <?php 
+                    <?php
                     $currentQuery = $_SERVER['QUERY_STRING'] ?? '';
                     $returnUrlList = site_url('tags') . ($currentQuery ? '?' . $currentQuery : '');
                     if (empty($tags)): ?>
@@ -940,10 +940,8 @@ $hasActiveFilters = ($activeFiltersCount > 0) || !empty($_GET['keyword']);
                                                         <hr class="dropdown-divider">
                                                     </li>
                                                     <li>
-                                                        <a class="dropdown-item py-2 text-success"
+                                                        <a class="dropdown-item py-2 text-success btn-individual-verify"
                                                             href="<?= site_url('tags/verify/' . $tag['id']) . '?return_url=' . urlencode($returnUrlList) ?>"
-                                                            data-confirm="Have you verified the end date matches in AL?"
-                                                            data-confirm-title="Verify Tag" data-confirm-type="success"
                                                             style="font-size: 0.85rem; font-weight: 500;">
                                                             <i class="bi bi-check-circle-fill text-success me-2"></i>Verify Tag
                                                         </a>
@@ -981,10 +979,8 @@ $hasActiveFilters = ($activeFiltersCount > 0) || !empty($_GET['keyword']);
                                                         <hr class="dropdown-divider">
                                                     </li>
                                                     <li>
-                                                        <a class="dropdown-item py-2 text-success"
+                                                        <a class="dropdown-item py-2 text-success btn-individual-verify"
                                                             href="<?= site_url('tags/verify/' . $tag['id']) . '?return_url=' . urlencode($returnUrlList) ?>"
-                                                            data-confirm="Have you verified the end date matches in AL?"
-                                                            data-confirm-title="Verify Tag" data-confirm-type="success"
                                                             style="font-weight: 500;">
                                                             <i class="bi bi-check-circle-fill text-success me-2"></i>Verify Tag
                                                         </a>
@@ -1009,10 +1005,8 @@ $hasActiveFilters = ($activeFiltersCount > 0) || !empty($_GET['keyword']);
                                             </a>
                                             <?php if ($tag['status'] == Constants::STATUS_PENDING_VERIFICATION || ($tag['status'] == Constants::STATUS_ON_HOLD && !empty($ticketId) && !empty($tag['requested_date']))): ?>
                                                 <a href="<?= site_url('tags/verify/' . $tag['id']) . '?return_url=' . urlencode($returnUrlList) ?>"
-                                                    class="hover-action-btn btn-verify" data-bs-toggle="tooltip"
-                                                    data-bs-placement="top" title="Verify Tag"
-                                                    data-confirm="Have you verified the end date matches in AL?"
-                                                    data-confirm-title="Verify Tag" data-confirm-type="success">
+                                                    class="hover-action-btn btn-verify btn-individual-verify"
+                                                    data-bs-toggle="tooltip" data-bs-placement="top" title="Verify Tag">
                                                     <i class="bi bi-check-circle-fill"></i>
                                                 </a>
                                             <?php endif; ?>
@@ -1061,6 +1055,37 @@ $hasActiveFilters = ($activeFiltersCount > 0) || !empty($_GET['keyword']);
         <i class="bi bi-x-circle"></i>
         <span>Deselect</span>
     </a>
+</div>
+
+<!-- Verify RTE Modal -->
+<div class="modal fade" id="verifyRteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content apple-card" style="border-radius: 16px; border: none;">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title fw-bold">Verification Message</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-secondary small mb-3">Copy the message below to paste into your task tracker.</p>
+                <div id="verifyRteContent" class="form-control" contenteditable="true"
+                    style="min-height: 80px; border-radius: 8px; background-color: var(--color-bg-base); outline: none; cursor: text;">
+                    <p>Launch verification has been completed.</p>
+                    <p>For QA, as this was only a date extension, scope was limited to validating the tag expiry date,
+                        published status, and console logs.</p>
+                    <p>All checks were completed <span style="color: green; font-weight: bold;">successfully</span>.</p>
+                    <p>Will proceed to closing this task.</p>
+                </div>
+                <div class="d-flex justify-content-end mt-4 gap-2">
+                    <button type="button" class="apple-btn-secondary btn-sm" id="btnCopyVerifyMsg">
+                        <i class="bi bi-copy"></i> Copy
+                    </button>
+                    <button type="button" class="apple-btn-primary btn-sm" id="btnProceedVerify">
+                        Proceed
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -1316,7 +1341,7 @@ $hasActiveFilters = ($activeFiltersCount > 0) || !empty($_GET['keyword']);
                 if (confirmed) {
                     const currentUrl = encodeURIComponent(window.location.href);
                     const url = "<?= site_url('tags/verify-multiple') ?>?tags=" + checkedPending.join(',') + "&return_url=" + currentUrl;
-                    window.location.href = url;
+                    showVerifyRteModal(url);
                 }
             });
         };
@@ -1417,6 +1442,67 @@ $hasActiveFilters = ($activeFiltersCount > 0) || !empty($_GET['keyword']);
                 tblTags.classList.add(`style-${selectedStyle}`);
 
                 localStorage.setItem('tag_action_style', selectedStyle);
+            });
+        }
+
+        // Verify RTE Modal logic
+        window.showVerifyRteModal = function (proceedUrl) {
+            const modalEl = document.getElementById('verifyRteModal');
+            if (!modalEl) return;
+            const modal = new bootstrap.Modal(modalEl);
+
+            const proceedBtn = document.getElementById('btnProceedVerify');
+            const newProceedBtn = proceedBtn.cloneNode(true);
+            proceedBtn.parentNode.replaceChild(newProceedBtn, proceedBtn);
+
+            newProceedBtn.addEventListener('click', function () {
+                modal.hide();
+                window.location.href = proceedUrl;
+            });
+
+            modal.show();
+        };
+
+        // Intercept individual verify clicks
+        document.addEventListener('click', function (e) {
+            const verifyBtn = e.target.closest('.btn-individual-verify');
+            if (verifyBtn) {
+                e.preventDefault();
+                window.themeConfirm({
+                    title: 'Verify Tag',
+                    message: 'Have you verified the end date matches in AL?',
+                    confirmText: 'Verify',
+                    type: 'success'
+                }).then((confirmed) => {
+                    if (confirmed) {
+                        showVerifyRteModal(verifyBtn.getAttribute('href'));
+                    }
+                });
+            }
+        });
+
+        const copyBtn = document.getElementById('btnCopyVerifyMsg');
+        if (copyBtn) {
+            copyBtn.addEventListener('click', function () {
+                var content = document.getElementById('verifyRteContent');
+                var range = document.createRange();
+                range.selectNodeContents(content);
+                var sel = window.getSelection();
+                sel.removeAllRanges();
+                sel.addRange(range);
+                document.execCommand('copy');
+                sel.removeAllRanges();
+
+                var originalHtml = this.innerHTML;
+                this.innerHTML = '<i class="bi bi-check-lg"></i> Copied!';
+                this.classList.remove('apple-btn-secondary');
+                this.classList.add('btn', 'btn-success', 'text-white');
+
+                setTimeout(() => {
+                    this.innerHTML = originalHtml;
+                    this.classList.remove('btn', 'btn-success', 'text-white');
+                    this.classList.add('apple-btn-secondary');
+                }, 2000);
             });
         }
     });
