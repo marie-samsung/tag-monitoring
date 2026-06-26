@@ -262,7 +262,12 @@ Tags Renewal: <?= $siteCode ?? null ?>
                                             <?php endif; ?>
                                         </td>
                                         <td>
-                                            <input type="text" name="tags[<?= $tag['id'] ?>][next_end_date]" class="form-control form-control-sm next-end-date-input" value="<?= date('Y-m-d', strtotime($nextExpDate)) ?>" style="width: 130px;" required>
+                                            <div class="d-flex align-items-center gap-1">
+                                                <input type="text" name="tags[<?= $tag['id'] ?>][next_end_date]" class="form-control form-control-sm next-end-date-input" value="<?= date('Y-m-d', strtotime($nextExpDate)) ?>" style="width: 130px;" required>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary border-0 p-1" onclick="applyDateToAll(this)" title="Apply this date to all tags">
+                                                    <i class="bi bi-chevron-double-down"></i>
+                                                </button>
+                                            </div>
                                         </td>
                                         <td class="text-center">
                                             <button type="button" class="btn btn-sm btn-outline-danger border-0" title="Remove" onclick="removeTagRow(this, <?= $tag['id'] ?>, '<?= esc($tag['name']) ?>')">
@@ -650,6 +655,20 @@ Tags Renewal: <?= $siteCode ?? null ?>
                 }
             }
         });
+    }
+
+    function applyDateToAll(btn) {
+        let inputEl = $(btn).siblings('.next-end-date-input')[0];
+        if (inputEl && inputEl._flatpickr) {
+            let selectedDate = inputEl._flatpickr.selectedDates[0];
+            if (selectedDate) {
+                $('.next-end-date-input').each(function() {
+                    if (this._flatpickr && this !== inputEl) {
+                        this._flatpickr.setDate(selectedDate);
+                    }
+                });
+            }
+        }
     }
 
 </script>
