@@ -228,8 +228,11 @@ Tag Request: Create
         $jiraTitle = sprintf(
             '[LC Request] [%s] - [%s] - [New Tag]',
             $siteCode,
-            $vendor_name
+            $vendor['name']
         );
+
+        $actionLink = empty($ticket_id) ? site_url('tag-requests/create/confirm')
+            : site_url('tag-requests/view/' . $request_id);
 
         $detailsHtml = "
             <b style='color:#0071E3; font-size:15px; font-family:-apple-system,BlinkMacSystemFont,sans-serif;'>1) Target Property :</b>
@@ -292,16 +295,22 @@ Tag Request: Create
 <div class="container-fluid px-0">
     <!-- Page Header -->
     <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
-        <a href="<?= site_url('tag-requests') ?>" class="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; padding: 0;" title="Back to Requests">
+        <a href="<?= $ticket_id ? site_url('tag-requests/view/' . $request_id) : site_url('tag-requests') ?>" class="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; padding: 0;" title="Back">
             <i class="bi bi-arrow-left fs-5"></i>
         </a>
         <div>
             <h2 class="mb-0 fw-bold"><?= Constants::JIRA_TICKET_TYPES[$request_type] ?> Request</h2>
-            <p class="text-secondary small mb-0 fw-semibold">Confirmation & JIRA Integration</p>
+            <p class="text-secondary small mb-0 fw-semibold">
+                <?php if ($ticket_id): ?>
+                    Details & Template - <span class="text-danger fw-semibold"><?= esc($ticket_id) ?></span>
+                <?php else: ?>
+                    Confirmation & JIRA Integration
+                <?php endif; ?>
+            </p>
         </div>
     </div>
 
-    <form action="<?= site_url('tag-requests/create/confirm') ?>" method="post">
+    <form action="<?= $actionLink ?>" method="post">
         <div class="row g-4 mt-1">
             <!-- Left Column: JIRA Info & Details -->
             <div class="col-lg-5 d-flex flex-column">
@@ -326,21 +335,40 @@ Tag Request: Create
                     </div>
 
                     <div class="mb-2">
-                        <label for="ticket_id" class="form-label-sm fw-semibold text-secondary mb-1">JIRA Ticket ID</label>
-                        <div class="d-flex gap-2">
-                            <input type="hidden" name="request_id" value="<?= esc($request_id) ?>">
-                            <input type="text" name="ticket_id" id="ticket_id"
-                                class="form-control form-control-xs"
-                                value="<?= old('ticket_id', $old['ticket_id'] ?? '') ?>"
-                                placeholder="GTA-XXXXX"
-                                required>
-                            <a href="<?= Constants::JIRA_CREATE_ISSUE ?>" title="Create Issue in JIRA" class="apple-btn-secondary px-3 text-decoration-none btn-sm d-flex align-items-center justify-content-center text-nowrap" target="_blank">
-                                Create JIRA Ticket
-                            </a>
-                        </div>
-                        <small class="form-text text-muted mt-1 d-block" style="font-size: 0.75rem;">
-                            Format: GTA-XXXXX
-                        </small>
+                        <label class="form-label-sm fw-semibold text-secondary mb-1">JIRA Ticket ID</label>
+                        <?php if ($ticket_id == null) : ?>
+                            <div class="d-flex gap-2">
+                                <input type="hidden" name="request_id" value="<?= esc($request_id) ?>">
+                                <input type="text" name="ticket_id" id="ticket_id"
+                                    class="form-control form-control-xs"
+                                    value="<?= old('ticket_id', $old['ticket_id'] ?? '') ?>"
+                                    placeholder="GTA-XXXXX"
+                                    required>
+                                <a href="<?= Constants::JIRA_CREATE_ISSUE ?>" title="Create Issue in JIRA" class="apple-btn-secondary px-3 text-decoration-none btn-sm d-flex align-items-center justify-content-center text-nowrap" target="_blank">
+                                    Create JIRA Ticket
+                                </a>
+                            </div>
+                            <small class="form-text text-muted mt-1 d-block" style="font-size: 0.75rem;">
+                                Format: GTA-XXXXX
+                            </small>
+                        <?php else: ?>
+                            <div class="fw-bold text-dark fs-5 mb-2 d-flex align-items-center gap-2">
+                                <?php $relatedTask = $tasksModel->where('ticket_id', $ticket_id)->first(); ?>
+                                <?php if ($relatedTask): ?>
+                                    <a href="<?= site_url('tasks/view/' . $relatedTask['id']) ?>" class="apple-link text-decoration-none" title="View related Task">
+                                        <?= esc($ticket_id) ?>
+                                    </a>
+                                <?php else: ?>
+                                    <a href="<?= Constants::JIRA_LINK . $ticket_id ?>" target="_blank" rel="noopener" class="apple-link text-decoration-none">
+                                        <?= esc($ticket_id) ?>
+                                    </a>
+                                <?php endif; ?>
+                                <a href="<?= Constants::JIRA_LINK . $ticket_id ?>" target="_blank" rel="noopener" class="text-muted" style="font-size: 0.85rem; text-decoration: none;" title="View in JIRA">
+                                    <i class="bi bi-box-arrow-up-right"></i>
+                                </a>
+                            </div>
+                            <input type="hidden" name="ticket_id" value="<?= esc($ticket_id) ?>">
+                        <?php endif; ?>
                     </div>
                 </div>
 
@@ -393,8 +421,12 @@ Tag Request: Create
                     
                     <!-- Action Buttons aligned inside the card bottom -->
                     <div class="d-flex justify-content-end gap-2 mt-auto pt-3 border-top">
-                        <a href="<?= site_url('tag-requests') ?>" title="Cancel" class="apple-btn-secondary px-4 text-decoration-none">Cancel</a>
-                        <button type="submit" class="apple-btn-primary px-4">Confirm Request</button>
+                        <a href="<?= $ticket_id ? site_url('tag-requests/view/' . $request_id) : site_url('tag-requests') ?>" title="Cancel" class="apple-btn-secondary px-4 text-decoration-none">Cancel</a>
+                        <?php if ($ticket_id == null) : ?>
+                            <button type="submit" class="apple-btn-primary px-4">Confirm Request</button>
+                        <?php else: ?>
+                            <a href="<?= site_url('tag-requests/view/' . $request_id) ?>" class="apple-btn-primary px-4 text-decoration-none">Back to Request</a>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
