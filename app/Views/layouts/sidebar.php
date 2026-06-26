@@ -29,7 +29,13 @@ if ($hasTagsPermissions) {
             'label' => 'Inventory',
             'icon' => 'bi bi-tags-fill text-primary',
             'url' => site_url('/tags'),
-            'active' => ($segment === 'tags' && ($uri->getTotalSegments() < 2 || ($uri->getSegment(2) !== 'renewal-justifications' && $uri->getSegment(2) !== 'upload-renewal-justifications'))),
+            'active' => ($segment === 'tags' && ($uri->getTotalSegments() < 2 || ($uri->getSegment(2) !== 'renewal-justifications' && $uri->getSegment(2) !== 'upload-renewal-justifications' && $uri->getSegment(2) !== 'repository'))),
+        ];
+        $subItems[] = [
+            'label' => 'Repository',
+            'icon' => 'bi bi-code-square text-secondary',
+            'url' => site_url('/tags/repository'),
+            'active' => ($segment === 'tags' && $uri->getTotalSegments() >= 2 && $uri->getSegment(2) === 'repository'),
         ];
         $subItems[] = [
             'label' => 'Renewal Justifications',

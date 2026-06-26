@@ -44,6 +44,10 @@ class TagsModel extends Model
             $this->like('tags.name', $filters['keyword']);
         }
 
+        if (!empty($filters['js_code'])) {
+            $this->like('tags.js_code', $filters['js_code']);
+        }
+
         if (!empty($filters['property_id'])) {
             $this->where('tags.property_id', $filters['property_id']);
         }
@@ -88,7 +92,7 @@ class TagsModel extends Model
         }
 
         $hasActiveFilters = false;
-        if (!empty($filters['keyword']) || !empty($filters['property_id']) || !empty($filters['subsidiary_id']) || !empty($filters['vendor_id']) || !empty($filters['al_end_date_from']) || !empty($filters['al_end_date_to'])) {
+        if (!empty($filters['keyword']) || !empty($filters['js_code']) || !empty($filters['property_id']) || !empty($filters['subsidiary_id']) || !empty($filters['vendor_id']) || !empty($filters['al_end_date_from']) || !empty($filters['al_end_date_to'])) {
             $hasActiveFilters = true;
         }
         if (!empty($filters['status']) && !is_array($filters['status']) && $filters['status'] !== 'all' && $filters['status'] != 145) {
@@ -116,21 +120,28 @@ class TagsModel extends Model
                 $this->orderBy('tags.updated_at', $sortDir);
             }
         } else {
-            $this->orderBy(
-                '(CASE 
-                    WHEN tags.al_end_date < CURDATE() AND tags.status = 1 THEN 0
-                    WHEN tags.al_end_date <= DATE_ADD(CURDATE(), INTERVAL 16 DAY) AND tags.status = 5 THEN 1
-                    WHEN tags.al_end_date <= DATE_ADD(CURDATE(), INTERVAL 16 DAY) AND tags.status = 9 THEN 2
-                    WHEN tags.al_end_date <= DATE_ADD(CURDATE(), INTERVAL 9 DAY) AND tags.status = 1 THEN 3
-                    WHEN tags.al_end_date <= DATE_ADD(CURDATE(), INTERVAL 16 DAY) AND tags.status = 4 THEN 4
-                    WHEN tags.al_end_date <= DATE_ADD(CURDATE(), INTERVAL 16 DAY) AND tags.status = 1 THEN 5
-                    WHEN tags.status = 4 THEN 6
-                    WHEN tags.status = 1 THEN 7
-                    ELSE 8
-                END)', 'ASC', false
-            );
-            $this->orderBy('tags.al_end_date', 'ASC');
-            $this->orderBy('properties.id', 'ASC');
+            if (!empty($filters['is_repository'])) {
+                $this->orderBy('properties.subsidiary_id', 'ASC');
+                $this->orderBy('properties.name', 'ASC');
+                $this->orderBy('IF(tags.js_code IS NOT NULL AND tags.js_code != "", 1, 0)', 'DESC', false);
+                $this->orderBy('tags.updated_at', 'DESC');
+            } else {
+                $this->orderBy(
+                    '(CASE 
+                        WHEN tags.al_end_date < CURDATE() AND tags.status = 1 THEN 0
+                        WHEN tags.al_end_date <= DATE_ADD(CURDATE(), INTERVAL 16 DAY) AND tags.status = 5 THEN 1
+                        WHEN tags.al_end_date <= DATE_ADD(CURDATE(), INTERVAL 16 DAY) AND tags.status = 9 THEN 2
+                        WHEN tags.al_end_date <= DATE_ADD(CURDATE(), INTERVAL 9 DAY) AND tags.status = 1 THEN 3
+                        WHEN tags.al_end_date <= DATE_ADD(CURDATE(), INTERVAL 16 DAY) AND tags.status = 4 THEN 4
+                        WHEN tags.al_end_date <= DATE_ADD(CURDATE(), INTERVAL 16 DAY) AND tags.status = 1 THEN 5
+                        WHEN tags.status = 4 THEN 6
+                        WHEN tags.status = 1 THEN 7
+                        ELSE 8
+                    END)', 'ASC', false
+                );
+                $this->orderBy('tags.al_end_date', 'ASC');
+                $this->orderBy('properties.id', 'ASC');
+            }
         }
 
         if ($paginate > 0) {

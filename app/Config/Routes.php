@@ -20,6 +20,7 @@ $routes->group('notifications', function ($routes) {
 
 $routes->group('tags', function ($routes) {
     $routes->get('/', 'TagsController::index');
+    $routes->get('repository', 'TagsController::repository');
     $routes->get('export', 'TagsController::exportAsExcel');
     $routes->get('view/(:num)', 'TagsController::view/$1');
     $routes->get('verify/(:num)', 'TagsController::verify/$1');
