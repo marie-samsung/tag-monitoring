@@ -72,13 +72,25 @@ Tags Renewal: <?= $siteCode ?? null ?>
     }
 
     $detailsHtml = '';
+    // Group properties by shop type
+    $propertiesByShop = [];
+    foreach ($propertyIds as $property) {
+        $propIsShop = $propertiesModel->isShop($property);
+        $propertiesByShop[$propIsShop][] = $property;
+    }
+
     // Target Property
     $detailsHtml .= '
         <b>1) Target Property</b>
         <ul>';
-    foreach ($propertyIds as $property) {
-        $propIsShop = $propertiesModel->isShop($property);
-        $detailsHtml .= '<li>' . $propIsShop . ' : ' . esc($properties[$property]['name'] ?? 'Unknown') . '</li>';
+    foreach ($propertiesByShop as $shopType => $props) {
+        $detailsHtml .= '<li>' . $shopType . ' :
+            <ul>';
+        foreach ($props as $property) {
+            $detailsHtml .= '<li>' . esc($properties[$property]['name'] ?? 'Unknown') . '</li>';
+        }
+        $detailsHtml .= '</ul>
+        </li>';
     }
     $detailsHtml .= '
             <li>Library name: <b><span id="library-name-display">' . esc($libraryName) . '</span></b></li>
@@ -87,9 +99,14 @@ Tags Renewal: <?= $siteCode ?? null ?>
     $detailsHtml .= '
         <b>2) Target Page(s)</b>
         <ul>';
-    foreach ($propertyIds as $property) {
-        $propIsShop = $propertiesModel->isShop($property);
-        $detailsHtml .= '<li>' . $propIsShop . ' : <a href="' . esc($properties[$property]['website'] ?? 'Unknown') . '" target="_blank">' . esc($properties[$property]['website'] ?? 'Unknown') . '</a></li>';
+    foreach ($propertiesByShop as $shopType => $props) {
+        $detailsHtml .= '<li>' . $shopType . ' :
+            <ul>';
+        foreach ($props as $property) {
+            $detailsHtml .= '<li><a href="' . esc($properties[$property]['website'] ?? 'Unknown') . '" target="_blank">' . esc($properties[$property]['website'] ?? 'Unknown') . '</a></li>';
+        }
+        $detailsHtml .= '</ul>
+        </li>';
     }
     $detailsHtml .= '</ul>';
     // Expiration Dates
