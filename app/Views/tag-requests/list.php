@@ -624,6 +624,13 @@ Tag: Requests (New Rule, New Tag)
                                                     <i class="bi bi-eye text-primary me-2"></i>View Details
                                                 </a>
                                             </li>
+                                            <?php if (!empty($request['new_tag_ticket'])): ?>
+                                                <li>
+                                                    <a class="dropdown-item py-2" href="<?= site_url('tag-requests/new-tag-request/' . $request['id']) ?>" style="font-size: 0.85rem;">
+                                                        <i class="bi bi-tag text-info me-2"></i>View Tag Request
+                                                    </a>
+                                                </li>
+                                            <?php endif; ?>
                                             <?php if (!empty($request['new_rule_ticket'])): ?>
                                                 <li>
                                                     <a class="dropdown-item py-2" href="<?= site_url('tag-requests/new-rule-request/' . $request['id']) ?>" style="font-size: 0.85rem;">
@@ -658,6 +665,13 @@ Tag: Requests (New Rule, New Tag)
                                                     <i class="bi bi-eye text-primary me-2"></i>View Details
                                                 </a>
                                             </li>
+                                            <?php if (!empty($request['new_tag_ticket'])): ?>
+                                                <li>
+                                                    <a class="dropdown-item py-2" href="<?= site_url('tag-requests/new-tag-request/' . $request['id']) ?>">
+                                                        <i class="bi bi-tag text-info me-2"></i>View Tag Request
+                                                    </a>
+                                                </li>
+                                            <?php endif; ?>
                                             <?php if (!empty($request['new_rule_ticket'])): ?>
                                                 <li>
                                                     <a class="dropdown-item py-2" href="<?= site_url('tag-requests/new-rule-request/' . $request['id']) ?>">
@@ -686,6 +700,11 @@ Tag: Requests (New Rule, New Tag)
                                         <a href="<?= site_url('tag-requests/view/'.$request['id']) ?>" class="hover-action-btn btn-view" data-bs-toggle="tooltip" data-bs-placement="top" title="View Details">
                                             <i class="bi bi-eye-fill"></i>
                                         </a>
+                                        <?php if (!empty($request['new_tag_ticket'])): ?>
+                                            <a href="<?= site_url('tag-requests/new-tag-request/' . $request['id']) ?>" class="hover-action-btn btn-info-action" data-bs-toggle="tooltip" data-bs-placement="top" title="View Tag Request">
+                                                <i class="bi bi-tag-fill"></i>
+                                            </a>
+                                        <?php endif; ?>
                                         <?php if (!empty($request['new_rule_ticket'])): ?>
                                             <a href="<?= site_url('tag-requests/new-rule-request/' . $request['id']) ?>" class="hover-action-btn btn-info-action" data-bs-toggle="tooltip" data-bs-placement="top" title="View Rule Request">
                                                 <i class="bi bi-file-earmark-text-fill"></i>

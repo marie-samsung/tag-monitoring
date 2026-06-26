@@ -1069,11 +1069,11 @@ $hasActiveFilters = ($activeFiltersCount > 0) || !empty($_GET['keyword']);
                 <p class="text-secondary small mb-3">Copy the message below to paste into your task tracker.</p>
                 <div id="verifyRteContent" class="form-control" contenteditable="true"
                     style="min-height: 80px; border-radius: 8px; background-color: var(--color-bg-base); outline: none; cursor: text;">
-                    <p>Launch verification has been completed.</p>
-                    <p>For QA, as this was only a date extension, scope was limited to validating the tag expiry date,
-                        published status, and console logs.</p>
-                    <p>All checks were completed <span style="color: green; font-weight: bold;">successfully</span>.</p>
-                    <p>Will proceed to closing this task.</p>
+                    Launch verification has been completed.<br />
+                    For QA, as this was only a date extension, scope was limited to validating the tag expiry date,
+                    published status, and console logs.<br />
+                    All checks were completed <span style="color: green; font-weight: bold;">successfully</span>.<br />
+                    Will proceed to closing this task.
                 </div>
                 <div class="d-flex justify-content-end mt-4 gap-2">
                     <button type="button" class="apple-btn-secondary btn-sm" id="btnCopyVerifyMsg">

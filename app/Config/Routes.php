@@ -20,6 +20,7 @@ $routes->group('notifications', function ($routes) {
 
 $routes->group('tags', function ($routes) {
     $routes->get('/', 'TagsController::index');
+    $routes->get('repository', 'TagsController::repository');
     $routes->get('export', 'TagsController::exportAsExcel');
     $routes->get('view/(:num)', 'TagsController::view/$1');
     $routes->get('verify/(:num)', 'TagsController::verify/$1');
@@ -51,6 +52,7 @@ $routes->group('tag-requests', function ($routes) {
     $routes->post('add-new-tag', 'TagRequestsController::addNewTag');
     $routes->post('add-new-rule', 'TagRequestsController::addNewRule');
     $routes->get('new-rule-request/(:num)', 'TagRequestsController::newRuleRequest/$1');
+    $routes->get('new-tag-request/(:num)', 'TagRequestsController::newTagRequest/$1');
     $routes->post('upload', 'TagRequestsController::uploadFile');
     $routes->post('create/confirm', 'TagRequestsController::createConfirm');
     $routes->post('update-property/(:num)', 'TagRequestsController::updateProperty/$1');

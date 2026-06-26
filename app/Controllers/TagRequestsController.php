@@ -338,6 +338,32 @@ class TagRequestsController extends BaseController
         ]);
     }
 
+    public function newTagRequest($id)
+    {
+        $model = new TagRequestsModel();
+        $request = $model->find($id);
+
+        if (!$request) {
+            throw new \CodeIgniter\Exceptions\PageNotFoundException("Tag request with ID $id not found.");
+        }
+
+        return view('tag-requests/create', [
+            'request_id' => $request['id'],
+            'request_type' => Constants::JIRA_TYPE_NEW_TAG,
+            'property_id' => $request['property_id'],
+            'vendor_id' => $request['vendor_id'],
+            'ticket_id' => $request['new_tag_ticket'],
+            'al_end_date' => null, // @TODO: Get from tags
+            'tag_ids' => $request['tags'],
+            'background' => $request['background'] ?? null,
+            'q1' => $request['q1'] ?? null,
+            'q2' => $request['q2'] ?? null,
+            'q3' => $request['q3'] ?? null,
+            'q4' => $request['q4'] ?? null,
+            'q5' => $request['q5'] ?? null,
+        ]);
+    }
+
     public function requestApproved($id)
     {
         $model = new TagRequestsModel();

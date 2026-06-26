@@ -88,15 +88,26 @@
     </div>
 
 <?php
-    $propertyListHtml = "";
-    $pagesListHtml = "";
+    $propertiesByShop = [];
     foreach ($propertyIds as $pId) {
         $pIsShop = $propertiesModel->isShop($pId);
-        $pName = $properties[$pId]['name'] ?? 'Unknown';
-        $pWebsite = $properties[$pId]['website'] ?? 'Unknown';
-        
-        $propertyListHtml .= "<li>" . $pIsShop . " : " . esc($pName) . "</li>";
-        $pagesListHtml .= "<li>" . $pIsShop . " : <a href='" . esc($pWebsite) . "' target='_blank'>" . esc($pWebsite) . "</a></li>";
+        $propertiesByShop[$pIsShop][] = $pId;
+    }
+
+    $propertyListHtml = "";
+    $pagesListHtml = "";
+    foreach ($propertiesByShop as $shopType => $props) {
+        $propertyListHtml .= "<li>" . $shopType . " :<ul>";
+        $pagesListHtml .= "<li>" . $shopType . " :<ul>";
+        foreach ($props as $pId) {
+            $pName = $properties[$pId]['name'] ?? 'Unknown';
+            $pWebsite = $properties[$pId]['website'] ?? 'Unknown';
+            
+            $propertyListHtml .= "<li>" . esc($pName) . "</li>";
+            $pagesListHtml .= "<li><a href='" . esc($pWebsite) . "' target='_blank'>" . esc($pWebsite) . "</a></li>";
+        }
+        $propertyListHtml .= "</ul></li>";
+        $pagesListHtml .= "</ul></li>";
     }
 
     $detailsHtml = "

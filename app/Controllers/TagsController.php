@@ -54,6 +54,38 @@ class TagsController extends BaseController
         return view('tags/list', $data);
     }
 
+    public function repository()
+    {
+        $tagModel = new TagsModel();
+
+        $status = $this->request->getGet('status');
+
+        if ($status === 'all' || $status == Constants::STATUS_ALL) {
+            $status = null;
+        }
+
+        $filters = [
+            'keyword' => $this->request->getGet('keyword'),
+            'js_code' => $this->request->getGet('js_code'),
+            'status' => $status,
+            'property_id' => $this->request->getGet('property_id'),
+            'subsidiary_id' => $this->request->getGet('subsidiary_id'),
+            'vendor_id' => $this->request->getGet('vendor_id'),
+            'sort_by' => $this->request->getGet('sort_by'),
+            'sort_dir' => $this->request->getGet('sort_dir'),
+            'is_repository' => true,
+        ];
+        $data['tags'] = $tagModel->filterTags($filters, 25);
+        $data['pager'] = $tagModel->pager;
+
+        if (is_array($status)) {
+            $filters['status'] = 145;
+        }
+        $data['filters'] = $filters;
+
+        return view('tags/repository', $data);
+    }
+
     public function create()
     {
         $model = new TagsModel();

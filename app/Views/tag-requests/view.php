@@ -208,11 +208,14 @@ $hasNewRule = !empty($request['new_rule_ticket']);
                                 </div>
                             </form>
                         <?php else: ?>
-                            <span class="fw-medium text-dark ms-1" style="font-size: 0.9rem;">
+                            <div class="d-flex align-items-center gap-2 ms-1">
                                 <a href="<?= Constants::JIRA_LINK . $request['new_tag_ticket'] ?>" target="_blank" class="apple-link text-decoration-none fw-semibold">
                                     <?= esc($request['new_tag_ticket']) ?>
                                 </a>
-                            </span>
+                                <a href="<?= site_url('tag-requests/new-tag-request/' . $request['id']) ?>" class="apple-btn-secondary btn-sm px-2 py-1 text-decoration-none" style="font-size: 0.75rem; border-radius: 9999px;">
+                                    View Tag Request
+                                </a>
+                            </div>
                         <?php endif; ?>
                     </div>
                 <?php endif; ?>

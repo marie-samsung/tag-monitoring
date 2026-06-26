@@ -72,13 +72,25 @@ Tags Renewal: <?= $siteCode ?? null ?>
     }
 
     $detailsHtml = '';
+    // Group properties by shop type
+    $propertiesByShop = [];
+    foreach ($propertyIds as $property) {
+        $propIsShop = $propertiesModel->isShop($property);
+        $propertiesByShop[$propIsShop][] = $property;
+    }
+
     // Target Property
     $detailsHtml .= '
         <b>1) Target Property</b>
         <ul>';
-    foreach ($propertyIds as $property) {
-        $propIsShop = $propertiesModel->isShop($property);
-        $detailsHtml .= '<li>' . $propIsShop . ' : ' . esc($properties[$property]['name'] ?? 'Unknown') . '</li>';
+    foreach ($propertiesByShop as $shopType => $props) {
+        $detailsHtml .= '<li>' . $shopType . ' :
+            <ul>';
+        foreach ($props as $property) {
+            $detailsHtml .= '<li>' . esc($properties[$property]['name'] ?? 'Unknown') . '</li>';
+        }
+        $detailsHtml .= '</ul>
+        </li>';
     }
     $detailsHtml .= '
             <li>Library name: <b><span id="library-name-display">' . esc($libraryName) . '</span></b></li>
@@ -87,9 +99,14 @@ Tags Renewal: <?= $siteCode ?? null ?>
     $detailsHtml .= '
         <b>2) Target Page(s)</b>
         <ul>';
-    foreach ($propertyIds as $property) {
-        $propIsShop = $propertiesModel->isShop($property);
-        $detailsHtml .= '<li>' . $propIsShop . ' : <a href="' . esc($properties[$property]['website'] ?? 'Unknown') . '" target="_blank">' . esc($properties[$property]['website'] ?? 'Unknown') . '</a></li>';
+    foreach ($propertiesByShop as $shopType => $props) {
+        $detailsHtml .= '<li>' . $shopType . ' :
+            <ul>';
+        foreach ($props as $property) {
+            $detailsHtml .= '<li><a href="' . esc($properties[$property]['website'] ?? 'Unknown') . '" target="_blank">' . esc($properties[$property]['website'] ?? 'Unknown') . '</a></li>';
+        }
+        $detailsHtml .= '</ul>
+        </li>';
     }
     $detailsHtml .= '</ul>';
     // Expiration Dates
@@ -261,7 +278,14 @@ Tags Renewal: <?= $siteCode ?? null ?>
                                                 </span>
                                             <?php endif; ?>
                                         </td>
-                                        <td><?= esc($nextExpDate) ?></td>
+                                        <td>
+                                            <div class="d-flex align-items-center gap-1">
+                                                <input type="text" name="tags[<?= $tag['id'] ?>][next_end_date]" class="form-control form-control-sm next-end-date-input" value="<?= date('Y-m-d', strtotime($nextExpDate)) ?>" style="width: 130px;" required>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary border-0 p-1" onclick="applyDateToAll(this)" title="Apply this date to all tags">
+                                                    <i class="bi bi-chevron-double-down"></i>
+                                                </button>
+                                            </div>
+                                        </td>
                                         <td class="text-center">
                                             <button type="button" class="btn btn-sm btn-outline-danger border-0" title="Remove" onclick="removeTagRow(this, <?= $tag['id'] ?>, '<?= esc($tag['name']) ?>')">
                                                 <i class="bi bi-trash"></i>
@@ -272,7 +296,6 @@ Tags Renewal: <?= $siteCode ?? null ?>
                                         <input type="hidden" name="tags[<?= $tag['id'] ?>][library_name]" class="library-name-input" value="<?= $libraryName ?>">
                                         <input type="hidden" name="tags[<?= $tag['id'] ?>][property_id]" value="<?= $tag['property_id'] ?>">
                                         <input type="hidden" name="tags[<?= $tag['id'] ?>][vendor_id]" value="<?= $tag['vendor_id'] ?>">
-                                        <input type="hidden" name="tags[<?= $tag['id'] ?>][next_end_date]" value="<?= $nextExpDate ?>">
                                     </tr>
                                 <?php endforeach; ?>
 
@@ -346,8 +369,16 @@ Tags Renewal: <?= $siteCode ?? null ?>
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
     $(document).ready(function() {
+        flatpickr(".next-end-date-input", {
+            dateFormat: "Y-m-d",
+            altInput: true,
+            altFormat: "d/m/Y",
+            allowInput: true
+        });
         $('#details').summernote({
             height: 360,
             toolbar: [
@@ -641,6 +672,20 @@ Tags Renewal: <?= $siteCode ?? null ?>
                 }
             }
         });
+    }
+
+    function applyDateToAll(btn) {
+        let inputEl = $(btn).siblings('.next-end-date-input')[0];
+        if (inputEl && inputEl._flatpickr) {
+            let selectedDate = inputEl._flatpickr.selectedDates[0];
+            if (selectedDate) {
+                $('.next-end-date-input').each(function() {
+                    if (this._flatpickr && this !== inputEl) {
+                        this._flatpickr.setDate(selectedDate);
+                    }
+                });
+            }
+        }
     }
 
 </script>
