@@ -261,7 +261,9 @@ Tags Renewal: <?= $siteCode ?? null ?>
                                                 </span>
                                             <?php endif; ?>
                                         </td>
-                                        <td><?= esc($nextExpDate) ?></td>
+                                        <td>
+                                            <input type="text" name="tags[<?= $tag['id'] ?>][next_end_date]" class="form-control form-control-sm next-end-date-input" value="<?= date('Y-m-d', strtotime($nextExpDate)) ?>" style="width: 130px;" required>
+                                        </td>
                                         <td class="text-center">
                                             <button type="button" class="btn btn-sm btn-outline-danger border-0" title="Remove" onclick="removeTagRow(this, <?= $tag['id'] ?>, '<?= esc($tag['name']) ?>')">
                                                 <i class="bi bi-trash"></i>
@@ -272,7 +274,6 @@ Tags Renewal: <?= $siteCode ?? null ?>
                                         <input type="hidden" name="tags[<?= $tag['id'] ?>][library_name]" class="library-name-input" value="<?= $libraryName ?>">
                                         <input type="hidden" name="tags[<?= $tag['id'] ?>][property_id]" value="<?= $tag['property_id'] ?>">
                                         <input type="hidden" name="tags[<?= $tag['id'] ?>][vendor_id]" value="<?= $tag['vendor_id'] ?>">
-                                        <input type="hidden" name="tags[<?= $tag['id'] ?>][next_end_date]" value="<?= $nextExpDate ?>">
                                     </tr>
                                 <?php endforeach; ?>
 
@@ -346,8 +347,16 @@ Tags Renewal: <?= $siteCode ?? null ?>
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
     $(document).ready(function() {
+        flatpickr(".next-end-date-input", {
+            dateFormat: "Y-m-d",
+            altInput: true,
+            altFormat: "d/m/Y",
+            allowInput: true
+        });
         $('#details').summernote({
             height: 360,
             toolbar: [
