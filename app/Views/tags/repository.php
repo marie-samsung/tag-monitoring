@@ -443,6 +443,13 @@ $hasActiveFilters = ($activeFiltersCount > 0) || !empty($_GET['keyword']);
                         placeholder="Search tag name..." value="<?= esc($_GET['keyword'] ?? '') ?>">
                 </div>
                 <div class="position-relative flex-grow-1" style="min-width: 200px;">
+                    <i class="bi bi-card-text text-muted position-absolute"
+                        style="left: 14px; top: 50%; transform: translateY(-50%); font-size: 0.9rem;"></i>
+                    <input type="text" name="conditions" class="form-control form-control-xs"
+                        style="height: 36px; padding-left: 36px !important; border-radius: 20px;"
+                        placeholder="Search conditions..." value="<?= esc($_GET['conditions'] ?? '') ?>">
+                </div>
+                <div class="position-relative flex-grow-1" style="min-width: 200px;">
                     <i class="bi bi-code-slash text-muted position-absolute"
                         style="left: 14px; top: 50%; transform: translateY(-50%); font-size: 0.9rem;"></i>
                     <input type="text" name="js_code" class="form-control form-control-xs"
@@ -663,6 +670,7 @@ $hasActiveFilters = ($activeFiltersCount > 0) || !empty($_GET['keyword']);
                                 Name <?= getSortIcon('name', $currentSortBy, $currentSortDir) ?>
                             </a>
                         </th>
+                        <th class="form-label-sm fw-semibold text-dark">Conditions</th>
                         <th class="form-label-sm fw-semibold text-dark">Code Snippet</th>
                         <th class="form-label-sm fw-semibold text-dark text-center">Actions</th>
                     </tr>
@@ -693,7 +701,7 @@ $hasActiveFilters = ($activeFiltersCount > 0) || !empty($_GET['keyword']);
                                 $currentGroup = $groupKey;
                                 ?>
                                 <tr style="background-color: var(--color-secondary-bg);">
-                                    <td colspan="4" class="py-3 px-4" style="border-top: 1px solid var(--color-border-input); border-bottom: 1px solid rgba(0,0,0,0.04);">
+                                    <td colspan="5" class="py-3 px-4" style="border-top: 1px solid var(--color-border-input); border-bottom: 1px solid rgba(0,0,0,0.04);">
                                         <div class="d-flex align-items-center gap-2">
                                             <span class="badge rounded-pill shadow-sm" style="<?= random_bg_style($subsidiary) ?>; padding: 6px 14px; font-weight: 600; font-size: 0.75rem; letter-spacing: 0.3px;">
                                                 <?= esc($subsidiary) ?>
@@ -735,6 +743,12 @@ $hasActiveFilters = ($activeFiltersCount > 0) || !empty($_GET['keyword']);
                                     </span>
                                 </td>
 
+                                <!-- Conditions -->
+                                <td class="form-label-sm" style="max-width: 250px;">
+                                    <div style="max-height: 60px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; word-break: break-all;">
+                                        <span class="small text-muted" style="white-space: pre-wrap;"><?= esc($tag['conditions']) ?: '-' ?></span>
+                                    </div>
+                                </td>
                                 <!-- Code Snippet -->
                                 <td class="form-label-sm" style="max-width: 300px;">
                                     <div style="max-height: 60px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; word-break: break-all;">

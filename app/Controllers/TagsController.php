@@ -34,6 +34,7 @@ class TagsController extends BaseController
 
         $filters = [
             'keyword' => $this->request->getGet('keyword'),
+            'conditions' => $this->request->getGet('conditions'),
             'status' => $status,
             'property_id' => $this->request->getGet('property_id'),
             'subsidiary_id' => $this->request->getGet('subsidiary_id'),
@@ -67,6 +68,7 @@ class TagsController extends BaseController
         $filters = [
             'keyword' => $this->request->getGet('keyword'),
             'js_code' => $this->request->getGet('js_code'),
+            'conditions' => $this->request->getGet('conditions'),
             'status' => $status,
             'property_id' => $this->request->getGet('property_id'),
             'subsidiary_id' => $this->request->getGet('subsidiary_id'),
