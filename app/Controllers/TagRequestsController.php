@@ -387,9 +387,9 @@ class TagRequestsController extends BaseController
         }
 
         $ticketId = $request['new_tag_ticket'] ?? $request['new_rule_ticket'];
-        $task = $taskModel->where('ticket_id', $ticketId)->first();
+        $tasks = $taskModel->where('ticket_id', $ticketId)->findAll();
 
-        if ($task) {
+        foreach ($tasks as $task) {
             if ($task['status'] != Constants::ACTIVITY_LOGS_STATUS_COMPLETED) {
                 $from = Constants::ACTIVITY_LOGS_STATUS[$task['status']];
                 $to = Constants::ACTIVITY_LOGS_STATUS[Constants::ACTIVITY_LOGS_STATUS_COMPLETED];
@@ -793,6 +793,34 @@ class TagRequestsController extends BaseController
         $status = $this->request->getPost('status');
         
         if ($model->update($id, ['status' => $status])) {
+            if ($status == Constants::STATUS_REQUEST_APPROVED) {
+                $request = $model->find($id);
+                $ticketId = $request['new_tag_ticket'] ?? $request['new_rule_ticket'];
+                
+                if ($ticketId) {
+                    $taskModel = new TasksModel();
+                    $tasks = $taskModel->where('ticket_id', $ticketId)->findAll();
+                    
+                    foreach ($tasks as $task) {
+                        if ($task['status'] != Constants::ACTIVITY_LOGS_STATUS_COMPLETED) {
+                            $commentsModel = new TaskCommentsModel();
+                            $from = Constants::ACTIVITY_LOGS_STATUS[$task['status']];
+                            $to = Constants::ACTIVITY_LOGS_STATUS[Constants::ACTIVITY_LOGS_STATUS_COMPLETED];
+
+                            $commentsModel->insert([
+                                'log_id' => $task['id'],
+                                'comment' => "Status updated from [{$from}] to [{$to}]",
+                                'commented_by' => session()->get('user_id') ?? 0,
+                                'type' => Constants::COMMENT_TYPE_UPDATE,
+                            ]);
+
+                            $taskModel->update($task['id'], [
+                                'status' => Constants::ACTIVITY_LOGS_STATUS_COMPLETED,
+                            ]);
+                        }
+                    }
+                }
+            }
             return $this->response->setJSON(['success' => true]);
         }
         return $this->response->setJSON(['success' => false, 'message' => 'Failed to update status']);
