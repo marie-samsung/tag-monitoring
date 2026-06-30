@@ -386,24 +386,33 @@ class TagRequestsController extends BaseController
                 ->with('error', "There were no tags associated with this request.");
         }
 
-        $ticketId = $request['new_tag_ticket'] ?? $request['new_rule_ticket'];
-        $task = $taskModel->where('ticket_id', $ticketId)->first();
+        $ticketIds = [];
+        if (!empty($request['new_tag_ticket'])) {
+            $ticketIds[] = $request['new_tag_ticket'];
+        }
+        if (!empty($request['new_rule_ticket'])) {
+            $ticketIds[] = $request['new_rule_ticket'];
+        }
+        
+        if (!empty($ticketIds)) {
+            $tasks = $taskModel->whereIn('ticket_id', $ticketIds)->findAll();
 
-        if ($task) {
-            if ($task['status'] != Constants::ACTIVITY_LOGS_STATUS_COMPLETED) {
-                $from = Constants::ACTIVITY_LOGS_STATUS[$task['status']];
-                $to = Constants::ACTIVITY_LOGS_STATUS[Constants::ACTIVITY_LOGS_STATUS_COMPLETED];
+            foreach ($tasks as $task) {
+                if ($task['status'] != Constants::ACTIVITY_LOGS_STATUS_COMPLETED) {
+                    $from = Constants::ACTIVITY_LOGS_STATUS[$task['status']];
+                    $to = Constants::ACTIVITY_LOGS_STATUS[Constants::ACTIVITY_LOGS_STATUS_COMPLETED];
 
-                $commentsModel->insert([
-                    'log_id' => $task['id'],
-                    'comment' => "Status updated from [{$from}] to [{$to}]",
-                    'commented_by' => session()->get('user_id'),
-                    'type' => Constants::COMMENT_TYPE_UPDATE,
-                ]);
+                    $commentsModel->insert([
+                        'log_id' => $task['id'],
+                        'comment' => "Status updated from [{$from}] to [{$to}]",
+                        'commented_by' => session()->get('user_id'),
+                        'type' => Constants::COMMENT_TYPE_UPDATE,
+                    ]);
 
-                $taskModel->update($task['id'], [
-                    'status' => Constants::ACTIVITY_LOGS_STATUS_COMPLETED,
-                ]);
+                    $taskModel->update($task['id'], [
+                        'status' => Constants::ACTIVITY_LOGS_STATUS_COMPLETED,
+                    ]);
+                }
             }
         }
 
@@ -417,9 +426,10 @@ class TagRequestsController extends BaseController
             'status' => Constants::STATUS_REQUEST_PUBLISHED,
         ]);
 
+        $ticketIdsStr = implode(', ', $ticketIds);
         return redirect()
             ->to('/tag-requests/')
-            ->with('success', "[{$ticketId}] Tag Request approved, and associated tags are now enabled.");
+            ->with('success', "[{$ticketIdsStr}] Tag Request approved, and associated tags are now enabled.");
     }
 
     public function exportAsExcel()
@@ -793,6 +803,41 @@ class TagRequestsController extends BaseController
         $status = $this->request->getPost('status');
         
         if ($model->update($id, ['status' => $status])) {
+            if ($status == Constants::STATUS_REQUEST_APPROVED || $status == Constants::STATUS_REQUEST_PUBLISHED) {
+                $request = $model->find($id);
+                
+                $ticketIds = [];
+                if (!empty($request['new_tag_ticket'])) {
+                    $ticketIds[] = $request['new_tag_ticket'];
+                }
+                if (!empty($request['new_rule_ticket'])) {
+                    $ticketIds[] = $request['new_rule_ticket'];
+                }
+                
+                if (!empty($ticketIds)) {
+                    $taskModel = new TasksModel();
+                    $tasks = $taskModel->whereIn('ticket_id', $ticketIds)->findAll();
+                    
+                    foreach ($tasks as $task) {
+                        if ($task['status'] != Constants::ACTIVITY_LOGS_STATUS_COMPLETED) {
+                            $commentsModel = new TaskCommentsModel();
+                            $from = Constants::ACTIVITY_LOGS_STATUS[$task['status']];
+                            $to = Constants::ACTIVITY_LOGS_STATUS[Constants::ACTIVITY_LOGS_STATUS_COMPLETED];
+
+                            $commentsModel->insert([
+                                'log_id' => $task['id'],
+                                'comment' => "Status updated from [{$from}] to [{$to}]",
+                                'commented_by' => session()->get('user_id') ?? 0,
+                                'type' => Constants::COMMENT_TYPE_UPDATE,
+                            ]);
+
+                            $taskModel->update($task['id'], [
+                                'status' => Constants::ACTIVITY_LOGS_STATUS_COMPLETED,
+                            ]);
+                        }
+                    }
+                }
+            }
             return $this->response->setJSON(['success' => true]);
         }
         return $this->response->setJSON(['success' => false, 'message' => 'Failed to update status']);
