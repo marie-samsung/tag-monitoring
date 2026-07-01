@@ -450,8 +450,8 @@ class TagRequestsController extends BaseController
         echo '<body><table border="1">';
 
         // Headers
-        $headers = [ 'Subsidiary', 'Property Name', 'Ticket ID', 'Ticket Type', 'Status', 'Created At' ];
-        
+        $headers = ['Subsidiary', 'Property Name', 'Ticket ID', 'Ticket Type', 'Status', 'Created At'];
+
         echo '<tr>';
         foreach ($headers as $header) {
             echo '<th style="background-color:#f2f2f2;">' . esc($header) . '</th>';
@@ -560,7 +560,7 @@ class TagRequestsController extends BaseController
             'description' => $description . '</ul></ol>',
             'subsidiary_id' => $property['subsidiary_id'],
             'team_id' => Constants::TEAM_MEDIA_TAGGING,
-            'project' => 'Generic',
+            'project' => 'New Request',
             'ticket_id' => $ticketId ?? null,
             'assignee' => session()->get('user_id') ?? 0,
             'status' => Constants::ACTIVITY_LOGS_STATUS_IMPLEMENTATION,
@@ -780,7 +780,7 @@ class TagRequestsController extends BaseController
     {
         $model = new TagRequestsModel();
         $propertyId = $this->request->getPost('property_id');
-        
+
         if ($model->update($id, ['property_id' => $propertyId])) {
             return $this->response->setJSON(['success' => true]);
         }
@@ -791,7 +791,7 @@ class TagRequestsController extends BaseController
     {
         $model = new TagRequestsModel();
         $status = $this->request->getPost('status');
-        
+
         if ($model->update($id, ['status' => $status])) {
             return $this->response->setJSON(['success' => true]);
         }
@@ -802,7 +802,7 @@ class TagRequestsController extends BaseController
     {
         $model = new TagRequestsModel();
         $type = $this->request->getPost('type');
-        
+
         if ($model->update($id, ['type' => $type])) {
             return $this->response->setJSON(['success' => true]);
         }
