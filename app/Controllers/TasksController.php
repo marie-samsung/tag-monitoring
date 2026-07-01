@@ -1057,12 +1057,15 @@ class TasksController extends BaseController
         }, $projectNames);
         $projectNames = array_unique($projectNames);
 
+        $progressPercentage = $model->getProjectProgress($projectName, $meMode);
+
         return view('tasks/project_spreadsheet', [
             'project_name' => $projectName,
             'tasks' => $tasks,
             'pager' => $model->pager,
             'project_names' => $projectNames,
             'me_mode' => $meMode,
+            'progress_percentage' => $progressPercentage,
         ]);
     }
 
