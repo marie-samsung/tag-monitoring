@@ -270,6 +270,29 @@ class TasksModel extends Model
         return $query->findAll();
     }
 
+    public function getProjectProgress($projectName, $meMode = false)
+    {
+        $this->applyRoleFilters();
+        $this->where('project', $projectName);
+
+        if ($meMode) {
+            $userId = session()->get('user_id');
+            if ($userId !== null) {
+                $this->where('assignee', $userId);
+            }
+        }
+        
+        $total = $this->countAllResults(false);
+        $this->where('status', Constants::ACTIVITY_LOGS_STATUS_COMPLETED);
+        $completed = $this->countAllResults();
+        
+        if ($total > 0) {
+            return round(($completed / $total) * 100);
+        }
+        
+        return 0;
+    }
+
     public function getDistinctProjects($userId = null)
     {
         $this->select('DISTINCT(project) as project_name')->orderBy('project', 'ASC');

@@ -7,7 +7,7 @@ class JiraHistoryModel extends Model
 {
     protected $table = 'jira_history';
     protected $primaryKey = 'id';
-    
+
     protected $allowedFields = [
         'ticket_id', // GTA-XXXXX
         'type',
@@ -26,16 +26,16 @@ class JiraHistoryModel extends Model
     {
         return $this->select()
             ->groupStart()
-                ->where('tag_id', $id)
-                ->orGroupStart()
-                    ->whereIn('type', [
-                        Constants::JIRA_TYPE_DATE_EXTENSION_RULE,
-                        Constants::JIRA_TYPE_NEW_TAG,
-                        Constants::JIRA_TYPE_NEW_RULE,
-                        Constants::JIRA_TYPE_UPDATE_RULE
-                    ])
-                    ->where("FIND_IN_SET('{$id}', comments) >", 0)
-                ->groupEnd()
+            ->where('tag_id', $id)
+            ->orGroupStart()
+            ->whereIn('type', [
+                Constants::JIRA_TYPE_DATE_EXTENSION_RULE,
+                Constants::JIRA_TYPE_NEW_TAG,
+                Constants::JIRA_TYPE_NEW_RULE,
+                Constants::JIRA_TYPE_UPDATE_RULE
+            ])
+            ->where("FIND_IN_SET('{$id}', comments) >", 0)
+            ->groupEnd()
             ->groupEnd()
             ->orderBy('created_at', 'DESC')
             ->findAll();
@@ -53,10 +53,22 @@ class JiraHistoryModel extends Model
     {
         return $this->select()
             ->groupStart()
-                ->where('tag_id', $id)
-                ->orWhere("FIND_IN_SET('{$id}', comments) >", 0)
+            ->where('tag_id', $id)
+            ->orWhere("FIND_IN_SET('{$id}', comments) >", 0)
             ->groupEnd()
             ->where('type', Constants::JIRA_TYPE_DATE_EXTENSION_RULE)
+            ->orderBy('created_at', 'DESC')
+            ->first();
+    }
+
+    public function getRelatedTagUpdateRule(int $id)
+    {
+        return $this->select()
+            ->groupStart()
+            ->where('tag_id', $id)
+            ->orWhere("FIND_IN_SET('{$id}', comments) >", 0)
+            ->groupEnd()
+            ->where('type', Constants::JIRA_TYPE_UPDATE_RULE)
             ->orderBy('created_at', 'DESC')
             ->first();
     }
@@ -65,12 +77,32 @@ class JiraHistoryModel extends Model
     {
         return $this->select()
             ->groupStart()
-                ->where('tag_id', $id)
-                ->orWhere("FIND_IN_SET('{$id}', comments) >", 0)
+            ->where('tag_id', $id)
+            ->orWhere("FIND_IN_SET('{$id}', comments) >", 0)
             ->groupEnd()
             ->whereIn('type', [Constants::JIRA_TYPE_NEW_TAG, Constants::JIRA_TYPE_NEW_RULE])
             ->orderBy('created_at', 'DESC')
             ->first();
+    }
+
+    public function getBatchRelatedTickets(array $tagIds, array $types)
+    {
+        if (empty($tagIds)) return [];
+
+        $builder = $this->builder();
+        $builder->select('tag_id, comments, ticket_id, type, created_at');
+        
+        $builder->groupStart();
+        $builder->whereIn('tag_id', $tagIds);
+        foreach ($tagIds as $id) {
+            $builder->orWhere("FIND_IN_SET('{$id}', comments) >", 0);
+        }
+        $builder->groupEnd();
+        
+        $builder->whereIn('type', $types);
+        $builder->orderBy('created_at', 'ASC');
+        
+        return $builder->get()->getResultArray();
     }
 
     public function getLatestSubsidiary(int $id)
@@ -112,7 +144,7 @@ class JiraHistoryModel extends Model
 
         // Use a subquery to fetch the latest entry per ticket_id without triggering ONLY_FULL_GROUP_BY
         $this->where('id IN (SELECT MAX(id) FROM jira_history GROUP BY ticket_id, property_id)', null, false);
-        
+
         $sortBy = $filters['sort_by'] ?? null;
         $sortDir = $filters['sort_dir'] ?? 'desc';
         if (!in_array(strtolower($sortDir), ['asc', 'desc'])) {

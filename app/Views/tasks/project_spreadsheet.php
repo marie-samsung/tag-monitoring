@@ -319,8 +319,14 @@ $isAdmin = (int)session()->get('user_role') === Constants::USER_ROLE_ADMIN || (i
             </a>
             <div>
                 <h2 class="mb-0 fw-bold">Project: <?= esc($project_name) ?></h2>
-                <p class="text-secondary small mb-0">Spreadsheet-style task board listing all logs and latest updates
+                <p class="text-secondary small mb-2">Spreadsheet-style task board listing all logs and latest updates
                     for this project.</p>
+                <div class="d-flex align-items-center gap-2 mt-1">
+                    <div class="progress" style="height: 6px; width: 220px; border-radius: 6px; background-color: #e5e5ea;">
+                        <div class="progress-bar <?= isset($progress_percentage) && $progress_percentage == 100 ? 'bg-success' : 'bg-primary' ?>" role="progressbar" style="width: <?= esc($progress_percentage ?? 0) ?>%; border-radius: 6px; <?= (isset($progress_percentage) && $progress_percentage < 100) ? 'background-color: #0071E3;' : '' ?>" aria-valuenow="<?= esc($progress_percentage ?? 0) ?>" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <span class="small text-secondary fw-semibold" style="font-size: 0.75rem;"><?= esc($progress_percentage ?? 0) ?>% Completed</span>
+                </div>
             </div>
         </div>
         <div class="d-flex align-items-center gap-2">

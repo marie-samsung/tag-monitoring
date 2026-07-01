@@ -607,7 +607,17 @@ class TagsController extends BaseController
                 $propertyId = $tag['property_id'];
             }
 
-            $this->saveJiraHistory($tag, $info['ticket_id'], $tagIds, false);
+            $updated = $model->update(
+                $tag['id'],
+                [
+                    'requested_date' => date('Y-m-d', strtotime($tag['next_end_date'])),
+                    'status' => Constants::STATUS_PENDING_VERIFICATION,
+                ]
+            );
+
+            if ($updated) {
+                $this->saveJiraHistory($tag, $info['ticket_id'], $tagIds, false);
+            }
         }
 
         $this->addTask($propertyId, $tagIds, $info, false);
@@ -686,7 +696,7 @@ class TagsController extends BaseController
             'description' => $description . '</ul>',
             'subsidiary_id' => $property['subsidiary_id'],
             'team_id' => Constants::TEAM_MEDIA_TAGGING,
-            'project' => 'Generic',
+            'project' => $isRenewal ? 'Date Extension' : 'Maintenance',
             'ticket_id' => $info['ticket_id'] ?? null,
             'assignee' => session()->get('user_id') ?? 0,
             'status' => Constants::ACTIVITY_LOGS_STATUS_IMPLEMENTATION,
@@ -731,9 +741,16 @@ class TagsController extends BaseController
 
         // Headers
         $headers = [
-            'Subsidiary', 'Property Name', 'Tag Name', 'Days', 'AL End Date', 'Requested Date', 'Updated', 'Status'
+            'Subsidiary',
+            'Property Name',
+            'Tag Name',
+            'Days',
+            'AL End Date',
+            'Requested Date',
+            'Updated',
+            'Status'
         ];
-        
+
         echo '<tr>';
         foreach ($headers as $header) {
             echo '<th style="background-color:#f2f2f2;">' . esc($header) . '</th>';
@@ -793,7 +810,7 @@ class TagsController extends BaseController
         require_once APPPATH . 'Libraries/SimpleXLSX.php';
 
         $xlsx = \Shuchkin\SimpleXLSX::parse($tempFilePath);
-        
+
         if (!$xlsx) {
             if (file_exists($tempFilePath)) {
                 unlink($tempFilePath);
@@ -802,10 +819,10 @@ class TagsController extends BaseController
         }
 
         $rows = $xlsx->rows();
-        
+
         $tagsModel = new TagsModel();
         $propertiesModel = new PropertiesModel();
-        
+
         $isFirstRow = true;
         $extractedRows = [];
 
@@ -822,11 +839,11 @@ class TagsController extends BaseController
 
             // Ensure we have at least 5 columns
             if (count($row) >= 5) {
-                $propertyName = trim((string)($row[0] ?? ''));
-                $tagName = trim((string)($row[1] ?? ''));
-                $renew = trim((string)($row[2] ?? ''));
-                $justification = trim((string)($row[3] ?? ''));
-                $duration = trim((string)($row[4] ?? ''));
+                $propertyName = trim((string) ($row[0] ?? ''));
+                $tagName = trim((string) ($row[1] ?? ''));
+                $renew = trim((string) ($row[2] ?? ''));
+                $justification = trim((string) ($row[3] ?? ''));
+                $duration = trim((string) ($row[4] ?? ''));
 
                 if (empty($propertyName) && empty($tagName)) {
                     continue;
@@ -838,8 +855,8 @@ class TagsController extends BaseController
                     $status = 'Property Not Found';
                 } else {
                     $tag = $tagsModel->where('property_id', $property['id'])
-                                     ->where('name', $tagName)
-                                     ->first();
+                        ->where('name', $tagName)
+                        ->first();
                     if (!$tag) {
                         $status = 'Tag Not Found';
                     }
@@ -889,12 +906,12 @@ class TagsController extends BaseController
         }
 
         $rows = $xlsx->rows();
-        
+
         $tagsModel = new TagsModel();
         $propertiesModel = new PropertiesModel();
         $renewalJustificationModel = new \App\Models\RenewalJustificationModel();
         $userId = session()->get('user_id') ?? 0;
-        
+
         $isFirstRow = true;
         $savedCount = 0;
 
@@ -909,19 +926,19 @@ class TagsController extends BaseController
             }
 
             if (count($row) >= 5) {
-                $propertyName = trim((string)($row[0] ?? ''));
-                $tagName = trim((string)($row[1] ?? ''));
-                $renew = trim((string)($row[2] ?? ''));
-                $justification = trim((string)($row[3] ?? ''));
-                $duration = trim((string)($row[4] ?? ''));
+                $propertyName = trim((string) ($row[0] ?? ''));
+                $tagName = trim((string) ($row[1] ?? ''));
+                $renew = trim((string) ($row[2] ?? ''));
+                $justification = trim((string) ($row[3] ?? ''));
+                $duration = trim((string) ($row[4] ?? ''));
 
                 if (!empty($propertyName) && !empty($tagName)) {
                     $property = $propertiesModel->where('name', $propertyName)->first();
                     if ($property) {
                         $tag = $tagsModel->where('property_id', $property['id'])
-                                         ->where('name', $tagName)
-                                         ->first();
-                        
+                            ->where('name', $tagName)
+                            ->first();
+
                         if ($tag) {
                             $renewalJustificationModel->insert([
                                 'tag_id' => $tag['id'],
@@ -948,15 +965,15 @@ class TagsController extends BaseController
     public function renewalJustifications()
     {
         $justificationModel = new \App\Models\RenewalJustificationModel();
-        
+
         $latestIdsQuery = $justificationModel->db->table('renewal_justification')
             ->select('MAX(id) as id')
             ->groupBy('tag_id')
             ->get()
             ->getResultArray();
-            
+
         $latestIds = array_column($latestIdsQuery, 'id');
-        
+
         $justifications = [];
         if (!empty($latestIds)) {
             $justifications = $justificationModel
@@ -970,7 +987,7 @@ class TagsController extends BaseController
                 ->orderBy('tags.name', 'ASC')
                 ->findAll();
         }
-        
+
         $grouped = [];
         foreach ($justifications as $j) {
             $grouped[$j['subsidiary_id']][] = $j;
@@ -992,32 +1009,32 @@ class TagsController extends BaseController
     {
         $justificationModel = new \App\Models\RenewalJustificationModel();
         $justification = $justificationModel->find($id);
-        
+
         if (!$justification) {
             return redirect()->to('/tags/renewal-justifications')->with('error', 'Renewal justification not found.');
         }
-        
+
         $tagsModel = new TagsModel();
         $tag = $tagsModel->find($justification['tag_id']);
-        
+
         if ($this->request->getMethod() === 'GET') {
             return view('tags/update_renewal_justification', [
                 'justification' => $justification,
                 'tag' => $tag
             ]);
         }
-        
+
         $post = $this->request->getPost();
-        
+
         $updateData = [
             'renew' => trim($post['renew']),
             'justification' => trim($post['justification']),
             'duration' => trim($post['duration']),
             'updated_by' => session()->get('user_id') ?? 0
         ];
-        
+
         $justificationModel->update($id, $updateData);
-        
+
         return redirect()->to('/tags/renewal-justifications')->with('success', 'Renewal justification updated successfully.');
     }
     public function saveJsCode($id)

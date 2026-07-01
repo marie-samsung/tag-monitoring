@@ -800,6 +800,60 @@ $hasActiveFilters = ($activeFiltersCount > 0) || !empty($_GET['keyword']);
                     <?php
                     $currentQuery = $_SERVER['QUERY_STRING'] ?? '';
                     $returnUrlList = site_url('tags') . ($currentQuery ? '?' . $currentQuery : '');
+                    
+                    // --- Preload data to fix N+1 query problem ---
+                    $ticketMap = [];
+                    $taskMap = [];
+                    if (!empty($tags)) {
+                        $tagIds = array_column($tags, 'id');
+                        
+                        $tickets = $jiraHistoryModel->getBatchRelatedTickets($tagIds, [
+                            Constants::JIRA_TYPE_DATE_EXTENSION_RULE,
+                            Constants::JIRA_TYPE_UPDATE_RULE
+                        ]);
+                        
+                        $tempTicketMap = [];
+                        foreach ($tickets as $t) {
+                            $tTags = [];
+                            if ($t['tag_id']) $tTags[] = $t['tag_id'];
+                            if ($t['comments']) {
+                                $tTags = array_merge($tTags, explode(',', $t['comments']));
+                            }
+                            $tTags = array_unique($tTags);
+                            
+                            foreach ($tTags as $id) {
+                                if (!isset($tempTicketMap[$id])) {
+                                    $tempTicketMap[$id] = ['DATE_EXT' => null, 'UPDATE' => null];
+                                }
+                                if ($t['type'] == Constants::JIRA_TYPE_DATE_EXTENSION_RULE) {
+                                    $tempTicketMap[$id]['DATE_EXT'] = $t['ticket_id'];
+                                } else if ($t['type'] == Constants::JIRA_TYPE_UPDATE_RULE) {
+                                    $tempTicketMap[$id]['UPDATE'] = $t['ticket_id'];
+                                }
+                            }
+                        }
+                        
+                        $ticketIdsToFetch = [];
+                        foreach ($tagIds as $id) {
+                            $tid = null;
+                            if (isset($tempTicketMap[$id])) {
+                                $tid = $tempTicketMap[$id]['DATE_EXT'] ?? $tempTicketMap[$id]['UPDATE'];
+                            }
+                            $ticketMap[$id] = $tid;
+                            if ($tid) {
+                                $ticketIdsToFetch[] = $tid;
+                            }
+                        }
+                        
+                        if (!empty($ticketIdsToFetch)) {
+                            $tasks = $tasksModel->whereIn('ticket_id', array_unique($ticketIdsToFetch))->findAll();
+                            foreach ($tasks as $task) {
+                                $taskMap[$task['ticket_id']] = $task;
+                            }
+                        }
+                    }
+                    // ---------------------------------------------
+                    
                     if (empty($tags)): ?>
                         <tr>
                             <td colspan="10" class="text-center py-5 text-muted">
@@ -811,8 +865,8 @@ $hasActiveFilters = ($activeFiltersCount > 0) || !empty($_GET['keyword']);
                     <?php else: ?>
                         <?php
                         foreach ($tags as $tag):
-                            $ticketId = $jiraHistoryModel->getRelatedTagDateExtension($tag['id'])['ticket_id'] ?? null;
-                            $relatedTask = $ticketId ? $tasksModel->where('ticket_id', $ticketId)->first() : null;
+                            $ticketId = $ticketMap[$tag['id']] ?? null;
+                            $relatedTask = $ticketId ? ($taskMap[$ticketId] ?? null) : null;
                             $subsidiaryId = $properties[$tag['property_id']]['subsidiary_id'];
                             $subsidiary = $subsidiaries[$subsidiaryId];
                             ?>

@@ -367,8 +367,10 @@ class DashboardController extends BaseController
             ->getResultArray();
 
         $subsidiaryDistribution = [];
+        $subsidiaryIds = [];
         foreach (Constants::SUBSIDIARIES as $val => $label) {
             $subsidiaryDistribution[$label] = 0;
+            $subsidiaryIds[$label] = $val;
         }
         foreach ($subsidiaryCounts as $row) {
             $label = Constants::SUBSIDIARIES[$row['subsidiary_id']] ?? null;
@@ -377,10 +379,11 @@ class DashboardController extends BaseController
             }
         }
         $data['subsidiary_distribution'] = $subsidiaryDistribution;
+        $data['subsidiary_ids'] = $subsidiaryIds;
 
         // 5. Vendor Distribution (Top 10)
         $vendorCounts = $db->table('tags')
-            ->select('vendors.name as vendor_name, COUNT(tags.id) as count')
+            ->select('tags.vendor_id, vendors.name as vendor_name, COUNT(tags.id) as count')
             ->join('vendors', 'vendors.id = tags.vendor_id', 'left')
             ->where('tags.deleted_at', null)
             ->groupBy('tags.vendor_id')
@@ -390,11 +393,14 @@ class DashboardController extends BaseController
             ->getResultArray();
 
         $vendorDistribution = [];
+        $vendorIds = [];
         foreach ($vendorCounts as $row) {
             $name = $row['vendor_name'] ?: 'Unknown';
             $vendorDistribution[$name] = (int)$row['count'];
+            $vendorIds[$name] = $row['vendor_id'];
         }
         $data['vendor_distribution'] = $vendorDistribution;
+        $data['vendor_ids'] = $vendorIds;
 
         // 6. Tag Expiration Forecast (Next 45 Days)
         $forecastDates = [];
