@@ -220,13 +220,13 @@ Tags Renewal: <?= $siteCode ?? null ?>
             </div>
 
             <!-- Tags List Table -->
-            <div class="d-flex flex-column flex-grow-1">
+            <div class="d-flex flex-column mb-4">
                 <h5 class="mb-3 text-primary d-flex align-items-center gap-2 fw-bold">
                     <i class="bi bi-tags-fill"></i>
                     <span>Tags List</span>
                 </h5>
                 
-                <div class="apple-table-container mb-4 flex-grow-1">
+                <div class="apple-table-container flex-grow-1">
                     <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0 apple-table">
                             <thead>
@@ -280,9 +280,12 @@ Tags Renewal: <?= $siteCode ?? null ?>
                                         </td>
                                         <td>
                                             <div class="d-flex align-items-center gap-1">
-                                                <input type="text" name="tags[<?= $tag['id'] ?>][next_end_date]" class="form-control form-control-sm next-end-date-input" value="<?= date('Y-m-d', strtotime($nextExpDate)) ?>" style="width: 130px;" required>
+                                                <input type="text" name="tags[<?= $tag['id'] ?>][next_end_date]" class="form-control form-control-sm next-end-date-input" value="<?= date('Y-m-d 00:00', strtotime($nextExpDate)) ?>" style="width: 150px;" required>
                                                 <button type="button" class="btn btn-sm btn-outline-secondary border-0 p-1" onclick="applyDateToAll(this)" title="Apply this date to all tags">
                                                     <i class="bi bi-chevron-double-down"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary border-0 p-1" onclick="copyNextEndDate(this)" title="Copy Date">
+                                                    <i class="bi bi-copy"></i>
                                                 </button>
                                             </div>
                                         </td>
@@ -302,6 +305,71 @@ Tags Renewal: <?= $siteCode ?? null ?>
                                 <input type="hidden" name="info[ticket_id]" id="info_ticket_id" value="<?= $ticket_id ?>">
                                 <input type="hidden" name="info[al_end_date]" value="<?= $nextExpDate ?>">
                                 <input type="hidden" name="info[library_name]" class="library-name-input" value="<?= $libraryName ?>">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Past JIRA tickets -->
+            <div class="d-flex flex-column flex-grow-1">
+                <h5 class="mb-3 text-primary d-flex align-items-center gap-2 fw-bold">
+                    <i class="bi bi-clock-history"></i>
+                    <span>Past JIRA tickets</span>
+                </h5>
+                
+                <div class="apple-table-container mb-4 flex-grow-1">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0 apple-table">
+                            <thead>
+                                <tr>
+                                    <th class="form-label-sm fw-semibold">Ticket ID</th>
+                                    <th class="form-label-sm fw-semibold">Type</th>
+                                    <th class="form-label-sm fw-semibold">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php
+                                $pastJiraTickets = [];
+                                $uniqueTicketIds = [];
+                                foreach ($tags as $t) {
+                                    $relatedTickets = $jiraHistoryModel->getRelatedTags($t['id']);
+                                    $dateExtTickets = array_filter($relatedTickets, function($ticket) {
+                                        return $ticket['type'] == Constants::JIRA_TYPE_DATE_EXTENSION_RULE;
+                                    });
+                                    if (!empty($dateExtTickets)) {
+                                        foreach ($dateExtTickets as $ticket) {
+                                            if (!in_array($ticket['ticket_id'], $uniqueTicketIds)) {
+                                                $uniqueTicketIds[] = $ticket['ticket_id'];
+                                                $pastJiraTickets[] = $ticket;
+                                                if (count($pastJiraTickets) >= 3) {
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                        break;
+                                    }
+                                }
+                                ?>
+                                <?php if (empty($pastJiraTickets)): ?>
+                                    <tr>
+                                        <td colspan="3" class="text-center py-3 text-muted">
+                                            No past JIRA tickets found for Date Extension.
+                                        </td>
+                                    </tr>
+                                <?php else: ?>
+                                    <?php foreach ($pastJiraTickets as $jira): ?>
+                                        <tr>
+                                            <td>
+                                                <a href="<?= Constants::JIRA_LINK ?><?= $jira['ticket_id'] ?: '#' ?>" target="_blank" class="apple-link-dark text-decoration-none fw-semibold">
+                                                    <?= esc($jira['ticket_id']) ?>
+                                                </a>
+                                            </td>
+                                            <td><?= esc(Constants::JIRA_TICKET_TYPES[$jira['type']] ?? $jira['type']) ?></td>
+                                            <td><?= esc(date('d M Y', strtotime($jira['created_at']))) ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
                             </tbody>
                         </table>
                     </div>
@@ -374,9 +442,9 @@ Tags Renewal: <?= $siteCode ?? null ?>
 <script>
     $(document).ready(function() {
         flatpickr(".next-end-date-input", {
-            dateFormat: "Y-m-d",
+            dateFormat: "Y-m-d 00:00",
             altInput: true,
-            altFormat: "d/m/Y",
+            altFormat: "Y-m-d 00:00",
             allowInput: true
         });
         $('#details').summernote({
@@ -685,6 +753,34 @@ Tags Renewal: <?= $siteCode ?? null ?>
                     }
                 });
             }
+        }
+    }
+
+    function copyNextEndDate(button) {
+        let inputEl = $(button).siblings('input[name$="[next_end_date]"]')[0];
+        let dateVal = inputEl ? inputEl.value : '';
+
+        const temp = document.createElement('textarea');
+        temp.value = dateVal;
+
+        temp.style.position = 'fixed';
+        temp.style.left = '-9999px';
+
+        document.body.appendChild(temp);
+
+        temp.focus();
+        temp.select();
+
+        document.execCommand('copy');
+
+        document.body.removeChild(temp);
+
+        const icon = button.querySelector('i');
+        if (icon) {
+            icon.className = 'bi bi-check-lg text-success';
+            setTimeout(() => {
+                icon.className = 'bi bi-copy';
+            }, 1200);
         }
     }
 

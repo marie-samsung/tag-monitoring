@@ -38,7 +38,7 @@ class TagsModel extends Model
     public function filterTags($filters = [], $paginate = 0)
     {
         $this->select('tags.*')
-             ->join('properties', 'properties.id = tags.property_id', 'left');
+            ->join('properties', 'properties.id = tags.property_id', 'left');
 
         if (!empty($filters['keyword'])) {
             $this->like('tags.name', $filters['keyword']);
@@ -64,8 +64,8 @@ class TagsModel extends Model
                     Constants::STATUS_ENABLED,
                     Constants::STATUS_UPDATED_IN_AL
                 ])
-                ->where('tags.al_end_date >=', $base)
-                ->where('tags.al_end_date <=', $expiring);
+                    ->where('tags.al_end_date >=', $base)
+                    ->where('tags.al_end_date <=', $expiring);
             } else if (is_array($filters['status'])) {
                 $this->whereIn('tags.status', $filters['status']);
             } else {
@@ -141,7 +141,9 @@ class TagsModel extends Model
                         WHEN tags.status = 4 THEN 6
                         WHEN tags.status = 1 THEN 7
                         ELSE 8
-                    END)', 'ASC', false
+                    END)',
+                    'ASC',
+                    false
                 );
                 $this->orderBy('tags.al_end_date', 'ASC');
                 $this->orderBy('properties.id', 'ASC');
@@ -168,8 +170,8 @@ class TagsModel extends Model
     public function countActiveTags()
     {
         return $this->whereIn('status', [
-            Constants::STATUS_ENABLED, 
-            Constants::STATUS_PENDING_VERIFICATION, 
+            Constants::STATUS_ENABLED,
+            Constants::STATUS_PENDING_VERIFICATION,
             Constants::STATUS_UPDATED_IN_AL
         ])->countAllResults();
     }
@@ -186,9 +188,9 @@ class TagsModel extends Model
         $expiring = date('Y-m-d', strtotime('+15 days'));
 
         return $this->whereIn('status', [
-                Constants::STATUS_ENABLED,
-                Constants::STATUS_UPDATED_IN_AL
-            ])
+            Constants::STATUS_ENABLED,
+            Constants::STATUS_UPDATED_IN_AL
+        ])
             ->where('al_end_date >=', $base)
             ->where('al_end_date <=', $expiring)
             ->countAllResults();
