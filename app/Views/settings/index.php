@@ -280,6 +280,7 @@ foreach ($roles as $r) {
                                     'vendors' => ['label' => 'Vendors', 'desc' => 'List, create, edit, and audit details of third-party tags vendors.'],
                                     'jira' => ['label' => 'Jira Tickets Log', 'desc' => 'Log, download, and map JIRA tasks, linking tags to ticketing systems.'],
                                     'tasks' => ['label' => 'Workspace Tasks & Projects', 'desc' => 'Plan team projects and task assignments in inline-editable sprint views.'],
+                                    'reports' => ['label' => 'Weekly Reports', 'desc' => 'Generate and export weekly performance reports of tags, requests, and tasks.'],
                                     'settings' => ['label' => 'Settings Administration', 'desc' => 'Superuser settings panel to manage users, roles, and create system backups.'],
                                 ];
 

@@ -7,16 +7,51 @@ $uri = service('uri');
 // Build the array of all permitted menu items in order
 $menuItems = [];
 
-// 1. Dashboard
+// 1. Dashboard & Reports Dropdown
+$hasReportsPermission = $permissions['reports'] ?? false;
 if ($permissions['dashboard'] ?? false) {
+    if ($hasReportsPermission) {
+        $menuItems[] = [
+            'type' => 'dropdown',
+            'id' => 'navbarDashboard',
+            'label' => 'Dashboard',
+            'icon' => 'bi bi-grid-1x2-fill',
+            'active' => ($segment === 'dashboard' || $segment === 'reports'),
+            'subItems' => [
+                [
+                    'label' => 'Overview',
+                    'icon' => 'bi bi-grid-1x2-fill text-primary',
+                    'url' => site_url('/dashboard'),
+                    'active' => ($segment === 'dashboard'),
+                ],
+                [
+                    'label' => 'Weekly Reports',
+                    'icon' => 'bi bi-file-earmark-bar-graph-fill text-info',
+                    'url' => site_url('/reports'),
+                    'active' => ($segment === 'reports'),
+                ]
+            ],
+        ];
+    } else {
+        $menuItems[] = [
+            'type' => 'link',
+            'id' => 'navDashboard',
+            'label' => 'Dashboard',
+            'icon' => 'bi bi-grid-1x2-fill',
+            'dropdownIcon' => 'bi bi-grid-1x2-fill text-secondary',
+            'url' => site_url('/dashboard'),
+            'active' => ($segment === 'dashboard'),
+        ];
+    }
+} elseif ($hasReportsPermission) {
     $menuItems[] = [
         'type' => 'link',
-        'id' => 'navDashboard',
-        'label' => 'Dashboard',
-        'icon' => 'bi bi-grid-1x2-fill',
-        'dropdownIcon' => 'bi bi-grid-1x2-fill text-secondary',
-        'url' => site_url('/dashboard'),
-        'active' => ($segment === 'dashboard'),
+        'id' => 'navReports',
+        'label' => 'Weekly Reports',
+        'icon' => 'bi bi-file-earmark-bar-graph-fill',
+        'dropdownIcon' => 'bi bi-file-earmark-bar-graph-fill text-info',
+        'url' => site_url('/reports'),
+        'active' => ($segment === 'reports'),
     ];
 }
 

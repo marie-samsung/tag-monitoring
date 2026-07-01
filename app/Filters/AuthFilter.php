@@ -82,6 +82,10 @@ class AuthFilter implements FilterInterface
                 foreach ($dbPermissions as $row) {
                     $permissions[$row['permission_key']] = (bool)$row['permission_value'];
                 }
+                // Fallback for reports permission if not in DB role_permissions yet
+                if (!isset($permissions['reports'])) {
+                    $permissions['reports'] = ($roleId === 1 || $roleId === 3);
+                }
             } else {
                 // Fallback to static constants configuration
                 $permissions = Constants::USER_ROLES_ACCESS[$roleId] ?? [];
@@ -101,7 +105,7 @@ class AuthFilter implements FilterInterface
 
         // If a segment matches one of our role-based keys, enforce authorization
         if ($segment !== '') {
-            $restrictedPages = ['dashboard', 'tags', 'tag-requests', 'properties', 'vendors', 'jira', 'tasks', 'settings'];
+            $restrictedPages = ['dashboard', 'tags', 'tag-requests', 'properties', 'vendors', 'jira', 'tasks', 'settings', 'reports'];
             
             if (in_array($segment, $restrictedPages, true)) {
                 $permissions = session()->get('permissions') ?? [];
@@ -187,11 +191,11 @@ class AuthFilter implements FilterInterface
             // Seed initial permissions from modified Constants
             $initialPermissions = [
                 // Media Tagging (1)
-                1 => ['dashboard' => 1, 'tags' => 1, 'tag-requests' => 1, 'properties' => 1, 'vendors' => 1, 'jira' => 1, 'tasks' => 1, 'settings' => 0],
+                1 => ['dashboard' => 1, 'tags' => 1, 'tag-requests' => 1, 'properties' => 1, 'vendors' => 1, 'jira' => 1, 'tasks' => 1, 'settings' => 0, 'reports' => 1],
                 // Martech (2)
-                2 => ['dashboard' => 1, 'tags' => 0, 'tag-requests' => 0, 'properties' => 0, 'vendors' => 0, 'jira' => 0, 'tasks' => 1, 'settings' => 0],
+                2 => ['dashboard' => 1, 'tags' => 0, 'tag-requests' => 0, 'properties' => 0, 'vendors' => 0, 'jira' => 0, 'tasks' => 1, 'settings' => 0, 'reports' => 0],
                 // Admin (3)
-                3 => ['dashboard' => 1, 'tags' => 1, 'tag-requests' => 1, 'properties' => 1, 'vendors' => 1, 'jira' => 1, 'tasks' => 1, 'settings' => 1],
+                3 => ['dashboard' => 1, 'tags' => 1, 'tag-requests' => 1, 'properties' => 1, 'vendors' => 1, 'jira' => 1, 'tasks' => 1, 'settings' => 1, 'reports' => 1],
             ];
 
             foreach ($initialPermissions as $roleId => $perms) {

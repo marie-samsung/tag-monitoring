@@ -163,7 +163,7 @@ class SettingsController extends BaseController
         $permissionsGrid = $this->request->getPost('permissions') ?? [];
 
         // All controlled modules list
-        $allModules = ['dashboard', 'tags', 'tag-requests', 'properties', 'vendors', 'jira', 'tasks', 'settings'];
+        $allModules = ['dashboard', 'tags', 'tag-requests', 'properties', 'vendors', 'jira', 'tasks', 'settings', 'reports'];
         
         // Fetch all dynamic roles from DB
         $roles = $db->table('roles')->get()->getResultArray();
@@ -232,7 +232,7 @@ class SettingsController extends BaseController
         $newRoleId = $db->insertID();
 
         // Initialize default permissions (dashboard enabled, others disabled)
-        $allModules = ['dashboard', 'tags', 'tag-requests', 'properties', 'vendors', 'jira', 'tasks', 'settings'];
+        $allModules = ['dashboard', 'tags', 'tag-requests', 'properties', 'vendors', 'jira', 'tasks', 'settings', 'reports'];
         foreach ($allModules as $module) {
             $db->table('role_permissions')->insert([
                 'role_id'          => $newRoleId,

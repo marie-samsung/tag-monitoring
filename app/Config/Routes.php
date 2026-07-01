@@ -128,3 +128,9 @@ $routes->group('profile', function ($routes) {
     $routes->post('update', 'ProfileController::update');
 });
 
+$routes->group('reports', function ($routes) {
+    $routes->get('/', 'ReportsController::index');
+    $routes->get('export/excel', 'ReportsController::exportExcel');
+    $routes->get('export/pdf', 'ReportsController::exportPDF');
+});
+
