@@ -49,6 +49,8 @@
             }
         }
     }
+    $sysSettings = \App\Controllers\SettingsController::getSystemSettings();
+    $hideAssigneeSystemWide = $sysSettings['hide_assignee_system_wide'] ?? false;
 ?>
 
 <?= csrf_field() ?>
@@ -241,6 +243,7 @@
                             </option>
                         <?php endforeach; ?>
                     </select>
+                    <?php if (!$hideAssigneeSystemWide): ?>
                     <select class="badge status-select-badge <?= assignee_class($log['assignee']) ?> assignee-select" data-log-id="<?= $log['id'] ?>" title="Assigned To">
                         <?php foreach (Constants::USERS as $val => $lbl): ?>
                             <option value="<?= $val ?>" <?= $log['assignee'] == $val ? 'selected' : '' ?> class="bg-white text-dark text-start">
@@ -248,6 +251,7 @@
                             </option>
                         <?php endforeach; ?>
                     </select>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>

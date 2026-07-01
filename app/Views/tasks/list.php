@@ -108,6 +108,9 @@ Tasks
     if ($isDWF) {
         $allFilterKeys[] = 'campaign_status';
     }
+
+    $sysSettings = \App\Controllers\SettingsController::getSystemSettings();
+    $hideAssigneeSystemWide = $sysSettings['hide_assignee_system_wide'] ?? false;
 ?>
 
 <?= csrf_field() ?>
@@ -350,6 +353,7 @@ Tasks
                     </div>
 
                     <!-- Assignee -->
+                    <?php if (!$hideAssigneeSystemWide): ?>
                     <div class="col-md-4 col-lg-3">
                         <label class="form-label-xs fw-semibold text-secondary mb-1">Assignee</label>
                         <select name="assignee" class="form-select form-select-xs" style="height: 34px; border-radius: 8px;">
@@ -362,6 +366,7 @@ Tasks
                             <?php endforeach; ?>
                         </select>
                     </div>
+                    <?php endif; ?>
 
                     <!-- Status -->
                     <div class="col-md-4 col-lg-3">
@@ -610,11 +615,13 @@ Tasks
                         Ticket ID <?= getSortIcon('ticket_id', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>
                     </a>
                 </th>
+                <?php if (!$hideAssigneeSystemWide): ?>
                 <th class="form-label-sm fw-semibold">
                     <a href="<?= getSortUrl('assignee', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>" class="text-decoration-none text-dark d-inline-flex align-items-center gap-1">
                         Assignee <?= getSortIcon('assignee', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>
                     </a>
                 </th>
+                <?php endif; ?>
                 <th class="form-label-sm fw-semibold">
                     <a href="<?= getSortUrl('status', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>" class="text-decoration-none text-dark d-inline-flex align-items-center gap-1">
                         Status <?= getSortIcon('status', $filters['sort_by'] ?? 'created_at', $filters['sort_dir'] ?? 'desc') ?>
@@ -664,7 +671,7 @@ Tasks
         <tbody>
             <?php if (empty($logs)): ?>
                 <tr>
-                    <td colspan="<?= $isDWF ? '16' : '14' ?>" class="text-center py-5 text-muted">
+                    <td colspan="<?= ($isDWF ? 16 : 14) - ($hideAssigneeSystemWide ? 1 : 0) ?>" class="text-center py-5 text-muted">
                         <i class="bi bi-inbox fs-2 mb-2 d-block text-secondary" style="opacity: 0.5;"></i>
                         <span class="fw-semibold">No tasks found</span>
                         <p class="small text-secondary mb-0">Try adjusting your filters or search keywords.</p>
@@ -721,6 +728,7 @@ Tasks
                                 <span class="text-secondary small">—</span>
                             <?php endif; ?>
                         </td>
+                        <?php if (!$hideAssigneeSystemWide): ?>
                         <td>
                             <select class="badge status-select-badge <?= assignee_class($log['assignee']) ?> assignee-select" data-log-id="<?= $log['id'] ?>">
                                 <?php foreach (Constants::USERS as $val => $lbl): ?>
@@ -730,6 +738,7 @@ Tasks
                                 <?php endforeach; ?>
                             </select>
                         </td>
+                        <?php endif; ?>
                         <td>
                             <select class="badge status-select-badge <?= status_activity_logs_class($log['status']) ?>" data-log-id="<?= $log['id'] ?>">
                                 <?php foreach (Constants::ACTIVITY_LOGS_STATUS as $val => $lbl): ?>

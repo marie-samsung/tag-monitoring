@@ -213,7 +213,8 @@
 <body>
     <?php 
         use App\Models\Constants; 
-        $hideAssignee = service('request')->getGet('hide_assignee') === '1';
+        $sysSettings = \App\Controllers\SettingsController::getSystemSettings();
+        $hideAssignee = $sysSettings['hide_assignee_system_wide'] || $sysSettings['hide_assignee_weekly_reports'];
         $reportType = $report_type ?? 'detailed';
     ?>
 

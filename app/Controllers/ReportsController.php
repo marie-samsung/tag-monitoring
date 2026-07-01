@@ -67,7 +67,8 @@ class ReportsController extends BaseController
         echo '</table>';
         echo '<br>';
 
-        $hideAssignee = ($this->request->getGet('hide_assignee') === '1');
+        $sysSettings = \App\Controllers\SettingsController::getSystemSettings();
+        $hideAssignee = $sysSettings['hide_assignee_system_wide'] || $sysSettings['hide_assignee_weekly_reports'];
 
         // Section 2: Completed Tasks
         echo '<h3>Completed Tasks</h3>';

@@ -5,7 +5,11 @@ Weekly Reports & Analytics
 <?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
-<?php use App\Models\Constants; ?>
+<?php 
+    use App\Models\Constants; 
+    $sysSettings = \App\Controllers\SettingsController::getSystemSettings();
+    $hideAssignee = $sysSettings['hide_assignee_system_wide'] || $sysSettings['hide_assignee_weekly_reports'];
+?>
 
 <style>
     /* Premium Aesthetic Dashboard styling */
@@ -151,26 +155,15 @@ Weekly Reports & Analytics
                     </div>
                 </div>
 
-                <!-- Hide Assignee Option -->
-                <div class="col-md-2 col-sm-6">
-                    <label class="form-label small fw-semibold text-secondary mb-1.5">View Options</label>
-                    <div class="d-flex align-items-center" style="height: 36px;">
-                        <div class="form-check form-switch m-0 d-flex align-items-center">
-                            <input class="form-check-input permission-checkbox m-0" type="checkbox" name="hide_assignee" id="hideAssignee" value="1" <?= service('request')->getGet('hide_assignee') == '1' ? 'checked' : '' ?> style="cursor: pointer; width: 2.2em; height: 1.1em;">
-                            <label class="form-check-label small fw-semibold text-secondary ms-2" for="hideAssignee" style="cursor: pointer; user-select: none; line-height: 1;">Hide Assignee</label>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Quick actions -->
-                <div class="col-md-2 col-sm-6">
+                <div class="col-md-4 col-sm-12">
                     <label class="form-label small fw-semibold text-secondary mb-1.5">&nbsp;</label>
                     <div class="d-flex gap-2 w-100" style="height: 36px;">
                         <button type="submit" class="apple-btn-primary btn-sm flex-grow-1 px-3 d-flex align-items-center justify-content-center gap-1.5" style="height: 36px; border-radius: 20px; font-weight: 600;">
                             <i class="bi bi-filter"></i> Apply
                         </button>
-                        <button type="button" class="apple-btn-secondary btn-sm px-3 d-flex align-items-center justify-content-center" onclick="resetToCurrentWeek()" title="Reset to current week" style="height: 36px; border-radius: 20px; font-weight: 600; white-space: nowrap;">
-                            Current
+                        <button type="button" class="apple-btn-secondary btn-sm flex-grow-1 px-3 d-flex align-items-center justify-content-center" onclick="resetToCurrentWeek()" title="Reset to current week" style="height: 36px; border-radius: 20px; font-weight: 600; white-space: nowrap;">
+                            Reset to Current Week
                         </button>
                     </div>
                 </div>
@@ -304,7 +297,7 @@ Weekly Reports & Analytics
                             <th>Task Title</th>
                             <th style="width: 120px;">Ticket ID</th>
                             <th style="width: 100px;">Priority</th>
-                            <?php if (service('request')->getGet('hide_assignee') !== '1'): ?>
+                            <?php if (!$hideAssignee): ?>
                                 <th style="width: 120px;">Assignee</th>
                             <?php endif; ?>
                             <th style="width: 110px;">Finished Date</th>
@@ -314,7 +307,7 @@ Weekly Reports & Analytics
                     <tbody>
                         <?php if (empty($completed_tasks)): ?>
                             <tr>
-                                <td colspan="<?= service('request')->getGet('hide_assignee') === '1' ? 6 : 7 ?>" class="text-center py-4 text-muted">No completed tasks recorded in this week.</td>
+                                <td colspan="<?= $hideAssignee ? 6 : 7 ?>" class="text-center py-4 text-muted">No completed tasks recorded in this week.</td>
                             </tr>
                         <?php else: ?>
                             <?php foreach ($completed_tasks as $task): 
@@ -350,7 +343,7 @@ Weekly Reports & Analytics
                                         <span class="badge <?= priority_class($task['priority']) ?> rounded-pill" style="font-size: 0.72rem; font-weight: 600;">
                                             <?= esc($prioLabel) ?>
                                         </span>
-                                    <?php if (service('request')->getGet('hide_assignee') !== '1'): ?>
+                                    <?php if (!$hideAssignee): ?>
                                         <td>
                                             <span class="text-secondary small fw-medium"><?= esc($assigneeLabel) ?></span>
                                         </td>
@@ -436,7 +429,7 @@ Weekly Reports & Analytics
                             <th>Ongoing Task Title</th>
                             <th style="width: 120px;">Ticket ID</th>
                             <th style="width: 100px;">Priority</th>
-                            <?php if (service('request')->getGet('hide_assignee') !== '1'): ?>
+                            <?php if (!$hideAssignee): ?>
                                 <th style="width: 120px;">Assignee</th>
                             <?php endif; ?>
                             <th style="width: 120px;">Current Status</th>
@@ -446,7 +439,7 @@ Weekly Reports & Analytics
                     <tbody>
                         <?php if (empty($ongoing_tasks)): ?>
                             <tr>
-                                <td colspan="<?= service('request')->getGet('hide_assignee') === '1' ? 6 : 7 ?>" class="text-center py-4 text-muted">No active ongoing tasks recorded.</td>
+                                <td colspan="<?= $hideAssignee ? 6 : 7 ?>" class="text-center py-4 text-muted">No active ongoing tasks recorded.</td>
                             </tr>
                         <?php else: ?>
                             <?php foreach ($ongoing_tasks as $task): 
@@ -476,7 +469,7 @@ Weekly Reports & Analytics
                                             <?= esc($prioLabel) ?>
                                         </span>
                                     </td>
-                                    <?php if (service('request')->getGet('hide_assignee') !== '1'): ?>
+                                    <?php if (!$hideAssignee): ?>
                                         <td>
                                             <span class="text-secondary small fw-medium"><?= esc($assigneeLabel) ?></span>
                                         </td>
