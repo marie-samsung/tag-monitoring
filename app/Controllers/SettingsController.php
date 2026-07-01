@@ -61,6 +61,7 @@ class SettingsController extends BaseController
             'rolePermissions' => $rolePermissions,
             'backups' => $backups,
             'autoBackupSettings' => $autoBackupSettings,
+            'systemSettings' => self::getSystemSettings(),
         ]);
     }
 
@@ -163,7 +164,7 @@ class SettingsController extends BaseController
         $permissionsGrid = $this->request->getPost('permissions') ?? [];
 
         // All controlled modules list
-        $allModules = ['dashboard', 'tags', 'tag-requests', 'properties', 'vendors', 'jira', 'tasks', 'settings'];
+        $allModules = ['dashboard', 'tags', 'tag-requests', 'properties', 'vendors', 'jira', 'tasks', 'settings', 'reports'];
         
         // Fetch all dynamic roles from DB
         $roles = $db->table('roles')->get()->getResultArray();
@@ -232,7 +233,7 @@ class SettingsController extends BaseController
         $newRoleId = $db->insertID();
 
         // Initialize default permissions (dashboard enabled, others disabled)
-        $allModules = ['dashboard', 'tags', 'tag-requests', 'properties', 'vendors', 'jira', 'tasks', 'settings'];
+        $allModules = ['dashboard', 'tags', 'tag-requests', 'properties', 'vendors', 'jira', 'tasks', 'settings', 'reports'];
         foreach ($allModules as $module) {
             $db->table('role_permissions')->insert([
                 'role_id'          => $newRoleId,
@@ -484,5 +485,63 @@ class SettingsController extends BaseController
         session()->setFlashdata('active_tab', 'permissions');
 
         return redirect()->to(site_url('settings'))->with('success', 'Role name updated to "' . esc($name) . '" successfully.');
+    }
+
+    /**
+     * Get the general system settings.
+     */
+    public static function getSystemSettings(): array
+    {
+        $settingsFile = WRITEPATH . 'system_settings.json';
+        $default = [
+            'hide_assignee_weekly_reports' => true,
+            'hide_assignee_system_wide'    => false,
+            'force_me_mode_system_wide'    => false,
+        ];
+
+        if (file_exists($settingsFile)) {
+            $data = json_decode(file_get_contents($settingsFile), true);
+            if (is_array($data)) {
+                return array_merge($default, $data);
+            }
+        }
+
+        return $default;
+    }
+
+    /**
+     * Save general system settings.
+     */
+    public function saveSystemSettings()
+    {
+        $permissions = session()->get('permissions') ?? [];
+        if (empty($permissions['settings'])) {
+            return redirect()->to(site_url('dashboard'))
+                ->with('error', 'You do not have permission to access the Settings section.');
+        }
+
+        $hideWeekly = $this->request->getPost('hide_assignee_weekly_reports') === '1';
+        $hideSystem = $this->request->getPost('hide_assignee_system_wide') === '1';
+        $forceMeMode = $this->request->getPost('force_me_mode_system_wide') === '1';
+
+        $settings = [
+            'hide_assignee_weekly_reports' => $hideWeekly,
+            'hide_assignee_system_wide'    => $hideSystem,
+            'force_me_mode_system_wide'    => $forceMeMode,
+        ];
+
+        $settingsFile = WRITEPATH . 'system_settings.json';
+        $dir = dirname($settingsFile);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0777, true);
+        }
+
+        if (file_put_contents($settingsFile, json_encode($settings, JSON_PRETTY_PRINT)) !== false) {
+            session()->setFlashdata('active_tab', 'general');
+            return redirect()->to(site_url('settings'))->with('success', 'General system settings saved successfully.');
+        }
+
+        session()->setFlashdata('active_tab', 'general');
+        return redirect()->to(site_url('settings'))->with('error', 'Failed to save general system settings.');
     }
 }

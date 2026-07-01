@@ -8,6 +8,8 @@
 
 <?php
     use App\Models\Constants;
+    $sysSettings = \App\Controllers\SettingsController::getSystemSettings();
+    $hideAssigneeSystemWide = $sysSettings['hide_assignee_system_wide'] ?? false;
 ?>
 
 <div class="container-fluid px-0">
@@ -207,6 +209,7 @@
                         </div>
 
                         <!-- Assignee -->
+                        <?php if (!$hideAssigneeSystemWide): ?>
                         <div class="col-12">
                             <label class="form-label-sm fw-semibold text-secondary mb-1">Assignee</label>
                             <select name="assignee" class="form-select form-select-xs" required>
@@ -218,6 +221,9 @@
                                 <?php endforeach; ?>
                             </select>
                         </div>
+                        <?php else: ?>
+                            <input type="hidden" name="assignee" value="<?= old('assignee', $log['assignee'] ?? Constants::USER_SYSTEM) ?>">
+                        <?php endif; ?>
 
                         <!-- Subsidiary -->
                         <div class="col-12">

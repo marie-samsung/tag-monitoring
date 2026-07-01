@@ -1,3 +1,8 @@
+<?php
+    use App\Models\Constants;
+    $sysSettings = \App\Controllers\SettingsController::getSystemSettings();
+    $hideAssigneeSystemWide = $sysSettings['hide_assignee_system_wide'] ?? false;
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -102,10 +107,6 @@
     </style>
 </head>
 <body>
-    <?php
-        use App\Models\Constants;
-    ?>
-    
     <div class="report-header">
         <div>
             <h1 class="report-title">Project: <?= esc($project_name) ?></h1>
@@ -124,7 +125,9 @@
                 <th>Task Title</th>
                 <th style="width: 110px;">Ticket ID</th>
                 <th style="width: 80px;">Priority</th>
-                <th style="width: 100px;">Assignee</th>
+                <?php if (!$hideAssigneeSystemWide): ?>
+                    <th style="width: 100px;">Assignee</th>
+                <?php endif; ?>
                 <th style="width: 100px;">Created Date</th>
                 <th style="width: 120px;">Status</th>
                 <th>Last Comment</th>
@@ -133,7 +136,7 @@
         <tbody>
             <?php if (empty($tasks)): ?>
                 <tr>
-                    <td colspan="8" class="text-center py-4 text-muted">No tasks recorded for this project.</td>
+                    <td colspan="<?= $hideAssigneeSystemWide ? 7 : 8 ?>" class="text-center py-4 text-muted">No tasks recorded for this project.</td>
                 </tr>
             <?php else: ?>
                 <?php foreach ($tasks as $task): 
@@ -163,7 +166,9 @@
                         <td>
                             <span class="badge-priority <?= $prioClass ?>"><?= esc($priority) ?></span>
                         </td>
-                        <td><?= esc($assignee) ?></td>
+                        <?php if (!$hideAssigneeSystemWide): ?>
+                            <td><?= esc($assignee) ?></td>
+                        <?php endif; ?>
                         <td><?= esc($createdDate) ?></td>
                         <td>
                             <span class="badge-status <?= $statusClass ?>"><?= esc($status) ?></span>

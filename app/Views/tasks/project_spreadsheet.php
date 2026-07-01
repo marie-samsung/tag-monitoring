@@ -9,6 +9,10 @@ Project: <?= esc($project_name) ?>
 <?php
 use App\Models\Constants;
 helper('custom_functions');
+$sysSettings = \App\Controllers\SettingsController::getSystemSettings();
+$hideAssigneeSystemWide = $sysSettings['hide_assignee_system_wide'] ?? false;
+$forceMeMode = $sysSettings['force_me_mode_system_wide'] ?? false;
+$isAdmin = (int)session()->get('user_role') === Constants::USER_ROLE_ADMIN || (int)session()->get('account_type') === 1;
 ?>
 
 <?= csrf_field() ?>
@@ -326,12 +330,13 @@ helper('custom_functions');
             </div>
         </div>
         <div class="d-flex align-items-center gap-2">
+            <?php if (!($forceMeMode && !$isAdmin)): ?>
             <a href="<?= site_url('tasks/project/' . rawurlencode($project_name)) . (isset($me_mode) && $me_mode ? '?me_mode=0' : '?me_mode=1') ?>"
                 class="<?= isset($me_mode) && $me_mode ? 'apple-btn-primary' : 'apple-btn-secondary' ?> btn-sm px-3 text-decoration-none d-inline-flex align-items-center gap-1.5 py-2"
                 style="border-radius: 8px;">
-                <i class="bi <?= isset($me_mode) && $me_mode ? 'bi-person-fill' : 'bi-person' ?> me-1"></i> Assigned To
-                Me
+                <i class="bi <?= isset($me_mode) && $me_mode ? 'bi-person-fill' : 'bi-person' ?> me-1"></i> Assigned To Me
             </a>
+            <?php endif; ?>
             <a href="<?= site_url('tasks/create?project=' . rawurlencode($project_name)) ?>"
                 title="Create a new task for this project"
                 class="apple-btn-primary btn-sm px-3 text-decoration-none d-inline-flex align-items-center gap-1.5 py-2"
@@ -399,10 +404,16 @@ helper('custom_functions');
                         <th>B</th>
                         <th>C</th>
                         <th>D</th>
-                        <th>E</th>
-                        <th>F</th>
-                        <th>G</th>
-                        <th>H</th>
+                        <?php if (!$hideAssigneeSystemWide): ?>
+                            <th>E</th>
+                            <th>F</th>
+                            <th>G</th>
+                            <th>H</th>
+                        <?php else: ?>
+                            <th>E</th>
+                            <th>F</th>
+                            <th>G</th>
+                        <?php endif; ?>
                     </tr>
 
                     <!-- Table Header titles -->
@@ -412,7 +423,9 @@ helper('custom_functions');
                         <th>Task Title</th>
                         <th style="width: 140px;">Ticket ID</th>
                         <th style="width: 110px;">Priority</th>
-                        <th style="width: 150px;">Assignee</th>
+                        <?php if (!$hideAssigneeSystemWide): ?>
+                            <th style="width: 150px;">Assignee</th>
+                        <?php endif; ?>
                         <th style="width: 120px;">Start Date</th>
                         <th style="width: 180px;">Status</th>
                         <th>Latest Update</th>
@@ -422,7 +435,7 @@ helper('custom_functions');
                     <?php if (empty($tasks)): ?>
                         <tr>
                             <td class="row-index-col">1</td>
-                            <td colspan="8" class="text-center py-5 text-muted">
+                            <td colspan="<?= $hideAssigneeSystemWide ? 7 : 8 ?>" class="text-center py-5 text-muted">
                                 <i class="bi bi-inbox fs-2 mb-2 d-block text-secondary" style="opacity: 0.5;"></i>
                                 <span class="fw-semibold">No tasks found for this project</span>
                             </td>
@@ -478,6 +491,7 @@ helper('custom_functions');
                                         <?= esc($priority) ?>
                                     </span>
                                 </td>
+                                <?php if (!$hideAssigneeSystemWide): ?>
                                 <td>
                                     <select
                                         class="badge status-select-badge <?= assignee_class($task['assignee']) ?> assignee-select"
@@ -495,6 +509,7 @@ helper('custom_functions');
                                         </option>
                                     </select>
                                 </td>
+                                <?php endif; ?>
                                 <td class="text-secondary"><?= esc($startDate) ?></td>
                                 <td>
                                     <!-- Dynamic AJAX status select badge -->

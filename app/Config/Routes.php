@@ -121,10 +121,17 @@ $routes->group('settings', function ($routes) {
     $routes->get('backup/download/(:any)', 'SettingsController::downloadBackup/$1');
     $routes->post('backup/delete/(:any)', 'SettingsController::deleteBackup/$1');
     $routes->post('backup/restore/(:any)', 'SettingsController::restoreBackup/$1');
+    $routes->post('save-system-settings', 'SettingsController::saveSystemSettings');
 });
 
 $routes->group('profile', function ($routes) {
     $routes->get('/', 'ProfileController::index');
     $routes->post('update', 'ProfileController::update');
+});
+
+$routes->group('reports', function ($routes) {
+    $routes->get('/', 'ReportsController::index');
+    $routes->get('export/excel', 'ReportsController::exportExcel');
+    $routes->get('export/pdf', 'ReportsController::exportPDF');
 });
 

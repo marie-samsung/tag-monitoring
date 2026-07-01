@@ -259,6 +259,7 @@ class Constants
             'jira' => true,
             'tasks' => true,
             'settings' => false,
+            'reports' => true,
         ],
         self::USER_ROLE_MARTECH => [
             'dashboard' => true,
@@ -269,6 +270,7 @@ class Constants
             'jira' => false,
             'tasks' => true,
             'settings' => false,
+            'reports' => false,
         ],
         self::USER_ROLE_ADMIN => [
             'dashboard' => true,
@@ -279,6 +281,7 @@ class Constants
             'jira' => true,
             'tasks' => true,
             'settings' => true,
+            'reports' => true,
         ],
     ];
 
