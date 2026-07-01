@@ -497,8 +497,8 @@ foreach ($overflowItems as $item) {
 
                                 html += `
                                 <li>
-                                    <a class="dropdown-item py-2 border-bottom notification-item" href="#" data-id="${n.id}" data-task="${n.task_id}" style="white-space: normal; ${bgStyle} transition: all 0.2s ease;">
-                                        <div class="d-flex align-items-start gap-2">
+                                    <div class="dropdown-item py-2 border-bottom notification-item-wrapper d-flex align-items-center justify-content-between" style="white-space: normal; ${bgStyle} transition: all 0.2s ease; padding-right: 10px;">
+                                        <a href="#" class="notification-item text-decoration-none d-flex align-items-start gap-2 flex-grow-1" data-id="${n.id}" data-task="${n.task_id}">
                                             <i class="bi ${iconClass} mt-1"></i>
                                             <div>
                                                 <div style="font-size: 0.85rem; line-height: 1.3; color: var(--color-text-base);">
@@ -508,8 +508,11 @@ foreach ($overflowItems as $item) {
                                                     ${n.time_ago}
                                                 </div>
                                             </div>
-                                        </div>
-                                    </a>
+                                        </a>
+                                        <button class="btn btn-sm btn-link toggle-read-btn p-1 ms-2" data-id="${n.id}" title="${isUnread ? 'Mark as read' : 'Mark as unread'}" style="text-decoration: none;">
+                                            <i class="bi ${isUnread ? 'bi-envelope-fill text-primary' : 'bi-envelope-open text-muted'}" style="font-size: 0.9rem;"></i>
+                                        </button>
+                                    </div>
                                 </li>
                             `;
                             });
@@ -521,6 +524,31 @@ foreach ($overflowItems as $item) {
         };
 
         fetchNotifications();
+
+        $(document).on('click', '.toggle-read-btn', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const btn = $(this);
+            const notifId = btn.data('id');
+
+            let csrfVal = '';
+            if ($('input[name="csrf_test_name"]').length > 0) {
+                csrfVal = $('input[name="csrf_test_name"]').val();
+            }
+
+            $.ajax({
+                url: '<?= site_url("notifications/toggle-read/") ?>' + notifId,
+                method: 'POST',
+                data: { csrf_test_name: csrfVal },
+                dataType: 'json',
+                success: function (res) {
+                    if (res.success) {
+                        // Refresh notifications to update styles and count
+                        fetchNotifications();
+                    }
+                }
+            });
+        });
 
         $(document).on('click', '.notification-item', function (e) {
             e.preventDefault();

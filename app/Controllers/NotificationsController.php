@@ -56,6 +56,29 @@ class NotificationsController extends BaseController
         return $this->response->setJSON(['success' => true, 'csrf_hash' => csrf_hash()]);
     }
 
+    public function toggleRead($id)
+    {
+        if (!$this->request->isAJAX()) {
+            return redirect()->to('/');
+        }
+
+        $userId = session()->get('user_id');
+        if (!$userId) {
+            return $this->response->setJSON(['success' => false]);
+        }
+
+        $model = new NotificationsModel();
+        $notification = $model->find($id);
+
+        if ($notification && $notification['user_id'] == $userId) {
+            $newState = $notification['is_read'] ? 0 : 1;
+            $model->update($id, ['is_read' => $newState]);
+            return $this->response->setJSON(['success' => true, 'is_read' => $newState, 'csrf_hash' => csrf_hash()]);
+        }
+
+        return $this->response->setJSON(['success' => false, 'csrf_hash' => csrf_hash()]);
+    }
+
     private function timeElapsedString($datetime, $full = false) 
     {
         $now = new \DateTime();
