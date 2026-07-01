@@ -554,13 +554,13 @@ Dashboard | Martech TMS
         <div class="col-lg-4">
             <div class="apple-card h-100">
                 <h6 class="text-secondary fw-semibold mb-3" style="font-size: 0.85rem; letter-spacing: 0.5px; text-transform: uppercase;">
-                    <i class="bi bi-funnel me-2 text-primary"></i>Requests Pipeline
+                    <i class="bi bi-pie-chart me-2 text-primary"></i>Ingestion Breakdown
                 </h6>
                 <div style="position: relative; height: 260px; width: 100%;">
                     <canvas id="requestStatusChart"></canvas>
                 </div>
                 <div class="text-center mt-3 text-secondary small">
-                    Total Requests: <strong><?= $total_requests ?></strong> requests
+                    Total: <strong><?= array_sum($chart_tags) + array_sum($chart_new_rules) + array_sum($chart_pending) + array_sum($chart_requests) + array_sum($chart_activities) ?></strong>
                 </div>
             </div>
         </div>
@@ -712,8 +712,9 @@ Dashboard | Martech TMS
     </div>
 </div>
 
-<!-- Chart.js Library -->
+<!-- Chart.js Library & Plugins -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
@@ -850,9 +851,11 @@ document.addEventListener('DOMContentLoaded', function () {
     // --- 3. Bar Chart: Subsidiary Distribution ---
     const subCtx = document.getElementById('subsidiaryDistributionChart').getContext('2d');
     const subData = <?= json_encode($subsidiary_distribution) ?>;
+    const subIds = <?= json_encode($subsidiary_ids) ?>;
     
     new Chart(subCtx, {
         type: 'bar',
+        plugins: [ChartDataLabels],
         data: {
             labels: Object.keys(subData),
             datasets: [{
@@ -867,7 +870,30 @@ document.addEventListener('DOMContentLoaded', function () {
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            onClick: (event, elements, chart) => {
+                if (elements.length > 0) {
+                    const index = elements[0].index;
+                    const label = chart.data.labels[index];
+                    const subsidiaryId = subIds[label];
+                    if (subsidiaryId) {
+                        window.location.href = `<?= site_url('tags') ?>?subsidiary_id=${subsidiaryId}`;
+                    }
+                }
+            },
+            onHover: (event, elements) => {
+                event.native.target.style.cursor = elements.length ? 'pointer' : 'default';
+            },
             plugins: {
+                datalabels: {
+                    color: '#ffffff',
+                    font: { weight: 'bold', size: 11 },
+                    anchor: 'end',
+                    align: 'start',
+                    offset: 4,
+                    display: function(context) {
+                        return context.dataset.data[context.dataIndex] > 0;
+                    }
+                },
                 legend: { display: false },
                 tooltip: {
                     padding: 12,
@@ -889,9 +915,11 @@ document.addEventListener('DOMContentLoaded', function () {
     // --- 4. Bar Chart: Vendor Distribution ---
     const vendorCtx = document.getElementById('vendorDistributionChart').getContext('2d');
     const vendorData = <?= json_encode($vendor_distribution) ?>;
+    const vendorIds = <?= json_encode($vendor_ids) ?>;
     
     new Chart(vendorCtx, {
         type: 'bar',
+        plugins: [ChartDataLabels],
         data: {
             labels: Object.keys(vendorData),
             datasets: [{
@@ -907,7 +935,30 @@ document.addEventListener('DOMContentLoaded', function () {
             responsive: true,
             maintainAspectRatio: false,
             indexAxis: 'y', // Horizontal bars
+            onClick: (event, elements, chart) => {
+                if (elements.length > 0) {
+                    const index = elements[0].index;
+                    const label = chart.data.labels[index];
+                    const vendorId = vendorIds[label];
+                    if (vendorId) {
+                        window.location.href = `<?= site_url('tags') ?>?vendor_id=${vendorId}`;
+                    }
+                }
+            },
+            onHover: (event, elements) => {
+                event.native.target.style.cursor = elements.length ? 'pointer' : 'default';
+            },
             plugins: {
+                datalabels: {
+                    color: '#ffffff',
+                    font: { weight: 'bold', size: 11 },
+                    anchor: 'end',
+                    align: 'start',
+                    offset: 4,
+                    display: function(context) {
+                        return context.dataset.data[context.dataIndex] > 0;
+                    }
+                },
                 legend: { display: false },
                 tooltip: {
                     padding: 12,
@@ -1013,7 +1064,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // --- 6. Doughnut Chart: Tag Requests Pipeline ---
     const requestStatusCtx = document.getElementById('requestStatusChart').getContext('2d');
-    const requestStatusData = <?= json_encode($request_status_distribution) ?>;
+    const requestStatusData = {
+        'New Requests': <?= array_sum($chart_tags) ?>,
+        'New Implementations': <?= array_sum($chart_new_rules) ?>,
+        'Pending Requests': <?= array_sum($chart_pending) ?>,
+        'Date Extensions': <?= array_sum($chart_requests) ?>,
+        'Activities Logged': <?= array_sum($chart_activities) ?>
+    };
     new Chart(requestStatusCtx, {
         type: 'doughnut',
         data: {
@@ -1021,12 +1078,11 @@ document.addEventListener('DOMContentLoaded', function () {
             datasets: [{
                 data: Object.values(requestStatusData),
                 backgroundColor: [
-                    '#0071E3', // HQ Review
-                    '#FF9F0A', // On-Hold Req
-                    '#BF5AF2', // New Rule Request Submitted
-                    '#30D158', // Approved
-                    '#FF453A', // Rejected
-                    '#64D2FF'  // Published
+                    '#FD7E14', // New Requests
+                    '#DC3545', // New Implementations
+                    '#00C2FF', // Pending Requests
+                    '#0071E3', // Date Extensions
+                    '#A855F7'  // Activities Logged
                 ],
                 borderWidth: 2,
                 borderColor: '#ffffff',
