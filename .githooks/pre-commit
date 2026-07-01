@@ -1,0 +1,18 @@
+#!/bin/sh
+# Automatically increment version on commit
+VERSION_FILE="app/version.txt"
+
+if [ -f "$VERSION_FILE" ]; then
+    # Read current version
+    VERSION=$(cat "$VERSION_FILE")
+    # Use awk to split by dot and increment the very last number
+    NEW_VERSION=$(echo "$VERSION" | awk -F. '{$NF = $NF + 1;} 1' | sed 's/ /./g')
+    
+    echo "$NEW_VERSION" > "$VERSION_FILE"
+    git add "$VERSION_FILE"
+    echo "Version bumped to V$NEW_VERSION"
+else
+    echo "2.3.1" > "$VERSION_FILE"
+    git add "$VERSION_FILE"
+    echo "Version initialized at V2.3.1"
+fi
