@@ -219,6 +219,44 @@
     border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
     padding: 6px 8px !important;
 }
+
+/* Summernote Hint Dropdown (Apple-style) */
+.note-hint-popover {
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
+    background: rgba(255, 255, 255, 0.85) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    padding: 6px !important;
+    min-width: 220px;
+}
+.note-hint-popover .note-hint-group {
+    padding: 0;
+    margin: 0;
+}
+.note-hint-popover .note-hint-item {
+    padding: 8px 12px !important;
+    font-size: 0.9rem !important;
+    color: var(--color-text-base, #1d1d1f) !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    transition: background-color 0.2s ease, color 0.2s ease !important;
+    margin-bottom: 2px;
+    display: block;
+}
+.note-hint-popover .note-hint-item:last-child {
+    margin-bottom: 0;
+}
+.note-hint-popover .note-hint-item.active,
+.note-hint-popover .note-hint-item:hover {
+    background-color: #0071e3 !important;
+    color: #fff !important;
+}
+.note-hint-popover .note-hint-item.active .hint-icon,
+.note-hint-popover .note-hint-item:hover .hint-icon {
+    color: #fff !important;
+}
 </style>
 
 <div class="container-fluid px-0">
@@ -846,8 +884,18 @@
                                 return item.toLowerCase().indexOf(keyword.toLowerCase()) == 0;
                             }));
                         },
+                        template: function (item) {
+                            return '<div class="d-flex align-items-center gap-2 w-100"><i class="bi bi-person-circle hint-icon" style="font-size: 1.1rem; color: #86868b; transition: color 0.2s ease;"></i><span class="fw-medium">' + item + '</span></div>';
+                        },
                         content: function (item) {
-                            return '@' + item;
+                            var wrapper = document.createElement('span');
+                            var mention = document.createElement('strong');
+                            mention.className = 'text-primary';
+                            mention.style.color = '#0071e3';
+                            mention.innerText = '@' + item;
+                            wrapper.appendChild(mention);
+                            wrapper.appendChild(document.createTextNode('\u00A0'));
+                            return wrapper;
                         }
                     }
                 });

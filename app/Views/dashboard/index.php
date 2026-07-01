@@ -194,6 +194,29 @@ Dashboard | Martech TMS
     background: var(--color-primary, #0071E3);
     color: #ffffff;
 }
+
+/* Apple-style Select & Inputs */
+.apple-select {
+    background-color: rgba(118, 118, 128, 0.08) !important;
+    border: 1px solid transparent !important;
+    border-radius: 10px !important;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #1d1d1f;
+    transition: all 0.2s ease;
+    box-shadow: none !important;
+}
+
+.apple-select:hover {
+    background-color: rgba(118, 118, 128, 0.12) !important;
+}
+
+.apple-select:focus {
+    outline: none !important;
+    border-color: rgba(0, 113, 227, 0.3) !important;
+    box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.1) !important;
+    background-color: #ffffff !important;
+}
 </style>
 
 <div class="container-fluid">
@@ -205,7 +228,7 @@ Dashboard | Martech TMS
         </div>
         <div class="d-flex align-items-center gap-3">
             <form method="get" id="dateFilterForm" class="d-flex align-items-center gap-2 m-0">
-                <select name="date_range" id="dateRange" class="form-select form-select-sm" style="width: auto;" onchange="toggleCustomDates()">
+                <select name="date_range" id="dateRange" class="form-select form-select-xs apple-select" style="width: auto; height: 34px;" onchange="toggleCustomDates()">
                     <option value="7d" <?= $date_range === '7d' ? 'selected' : '' ?>>Past 7 days</option>
                     <option value="30d" <?= $date_range === '30d' ? 'selected' : '' ?>>Past 30 days</option>
                     <option value="3m" <?= $date_range === '3m' ? 'selected' : '' ?>>Past 3 months</option>
@@ -213,11 +236,11 @@ Dashboard | Martech TMS
                     <option value="custom" <?= $date_range === 'custom' ? 'selected' : '' ?>>Custom Date Range</option>
                 </select>
                 <div id="customDateGroup" class="d-flex align-items-center gap-2" style="<?= $date_range === 'custom' ? '' : 'display: none !important;' ?>">
-                    <input type="date" name="start_date" id="startDate" class="form-control form-control-sm" value="<?= htmlspecialchars($start_date) ?>" max="<?= date('Y-m-d') ?>">
-                    <span class="text-secondary small">to</span>
-                    <input type="date" name="end_date" id="endDate" class="form-control form-control-sm" value="<?= htmlspecialchars($end_date) ?>" max="<?= date('Y-m-d') ?>">
+                    <input type="date" name="start_date" id="startDate" class="form-control form-control-xs apple-select" style="height: 34px;" value="<?= htmlspecialchars($start_date) ?>" max="<?= date('Y-m-d') ?>">
+                    <span class="text-secondary small fw-medium">to</span>
+                    <input type="date" name="end_date" id="endDate" class="form-control form-control-xs apple-select" style="height: 34px;" value="<?= htmlspecialchars($end_date) ?>" max="<?= date('Y-m-d') ?>">
                 </div>
-                <button type="submit" class="btn btn-sm btn-primary">Apply</button>
+                <button type="submit" class="apple-btn-primary btn-sm px-3" style="height: 34px; border-radius: 20px;">Apply</button>
             </form>
             <span class="badge bg-secondary text-secondary" style="font-size: 0.85rem; font-weight: 600; padding: 0.5em 1em; border-radius: 20px;">
                 <i class="bi bi-clock-history me-1"></i> Last updated: <?= date('d M Y, h:i A') ?>
@@ -1071,7 +1094,7 @@ document.addEventListener('DOMContentLoaded', function () {
         'Date Extensions': <?= array_sum($chart_requests) ?>,
         'Activities Logged': <?= array_sum($chart_activities) ?>
     };
-    new Chart(requestStatusCtx, {
+    const reqStatusChart = new Chart(requestStatusCtx, {
         type: 'doughnut',
         data: {
             labels: Object.keys(requestStatusData),
@@ -1110,6 +1133,10 @@ document.addEventListener('DOMContentLoaded', function () {
             cutout: '65%'
         }
     });
+
+    // Hide 'Activities Logged' (index 4) by default
+    reqStatusChart.toggleDataVisibility(4);
+    reqStatusChart.update();
 
     // --- 7. Doughnut Chart: Activity Logs by Status ---
     const activityStatusCtx = document.getElementById('activityStatusChart').getContext('2d');
