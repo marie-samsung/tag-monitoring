@@ -125,7 +125,10 @@ foreach ($roles as $r) {
 
     <!-- Dynamic Settings Navigation Tabs -->
     <div class="apple-tabs-container d-flex gap-2">
-        <button class="apple-tab-btn active" id="tab-users-btn" onclick="switchTab('users')">
+        <button class="apple-tab-btn active" id="tab-general-btn" onclick="switchTab('general')">
+            <i class="bi bi-sliders me-1"></i> General Settings
+        </button>
+        <button class="apple-tab-btn" id="tab-users-btn" onclick="switchTab('users')">
             <i class="bi bi-people-fill me-1"></i> Users Management
         </button>
         <button class="apple-tab-btn" id="tab-permissions-btn" onclick="switchTab('permissions')">
@@ -134,15 +137,65 @@ foreach ($roles as $r) {
         <button class="apple-tab-btn" id="tab-backups-btn" onclick="switchTab('backups')">
             <i class="bi bi-database-fill-gear me-1"></i> System Backups
         </button>
-        <button class="apple-tab-btn" id="tab-general-btn" onclick="switchTab('general')">
-            <i class="bi bi-sliders me-1"></i> General Settings
-        </button>
     </div>
 
     <!-- ============================================== -->
-    <!-- TAB 1: USERS MANAGEMENT -->
+    <!-- TAB 1: GENERAL SETTINGS -->
     <!-- ============================================== -->
-    <div class="settings-tab-content" id="tab-users">
+    <div class="settings-tab-content" id="tab-general">
+        <div class="apple-settings-card mt-2">
+            <h4 class="fw-bold mb-3">General Settings</h4>
+            <p class="text-secondary small mb-4">Configure system-wide behavior and default visibility parameters.</p>
+            
+            <form action="<?= site_url('settings/save-system-settings') ?>" method="post" style="max-width: 600px;">
+                <?= csrf_field() ?>
+                
+                <!-- Toggle 1: Hide Assignees by Default for Weekly Reports -->
+                <div class="d-flex align-items-start justify-content-between p-3 rounded-3 border mb-3 bg-white shadow-sm" style="transition: all 0.2s ease;">
+                    <div style="flex: 1; padding-right: 20px;">
+                        <h6 class="fw-bold mb-1">Hide Assignees in Weekly Reports</h6>
+                        <span class="text-secondary" style="font-size: 0.8rem;">By default, weekly performance reports will omit assignee details to focus on aggregated metrics.</span>
+                    </div>
+                    <div class="form-check form-switch m-0 d-flex align-items-center" style="height: 24px;">
+                        <input class="form-check-input permission-checkbox" type="checkbox" name="hide_assignee_weekly_reports" id="hideWeeklyReports" value="1" <?= ($systemSettings['hide_assignee_weekly_reports'] ?? true) ? 'checked' : '' ?> style="width: 2.2em; height: 1.1em; cursor: pointer;">
+                    </div>
+                </div>
+
+                <!-- Toggle 2: Hide Assignees system-wide across all tables -->
+                <div class="d-flex align-items-start justify-content-between p-3 rounded-3 border mb-3 bg-white shadow-sm" style="transition: all 0.2s ease;">
+                    <div style="flex: 1; padding-right: 20px;">
+                        <h6 class="fw-bold mb-1">Hide Assignees System-Wide</h6>
+                        <span class="text-secondary" style="font-size: 0.8rem;">Completely hide the "Assignee" column, dropdowns, and filtering fields across all task lists, kanbans, spreadsheet views, and ticket details.</span>
+                    </div>
+                    <div class="form-check form-switch m-0 d-flex align-items-center" style="height: 24px;">
+                        <input class="form-check-input permission-checkbox" type="checkbox" name="hide_assignee_system_wide" id="hideSystemWide" value="1" <?= ($systemSettings['hide_assignee_system_wide'] ?? false) ? 'checked' : '' ?> style="width: 2.2em; height: 1.1em; cursor: pointer;">
+                    </div>
+                </div>
+
+                <!-- Toggle 3: Force Me Mode System-Wide -->
+                <div class="d-flex align-items-start justify-content-between p-3 rounded-3 border mb-4 bg-white shadow-sm" style="transition: all 0.2s ease;">
+                    <div style="flex: 1; padding-right: 20px;">
+                        <h6 class="fw-bold mb-1">Force Me Mode System-Wide</h6>
+                        <span class="text-secondary" style="font-size: 0.8rem;">Force all non-administrative users to view only their assigned tasks. They will not be able to turn off Me Mode. Administrative users are unaffected.</span>
+                    </div>
+                    <div class="form-check form-switch m-0 d-flex align-items-center" style="height: 24px;">
+                        <input class="form-check-input permission-checkbox" type="checkbox" name="force_me_mode_system_wide" id="forceMeModeSystemWide" value="1" <?= ($systemSettings['force_me_mode_system_wide'] ?? false) ? 'checked' : '' ?> style="width: 2.2em; height: 1.1em; cursor: pointer;">
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-start">
+                    <button type="submit" class="apple-btn-primary btn-action-hover px-4">
+                        <i class="bi bi-check-circle-fill me-1.5"></i> Save Settings
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- TAB 2: USERS MANAGEMENT -->
+    <!-- ============================================== -->
+    <div class="settings-tab-content d-none" id="tab-users">
         <div class="d-flex justify-content-between align-items-center gap-3 mb-4">
             <!-- Search field -->
             <div class="position-relative" style="max-width: 320px; flex: 1;">
@@ -446,47 +499,7 @@ foreach ($roles as $r) {
     </div>
 </div>
 
-    <!-- ============================================== -->
-    <!-- TAB 4: GENERAL SETTINGS -->
-    <!-- ============================================== -->
-    <div class="settings-tab-content d-none" id="tab-general">
-        <div class="apple-settings-card mt-2">
-            <h4 class="fw-bold mb-3">General Settings</h4>
-            <p class="text-secondary small mb-4">Configure system-wide behavior and default visibility parameters.</p>
-            
-            <form action="<?= site_url('settings/save-system-settings') ?>" method="post" style="max-width: 600px;">
-                <?= csrf_field() ?>
-                
-                <!-- Toggle 1: Hide Assignees by Default for Weekly Reports -->
-                <div class="d-flex align-items-start justify-content-between p-3 rounded-3 border mb-3 bg-white shadow-sm" style="transition: all 0.2s ease;">
-                    <div style="flex: 1; padding-right: 20px;">
-                        <h6 class="fw-bold mb-1">Hide Assignees in Weekly Reports</h6>
-                        <span class="text-secondary" style="font-size: 0.8rem;">By default, weekly performance reports will omit assignee details to focus on aggregated metrics.</span>
-                    </div>
-                    <div class="form-check form-switch m-0 d-flex align-items-center" style="height: 24px;">
-                        <input class="form-check-input permission-checkbox" type="checkbox" name="hide_assignee_weekly_reports" id="hideWeeklyReports" value="1" <?= ($systemSettings['hide_assignee_weekly_reports'] ?? true) ? 'checked' : '' ?> style="width: 2.2em; height: 1.1em; cursor: pointer;">
-                    </div>
-                </div>
-
-                <!-- Toggle 2: Hide Assignees system-wide across all tables -->
-                <div class="d-flex align-items-start justify-content-between p-3 rounded-3 border mb-4 bg-white shadow-sm" style="transition: all 0.2s ease;">
-                    <div style="flex: 1; padding-right: 20px;">
-                        <h6 class="fw-bold mb-1">Hide Assignees System-Wide</h6>
-                        <span class="text-secondary" style="font-size: 0.8rem;">Completely hide the "Assignee" column, dropdowns, and filtering fields across all task lists, kanbans, spreadsheet views, and ticket details.</span>
-                    </div>
-                    <div class="form-check form-switch m-0 d-flex align-items-center" style="height: 24px;">
-                        <input class="form-check-input permission-checkbox" type="checkbox" name="hide_assignee_system_wide" id="hideSystemWide" value="1" <?= ($systemSettings['hide_assignee_system_wide'] ?? false) ? 'checked' : '' ?> style="width: 2.2em; height: 1.1em; cursor: pointer;">
-                    </div>
-                </div>
-
-                <div class="d-flex justify-content-start">
-                    <button type="submit" class="apple-btn-primary btn-action-hover px-4">
-                        <i class="bi bi-check-circle-fill me-1.5"></i> Save Settings
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
+    
 
 <!-- ============================================== -->
 <!-- MODAL: ADD NEW USER -->
@@ -750,7 +763,7 @@ foreach ($roles as $r) {
     document.addEventListener('DOMContentLoaded', () => {
         let activeTab = '<?= session()->getFlashdata('active_tab') ?? '' ?>';
         if (!activeTab) {
-            activeTab = localStorage.getItem('activeSettingsTab');
+            activeTab = localStorage.getItem('activeSettingsTab') || 'general';
         }
         if (activeTab && document.getElementById(`tab-${activeTab}`)) {
             switchTab(activeTab);

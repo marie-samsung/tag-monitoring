@@ -96,7 +96,7 @@ Tasks
     if (!empty($_GET['status_group'])) {
         $activeFiltersCount++;
     }
-    if ($isMeMode) {
+    if ($isMeMode && !($sysSettings['force_me_mode_system_wide'] ?? false && !((int)session()->get('user_role') === Constants::USER_ROLE_ADMIN || (int)session()->get('account_type') === 1))) {
         $activeFiltersCount++;
     }
     if (!empty($_GET['show_completed']) && $_GET['show_completed'] == '1') {
@@ -111,6 +111,8 @@ Tasks
 
     $sysSettings = \App\Controllers\SettingsController::getSystemSettings();
     $hideAssigneeSystemWide = $sysSettings['hide_assignee_system_wide'] ?? false;
+    $forceMeMode = $sysSettings['force_me_mode_system_wide'] ?? false;
+    $isAdmin = (int)session()->get('user_role') === Constants::USER_ROLE_ADMIN || (int)session()->get('account_type') === 1;
 ?>
 
 <?= csrf_field() ?>
@@ -137,9 +139,11 @@ Tasks
             </a>
 
             <!-- Me Mode Toggle Button -->
+            <?php if (!($forceMeMode && !$isAdmin)): ?>
             <a href="<?= getMeModeUrl() ?>" class="<?= $isMeMode ? 'apple-btn-primary' : 'apple-btn-secondary' ?> btn-sm px-3 text-decoration-none">
                 <i class="bi <?= $isMeMode ? 'bi-person-fill' : 'bi-person' ?> me-1"></i> Assigned To Me
             </a>
+            <?php endif; ?>
             
             <div class="dropdown">
                 <button class="apple-btn-secondary btn-sm dropdown-toggle px-3 d-flex align-items-center gap-1" type="button" id="headerActionsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
@@ -487,7 +491,7 @@ Tasks
                 $showPill = false;
                 $val = '';
                 if ($key === 'me_mode') {
-                    if ($isMeMode) {
+                    if ($isMeMode && !($forceMeMode && !$isAdmin)) {
                         $showPill = true;
                         $val = '1';
                     }

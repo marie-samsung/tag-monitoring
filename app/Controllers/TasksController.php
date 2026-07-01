@@ -14,16 +14,24 @@ class TasksController extends BaseController
     {
         $model = new TasksModel();
 
-        $meModeGet = $this->request->getGet('me_mode');
-        if ($meModeGet !== null) {
-            if ($meModeGet == '1') {
-                session()->set('al_me_mode', 1);
-            } else {
-                session()->set('al_me_mode', 0);
-            }
-        }
+        $sysSettings = \App\Controllers\SettingsController::getSystemSettings();
+        $forceMeMode = $sysSettings['force_me_mode_system_wide'] ?? false;
+        $isAdmin = (int)session()->get('user_role') === Constants::USER_ROLE_ADMIN || (int)session()->get('account_type') === 1;
 
-        $meMode = (session()->get('al_me_mode') == 1);
+        if ($forceMeMode && !$isAdmin) {
+            session()->set('al_me_mode', 1);
+            $meMode = true;
+        } else {
+            $meModeGet = $this->request->getGet('me_mode');
+            if ($meModeGet !== null) {
+                if ($meModeGet == '1') {
+                    session()->set('al_me_mode', 1);
+                } else {
+                    session()->set('al_me_mode', 0);
+                }
+            }
+            $meMode = (session()->get('al_me_mode') == 1);
+        }
 
         $filters = [
             'keyword' => $this->request->getGet('keyword'),
@@ -1032,15 +1040,24 @@ class TasksController extends BaseController
         $projectName = urldecode($projectName);
         $model = new TasksModel();
 
-        $meModeGet = $this->request->getGet('me_mode');
-        if ($meModeGet !== null) {
-            if ($meModeGet == '1') {
-                session()->set('al_me_mode', 1);
-            } else {
-                session()->set('al_me_mode', 0);
+        $sysSettings = \App\Controllers\SettingsController::getSystemSettings();
+        $forceMeMode = $sysSettings['force_me_mode_system_wide'] ?? false;
+        $isAdmin = (int)session()->get('user_role') === Constants::USER_ROLE_ADMIN || (int)session()->get('account_type') === 1;
+
+        if ($forceMeMode && !$isAdmin) {
+            session()->set('al_me_mode', 1);
+            $meMode = true;
+        } else {
+            $meModeGet = $this->request->getGet('me_mode');
+            if ($meModeGet !== null) {
+                if ($meModeGet == '1') {
+                    session()->set('al_me_mode', 1);
+                } else {
+                    session()->set('al_me_mode', 0);
+                }
             }
+            $meMode = (session()->get('al_me_mode') == 1);
         }
-        $meMode = (session()->get('al_me_mode') == 1);
 
         $tasks = $model->getProjectLogs($projectName, 25, $meMode);
 
@@ -1070,7 +1087,11 @@ class TasksController extends BaseController
     {
         $projectName = urldecode($projectName);
         $model = new TasksModel();
-        $meMode = (session()->get('al_me_mode') == 1);
+        $sysSettings = \App\Controllers\SettingsController::getSystemSettings();
+        $forceMeMode = $sysSettings['force_me_mode_system_wide'] ?? false;
+        $isAdmin = (int)session()->get('user_role') === Constants::USER_ROLE_ADMIN || (int)session()->get('account_type') === 1;
+        $meMode = ($forceMeMode && !$isAdmin) ? true : (session()->get('al_me_mode') == 1);
+
         $tasks = $model->getProjectLogs($projectName, null, $meMode);
 
         $filename = str_replace(' ', '_', $projectName) . '_Tasks_Export_' . date('Y-m-d') . '.xls';
@@ -1117,7 +1138,11 @@ class TasksController extends BaseController
     {
         $projectName = urldecode($projectName);
         $model = new TasksModel();
-        $meMode = (session()->get('al_me_mode') == 1);
+        $sysSettings = \App\Controllers\SettingsController::getSystemSettings();
+        $forceMeMode = $sysSettings['force_me_mode_system_wide'] ?? false;
+        $isAdmin = (int)session()->get('user_role') === Constants::USER_ROLE_ADMIN || (int)session()->get('account_type') === 1;
+        $meMode = ($forceMeMode && !$isAdmin) ? true : (session()->get('al_me_mode') == 1);
+
         $tasks = $model->getProjectLogs($projectName, null, $meMode);
 
         return view('tasks/project_pdf', [

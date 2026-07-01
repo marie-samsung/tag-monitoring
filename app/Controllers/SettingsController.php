@@ -496,6 +496,7 @@ class SettingsController extends BaseController
         $default = [
             'hide_assignee_weekly_reports' => true,
             'hide_assignee_system_wide'    => false,
+            'force_me_mode_system_wide'    => false,
         ];
 
         if (file_exists($settingsFile)) {
@@ -521,10 +522,12 @@ class SettingsController extends BaseController
 
         $hideWeekly = $this->request->getPost('hide_assignee_weekly_reports') === '1';
         $hideSystem = $this->request->getPost('hide_assignee_system_wide') === '1';
+        $forceMeMode = $this->request->getPost('force_me_mode_system_wide') === '1';
 
         $settings = [
             'hide_assignee_weekly_reports' => $hideWeekly,
             'hide_assignee_system_wide'    => $hideSystem,
+            'force_me_mode_system_wide'    => $forceMeMode,
         ];
 
         $settingsFile = WRITEPATH . 'system_settings.json';
