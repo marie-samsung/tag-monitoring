@@ -229,6 +229,14 @@
             </div>
 
             <!-- Tags List Table -->
+            <?php 
+                $count = 0; 
+                $nextExpDate = '';
+                if ($tags) {
+                    $expDate = date('d-m-Y', strtotime($tags[0]['al_end_date'] ?? ''));
+                    $nextExpDate = date('d-m-Y', strtotime('+61 days', strtotime($expDate)));
+                }
+            ?>
             <div class="d-flex flex-column flex-grow-1">
                 <h5 class="mb-3 text-primary d-flex align-items-center gap-2 fw-bold">
                     <i class="bi bi-tags-fill"></i>
@@ -239,14 +247,19 @@
                         <table class="table table-hover align-middle mb-0 apple-table">
                             <thead>
                                 <tr>
+                                    <th class="form-label-sm fw-semibold">#</th>
                                     <th class="form-label-sm fw-semibold">ID</th>
                                     <th class="form-label-sm fw-semibold">Property</th>
                                     <th class="form-label-sm fw-semibold">Name</th>
+                                    <th class="form-label-sm fw-semibold text-center">Updated in AL?</th>
+                                    <th class="form-label-sm fw-semibold">Next End Date</th>
+                                    <th class="form-label-sm fw-semibold text-center"></th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php foreach ($tags as $tag): ?>
-                                    <tr>
+                                <?php foreach ($tags as $tag): $count++; ?>
+                                    <tr data-vendor="<?= esc($vendors[$tag['vendor_id']] ?? '') ?>">
+                                        <td class="fw-semibold"><?= $count ?></td>
                                         <td><?= esc($tag['id']) ?></td>
                                         <td>
                                             <a href="<?= esc($properties[$tag['property_id']]['ref_link'] . Constants::AL_LIBRARY_CREATE ?? '#') ?>" target="_blank" class="apple-link-dark text-decoration-none fw-semibold">
@@ -254,9 +267,48 @@
                                             </a>
                                         </td>
                                         <td class="form-label-sm">
-                                            <a href="<?= esc($tag['ref_link'] ?? '#') ?>" target="_blank" class="apple-link-dark text-decoration-none fw-semibold">
-                                                <?= esc($tag['name']) ?>
-                                            </a>
+                                            <span class="group-hover-container align-items-center">
+                                                <a href="<?= esc($tag['ref_link'] ?? '#') ?>" target="_blank" class="apple-link-dark">
+                                                    <?= esc($tag['name']) ?>
+                                                </a>
+                                                <a href="javascript:void(0)" onclick="copyTagName('<?= esc($tag['name']) ?>', this)" title="Copy tag name" class="text-muted ms-2" style="transition: color 0.2s; text-decoration: none; line-height: 1;">
+                                                    <i class="bi bi-copy" style="font-size: 0.85rem;"></i>
+                                                </a>
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            <?php if ($tag['status'] != Constants::STATUS_UPDATED_IN_AL): ?>
+                                                <button 
+                                                    type="button" 
+                                                    class="apple-btn-primary btn-sm save-btn px-3" 
+                                                    data-tag-id="<?= $tag['id'] ?>"
+                                                >
+                                                    Done
+                                                </button>
+                                                <span class="text-success small updated-label" style="display:none;">
+                                                    <i class="bi bi-check-circle-fill"></i> Updated
+                                                </span>
+                                            <?php else: ?>
+                                                 <span class="text-success small updated-label">
+                                                    <i class="bi bi-check-circle-fill"></i> Updated
+                                                </span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center gap-1">
+                                                <input type="text" name="tags[<?= $tag['id'] ?>][next_end_date]" class="form-control form-control-sm next-end-date-input" value="<?= $nextExpDate ? date('Y-m-d 00:00', strtotime($nextExpDate)) : '' ?>" style="width: 150px;" required>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary border-0 p-1" onclick="applyDateToAll(this)" title="Apply this date to all tags">
+                                                    <i class="bi bi-chevron-double-down"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary border-0 p-1" onclick="copyNextEndDate(this)" title="Copy Date">
+                                                    <i class="bi bi-copy"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                        <td class="text-center">
+                                            <button type="button" class="btn btn-sm btn-outline-danger border-0" title="Remove" onclick="removeTagRow(this, <?= $tag['id'] ?>, '<?= esc($tag['name']) ?>')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
                                         </td>
 
                                         <input type="hidden" name="tags[<?= $tag['id'] ?>][id]" value="<?= $tag['id'] ?>">
@@ -267,6 +319,7 @@
                                 <?php endforeach; ?>
 
                                 <input type="hidden" name="info[ticket_id]" id="info_ticket_id" value="<?= $ticket_id ?>">
+                                <input type="hidden" name="info[al_end_date]" value="<?= $nextExpDate ?>">
                                 <input type="hidden" name="info[library_name]" class="library-name-input" value="<?= $libraryName ?>">
                             </tbody>
                         </table>
@@ -309,8 +362,16 @@
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
     $(document).ready(function() {
+        flatpickr(".next-end-date-input", {
+            dateFormat: "Y-m-d 00:00",
+            altInput: true,
+            altFormat: "Y-m-d 00:00",
+            allowInput: true
+        });
         $('#details').summernote({
             height: 520,
             toolbar: [
@@ -434,6 +495,172 @@
         const status = document.getElementById('copyDetailsStatus');
         status.style.opacity = 1;
         setTimeout(() => status.style.opacity = 0, 1000);
+    }
+
+    function copyTagName(text, element) {
+        const temp = document.createElement('textarea');
+        temp.value = text;
+
+        temp.style.position = 'fixed';
+        temp.style.left = '-9999px';
+
+        document.body.appendChild(temp);
+
+        temp.focus();
+        temp.select();
+
+        document.execCommand('copy');
+
+        document.body.removeChild(temp);
+
+        element.innerHTML = '<i class="bi bi-check-lg text-success fs-7"></i>';
+
+        setTimeout(() => {
+            element.innerHTML = '<i class="bi bi-copy text-secondary fs-7"></i>';
+        }, 1200);
+    }
+
+    function removeTagRow(button, tagId, tagName) {
+        window.themeConfirm({
+            title: 'Remove Tag',
+            message: 'Are you sure you want to remove ' + tagName + ' from the update list?',
+            confirmText: 'Remove',
+            cancelText: 'Cancel',
+            type: 'danger'
+        }).then((confirmed) => {
+            if (confirmed) {
+                let row = $(button).closest('tr');
+                let tbody = row.closest('tbody');
+                let vendorToRemove = row.data('vendor');
+                
+                row.remove();
+
+                // Re-index row numbers
+                tbody.find('tr').each(function(index) {
+                    $(this).find('td:first').text(index + 1);
+                });
+
+                // Update JIRA title
+                if (vendorToRemove) {
+                    let hasOtherTagsForVendor = false;
+                    tbody.find('tr').each(function() {
+                        if ($(this).data('vendor') == vendorToRemove) {
+                            hasOtherTagsForVendor = true;
+                            return false;
+                        }
+                    });
+
+                    if (!hasOtherTagsForVendor) {
+                        let titleEl = $('#jiraTitle');
+                        let newTitle = titleEl.text().replace(/\] - \[(.*?)\] - \[Update Rule\]$/, function(match, vendorsGroup) {
+                            let vendorList = vendorsGroup.split(', ');
+                            vendorList = vendorList.filter(v => v !== vendorToRemove);
+                            return '] - [' + vendorList.join(', ') + '] - [Update Rule]';
+                        });
+                        titleEl.text(newTitle).attr('title', newTitle);
+                    }
+                }
+
+                if (tbody.find('tr').length === 0) {
+                    let submitBtn = $('button[type="submit"]');
+                    submitBtn.removeAttr('data-confirm');
+                    submitBtn.off('click.emptyCheck').on('click.emptyCheck', function(e) {
+                        e.preventDefault();
+                        window.themeAlert({
+                            title: 'Cannot Proceed',
+                            message: 'No tags have been selected for update',
+                            type: 'warning'
+                        });
+                    });
+                }
+
+                if (tagId) {
+                    let urlParams = new URLSearchParams(window.location.search);
+                    
+                    // Handle comma-separated tags=1,2,3
+                    if (urlParams.has('tags')) {
+                        let tagsParam = urlParams.get('tags');
+                        let tagsArray = tagsParam.split(',');
+                        tagsArray = tagsArray.filter(id => id != tagId);
+                        
+                        if (tagsArray.length > 0) {
+                            urlParams.set('tags', tagsArray.join(','));
+                        } else {
+                            urlParams.delete('tags');
+                        }
+                    }
+
+                    // Handle array format tags[]=1&tags[]=2
+                    if (urlParams.has('tags[]')) {
+                        let tags = urlParams.getAll('tags[]');
+                        urlParams.delete('tags[]');
+                        tags.forEach(id => {
+                            if (id != tagId) {
+                                urlParams.append('tags[]', id);
+                            }
+                        });
+                    }
+
+                    // Handle indexed array format tags[0]=1&tags[1]=2
+                    let keysToDelete = [];
+                    for (let [key, value] of urlParams.entries()) {
+                        if (key.match(/^tags\[\d+\]$/) && value == tagId) {
+                            keysToDelete.push(key);
+                        }
+                    }
+                    keysToDelete.forEach(key => urlParams.delete(key));
+
+                    let newUrl = window.location.pathname;
+                    let queryString = urlParams.toString();
+                    if (queryString) {
+                        newUrl += '?' + queryString;
+                    }
+                    window.history.replaceState(null, '', newUrl);
+                }
+            }
+        });
+    }
+
+    function applyDateToAll(btn) {
+        let inputEl = $(btn).siblings('.next-end-date-input')[0];
+        if (inputEl && inputEl._flatpickr) {
+            let selectedDate = inputEl._flatpickr.selectedDates[0];
+            if (selectedDate) {
+                $('.next-end-date-input').each(function() {
+                    if (this._flatpickr && this !== inputEl) {
+                        this._flatpickr.setDate(selectedDate);
+                    }
+                });
+            }
+        }
+    }
+
+    function copyNextEndDate(button) {
+        let inputEl = $(button).siblings('input[name$="[next_end_date]"]')[0];
+        let dateVal = inputEl ? inputEl.value : '';
+
+        const temp = document.createElement('textarea');
+        temp.value = dateVal;
+
+        temp.style.position = 'fixed';
+        temp.style.left = '-9999px';
+
+        document.body.appendChild(temp);
+
+        temp.focus();
+        temp.select();
+
+        document.execCommand('copy');
+
+        document.body.removeChild(temp);
+
+        const icon = button.querySelector('i');
+        if (icon) {
+            icon.className = 'bi bi-check-lg text-success';
+            setTimeout(() => {
+                icon.className = 'bi bi-copy';
+            }, 1200);
+        }
     }
 
 </script>

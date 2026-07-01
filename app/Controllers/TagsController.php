@@ -607,7 +607,17 @@ class TagsController extends BaseController
                 $propertyId = $tag['property_id'];
             }
 
-            $this->saveJiraHistory($tag, $info['ticket_id'], $tagIds, false);
+            $updated = $model->update(
+                $tag['id'],
+                [
+                    'requested_date' => date('Y-m-d', strtotime($tag['next_end_date'])),
+                    'status' => Constants::STATUS_PENDING_VERIFICATION,
+                ]
+            );
+
+            if ($updated) {
+                $this->saveJiraHistory($tag, $info['ticket_id'], $tagIds, false);
+            }
         }
 
         $this->addTask($propertyId, $tagIds, $info, false);
