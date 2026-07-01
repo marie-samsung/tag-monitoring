@@ -607,13 +607,19 @@ class TagsController extends BaseController
                 $propertyId = $tag['property_id'];
             }
 
-            $updated = $model->update(
-                $tag['id'],
-                [
-                    'requested_date' => date('Y-m-d', strtotime($tag['next_end_date'])),
-                    'status' => Constants::STATUS_PENDING_VERIFICATION,
-                ]
-            );
+            $currentTag = $model->find($tag['id']);
+            $nextEndDate = date('Y-m-d', strtotime($tag['next_end_date']));
+            $currentEndDate = ($currentTag && $currentTag['al_end_date']) ? date('Y-m-d', strtotime($currentTag['al_end_date'])) : null;
+
+            $updateData = [
+                'status' => Constants::STATUS_PENDING_VERIFICATION,
+            ];
+
+            if ($nextEndDate !== $currentEndDate) {
+                $updateData['requested_date'] = $nextEndDate;
+            }
+
+            $updated = $model->update($tag['id'], $updateData);
 
             if ($updated) {
                 $this->saveJiraHistory($tag, $info['ticket_id'], $tagIds, false);
