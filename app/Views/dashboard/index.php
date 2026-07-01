@@ -583,7 +583,7 @@ Dashboard | Martech TMS
                     <canvas id="requestStatusChart"></canvas>
                 </div>
                 <div class="text-center mt-3 text-secondary small">
-                    Total: <strong><?= array_sum($chart_tags) + array_sum($chart_new_rules) + array_sum($chart_pending) + array_sum($chart_requests) + array_sum($chart_activities) ?></strong>
+                    Total: <strong><?= array_sum($chart_tags) + array_sum($chart_new_rules) + array_sum($chart_pending) + array_sum($chart_requests) ?></strong>
                 </div>
             </div>
         </div>
@@ -1091,8 +1091,7 @@ document.addEventListener('DOMContentLoaded', function () {
         'New Requests': <?= array_sum($chart_tags) ?>,
         'New Implementations': <?= array_sum($chart_new_rules) ?>,
         'Pending Requests': <?= array_sum($chart_pending) ?>,
-        'Date Extensions': <?= array_sum($chart_requests) ?>,
-        'Activities Logged': <?= array_sum($chart_activities) ?>
+        'Date Extensions': <?= array_sum($chart_requests) ?>
     };
     const reqStatusChart = new Chart(requestStatusCtx, {
         type: 'doughnut',
@@ -1104,8 +1103,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     '#FD7E14', // New Requests
                     '#DC3545', // New Implementations
                     '#00C2FF', // Pending Requests
-                    '#0071E3', // Date Extensions
-                    '#A855F7'  // Activities Logged
+                    '#0071E3'  // Date Extensions
                 ],
                 borderWidth: 2,
                 borderColor: '#ffffff',
@@ -1133,10 +1131,6 @@ document.addEventListener('DOMContentLoaded', function () {
             cutout: '65%'
         }
     });
-
-    // Hide 'Activities Logged' (index 4) by default
-    reqStatusChart.toggleDataVisibility(4);
-    reqStatusChart.update();
 
     // --- 7. Doughnut Chart: Activity Logs by Status ---
     const activityStatusCtx = document.getElementById('activityStatusChart').getContext('2d');
