@@ -35,6 +35,14 @@
     }
     $siteCode = implode(', ', array_unique($siteCodes));
 
+    $createLibraryLink = '#';
+    if (!empty($propertyIds)) {
+        $firstPropId = reset($propertyIds);
+        $rawRefLink = $properties[$firstPropId]['ref_link'] ?? '#';
+        $baseRefLink = preg_replace('/(\/(overview|rules|data_elements|extensions|environments|hosts|settings|history)(\/|\?|$).*)$/i', '', $rawRefLink);
+        $createLibraryLink = $baseRefLink . Constants::AL_LIBRARY_CREATE;
+    }
+
     $vendor = [];
     $reasons = [];
     $purposes = [];
@@ -207,6 +215,25 @@
                         <span id="copyStatus" class="badge bg-success" style="opacity:0; transition: opacity .6s; font-size:10px;">
                             Copied!
                         </span>
+                    </div>
+                </div>
+
+                <!-- Library Name -->
+                <div class="mb-3">
+                    <label class="form-label-sm fw-semibold text-secondary mb-1">Library Name</label>
+                    <div class="d-flex align-items-center justify-content-between p-2 bg-light border rounded gap-2" style="min-height: 38px;">
+                        <div class="d-flex align-items-center gap-2">
+                            <span id="libraryNameVal" class="fw-bold text-dark fs-7"><?= esc($libraryName) ?></span>
+                            <a href="javascript:void(0)" onclick="copyLibraryName()" class="text-primary text-decoration-none d-flex align-items-center" title="Copy Library Name">
+                                <i class="bi bi-copy fs-6"></i>
+                            </a>
+                            <span id="copyLibraryStatus" class="badge bg-success" style="opacity:0; transition: opacity .6s; font-size:10px;">
+                                Copied!
+                            </span>
+                        </div>
+                        <a href="<?= esc($createLibraryLink ?? '#') ?>" target="_blank" rel="noopener" class="apple-btn-secondary px-3 py-1 text-decoration-none btn-sm d-inline-flex align-items-center gap-1 text-nowrap flex-shrink-0" style="font-size: 0.72rem; height: 26px;">
+                            <i class="bi bi-plus-circle"></i> Create Library
+                        </a>
                     </div>
                 </div>
 
@@ -398,6 +425,9 @@
             // Update visible header
             $('#ticket-id-header').text(ticketId);
 
+            // Update Library Name text inside JIRA Ticket Information
+            $('#libraryNameVal').text(newLibraryName);
+
             // Update hidden form inputs
             $('#info_ticket_id').val(ticketId);
             $('.library-name-input').val(newLibraryName);
@@ -493,6 +523,27 @@
         document.body.removeChild(temp);
 
         const status = document.getElementById('copyDetailsStatus');
+        status.style.opacity = 1;
+        setTimeout(() => status.style.opacity = 0, 1000);
+    }
+
+    function copyLibraryName() {
+        const libName = document.getElementById('libraryNameVal').innerText;
+        const status = document.getElementById('copyLibraryStatus');
+
+        const temp = document.createElement('textarea');
+        temp.value = libName;
+
+        temp.style.position = 'fixed';
+        temp.style.left = '-9999px';
+        document.body.appendChild(temp);
+
+        temp.focus();
+        temp.select();
+
+        document.execCommand('copy');
+        document.body.removeChild(temp);
+
         status.style.opacity = 1;
         setTimeout(() => status.style.opacity = 0, 1000);
     }
