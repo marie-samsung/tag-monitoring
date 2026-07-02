@@ -285,6 +285,23 @@
                 </div>
             </div>
 
+            <!-- Labels -->
+            <div class="mb-3 pb-2 border-bottom border-light">
+                <span class="d-block text-primary fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Labels / Tags</span>
+                <div class="mt-1 d-flex flex-wrap gap-1.5">
+                    <?php if (!empty($log['labels'])): ?>
+                        <?php foreach (explode(',', $log['labels']) as $lbl): ?>
+                            <span class="badge bg-primary text-white d-inline-flex align-items-center gap-1.5 rounded-pill px-3 py-1.5" style="font-size: 0.8rem; font-weight: 500; background-color: var(--color-badge-primary-bg) !important; color: var(--color-badge-primary-text) !important; border: 1px solid var(--color-badge-primary-border) !important;">
+                                <i class="bi bi-tag-fill text-primary" style="font-size: 0.75rem; opacity: 0.7;"></i>
+                                <?= esc($lbl) ?>
+                            </span>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <span class="text-muted" style="font-size: 0.9rem;">—</span>
+                    <?php endif; ?>
+                </div>
+            </div>
+
             <!-- Type -->
             <div class="mb-3 pb-2 border-bottom border-light">
                 <span class="d-block text-primary fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">TASK TYPE</span>

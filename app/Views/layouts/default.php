@@ -6,7 +6,7 @@
     <link href="<?= base_url('assets/bootstrap/css/bootstrap.min.css') ?>" rel="stylesheet">
     <link href="<?= base_url('assets/bootstrap-icons/bootstrap-icons.css') ?>" rel="stylesheet">
     <link href="<?= base_url('assets/select2/css/select2.min.css') ?>" rel="stylesheet">
-    <link href="<?= base_url('assets/css/custom.css') ?>" rel="stylesheet">
+    <link href="<?= base_url('assets/css/custom.css?v=' . (file_exists(FCPATH . 'assets/css/custom.css') ? filemtime(FCPATH . 'assets/css/custom.css') : time())) ?>" rel="stylesheet">
     <link href="<?= base_url('assets/summernote/summernote-lite.css') ?>" rel="stylesheet">
 
 

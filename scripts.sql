@@ -116,3 +116,5 @@ ALTER TABLE `activity_logs` ADD `project` VARCHAR(255) NOT NULL DEFAULT 'Generic
 ALTER TABLE `activity_logs` MODIFY `description` MEDIUMTEXT NOT NULL;
 
 ALTER TABLE `tags` ADD `js_code` LONGTEXT NULL DEFAULT NULL;
+
+ALTER TABLE `activity_logs` ADD `labels` VARCHAR(500) NULL DEFAULT NULL AFTER `campaign_id`;

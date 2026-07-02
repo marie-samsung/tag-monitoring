@@ -103,6 +103,20 @@ class TasksController extends BaseController
         $post = $this->request->getPost();
         $assigneeId = $post['assignee'] ?? null;
 
+        $labelsInput = $post['labels'] ?? '';
+        $labelArr = [];
+        if (!empty($labelsInput)) {
+            $rawLabels = preg_split('/[\s,]+/', $labelsInput);
+            foreach ($rawLabels as $rl) {
+                $rl = trim($rl);
+                if ($rl !== '') {
+                    $rl = str_replace(' ', '', $rl);
+                    $labelArr[] = $rl;
+                }
+            }
+        }
+        $labels = !empty($labelArr) ? implode(',', array_unique($labelArr)) : null;
+
         $insertData = [
             'title' => trim($post['title']),
             'description' => $post['description'] ?? null,
@@ -122,6 +136,7 @@ class TasksController extends BaseController
             'finished_date' => !empty($post['finished_date']) ? $post['finished_date'] : null,
             'campaign_status' => !empty($post['campaign_status']) ? (int) $post['campaign_status'] : null,
             'campaign_id' => $post['campaign_id'] ?? null,
+            'labels' => $labels,
         ];
 
         $model->insert($insertData);
@@ -229,6 +244,20 @@ class TasksController extends BaseController
             ]);
         }
 
+        $labelsInput = $post['labels'] ?? '';
+        $labelArr = [];
+        if (!empty($labelsInput)) {
+            $rawLabels = preg_split('/[\s,]+/', $labelsInput);
+            foreach ($rawLabels as $rl) {
+                $rl = trim($rl);
+                if ($rl !== '') {
+                    $rl = str_replace(' ', '', $rl);
+                    $labelArr[] = $rl;
+                }
+            }
+        }
+        $labels = !empty($labelArr) ? implode(',', array_unique($labelArr)) : null;
+
         $updateData = [
             'title' => trim($post['title']),
             'description' => $post['description'] ?? null,
@@ -248,6 +277,7 @@ class TasksController extends BaseController
             'finished_date' => !empty($post['finished_date']) ? $post['finished_date'] : null,
             'campaign_status' => !empty($post['campaign_status']) ? (int) $post['campaign_status'] : null,
             'campaign_id' => $post['campaign_id'] ?? null,
+            'labels' => $labels,
         ];
 
         $model->update($id, $updateData);

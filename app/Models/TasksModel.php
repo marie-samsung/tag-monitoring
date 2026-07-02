@@ -29,10 +29,19 @@ class TasksModel extends Model
         'updated_by',
         'campaign_status',
         'campaign_id',
+        'labels',
     ];
 
     protected $useTimestamps = true;
     protected $useSoftDeletes = true;
+
+    protected function initialize()
+    {
+        parent::initialize();
+        if (!$this->db->fieldExists('labels', $this->table)) {
+            $this->db->query("ALTER TABLE {$this->table} ADD `labels` VARCHAR(500) NULL DEFAULT NULL AFTER `campaign_id` ");
+        }
+    }
 
     public function filterLogs($filters = [], $paginate = 0)
     {

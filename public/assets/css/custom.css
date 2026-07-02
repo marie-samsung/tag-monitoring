@@ -967,3 +967,101 @@ table.file-table th:nth-child(3) {
     gap: 12px;
     justify-content: center;
 }
+
+/* ==========================================
+   9. Custom Tags Input UI Components
+   ========================================== */
+.tags-input-container {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    min-height: 38px;
+    border-radius: 8px;
+    border: 1px solid var(--color-border-input);
+    background-color: var(--color-card-bg);
+    cursor: text;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.tags-input-container.focused {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 0.25rem var(--color-primary-focus-shadow);
+    outline: none;
+}
+
+.tags-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+}
+
+.tags-input-container .tag-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    border-radius: 9999px;
+    background-color: var(--color-badge-primary-bg);
+    color: var(--color-badge-primary-text);
+    border: 1px solid var(--color-badge-primary-border);
+    animation: tagScaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    user-select: none;
+}
+
+.tags-input-container .tag-badge .tag-remove-btn {
+    cursor: pointer;
+    font-size: 0.85rem;
+    opacity: 0.6;
+    transition: opacity var(--transition-fast), transform var(--transition-fast);
+    display: inline-flex;
+    align-items: center;
+}
+
+.tags-input-container .tag-badge .tag-remove-btn:hover {
+    opacity: 1;
+    transform: scale(1.15);
+}
+
+.tags-input-container .tag-field {
+    border: none;
+    outline: none;
+    padding: 0;
+    margin: 0;
+    flex-grow: 1;
+    background: transparent;
+    color: var(--color-text-base);
+    font-size: 0.875rem;
+    min-width: 120px;
+    height: 26px;
+}
+
+@keyframes tagScaleIn {
+    0% {
+        transform: scale(0.7);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes tagScaleOut {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(0.7);
+        opacity: 0;
+    }
+}
+
+.tags-input-container .tag-badge.removing {
+    animation: tagScaleOut 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
