@@ -62,6 +62,7 @@ class SettingsController extends BaseController
             'backups' => $backups,
             'autoBackupSettings' => $autoBackupSettings,
             'systemSettings' => self::getSystemSettings(),
+            'ci_environment' => self::getCodeIgniterEnvironment(),
         ]);
     }
 
@@ -488,6 +489,41 @@ class SettingsController extends BaseController
     }
 
     /**
+     * Get the CodeIgniter environment mode from the root .env file.
+     */
+    public static function getCodeIgniterEnvironment(): string
+    {
+        $envFile = ROOTPATH . '.env';
+        if (file_exists($envFile)) {
+            $content = file_get_contents($envFile);
+            if (preg_match('/^\s*CI_ENVIRONMENT\s*=\s*(\w+)/m', $content, $matches)) {
+                return trim($matches[1]);
+            }
+        }
+        return 'production';
+    }
+
+    /**
+     * Update the CodeIgniter environment mode in the root .env file.
+     */
+    public static function setCodeIgniterEnvironment(string $env): bool
+    {
+        $envFile = ROOTPATH . '.env';
+        if (!file_exists($envFile)) {
+            return false;
+        }
+
+        $content = file_get_contents($envFile);
+        if (preg_match('/^\s*CI_ENVIRONMENT\s*=\s*\w+/m', $content)) {
+            $newContent = preg_replace('/^(\s*CI_ENVIRONMENT\s*=\s*)\w+/m', '${1}' . $env, $content);
+        } else {
+            $newContent = $content . "\nCI_ENVIRONMENT = " . $env . "\n";
+        }
+
+        return file_put_contents($envFile, $newContent) !== false;
+    }
+
+    /**
      * Get the general system settings.
      */
     public static function getSystemSettings(): array
@@ -536,12 +572,24 @@ class SettingsController extends BaseController
             mkdir($dir, 0777, true);
         }
 
-        if (file_put_contents($settingsFile, json_encode($settings, JSON_PRETTY_PRINT)) !== false) {
-            session()->setFlashdata('active_tab', 'general');
-            return redirect()->to(site_url('settings'))->with('success', 'General system settings saved successfully.');
+        // Save system settings to JSON
+        $savedJson = file_put_contents($settingsFile, json_encode($settings, JSON_PRETTY_PRINT)) !== false;
+
+        // Save CI environment to .env
+        $ciEnv = $this->request->getPost('ci_environment');
+        $savedEnv = true;
+        if (in_array($ciEnv, ['development', 'production'])) {
+            $savedEnv = self::setCodeIgniterEnvironment($ciEnv);
         }
 
         session()->setFlashdata('active_tab', 'general');
+
+        if ($savedJson && $savedEnv) {
+            return redirect()->to(site_url('settings'))->with('success', 'General system settings saved successfully.');
+        } elseif ($savedJson) {
+            return redirect()->to(site_url('settings'))->with('warning', 'General settings saved, but failed to update environment in root .env file.');
+        }
+
         return redirect()->to(site_url('settings'))->with('error', 'Failed to save general system settings.');
     }
 }
