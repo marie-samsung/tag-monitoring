@@ -1312,10 +1312,20 @@ class TasksController extends BaseController
             ]);
 
             $statusCode = $response->getStatusCode();
+            $body = $response->getBody();
 
-            var_dump($response);
+            echo "<h3>HTTP Status Code: " . $statusCode . "</h3>";
+            echo "<h4>Response from Jira:</h4>";
+            echo "<pre style='background: #f4f4f4; padding: 10px; border: 1px solid #ccc;'>";
+            $decodedBody = json_decode($body, true);
+            print_r($decodedBody ? $decodedBody : $body);
+            echo "</pre>";
+
+            echo "<h4>Payload Sent:</h4>";
+            echo "<pre style='background: #eef9fd; padding: 10px; border: 1px solid #bce8f1;'>";
+            print_r($payload);
+            echo "</pre>";
             die();
-            $body = json_decode($response->getBody(), true);
 
             if ($statusCode >= 200 && $statusCode < 300) {
                 $ticketId = $body['key'] ?? null;
