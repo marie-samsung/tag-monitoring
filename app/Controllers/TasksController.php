@@ -16,7 +16,7 @@ class TasksController extends BaseController
 
         $sysSettings = \App\Controllers\SettingsController::getSystemSettings();
         $forceMeMode = $sysSettings['force_me_mode_system_wide'] ?? false;
-        $isAdmin = (int)session()->get('user_role') === Constants::USER_ROLE_ADMIN || (int)session()->get('account_type') === 1;
+        $isAdmin = (int) session()->get('user_role') === Constants::USER_ROLE_ADMIN || (int) session()->get('account_type') === 1;
 
         if ($forceMeMode && !$isAdmin) {
             session()->set('al_me_mode', 1);
@@ -53,16 +53,20 @@ class TasksController extends BaseController
             'started_to' => $this->request->getGet('started_to'),
             'finished_from' => $this->request->getGet('finished_from'),
             'finished_to' => $this->request->getGet('finished_to'),
+            'labels' => $this->request->getGet('labels'),
         ];
         $data['status_counts'] = $model->getStatusCounts($filters);
         $data['logs'] = $model->filterLogs($filters, 25);
+
         $data['pager'] = $model->pager;
         $data['filters'] = $filters;
 
         $distinctProjects = $model->getDistinctProjects();
         $data['project_names'] = array_column($distinctProjects, 'project_name');
+        $data['all_labels'] = $model->getAllLabels();
 
         return view('tasks/list', $data);
+
     }
 
     public function create()
@@ -93,25 +97,30 @@ class TasksController extends BaseController
             $projectNames = array_column($distinctProjects, 'project_name');
             $distinctDepartments = $model->select('DISTINCT(department_id) as department_name')->where('department_id IS NOT NULL')->where("department_id != ''")->orderBy('department_id', 'ASC')->findAll();
             $departmentNames = array_column($distinctDepartments, 'department_name');
+            $allLabels = $model->getAllLabels();
             return view('tasks/create', [
                 'project_names' => $projectNames,
                 'department_names' => $departmentNames,
-                'log' => $log
+                'log' => $log,
+                'all_labels' => $allLabels
             ]);
         }
 
         $post = $this->request->getPost();
         $assigneeId = $post['assignee'] ?? null;
 
-        $labelsInput = $post['labels'] ?? '';
+        $labelsInput = $post['labels'] ?? [];
         $labelArr = [];
         if (!empty($labelsInput)) {
-            $rawLabels = preg_split('/[\s,]+/', $labelsInput);
+            $rawLabels = is_array($labelsInput) ? $labelsInput : preg_split('/[\s,]+/', $labelsInput);
             foreach ($rawLabels as $rl) {
-                $rl = trim($rl);
-                if ($rl !== '') {
-                    $rl = str_replace(' ', '', $rl);
-                    $labelArr[] = $rl;
+                $parts = preg_split('/[\s,]+/', $rl);
+                foreach ($parts as $p) {
+                    $p = trim($p);
+                    if ($p !== '') {
+                        $p = str_replace(' ', '', $p);
+                        $labelArr[] = $p;
+                    }
                 }
             }
         }
@@ -140,6 +149,11 @@ class TasksController extends BaseController
         ];
 
         $model->insert($insertData);
+        $insertId = $model->getInsertID();
+
+        if ($insertId) {
+            $this->createJiraIssueFromTask($insertId);
+        }
 
         $referer = $this->request->getServer('HTTP_REFERER');
         $redirectUrl = '/tasks';
@@ -188,10 +202,12 @@ class TasksController extends BaseController
             $projectNames = array_column($distinctProjects, 'project_name');
             $distinctDepartments = $model->select('DISTINCT(department_id) as department_name')->where('department_id IS NOT NULL')->where("department_id != ''")->orderBy('department_id', 'ASC')->findAll();
             $departmentNames = array_column($distinctDepartments, 'department_name');
+            $allLabels = $model->getAllLabels();
             return view('tasks/update', [
                 'log' => $log,
                 'project_names' => $projectNames,
-                'department_names' => $departmentNames
+                'department_names' => $departmentNames,
+                'all_labels' => $allLabels
             ]);
         }
 
@@ -244,15 +260,18 @@ class TasksController extends BaseController
             ]);
         }
 
-        $labelsInput = $post['labels'] ?? '';
+        $labelsInput = $post['labels'] ?? [];
         $labelArr = [];
         if (!empty($labelsInput)) {
-            $rawLabels = preg_split('/[\s,]+/', $labelsInput);
+            $rawLabels = is_array($labelsInput) ? $labelsInput : preg_split('/[\s,]+/', $labelsInput);
             foreach ($rawLabels as $rl) {
-                $rl = trim($rl);
-                if ($rl !== '') {
-                    $rl = str_replace(' ', '', $rl);
-                    $labelArr[] = $rl;
+                $parts = preg_split('/[\s,]+/', $rl);
+                foreach ($parts as $p) {
+                    $p = trim($p);
+                    if ($p !== '') {
+                        $p = str_replace(' ', '', $p);
+                        $labelArr[] = $p;
+                    }
                 }
             }
         }
@@ -338,7 +357,7 @@ class TasksController extends BaseController
                         break;
                     }
                 }
-                
+
                 if ($userId && $userId != $post['commented_by']) {
                     $notificationsModel->insert([
                         'user_id' => $userId,
@@ -440,9 +459,11 @@ class TasksController extends BaseController
             'started_to' => $this->request->getGet('started_to'),
             'finished_from' => $this->request->getGet('finished_from'),
             'finished_to' => $this->request->getGet('finished_to'),
+            'labels' => $this->request->getGet('labels'),
         ];
 
         $logs = $logsModel->filterLogs($filters);
+
 
         $subsidiary = (!empty($filters['subsidiary_id']))
             ? '(' . Constants::ACTIVITY_LOG_SUBSIDIARIES[$filters['subsidiary_id']] . ')'
@@ -471,9 +492,26 @@ class TasksController extends BaseController
 
         // Headers
         $headers = [
-            'Subsidiary', 'Team', 'Project Name', 'Activity Log Type', 'Assigned To', 'Title', 'Description', 'Status', 'Priority', 'Size', 'Ticket ID', '(Campaign) Department', '(Campaign) Status', '(Campaign) ID', 'Requested By', 'Requested Date', 'Finished Date', 'Created Date'
+            'Subsidiary',
+            'Team',
+            'Project Name',
+            'Activity Log Type',
+            'Assigned To',
+            'Title',
+            'Description',
+            'Status',
+            'Priority',
+            'Size',
+            'Ticket ID',
+            '(Campaign) Department',
+            '(Campaign) Status',
+            '(Campaign) ID',
+            'Requested By',
+            'Requested Date',
+            'Finished Date',
+            'Created Date'
         ];
-        
+
         echo '<tr>';
         foreach ($headers as $header) {
             echo '<th style="background-color:#f2f2f2;">' . esc($header) . '</th>';
@@ -1072,7 +1110,7 @@ class TasksController extends BaseController
 
         $sysSettings = \App\Controllers\SettingsController::getSystemSettings();
         $forceMeMode = $sysSettings['force_me_mode_system_wide'] ?? false;
-        $isAdmin = (int)session()->get('user_role') === Constants::USER_ROLE_ADMIN || (int)session()->get('account_type') === 1;
+        $isAdmin = (int) session()->get('user_role') === Constants::USER_ROLE_ADMIN || (int) session()->get('account_type') === 1;
 
         if ($forceMeMode && !$isAdmin) {
             session()->set('al_me_mode', 1);
@@ -1122,7 +1160,7 @@ class TasksController extends BaseController
         $model = new TasksModel();
         $sysSettings = \App\Controllers\SettingsController::getSystemSettings();
         $forceMeMode = $sysSettings['force_me_mode_system_wide'] ?? false;
-        $isAdmin = (int)session()->get('user_role') === Constants::USER_ROLE_ADMIN || (int)session()->get('account_type') === 1;
+        $isAdmin = (int) session()->get('user_role') === Constants::USER_ROLE_ADMIN || (int) session()->get('account_type') === 1;
         $meMode = ($forceMeMode && !$isAdmin) ? true : (session()->get('al_me_mode') == 1);
 
         $tasks = $model->getProjectLogs($projectName, null, $meMode);
@@ -1137,7 +1175,7 @@ class TasksController extends BaseController
         echo '<body><table border="1">';
 
         // Header row
-        $headers = [ 'Subsidiary', 'Task Title', 'Ticket ID', 'Priority', 'Assignee', 'Created Date', 'Status', 'Latest Update' ];
+        $headers = ['Subsidiary', 'Task Title', 'Ticket ID', 'Priority', 'Assignee', 'Created Date', 'Status', 'Latest Update'];
         echo '<tr>';
         foreach ($headers as $header) {
             echo '<th style="background-color:#f2f2f2;">' . esc($header) . '</th>';
@@ -1173,7 +1211,7 @@ class TasksController extends BaseController
         $model = new TasksModel();
         $sysSettings = \App\Controllers\SettingsController::getSystemSettings();
         $forceMeMode = $sysSettings['force_me_mode_system_wide'] ?? false;
-        $isAdmin = (int)session()->get('user_role') === Constants::USER_ROLE_ADMIN || (int)session()->get('account_type') === 1;
+        $isAdmin = (int) session()->get('user_role') === Constants::USER_ROLE_ADMIN || (int) session()->get('account_type') === 1;
         $meMode = ($forceMeMode && !$isAdmin) ? true : (session()->get('al_me_mode') == 1);
 
         $tasks = $model->getProjectLogs($projectName, null, $meMode);
@@ -1182,6 +1220,88 @@ class TasksController extends BaseController
             'project_name' => $projectName,
             'tasks' => $tasks,
         ]);
+    }
+
+    private function createJiraIssueFromTask($id)
+    {
+        $model = new TasksModel();
+        $log = $model->find($id);
+
+        if (!$log) {
+            return false;
+        }
+
+        // You can set these in your .env file or constants
+        $jiraEndpoint = getenv('MT_JIRA_CREATE_ISSUE');
+        $jiraToken = getenv('MT_JIRA_AUTH_TOKEN');
+        $projectKey = getenv('MT_JIRA_PROJECT_KEY');
+
+        // Prepare the payload based on Task details
+        $payload = [
+            'fields' => [
+                'project' => [
+                    'key' => $projectKey
+                ],
+                'issuetype' => [
+                    'name' => 'Task' // this will always be Task
+                ],
+                'summary' => $log['title'],
+                'components' => [
+                    'name' => Constants::TEAMS[$log['team_id']],
+                ],
+                'description' => strip_tags($log['description'] ?? $log['title']),
+                'priority' => [
+                    'name' => Constants::PRIORITIES[$log['priority']],
+                ],
+                'issuetype' => [
+                    'name' => 'Task' // Update with appropriate Issue Type
+                ]
+            ]
+        ];
+
+        $client = \Config\Services::curlrequest();
+
+        try {
+            $response = $client->post($jiraEndpoint, [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $jiraToken,
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json'
+                ],
+                'json' => $payload,
+                'http_errors' => false
+            ]);
+
+            $statusCode = $response->getStatusCode();
+            $body = json_decode($response->getBody(), true);
+
+            if ($statusCode >= 200 && $statusCode < 300) {
+                $ticketId = $body['key'] ?? null;
+
+                if ($ticketId) {
+                    $commentsModel = new TaskCommentsModel();
+                    $oldTicketId = !empty($log['mt_jira_ticket']) ? trim((string) $log['mt_jira_ticket']) : 'None';
+
+                    // Update task with the new MT JIRA ticket ID
+                    $model->update($id, ['mt_jira_ticket' => $ticketId]);
+
+                    // Add an update comment
+                    $commentsModel->insert([
+                        'log_id' => $id,
+                        'comment' => "MT JIRA Ticket updated from [{$oldTicketId}] to [{$ticketId}] via API creation",
+                        'commented_by' => session()->get('user_id') ?? Constants::USER_SYSTEM,
+                        'type' => Constants::COMMENT_TYPE_UPDATE,
+                    ]);
+                }
+
+                return true;
+            }
+
+            return false;
+
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 
     private function updateRelatedTagsStatusToOnHold($log)
@@ -1240,10 +1360,10 @@ class TasksController extends BaseController
                     if (!empty($tagIds)) {
                         $tagsModel = new \App\Models\TagsModel();
                         $tagsModel->whereIn('id', $tagIds)
-                                  ->where('requested_date IS NOT NULL')
-                                  ->where("requested_date != ''")
-                                  ->set(['status' => Constants::STATUS_PENDING_VERIFICATION])
-                                  ->update();
+                            ->where('requested_date IS NOT NULL')
+                            ->where("requested_date != ''")
+                            ->set(['status' => Constants::STATUS_PENDING_VERIFICATION])
+                            ->update();
                     }
                 }
             }

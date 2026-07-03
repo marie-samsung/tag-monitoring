@@ -328,11 +328,18 @@
                 <span class="d-block text-primary fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Labels / Tags</span>
                 <div class="mt-1 d-flex flex-wrap gap-1.5">
                     <?php if (!empty($log['labels'])): ?>
-                        <?php foreach (explode(',', $log['labels']) as $lbl): ?>
-                            <span class="badge bg-primary text-white d-inline-flex align-items-center gap-1.5 rounded-pill px-3 py-1.5" style="font-size: 0.8rem; font-weight: 500; background-color: var(--color-badge-primary-bg) !important; color: var(--color-badge-primary-text) !important; border: 1px solid var(--color-badge-primary-border) !important;">
-                                <i class="bi bi-tag-fill text-primary" style="font-size: 0.75rem; opacity: 0.7;"></i>
-                                <?= esc($lbl) ?>
-                            </span>
+                        <?php foreach (explode(',', $log['labels']) as $lbl): 
+                            $lbl = trim($lbl);
+                            $labelUrl = site_url('tasks') . '?' . http_build_query(['labels' => [$lbl]]);
+                        ?>
+                            <a href="<?= $labelUrl ?>" class="text-decoration-none" title="Filter by <?= esc($lbl) ?>">
+                                <span class="badge bg-primary text-white d-inline-flex align-items-center gap-1 rounded-pill px-3 py-1" 
+                                      style="font-size: 0.8rem; font-weight: 500; background-color: var(--color-badge-primary-bg) !important; color: var(--color-badge-primary-text) !important; border: 1px solid var(--color-badge-primary-border) !important; cursor: pointer; transition: transform 0.15s ease;"
+                                      onmouseover="this.style.transform='scale(1.05)';" onmouseout="this.style.transform='scale(1)';">
+                                    <i class="bi bi-tag-fill text-primary" style="font-size: 0.75rem; opacity: 0.7;"></i>
+                                    <?= esc($lbl) ?>
+                                </span>
+                            </a>
                         <?php endforeach; ?>
                     <?php else: ?>
                         <span class="text-muted" style="font-size: 0.9rem;">—</span>

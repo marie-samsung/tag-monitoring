@@ -1065,3 +1065,74 @@ table.file-table th:nth-child(3) {
 .tags-input-container .tag-badge.removing {
     animation: tagScaleOut 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* ==========================================
+   10. Select2 Apple Style Overrides
+   ========================================== */
+.select2-container--default .select2-selection--multiple {
+    border: 1px solid var(--color-border-input) !important;
+    border-radius: 8px !important;
+    min-height: 34px !important;
+    background-color: var(--color-card-bg) !important;
+    padding: 2px 4px !important;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast) !important;
+}
+
+.select2-container--default.select2-container--focus .select2-selection--multiple {
+    border-color: var(--color-primary) !important;
+    box-shadow: 0 0 0 0.25rem var(--color-primary-focus-shadow) !important;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice {
+    background-color: var(--color-badge-primary-bg) !important;
+    color: var(--color-badge-primary-text) !important;
+    border: 1px solid var(--color-badge-primary-border) !important;
+    border-radius: 9999px !important;
+    padding: 2px 8px !important;
+    font-size: 0.8rem !important;
+    font-weight: 500 !important;
+    margin-top: 4px !important;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+    color: var(--color-badge-primary-text) !important;
+    border-right: none !important;
+    margin-right: 6px !important;
+    padding-right: 4px !important;
+    opacity: 0.6;
+    font-weight: bold;
+    display: inline-block !important;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice__display {
+    padding-left: 6px !important;
+    padding-right: 6px !important;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+    background-color: transparent !important;
+    opacity: 1;
+}
+
+.select2-container--default .select2-search--inline .select2-search__field {
+    font-family: var(--font-sans);
+    color: var(--color-text-base);
+    margin-top: 5px !important;
+}
+
+.select2-dropdown {
+    border: 1px solid var(--color-border-input) !important;
+    border-radius: 8px !important;
+    box-shadow: var(--shadow-md) !important;
+    overflow: hidden;
+}
+
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+    background-color: var(--color-primary) !important;
+    color: white !important;
+}
+
+.select2-container--default .select2-results__option {
+    font-size: 0.85rem;
+    padding: 6px 12px;
+}

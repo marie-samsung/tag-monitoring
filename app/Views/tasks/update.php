@@ -6,104 +6,7 @@
 
 <?= $this->section('content') ?>
 
-<style>
-/* Custom Tags Input UI Components */
-.tags-input-container {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    min-height: 38px;
-    border-radius: 8px;
-    border: 1px solid var(--color-border-input);
-    background-color: var(--color-card-bg);
-    cursor: text;
-    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
-}
 
-.tags-input-container.focused {
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 0.25rem var(--color-primary-focus-shadow);
-    outline: none;
-}
-
-.tags-wrapper {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    align-items: center;
-}
-
-.tags-input-container .tag-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 4px 10px;
-    font-size: 0.8rem;
-    font-weight: 500;
-    border-radius: 9999px;
-    background-color: var(--color-badge-primary-bg);
-    color: var(--color-badge-primary-text);
-    border: 1px solid var(--color-badge-primary-border);
-    animation: tagScaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    user-select: none;
-}
-
-.tags-input-container .tag-badge .tag-remove-btn {
-    cursor: pointer;
-    font-size: 0.85rem;
-    opacity: 0.6;
-    transition: opacity var(--transition-fast), transform var(--transition-fast);
-    display: inline-flex;
-    align-items: center;
-}
-
-.tags-input-container .tag-badge .tag-remove-btn:hover {
-    opacity: 1;
-    transform: scale(1.15);
-}
-
-.tags-input-container .tag-field {
-    border: none !important;
-    outline: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    flex-grow: 1;
-    background: transparent !important;
-    color: var(--color-text-base) !important;
-    font-size: 0.875rem !important;
-    min-width: 120px;
-    height: 26px;
-    box-shadow: none !important;
-}
-
-@keyframes tagScaleIn {
-    0% {
-        transform: scale(0.7);
-        opacity: 0;
-    }
-    100% {
-        transform: scale(1);
-        opacity: 1;
-    }
-}
-
-@keyframes tagScaleOut {
-    0% {
-        transform: scale(1);
-        opacity: 1;
-    }
-    100% {
-        transform: scale(0.7);
-        opacity: 0;
-    }
-}
-
-.tags-input-container .tag-badge.removing {
-    animation: tagScaleOut 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-</style>
 
 <?php
     use App\Models\Constants;
@@ -164,13 +67,26 @@
                     <!-- Labels -->
                     <div class="mb-4">
                         <label class="form-label-sm fw-semibold text-secondary mb-1">Labels / Tags</label>
-                        <div class="tags-input-container" id="labels-tags-input">
-                            <div class="tags-wrapper"></div>
-                            <input type="text" class="tag-field" placeholder="Add label (press space)...">
-                            <input type="hidden" name="labels" id="labels-hidden-input" value="<?= esc($log['labels'] ?? '') ?>">
-                        </div>
+                        <select name="labels[]" class="form-select select2-multiple" multiple="multiple" data-placeholder="Select or type to create new labels" style="width: 100%;">
+                            <?php 
+                            $selectedLabels = [];
+                            if (!empty($log['labels'])) {
+                                $selectedLabels = array_filter(array_map('trim', explode(',', $log['labels'])));
+                            }
+                            $allLabels = $all_labels ?? [];
+                            $allOptions = array_unique(array_merge($allLabels, $selectedLabels));
+                            sort($allOptions);
+
+                            foreach ($allOptions as $lbl): 
+                                if (empty(trim($lbl))) continue;
+                            ?>
+                                <option value="<?= esc($lbl) ?>" <?= in_array($lbl, $selectedLabels) ? 'selected' : '' ?>>
+                                    <?= esc($lbl) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
                         <div class="form-text mt-1 text-muted" style="font-size: 0.75rem;">
-                            Type a label and press <kbd class="px-1 bg-secondary text-white rounded">Space</kbd> or <kbd class="px-1 bg-secondary text-white rounded">Enter</kbd> to add it. Labels must not contain spaces.
+                            Select existing labels or type to create new ones. Labels must not contain spaces.
                         </div>
                     </div>
                 </div>
@@ -474,120 +390,12 @@
             $('#details').summernote('code', detailsHtml);
         });
 
-        // Initialize Tags Input for Labels
-        const tagsContainer = document.getElementById('labels-tags-input');
-        if (tagsContainer) {
-            const inputField = tagsContainer.querySelector('.tag-field');
-            const hiddenInput = tagsContainer.querySelector('#labels-hidden-input');
-            const tagsWrapper = tagsContainer.querySelector('.tags-wrapper');
-            let tagsList = [];
-
-            if (hiddenInput.value) {
-                tagsList = hiddenInput.value.split(',').map(t => t.trim()).filter(t => t !== '');
-                renderTags();
-            }
-
-            function renderTags() {
-                tagsWrapper.innerHTML = '';
-                tagsList.forEach((tag, index) => {
-                    const badge = document.createElement('span');
-                    badge.className = 'tag-badge';
-                    badge.innerHTML = `
-                        <i class="bi bi-tag-fill text-primary" style="font-size: 0.75rem; opacity: 0.7;"></i>
-                        <span>${escapeHtml(tag)}</span>
-                        <span class="tag-remove-btn" data-index="${index}"><i class="bi bi-x-lg" style="font-size: 0.75rem; margin-left: 3px;"></i></span>
-                    `;
-                    tagsWrapper.appendChild(badge);
-                });
-                hiddenInput.value = tagsList.join(',');
-            }
-
-            function addTag(tag) {
-                tag = tag.replace(/[\s,]+/g, '').trim();
-                if (tag === '') return;
-                
-                if (tagsList.includes(tag)) {
-                    tagsContainer.classList.add('border-danger');
-                    setTimeout(() => tagsContainer.classList.remove('border-danger'), 300);
-                    return;
-                }
-
-                tagsList.push(tag);
-                renderTags();
-                inputField.value = '';
-            }
-
-            function removeTag(index) {
-                const badge = tagsWrapper.children[index];
-                if (badge) {
-                    badge.classList.add('removing');
-                    badge.addEventListener('animationend', () => {
-                        tagsList.splice(index, 1);
-                        renderTags();
-                        inputField.focus();
-                    });
-                } else {
-                    tagsList.splice(index, 1);
-                    renderTags();
-                    inputField.focus();
-                }
-            }
-
-            tagsContainer.addEventListener('click', (e) => {
-                if (e.target.closest('.tag-remove-btn')) {
-                    const index = parseInt(e.target.closest('.tag-remove-btn').dataset.index);
-                    removeTag(index);
-                } else {
-                    inputField.focus();
-                }
-            });
-
-            inputField.addEventListener('focus', () => {
-                tagsContainer.classList.add('focused');
-            });
-
-            inputField.addEventListener('blur', () => {
-                tagsContainer.classList.remove('focused');
-                if (inputField.value.trim() !== '') {
-                    addTag(inputField.value);
-                }
-            });
-
-            inputField.addEventListener('keydown', (e) => {
-                if (e.key === ' ' || e.key === 'Spacebar') {
-                    e.preventDefault();
-                    addTag(inputField.value);
-                } else if (e.key === 'Enter' || e.key === ',') {
-                    e.preventDefault();
-                    addTag(inputField.value);
-                } else if (e.key === 'Backspace' && inputField.value === '') {
-                    if (tagsList.length > 0) {
-                        removeTag(tagsList.length - 1);
-                    }
-                }
-            });
-
-            inputField.addEventListener('paste', (e) => {
-                e.preventDefault();
-                const clipboardData = e.clipboardData || window.clipboardData;
-                const pastedText = clipboardData.getData('text');
-                const parts = pastedText.split(/[\s,]+/);
-                parts.forEach(part => {
-                    addTag(part);
-                });
-            });
-
-            function escapeHtml(string) {
-                const htmlEscapes = {
-                    '&': '&amp;',
-                    '<': '&lt;',
-                    '>': '&gt;',
-                    '"': '&quot;',
-                    "'": '&#39;'
-                };
-                return string.replace(/[&<>"']/g, (match) => htmlEscapes[match]);
-            }
-        }
+        $('.select2-multiple').select2({
+            tags: true,
+            tokenSeparators: [',', ' '],
+            width: '100%',
+            placeholder: "Select or type to create new labels"
+        });
     });
 </script>
 
