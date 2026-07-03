@@ -319,6 +319,13 @@ class TasksController extends BaseController
             }
         }
 
+        // Trigger JIRA update
+        $this->updateJiraIssueFromTask($id);
+
+        if ($log['status'] != $updateData['status']) {
+            $this->updateJiraStatusFromTask($id, $log['status'], $updateData['status']);
+        }
+
         return redirect()
             ->to('/tasks/view/' . $id)
             ->with('success', "Activity log '{$updateData['title']}' updated successfully.");
@@ -1380,6 +1387,223 @@ class TasksController extends BaseController
             return false;
 
         } catch (\Exception $e) {
+            return false;
+        }
+    }
+
+    public function updateJiraIssueFromTask($id)
+    {
+        $model = new TasksModel();
+        $log = $model->find($id);
+        $subsidiariesModel = new SubsidiariesModel();
+        $usersModel = new UsersModel();
+
+        if (!$log || empty($log['mt_jira_ticket'])) {
+            return false;
+        }
+
+        $jiraEndpoint = getenv('MT_JIRA_EDIT_ISSUE');
+        $jiraToken = getenv('MT_JIRA_AUTH_TOKEN');
+
+        if (strpos($jiraEndpoint, '{key}') !== false) {
+            $jiraEndpoint = str_replace('{key}', $log['mt_jira_ticket'], $jiraEndpoint);
+        } elseif (strpos($jiraEndpoint, '{id}') !== false) {
+            $jiraEndpoint = str_replace('{id}', $log['mt_jira_ticket'], $jiraEndpoint);
+        } else {
+            $jiraEndpoint = rtrim($jiraEndpoint, '/') . '/' . $log['mt_jira_ticket'];
+        }
+
+        $jiraLabels = [];
+        $jiraLabels[] = (string) $log['id'];
+        $jiraLabels[] = str_replace(' ', '_', (string) Constants::ACTIVITY_TYPES[$log['type']]);
+
+        $subsidiary = $subsidiariesModel->find($log['subsidiary_id']);
+        if ($subsidiary && !empty($subsidiary['name'])) {
+            $jiraLabels[] = str_replace(' ', '_', (string) $subsidiary['name']);
+        }
+        if (!empty($log['ticket_id'])) {
+            $jiraLabels[] = str_replace(' ', '_', (string) $log['ticket_id']);
+        }
+        if (!empty($log['project'])) {
+            $jiraLabels[] = str_replace(' ', '_', (string) $log['project']);
+        }
+
+        if (!empty($log['labels'])) {
+            $labelsArr = is_array($log['labels']) ? $log['labels'] : explode(',', $log['labels']);
+            foreach ($labelsArr as $lbl) {
+                $lbl = trim($lbl);
+                if (!empty($lbl)) {
+                    $jiraLabels[] = str_replace(' ', '_', $lbl);
+                }
+            }
+        }
+
+        $baseDate = !empty($log['start_date']) ? $log['start_date'] : $log['created_at'];
+        $dueDate = date('Y-m-d', strtotime($baseDate . ' + 7 days'));
+
+        $payloadFields = [
+            'summary' => $log['title'],
+            'components' => [
+                [
+                    'name' => Constants::TEAMS[$log['team_id']]
+                ]
+            ],
+            'description' => strip_tags($log['description'] ?? $log['title']),
+            'priority' => [
+                'name' => JiraMapping::PRIORITIES[$log['priority']],
+            ],
+            'labels' => $jiraLabels,
+            'duedate' => $dueDate,
+            'timetracking' => [
+                'originalEstimate' => JiraMapping::ESTIMATES[$log['size']],
+            ]
+        ];
+
+        $assigneeName = $usersModel->getUsernameById($log['assignee']);
+        if (!empty($assigneeName)) {
+            $payloadFields['assignee'] = ['name' => $assigneeName];
+        }
+
+        $payload = [
+            'fields' => $payloadFields
+        ];
+
+        try {
+            $curl = curl_init();
+
+            curl_setopt_array($curl, [
+                CURLOPT_URL => $jiraEndpoint,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => '',
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 30,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => 'PUT',
+                CURLOPT_POSTFIELDS => json_encode($payload),
+                CURLOPT_HTTPHEADER => [
+                    'Authorization: Bearer ' . $jiraToken,
+                    'Content-Type: application/json',
+                    'Accept: application/json',
+                    'User-Agent: PostmanRuntime/7.32.3',
+                    'Expect:'
+                ],
+            ]);
+
+            $body = curl_exec($curl);
+            $statusCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+            $errorMessage = curl_error($curl);
+            curl_close($curl);
+
+            // Log the API request
+            $apiLogModel = new JiraApiLogModel();
+            $status = ($statusCode >= 200 && $statusCode < 300) ? 'SUCCESS' : 'FAILED';
+            $apiLogModel->logRequest(
+                $id,
+                'EDIT_ISSUE',
+                $jiraEndpoint,
+                json_encode($payload),
+                $body,
+                $statusCode,
+                $errorMessage,
+                $status
+            );
+
+            return $status === 'SUCCESS';
+        } catch (\Exception $e) {
+            $apiLogModel = new JiraApiLogModel();
+            $apiLogModel->logRequest($id, 'EDIT_ISSUE', $jiraEndpoint, json_encode($payload), $e->getMessage(), 500, $e->getMessage(), 'FAILED');
+            return false;
+        }
+    }
+
+    public function updateJiraStatusFromTask($id, $oldInternalStatus, $newInternalStatus)
+    {
+        $model = new TasksModel();
+        $log = $model->find($id);
+
+        if (!$log || empty($log['mt_jira_ticket'])) {
+            return false; // Not a JIRA synced task
+        }
+
+        // Get JIRA buckets
+        $oldJiraStatus = JiraMapping::STATUS_MAPPING[(int) $oldInternalStatus] ?? null;
+        $newJiraStatus = JiraMapping::STATUS_MAPPING[(int) $newInternalStatus] ?? null;
+
+        // Skip if either status is unmapped, or if the JIRA bucket hasn't actually changed
+        if (!$oldJiraStatus || !$newJiraStatus || $oldJiraStatus === $newJiraStatus) {
+            return false;
+        }
+
+        // Find transition ID
+        $transitionId = JiraMapping::TRANSITIONS[$oldJiraStatus][$newJiraStatus] ?? null;
+
+        if (!$transitionId) {
+            return false; // No valid transition between these states
+        }
+
+        $jiraEndpoint = getenv('MT_JIRA_UPDATE_STATUS');
+        $jiraToken = getenv('MT_JIRA_AUTH_TOKEN');
+
+        if (strpos($jiraEndpoint, '{key}') !== false) {
+            $jiraEndpoint = str_replace('{key}', $log['mt_jira_ticket'], $jiraEndpoint);
+        } elseif (strpos($jiraEndpoint, '{id}') !== false) {
+            $jiraEndpoint = str_replace('{id}', $log['mt_jira_ticket'], $jiraEndpoint);
+        } else {
+            $jiraEndpoint = rtrim($jiraEndpoint, '/') . '/' . $log['mt_jira_ticket'] . '/transitions';
+        }
+
+        $payload = [
+            'transition' => [
+                'id' => $transitionId
+            ]
+        ];
+
+        try {
+            $curl = curl_init();
+
+            curl_setopt_array($curl, [
+                CURLOPT_URL => $jiraEndpoint,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => '',
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 30,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => 'POST',
+                CURLOPT_POSTFIELDS => json_encode($payload),
+                CURLOPT_HTTPHEADER => [
+                    'Authorization: Bearer ' . $jiraToken,
+                    'Content-Type: application/json',
+                    'Accept: application/json',
+                    'User-Agent: PostmanRuntime/7.32.3',
+                    'Expect:'
+                ],
+            ]);
+
+            $body = curl_exec($curl);
+            $statusCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+            $errorMessage = curl_error($curl);
+            curl_close($curl);
+
+            // Log the API request
+            $apiLogModel = new JiraApiLogModel();
+            $status = ($statusCode >= 200 && $statusCode < 300) ? 'SUCCESS' : 'FAILED';
+            $apiLogModel->logRequest(
+                $id,
+                'UPDATE_STATUS',
+                $jiraEndpoint,
+                json_encode($payload),
+                $body,
+                $statusCode,
+                $errorMessage,
+                $status
+            );
+
+            return $status === 'SUCCESS';
+        } catch (\Exception $e) {
+            $apiLogModel = new JiraApiLogModel();
+            $apiLogModel->logRequest($id, 'UPDATE_STATUS', $jiraEndpoint, json_encode($payload), $e->getMessage(), 500, $e->getMessage(), 'FAILED');
             return false;
         }
     }

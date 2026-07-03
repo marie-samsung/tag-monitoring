@@ -412,6 +412,9 @@ class TagRequestsController extends BaseController
                     $taskModel->update($task['id'], [
                         'status' => Constants::ACTIVITY_LOGS_STATUS_COMPLETED,
                     ]);
+
+                    $tasksController = new \App\Controllers\TasksController();
+                    $tasksController->updateJiraStatusFromTask($task['id'], $task['status'], Constants::ACTIVITY_LOGS_STATUS_COMPLETED);
                 }
             }
         }
@@ -837,6 +840,9 @@ class TagRequestsController extends BaseController
                             $taskModel->update($task['id'], [
                                 'status' => Constants::ACTIVITY_LOGS_STATUS_COMPLETED,
                             ]);
+
+                            $tasksController = new \App\Controllers\TasksController();
+                            $tasksController->updateJiraStatusFromTask($task['id'], $task['status'], Constants::ACTIVITY_LOGS_STATUS_COMPLETED);
                         }
                     }
                 }

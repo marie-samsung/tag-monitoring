@@ -34,4 +34,33 @@ class JiraMapping
         Constants::ACTIVITY_SIZE_XL => self::ESTIMATE_XL,
         Constants::ACTIVITY_SIZE_SPRINT => self::ESTIMATE_SPRINT,
     ];
+
+    public const JIRA_STATUS_TODO = 'To Do';
+    public const JIRA_STATUS_IN_PROGRESS = 'In Progress';
+    public const JIRA_STATUS_CLOSED = 'Closed';
+
+    public const STATUS_MAPPING = [
+        Constants::ACTIVITY_LOGS_STATUS_TO_DO => self::JIRA_STATUS_TODO,
+        Constants::ACTIVITY_LOGS_STATUS_INVESTIGATION => self::JIRA_STATUS_IN_PROGRESS,
+        Constants::ACTIVITY_LOGS_STATUS_IMPLEMENTATION => self::JIRA_STATUS_IN_PROGRESS,
+        Constants::ACTIVITY_LOGS_STATUS_QA => self::JIRA_STATUS_IN_PROGRESS,
+        Constants::ACTIVITY_LOGS_STATUS_REVIEW => self::JIRA_STATUS_IN_PROGRESS,
+        Constants::ACTIVITY_LOGS_STATUS_COMPLETED => self::JIRA_STATUS_CLOSED,
+        Constants::ACTIVITY_LOGS_STATUS_BLOCKED => self::JIRA_STATUS_TODO,
+    ];
+
+    public const TRANSITIONS = [
+        self::JIRA_STATUS_TODO => [
+            self::JIRA_STATUS_IN_PROGRESS => '11',
+            self::JIRA_STATUS_CLOSED => '51',
+        ],
+        self::JIRA_STATUS_IN_PROGRESS => [
+            self::JIRA_STATUS_TODO => '21',
+            self::JIRA_STATUS_CLOSED => '31',
+        ],
+        self::JIRA_STATUS_CLOSED => [
+            self::JIRA_STATUS_IN_PROGRESS => '41',
+            self::JIRA_STATUS_TODO => '61',
+        ]
+    ];
 }
