@@ -1243,15 +1243,18 @@ class TasksController extends BaseController
 
         $jiraLabels = [];
         $jiraLabels[] = (string) $log['id'];
-        $jiraLabels[] = (string) Constants::ACTIVITY_TYPES[$log['type']];
+        $jiraLabels[] = str_replace(' ', '_', (string) Constants::ACTIVITY_TYPES[$log['type']]);
+        
         $subsidiary = $subsidiariesModel->find($log['subsidiary_id']);
         if ($subsidiary && !empty($subsidiary['name'])) {
-            $jiraLabels[] = (string) $subsidiary['name'];
+            $jiraLabels[] = str_replace(' ', '_', (string) $subsidiary['name']);
         }
         if (!empty($log['ticket_id'])) {
-            $jiraLabels[] = (string) $log['ticket_id'];
+            $jiraLabels[] = str_replace(' ', '_', (string) $log['ticket_id']);
         }
-        $jiraLabels[] = (string) $log['project'];
+        if (!empty($log['project'])) {
+            $jiraLabels[] = str_replace(' ', '_', (string) $log['project']);
+        }
 
         if (!empty($log['labels'])) {
             $labelsArr = is_array($log['labels']) ? $log['labels'] : explode(',', $log['labels']);
@@ -1306,21 +1309,29 @@ class TasksController extends BaseController
             'fields' => $payloadFields
         ];
 
-        $client = \Config\Services::curlrequest();
-
         try {
-            $response = $client->post($jiraEndpoint, [
-                'headers' => [
-                    'Authorization' => 'Bearer ' . $jiraToken,
-                    'Content-Type' => 'application/json',
-                    'Accept' => 'application/json'
+            $curl = curl_init();
+
+            curl_setopt_array($curl, [
+                CURLOPT_URL => $jiraEndpoint,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => '',
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 30,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => 'POST',
+                CURLOPT_POSTFIELDS => json_encode($payload),
+                CURLOPT_HTTPHEADER => [
+                    'Authorization: Bearer ' . $jiraToken,
+                    'Content-Type: application/json',
+                    'Accept: application/json'
                 ],
-                'json' => $payload,
-                'http_errors' => false
             ]);
 
-            $statusCode = $response->getStatusCode();
-            $body = $response->getBody();
+            $body = curl_exec($curl);
+            $statusCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+            curl_close($curl);
 
             echo "<h3>HTTP Status Code: " . $statusCode . "</h3>";
             echo "<h4>Response from Jira:</h4>";
