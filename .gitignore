@@ -7,6 +7,7 @@ writable/index.html
 writable/uploads/new_tag_requests/test-files/*
 writable/uploads/temp
 writable/auto_backup_settings.json
+writable/system_settings.json
 
 .idea
 .env
