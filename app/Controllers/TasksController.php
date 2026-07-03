@@ -1268,34 +1268,42 @@ class TasksController extends BaseController
         $dueDate = date('Y-m-d', strtotime($baseDate . ' + 7 days'));
 
         // Prepare the payload based on Task details
-        $payload = [
-            'fields' => [
-                'project' => [
-                    'key' => $projectKey
-                ],
-                'issuetype' => [
-                    'name' => 'Task' // this will always be Task
-                ],
-                'summary' => $log['title'],
-                'components' => [
-                    'name' => Constants::TEAMS[$log['team_id']],
-                ],
-                'description' => strip_tags($log['description'] ?? $log['title']),
-                'priority' => [
-                    'name' => JiraMapping::PRIORITIES[$log['priority']],
-                ],
-                'labels' => $jiraLabels,
-                'reporter' => [
-                    'name' => $usersModel->getUsernameById($log['created_by']),
-                ],
-                'assignee' => [
-                    'name' => $usersModel->getUsernameById($log['assignee']),
-                ],
-                'duedate' => $dueDate,
-                'timetracking' => [
-                    'originalEstimate' => JiraMapping::ESTIMATES[$log['size']],
+        $payloadFields = [
+            'project' => [
+                'key' => $projectKey
+            ],
+            'issuetype' => [
+                'name' => 'Task' // this will always be Task
+            ],
+            'summary' => $log['title'],
+            'components' => [
+                [
+                    'name' => Constants::TEAMS[$log['team_id']]
                 ]
+            ],
+            'description' => strip_tags($log['description'] ?? $log['title']),
+            'priority' => [
+                'name' => JiraMapping::PRIORITIES[$log['priority']],
+            ],
+            'labels' => $jiraLabels,
+            'duedate' => $dueDate,
+            'timetracking' => [
+                'originalEstimate' => JiraMapping::ESTIMATES[$log['size']],
             ]
+        ];
+
+        $reporterName = $usersModel->getUsernameById($log['created_by']);
+        if (!empty($reporterName)) {
+            $payloadFields['reporter'] = ['name' => $reporterName];
+        }
+
+        $assigneeName = $usersModel->getUsernameById($log['assignee']);
+        if (!empty($assigneeName)) {
+            $payloadFields['assignee'] = ['name' => $assigneeName];
+        }
+
+        $payload = [
+            'fields' => $payloadFields
         ];
 
         $client = \Config\Services::curlrequest();
