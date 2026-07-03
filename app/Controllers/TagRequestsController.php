@@ -583,6 +583,9 @@ class TagRequestsController extends BaseController
         ]);
 
         if ($taskId) {
+            $tasksController = new \App\Controllers\TasksController();
+            $tasksController->createJiraIssueFromTask($taskId);
+
             $filesModel = new TagRequestFilesModel();
             $relatedFiles = $filesModel->where('request_id', $request['id'])
                 ->where('type', Constants::ATTACHMENT_REQUEST_FORM)

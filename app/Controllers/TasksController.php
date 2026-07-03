@@ -9,6 +9,7 @@ use App\Models\TaskFilesModel;
 use App\Models\TasksModel;
 use App\Models\Constants;
 use App\Models\UsersModel;
+use App\Models\JiraApiLogModel;
 use CodeIgniter\Files\Exceptions\FileException;
 
 class TasksController extends BaseController
@@ -153,7 +154,7 @@ class TasksController extends BaseController
 
         $this->createJiraIssueFromTask(194);
 
-//        $model->insert($insertData);
+        //        $model->insert($insertData);
 //        $insertId = $model->getInsertID();
 //
 //        if ($insertId) {
@@ -1227,7 +1228,7 @@ class TasksController extends BaseController
         ]);
     }
 
-    private function createJiraIssueFromTask($id)
+    public function createJiraIssueFromTask($id)
     {
         $model = new TasksModel();
         $log = $model->find($id);
@@ -1245,7 +1246,7 @@ class TasksController extends BaseController
         $jiraLabels = [];
         $jiraLabels[] = (string) $log['id'];
         $jiraLabels[] = str_replace(' ', '_', (string) Constants::ACTIVITY_TYPES[$log['type']]);
-        
+
         $subsidiary = $subsidiariesModel->find($log['subsidiary_id']);
         if ($subsidiary && !empty($subsidiary['name'])) {
             $jiraLabels[] = str_replace(' ', '_', (string) $subsidiary['name']);
@@ -1334,23 +1335,28 @@ class TasksController extends BaseController
 
             $body = curl_exec($curl);
             $statusCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+            $errorMessage = curl_error($curl);
             curl_close($curl);
 
-            echo "<h3>HTTP Status Code: " . $statusCode . "</h3>";
-            echo "<h4>Response from Jira:</h4>";
-            echo "<pre style='background: #f4f4f4; padding: 10px; border: 1px solid #ccc;'>";
+            // Decode body if possible
             $decodedBody = json_decode($body, true);
-            print_r($decodedBody ? $decodedBody : $body);
-            echo "</pre>";
 
-            echo "<h4>Payload Sent:</h4>";
-            echo "<pre style='background: #eef9fd; padding: 10px; border: 1px solid #bce8f1;'>";
-            print_r($payload);
-            echo "</pre>";
-            die();
+            // Log the API request
+            $apiLogModel = new JiraApiLogModel();
+            $status = ($statusCode >= 200 && $statusCode < 300) ? 'SUCCESS' : 'FAILED';
+            $apiLogModel->logRequest(
+                $id,
+                'CREATE_ISSUE',
+                $jiraEndpoint,
+                json_encode($payload),
+                $body,
+                $statusCode,
+                $errorMessage,
+                $status
+            );
 
             if ($statusCode >= 200 && $statusCode < 300) {
-                $ticketId = $body['key'] ?? null;
+                $ticketId = $decodedBody['key'] ?? null;
 
                 if ($ticketId) {
                     $commentsModel = new TaskCommentsModel();
