@@ -128,6 +128,9 @@ foreach ($roles as $r) {
         <button class="apple-tab-btn active" id="tab-general-btn" onclick="switchTab('general')">
             <i class="bi bi-sliders me-1"></i> General Settings
         </button>
+        <button class="apple-tab-btn" id="tab-jira-btn" onclick="switchTab('jira')">
+            <i class="bi bi-kanban me-1"></i> Martech JIRA
+        </button>
         <button class="apple-tab-btn" id="tab-users-btn" onclick="switchTab('users')">
             <i class="bi bi-people-fill me-1"></i> Users Management
         </button>
@@ -200,6 +203,66 @@ foreach ($roles as $r) {
                 <div class="d-flex justify-content-start">
                     <button type="submit" class="apple-btn-primary btn-action-hover px-4">
                         <i class="bi bi-check-circle-fill me-1.5"></i> Save Settings
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- TAB: MARTECH JIRA SETTINGS -->
+    <!-- ============================================== -->
+    <div class="settings-tab-content d-none" id="tab-jira">
+        <div class="apple-settings-card mt-2">
+            <h4 class="fw-bold mb-3">Martech JIRA Configuration</h4>
+            <p class="text-secondary small mb-4">Configure the API endpoints, project key, and authentication token for JIRA integration.</p>
+            
+            <form action="<?= site_url('settings/save-jira-settings') ?>" method="post">
+                <?= csrf_field() ?>
+                
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold mb-1">Create JIRA Issue Endpoint</label>
+                        <p class="text-secondary small mb-2">Endpoint used when submitting a new task.</p>
+                        <input type="text" class="form-control" name="mt_jira_create_issue" value="<?= esc($envVars['MT_JIRA_CREATE_ISSUE'] ?? '') ?>" placeholder="https://your-domain.atlassian.net/rest/api/2/issue">
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold mb-1">Edit JIRA Details Endpoint</label>
+                        <p class="text-secondary small mb-2">Endpoint used for updating existing issue properties.</p>
+                        <input type="text" class="form-control" name="mt_jira_edit_issue" value="<?= esc($envVars['MT_JIRA_EDIT_ISSUE'] ?? '') ?>" placeholder="https://your-domain.atlassian.net/rest/api/2/issue/">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold mb-1">Update JIRA Status Endpoint</label>
+                        <p class="text-secondary small mb-2">Endpoint used to transition an issue's status.</p>
+                        <input type="text" class="form-control" name="mt_jira_update_status" value="<?= esc($envVars['MT_JIRA_UPDATE_STATUS'] ?? '') ?>" placeholder="https://your-domain.atlassian.net/rest/api/2/issue/{id}/transitions">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold mb-1">Upload Attachment Endpoint</label>
+                        <p class="text-secondary small mb-2">Endpoint for pushing attachments to a JIRA issue.</p>
+                        <input type="text" class="form-control" name="mt_jira_upload_attachment" value="<?= esc($envVars['MT_JIRA_UPLOAD_ATTACHMENT'] ?? '') ?>" placeholder="https://your-domain.atlassian.net/rest/api/2/issue/{id}/attachments">
+                    </div>
+
+                    <hr class="my-2 border-secondary opacity-25">
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold mb-1">Project Key</label>
+                        <p class="text-secondary small mb-2">The default project key (e.g. MEACRMMT).</p>
+                        <input type="text" class="form-control" name="mt_jira_project_key" value="<?= esc($envVars['MT_JIRA_PROJECT_KEY'] ?? '') ?>" placeholder="MEACRMMT">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold mb-1">Authentication Token</label>
+                        <p class="text-secondary small mb-2">The Bearer token or PAT used to authenticate.</p>
+                        <input type="password" class="form-control" name="mt_jira_auth_token" value="<?= esc($envVars['MT_JIRA_AUTH_TOKEN'] ?? '') ?>" placeholder="Enter token...">
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-top d-flex justify-content-start">
+                    <button type="submit" class="apple-btn-primary btn-action-hover px-4">
+                        <i class="bi bi-check-circle-fill me-1.5"></i> Save JIRA Settings
                     </button>
                 </div>
             </form>
@@ -512,8 +575,8 @@ foreach ($roles as $r) {
         </div>
     </div>
 </div>
+</div>
 
-    
 
 <!-- ============================================== -->
 <!-- MODAL: ADD NEW USER -->

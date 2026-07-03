@@ -123,6 +123,7 @@ $routes->group('settings', function ($routes) {
     $routes->post('backup/delete/(:any)', 'SettingsController::deleteBackup/$1');
     $routes->post('backup/restore/(:any)', 'SettingsController::restoreBackup/$1');
     $routes->post('save-system-settings', 'SettingsController::saveSystemSettings');
+    $routes->post('save-jira-settings', 'SettingsController::saveJiraSettings');
 });
 
 $routes->group('profile', function ($routes) {
