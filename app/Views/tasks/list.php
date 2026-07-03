@@ -722,6 +722,16 @@ Tasks
                             <a href="<?= site_url('tasks/view/' . $log['id']) ?>" class="apple-link-dark">
                                 <?= $log['title'] ?>
                             </a>
+                            <?php if (!empty($log['labels'])): ?>
+                                <div class="mt-1 d-flex flex-wrap gap-1">
+                                    <?php foreach (explode(',', $log['labels']) as $lbl): ?>
+                                        <span class="badge bg-primary text-white d-inline-flex align-items-center gap-1 rounded-pill" style="font-size: 0.68rem; font-weight: 500; background-color: var(--color-badge-primary-bg) !important; color: var(--color-badge-primary-text) !important; border: 1px solid var(--color-badge-primary-border) !important; padding: 0.2em 0.5em;">
+                                            <i class="bi bi-tag-fill text-primary" style="font-size: 0.65rem; opacity: 0.7;"></i>
+                                            <?= esc($lbl) ?>
+                                        </span>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php endif; ?>
                         </td>
                         <td>
                             <?php if (!empty($log['ticket_id'])) : ?>

@@ -2365,6 +2365,12 @@ ALTER TABLE `users`
 --
 ALTER TABLE `vendors`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
+
+--
+-- Add labels column to activity_logs
+--
+ALTER TABLE `activity_logs` ADD `labels` VARCHAR(500) NULL DEFAULT NULL AFTER `campaign_id`;
+
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
