@@ -151,12 +151,14 @@ class TasksController extends BaseController
             'labels' => $labels,
         ];
 
-        $model->insert($insertData);
-        $insertId = $model->getInsertID();
+        $this->createJiraIssueFromTask(194);
 
-        if ($insertId) {
-            $this->createJiraIssueFromTask($insertId);
-        }
+//        $model->insert($insertData);
+//        $insertId = $model->getInsertID();
+//
+//        if ($insertId) {
+//            $this->createJiraIssueFromTask($insertId);
+//        }
 
         $referer = $this->request->getServer('HTTP_REFERER');
         $redirectUrl = '/tasks';
@@ -1236,7 +1238,6 @@ class TasksController extends BaseController
             return false;
         }
 
-        // You can set these in your .env file or constants
         $jiraEndpoint = getenv('MT_JIRA_CREATE_ISSUE');
         $jiraToken = getenv('MT_JIRA_AUTH_TOKEN');
         $projectKey = getenv('MT_JIRA_PROJECT_KEY');
@@ -1325,7 +1326,9 @@ class TasksController extends BaseController
                 CURLOPT_HTTPHEADER => [
                     'Authorization: Bearer ' . $jiraToken,
                     'Content-Type: application/json',
-                    'Accept: application/json'
+                    'Accept: application/json',
+                    'User-Agent: PostmanRuntime/7.32.3',
+                    'Expect:'
                 ],
             ]);
 

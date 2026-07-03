@@ -7,7 +7,7 @@ class JiraMapping
 {
     public const PRIORITY_LOW = 'Low';
     public const PRIORITY_MEDIUM = 'Medium';
-    public const PRIORITY_HIGH = 'High';
+    public const PRIORITY_HIGH = 'high';
     public const PRIORITY_CRITICAL = 'Critical';
     public const PRIORITY_BLOCKER = 'Blocker';
     public const PRIORITY_MINOR = 'Minor';
