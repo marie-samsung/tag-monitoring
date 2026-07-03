@@ -2,10 +2,13 @@
 
 namespace App\Controllers;
 
+use App\Models\JiraMapping;
+use App\Models\SubsidiariesModel;
 use App\Models\TaskCommentsModel;
 use App\Models\TaskFilesModel;
 use App\Models\TasksModel;
 use App\Models\Constants;
+use App\Models\UsersModel;
 use CodeIgniter\Files\Exceptions\FileException;
 
 class TasksController extends BaseController
@@ -1226,6 +1229,8 @@ class TasksController extends BaseController
     {
         $model = new TasksModel();
         $log = $model->find($id);
+        $subsidiariesModel = new SubsidiariesModel();
+        $usersModel = new UsersModel();
 
         if (!$log) {
             return false;
@@ -1235,6 +1240,32 @@ class TasksController extends BaseController
         $jiraEndpoint = getenv('MT_JIRA_CREATE_ISSUE');
         $jiraToken = getenv('MT_JIRA_AUTH_TOKEN');
         $projectKey = getenv('MT_JIRA_PROJECT_KEY');
+
+        $jiraLabels = [];
+        $jiraLabels[] = (string) $log['id'];
+        $jiraLabels[] = (string) Constants::ACTIVITY_TYPES[$log['type']];
+        $subsidiary = $subsidiariesModel->find($log['subsidiary_id']);
+        if ($subsidiary && !empty($subsidiary['name'])) {
+            $jiraLabels[] = (string) $subsidiary['name'];
+        }
+        if (!empty($log['ticket_id'])) {
+            $jiraLabels[] = (string) $log['ticket_id'];
+        }
+        $jiraLabels[] = (string) $log['project'];
+
+        if (!empty($log['labels'])) {
+            $labelsArr = is_array($log['labels']) ? $log['labels'] : explode(',', $log['labels']);
+            foreach ($labelsArr as $lbl) {
+                $lbl = trim($lbl);
+                if (!empty($lbl)) {
+                    // Jira labels cannot contain spaces
+                    $jiraLabels[] = str_replace(' ', '_', $lbl);
+                }
+            }
+        }
+
+        $baseDate = !empty($log['start_date']) ? $log['start_date'] : $log['created_at'];
+        $dueDate = date('Y-m-d', strtotime($baseDate . ' + 7 days'));
 
         // Prepare the payload based on Task details
         $payload = [
@@ -1251,10 +1282,18 @@ class TasksController extends BaseController
                 ],
                 'description' => strip_tags($log['description'] ?? $log['title']),
                 'priority' => [
-                    'name' => Constants::PRIORITIES[$log['priority']],
+                    'name' => JiraMapping::PRIORITIES[$log['priority']],
                 ],
-                'issuetype' => [
-                    'name' => 'Task' // Update with appropriate Issue Type
+                'labels' => $jiraLabels,
+                'reporter' => [
+                    'name' => $usersModel->getUsernameById($log['created_by']),
+                ],
+                'assignee' => [
+                    'name' => $usersModel->getUsernameById($log['assignee']),
+                ],
+                'duedate' => $dueDate,
+                'timetracking' => [
+                    'originalEstimate' => JiraMapping::ESTIMATES[$log['size']],
                 ]
             ]
         ];
@@ -1273,6 +1312,9 @@ class TasksController extends BaseController
             ]);
 
             $statusCode = $response->getStatusCode();
+
+            var_dump($response);
+            die();
             $body = json_decode($response->getBody(), true);
 
             if ($statusCode >= 200 && $statusCode < 300) {

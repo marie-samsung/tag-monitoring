@@ -33,7 +33,7 @@ class Constants
         self::JIRA_TYPE_MAINTENANCE_TICKET => 'Maintenance Ticket',
         self::JIRA_TYPE_OTHER => 'Other',
     ];
-    public const JIRA_CREATE_TICKET_TYPES =[
+    public const JIRA_CREATE_TICKET_TYPES = [
         self::JIRA_TYPE_MASTER_APPROVAL => 'Master Approval',
         self::JIRA_TYPE_MAINTENANCE_TICKET => 'Maintenance Ticket',
         self::JIRA_TYPE_OTHER => 'Other',
@@ -106,7 +106,7 @@ class Constants
         self::SUBSIDIARY_SEEG => 'SEEG',
         self::SUBSIDIARY_SEMAG => 'SEMAG',
         self::SUBSIDIARY_SEPAK => 'SEPAK',
-//        self::SUBSIDIARY_MENAO => 'MENAO',
+        //        self::SUBSIDIARY_MENAO => 'MENAO',
     ];
 
     public const ACTIVITY_LOG_SUBSIDIARIES = [
@@ -137,7 +137,7 @@ class Constants
         self::ATTACHMENT_DOCUMENTATION => 'Documentation',
         self::ATTACHMENT_OTHER => 'Other',
     ];
-    
+
     public const YES = 1;
     public const NO = 0;
     public const YES_NO = [
