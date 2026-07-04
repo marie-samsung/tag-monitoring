@@ -124,6 +124,7 @@ $routes->group('settings', function ($routes) {
     $routes->post('backup/restore/(:any)', 'SettingsController::restoreBackup/$1');
     $routes->post('save-system-settings', 'SettingsController::saveSystemSettings');
     $routes->post('save-jira-settings', 'SettingsController::saveJiraSettings');
+    $routes->post('retry-api-log/(:num)', 'SettingsController::retryApiLog/$1');
 });
 
 $routes->group('profile', function ($routes) {

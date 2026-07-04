@@ -55,6 +55,10 @@ class SettingsController extends BaseController
         $backupHandler = new \App\Libraries\BackupHandler();
         $autoBackupSettings = $backupHandler->getSettings();
 
+        // 5. Fetch API Logs
+        $apiLogModel = new \App\Models\JiraApiLogModel();
+        $apiLogs = $apiLogModel->orderBy('id', 'DESC')->findAll(100); // Limit to top 100 for performance
+
         return view('settings/index', [
             'users' => $users,
             'roles' => $roles,
@@ -64,6 +68,7 @@ class SettingsController extends BaseController
             'systemSettings' => self::getSystemSettings(),
             'ci_environment' => self::getCodeIgniterEnvironment(),
             'envVars'        => self::getEnvVariables(),
+            'apiLogs'        => $apiLogs,
         ]);
     }
 
@@ -676,5 +681,96 @@ class SettingsController extends BaseController
         }
 
         return redirect()->to(site_url('settings'))->with('error', 'Failed to update Jira settings.');
+    }
+
+    /**
+     * Retry a failed JIRA API request.
+     */
+    public function retryApiLog($id)
+    {
+        $permissions = session()->get('permissions') ?? [];
+        if (empty($permissions['settings'])) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Unauthorized']);
+        }
+
+        $apiLogModel = new \App\Models\JiraApiLogModel();
+        $log = $apiLogModel->find($id);
+
+        if (!$log) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Log not found']);
+        }
+
+        $jiraToken = getenv('MT_JIRA_AUTH_TOKEN');
+        if (empty($jiraToken)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'JIRA Auth Token is not configured.']);
+        }
+
+        $endpoint = $log['endpoint_url'];
+        $payload = $log['payload'];
+        $requestType = $log['request_type'];
+
+        try {
+            $curl = curl_init();
+
+            // Determine HTTP method
+            $httpMethod = 'POST';
+            if ($requestType === 'EDIT_ISSUE') {
+                $httpMethod = 'PUT';
+            }
+
+            curl_setopt_array($curl, [
+                CURLOPT_URL => $endpoint,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => '',
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 30,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => $httpMethod,
+                CURLOPT_POSTFIELDS => $payload,
+                CURLOPT_HTTPHEADER => [
+                    'Authorization: Bearer ' . $jiraToken,
+                    'Content-Type: application/json',
+                    'Accept: application/json',
+                    'User-Agent: PostmanRuntime/7.32.3',
+                    'Expect:'
+                ],
+            ]);
+
+            $body = curl_exec($curl);
+            $statusCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+            $errorMessage = curl_error($curl);
+            curl_close($curl);
+
+            $status = ($statusCode >= 200 && $statusCode < 300) ? 'SUCCESS' : 'FAILED';
+
+            // Update log entry
+            $apiLogModel->update($id, [
+                'status' => $status,
+                'status_code' => $statusCode,
+                'response_body' => $body,
+                'error_message' => $errorMessage,
+                'retry_count' => $log['retry_count'] + 1,
+            ]);
+
+            session()->setFlashdata('active_tab', 'api-logs');
+
+            if ($status === 'SUCCESS') {
+                return $this->response->setJSON(['success' => true, 'message' => 'Request retried successfully.']);
+            } else {
+                return $this->response->setJSON(['success' => false, 'message' => 'Request failed with status ' . $statusCode]);
+            }
+        } catch (\Exception $e) {
+            $apiLogModel->update($id, [
+                'status' => 'FAILED',
+                'status_code' => 500,
+                'error_message' => $e->getMessage(),
+                'retry_count' => $log['retry_count'] + 1,
+            ]);
+            
+            session()->setFlashdata('active_tab', 'api-logs');
+
+            return $this->response->setJSON(['success' => false, 'message' => 'Exception occurred: ' . $e->getMessage()]);
+        }
     }
 }

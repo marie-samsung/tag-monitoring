@@ -140,6 +140,9 @@ foreach ($roles as $r) {
         <button class="apple-tab-btn" id="tab-backups-btn" onclick="switchTab('backups')">
             <i class="bi bi-database-fill-gear me-1"></i> System Backups
         </button>
+        <button class="apple-tab-btn" id="tab-api-logs-btn" onclick="switchTab('api-logs')">
+            <i class="bi bi-journal-code me-1"></i> API Logs
+        </button>
     </div>
 
     <!-- ============================================== -->
@@ -256,7 +259,12 @@ foreach ($roles as $r) {
                     <div class="col-md-6">
                         <label class="form-label fw-bold mb-1">Authentication Token</label>
                         <p class="text-secondary small mb-2">The Bearer token or PAT used to authenticate.</p>
-                        <input type="password" class="form-control" name="mt_jira_auth_token" value="<?= esc($envVars['MT_JIRA_AUTH_TOKEN'] ?? '') ?>" placeholder="Enter token...">
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="mt_jira_auth_token" name="mt_jira_auth_token" value="<?= esc($envVars['MT_JIRA_AUTH_TOKEN'] ?? '') ?>" placeholder="Enter token...">
+                            <button class="btn btn-outline-secondary" type="button" onclick="const input = document.getElementById('mt_jira_auth_token'); const icon = this.querySelector('i'); if (input.type === 'password') { input.type = 'text'; icon.classList.remove('bi-eye'); icon.classList.add('bi-eye-slash'); } else { input.type = 'password'; icon.classList.remove('bi-eye-slash'); icon.classList.add('bi-eye'); }">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -566,6 +574,93 @@ foreach ($roles as $r) {
                                             <i class="bi bi-trash-fill"></i> Delete
                                         </button>
                                     </div>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+        </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- TAB: API LOGS -->
+    <!-- ============================================== -->
+    <div class="settings-tab-content d-none" id="tab-api-logs">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h4 class="fw-bold mb-1">JIRA API Logs</h4>
+                <p class="text-secondary small mb-0">View API logs and retry failed JIRA requests.</p>
+            </div>
+            <div>
+                <select id="api-log-filter" class="form-select form-select-sm" onchange="filterApiLogs()">
+                    <option value="all">All Statuses</option>
+                    <option value="SUCCESS">Success</option>
+                    <option value="FAILED">Failed</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="table-responsive rounded-3 border bg-white">
+            <table class="table table-hover align-middle mb-0 apple-table" id="api-logs-table">
+                <thead class="table-light">
+                    <tr>
+                        <th class="text-secondary" style="font-weight: 600; font-size: 0.85rem;">ID</th>
+                        <th class="text-secondary" style="font-weight: 600; font-size: 0.85rem;">Task ID</th>
+                        <th class="text-secondary" style="font-weight: 600; font-size: 0.85rem;">Type</th>
+                        <th class="text-secondary" style="font-weight: 600; font-size: 0.85rem;">Endpoint</th>
+                        <th class="text-secondary" style="font-weight: 600; font-size: 0.85rem;">Status</th>
+                        <th class="text-secondary" style="font-weight: 600; font-size: 0.85rem;">Retries</th>
+                        <th class="text-secondary" style="font-weight: 600; font-size: 0.85rem;">Date</th>
+                        <th class="text-secondary text-end" style="font-weight: 600; font-size: 0.85rem;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (empty($apiLogs)): ?>
+                        <tr>
+                            <td colspan="8" class="text-center py-4 text-muted">No API logs found.</td>
+                        </tr>
+                    <?php else: ?>
+                        <?php foreach ($apiLogs as $log): ?>
+                            <tr class="api-log-row" data-status="<?= esc($log['status']) ?>">
+                                <td><span class="text-muted small">#<?= esc($log['id']) ?></span></td>
+                                <td>
+                                    <?php if ($log['task_id']): ?>
+                                        <a href="<?= site_url('tasks/view/' . esc($log['task_id'])) ?>" class="text-primary text-decoration-none fw-medium" target="_blank">
+                                            <?= esc($log['task_id']) ?>
+                                        </a>
+                                    <?php else: ?>
+                                        <span class="text-muted">-</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td><span class="badge bg-secondary"><?= esc($log['request_type']) ?></span></td>
+                                <td>
+                                    <span class="d-inline-block text-truncate" style="max-width: 150px; font-size: 0.85rem;" title="<?= esc($log['endpoint_url']) ?>">
+                                        <?= esc($log['endpoint_url']) ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <?php if ($log['status'] === 'SUCCESS'): ?>
+                                        <span class="badge bg-success text-white"><i class="bi bi-check-circle me-1"></i> Success</span>
+                                    <?php else: ?>
+                                        <span class="badge bg-danger text-white" title="<?= esc($log['error_message']) ?>"><i class="bi bi-x-circle me-1"></i> Failed</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <?php if ($log['retry_count'] > 0): ?>
+                                        <span class="badge bg-warning text-dark rounded-pill"><?= esc($log['retry_count']) ?></span>
+                                    <?php else: ?>
+                                        <span class="text-muted small">0</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td><span class="text-muted small"><?= date('M d, H:i', strtotime($log['created_at'])) ?></span></td>
+                                <td class="text-end">
+                                    <?php if ($log['status'] !== 'SUCCESS'): ?>
+                                        <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2" onclick="retryApiLog(<?= esc($log['id']) ?>)">
+                                            <i class="bi bi-arrow-clockwise"></i> Retry
+                                        </button>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -912,6 +1007,57 @@ foreach ($roles as $r) {
         document.getElementById('delete-user-form').action = `<?= site_url('settings/user/delete/') ?>${user.id}`;
         const modal = new bootstrap.Modal(document.getElementById('deleteUserModal'));
         modal.show();
+    }
+    // API Logs Filter
+    function filterApiLogs() {
+        const status = document.getElementById('api-log-filter').value;
+        const rows = document.querySelectorAll('.api-log-row');
+        
+        rows.forEach(row => {
+            if (status === 'all' || row.dataset.status === status) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    // API Logs Retry
+    function retryApiLog(id) {
+        if (!confirm('Are you sure you want to retry this JIRA API request?')) {
+            return;
+        }
+        
+        // Show loading state
+        const btn = event.currentTarget;
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+        btn.disabled = true;
+
+        fetch(`<?= site_url('settings/retry-api-log/') ?>${id}`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/json',
+                '<?= csrf_token() ?>': '<?= csrf_hash() ?>'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Success: ' + data.message);
+                window.location.reload();
+            } else {
+                alert('Error: ' + data.message);
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+            }
+        })
+        .catch(err => {
+            alert('An unexpected error occurred while retrying the request.');
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+        });
     }
 </script>
 

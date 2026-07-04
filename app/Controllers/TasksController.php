@@ -615,6 +615,8 @@ class TasksController extends BaseController
                 }
             }
 
+            $this->updateJiraStatusFromTask($id, $log['status'], $status);
+
             $insertedComment = $commentsModel->find($insertedId);
             $commentData = [
                 'comment' => $insertedComment['comment'],
@@ -998,6 +1000,8 @@ class TasksController extends BaseController
                         $this->updateRelatedTagsStatusToPendingVerification($updatedLog);
                     }
                 }
+
+                $this->updateJiraStatusFromTask($id, $log['status'], $status);
 
                 $updatedCount++;
             }
