@@ -400,6 +400,22 @@ foreach ($overflowItems as $item) {
     </div>
 </div>
 
+<!-- Global Toast Notification -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1100;">
+    <div id="globalToastNotification" class="toast align-items-center text-white bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true" style="display: none; min-width: 280px; border-radius: 12px; backdrop-filter: blur(10px); box-shadow: 0 8px 32px rgba(0,0,0,0.15); transition: opacity 0.3s ease;">
+        <div class="d-flex">
+            <div class="toast-body d-flex align-items-start gap-2">
+                <i class="bi bi-bell-fill fs-5 mt-1" id="globalToastIcon"></i>
+                <div class="d-flex flex-column">
+                    <strong id="globalToastTitle" style="font-size: 0.9rem; line-height: 1.2;">New Notification</strong>
+                    <span id="globalToastMessage" style="font-size: 0.8rem; font-weight: 400; opacity: 0.9; margin-top: 2px;"></span>
+                </div>
+            </div>
+            <button type="button" class="btn-close btn-close-white ms-auto me-2 mt-2" style="box-shadow: none; opacity: 0.8;" onclick="$('#globalToastNotification').fadeOut(300);"></button>
+        </div>
+    </div>
+</div>
+
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const nav = document.getElementById('appleNav');
@@ -473,6 +489,21 @@ foreach ($overflowItems as $item) {
         });
 
         // Notifications Logic
+        window.knownNotificationIds = window.knownNotificationIds || [];
+        let isInitialLoad = true;
+
+        const showGlobalToast = (title, message) => {
+            $('#globalToastTitle').text(title);
+            $('#globalToastMessage').text(message);
+            const toast = $('#globalToastNotification');
+            
+            toast.css('display', 'block').hide().fadeIn(300);
+            
+            setTimeout(() => {
+                toast.fadeOut(400);
+            }, 5000);
+        };
+
         const fetchNotifications = () => {
             $.ajax({
                 url: '<?= site_url("notifications/unread") ?>',
@@ -490,10 +521,16 @@ foreach ($overflowItems as $item) {
                         if (res.notifications.length === 0) {
                             html = '<li><span class="dropdown-item py-3 text-center text-muted" style="font-size: 0.85rem;">No notifications</span></li>';
                         } else {
+                            let newNotifications = [];
                             res.notifications.forEach(n => {
                                 let isUnread = n.is_read == 0;
                                 let bgStyle = isUnread ? 'background-color: var(--color-primary-subtle);' : 'background-color: transparent; opacity: 0.75;';
                                 let iconClass = isUnread ? 'bi-person-circle text-primary' : 'bi-person-circle text-muted';
+
+                                if (isUnread && !window.knownNotificationIds.includes(n.id)) {
+                                    newNotifications.push(n);
+                                    window.knownNotificationIds.push(n.id);
+                                }
 
                                 html += `
                                 <li>
@@ -516,14 +553,22 @@ foreach ($overflowItems as $item) {
                                 </li>
                             `;
                             });
+
+                            if (!isInitialLoad && newNotifications.length > 0) {
+                                // Show a popup for the most recent new notification
+                                const latestNotif = newNotifications[0];
+                                showGlobalToast(latestNotif.sender_name, latestNotif.message);
+                            }
                         }
                         $('#notificationsList').html(html);
+                        isInitialLoad = false;
                     }
                 }
             });
         };
 
         fetchNotifications();
+        setInterval(fetchNotifications, 15000);
 
         $(document).on('click', '.toggle-read-btn', function (e) {
             e.preventDefault();

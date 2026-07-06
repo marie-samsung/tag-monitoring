@@ -85,6 +85,30 @@ class JiraApiLogModel extends Model
             'retry_count'   => 0
         ];
 
-        return $this->insert($data);
+        $insertId = $this->insert($data);
+
+        // Notify Admins on failure
+        if ($status === 'FAILED') {
+            $usersModel = new \App\Models\UsersModel();
+            $notificationsModel = new \App\Models\NotificationsModel();
+            
+            // Get Admin users (account_type = 1)
+            $admins = $usersModel->where('account_type', 1)->findAll();
+            $currentUserId = (function_exists('session') && session('user_id')) ? session('user_id') : 0;
+            
+            foreach ($admins as $admin) {
+                // Prevent self-notification if admin triggered it
+                if ($admin['id'] == $currentUserId) continue;
+
+                $notificationsModel->insert([
+                    'user_id' => $admin['id'],
+                    'sender_id' => $currentUserId,
+                    'task_id' => $taskId,
+                    'message' => "JIRA API Request ({$requestType}) failed. Please check API Logs.",
+                ]);
+            }
+        }
+
+        return $insertId;
     }
 }

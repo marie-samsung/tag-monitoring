@@ -131,6 +131,9 @@ foreach ($roles as $r) {
         <button class="apple-tab-btn" id="tab-jira-btn" onclick="switchTab('jira')">
             <i class="bi bi-kanban me-1"></i> Martech JIRA
         </button>
+        <button class="apple-tab-btn" id="tab-api-logs-btn" onclick="switchTab('api-logs')">
+            <i class="bi bi-journal-code me-1"></i> API Logs
+        </button>
         <button class="apple-tab-btn" id="tab-users-btn" onclick="switchTab('users')">
             <i class="bi bi-people-fill me-1"></i> Users Management
         </button>
@@ -139,9 +142,6 @@ foreach ($roles as $r) {
         </button>
         <button class="apple-tab-btn" id="tab-backups-btn" onclick="switchTab('backups')">
             <i class="bi bi-database-fill-gear me-1"></i> System Backups
-        </button>
-        <button class="apple-tab-btn" id="tab-api-logs-btn" onclick="switchTab('api-logs')">
-            <i class="bi bi-journal-code me-1"></i> API Logs
         </button>
     </div>
 
@@ -610,6 +610,8 @@ foreach ($roles as $r) {
                         <th class="text-secondary" style="font-weight: 600; font-size: 0.85rem;">Task ID</th>
                         <th class="text-secondary" style="font-weight: 600; font-size: 0.85rem;">Type</th>
                         <th class="text-secondary" style="font-weight: 600; font-size: 0.85rem;">Endpoint</th>
+                        <th class="text-secondary" style="font-weight: 600; font-size: 0.85rem;">Payload</th>
+                        <th class="text-secondary" style="font-weight: 600; font-size: 0.85rem;">Response</th>
                         <th class="text-secondary" style="font-weight: 600; font-size: 0.85rem;">Status</th>
                         <th class="text-secondary" style="font-weight: 600; font-size: 0.85rem;">Retries</th>
                         <th class="text-secondary" style="font-weight: 600; font-size: 0.85rem;">Date</th>
@@ -619,7 +621,7 @@ foreach ($roles as $r) {
                 <tbody>
                     <?php if (empty($apiLogs)): ?>
                         <tr>
-                            <td colspan="8" class="text-center py-4 text-muted">No API logs found.</td>
+                            <td colspan="10" class="text-center py-4 text-muted">No API logs found.</td>
                         </tr>
                     <?php else: ?>
                         <?php foreach ($apiLogs as $log): ?>
@@ -638,6 +640,16 @@ foreach ($roles as $r) {
                                 <td>
                                     <span class="d-inline-block text-truncate" style="max-width: 150px; font-size: 0.85rem;" title="<?= esc($log['endpoint_url']) ?>">
                                         <?= esc($log['endpoint_url']) ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="d-inline-block text-truncate" style="max-width: 150px; font-size: 0.85rem; font-family: monospace;" title="<?= esc($log['payload']) ?>">
+                                        <?= esc($log['payload']) ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="d-inline-block text-truncate" style="max-width: 150px; font-size: 0.85rem; font-family: monospace;" title="<?= esc($log['response_body']) ?>">
+                                        <?= esc($log['response_body']) ?>
                                     </span>
                                 </td>
                                 <td>
@@ -1046,12 +1058,10 @@ foreach ($roles as $r) {
         .then(data => {
             if (data.success) {
                 alert('Success: ' + data.message);
-                window.location.reload();
             } else {
                 alert('Error: ' + data.message);
-                btn.innerHTML = originalHtml;
-                btn.disabled = false;
             }
+            window.location.reload();
         })
         .catch(err => {
             alert('An unexpected error occurred while retrying the request.');

@@ -451,6 +451,18 @@
                                 <?php endif; ?>
                             </div>
                         </div>
+
+                        <div class="col-6">
+                            <span class="d-block text-primary fw-medium" style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px;">MT JIRA Ticket</span>
+                            <div class="mt-1 d-flex align-items-center gap-2" style="font-size: 0.9rem;">
+                                <?php if (!empty($log['mt_jira_ticket'])) : ?>
+                                    <a href="<?= Constants::MT_JIRA_LINK . $log['mt_jira_ticket'] ?>" target="_blank" class="apple-link fw-bold" id="mt-ticket-id-link"><?= esc($log['mt_jira_ticket']) ?></a>
+                                    <button type="button" class="btn btn-link p-0 text-muted border-0 d-inline-flex align-items-center justify-content-center" id="copy-mt-ticket-btn" title="Copy MT JIRA Ticket" style="box-shadow: none;"><i class="bi bi-copy fs-6" id="copy-mt-ticket-icon"></i></button>
+                                <?php else: ?>
+                                    <span class="text-muted">—</span>
+                                <?php endif; ?>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -790,10 +802,30 @@
                 icon.removeClass('bi-copy').addClass('bi-check-lg text-success');
                 setTimeout(function() {
                     icon.animate({ opacity: 0 }, 400, function() {
-                        icon.removeClass('bi-check-lg text-success').addClass('bi-copy');
-                        icon.animate({ opacity: 1 }, 800);
+                        icon.removeClass('bi-check-lg text-success').addClass('bi-copy').css('opacity', 1);
                     });
-                }, 1200);
+                }, 2000);
+            });
+
+            $('#copy-mt-ticket-btn').on('click', function() {
+                var ticketId = $('#mt-ticket-id-link').text().trim();
+                var temp = document.createElement('textarea');
+                temp.value = ticketId;
+                temp.style.position = 'fixed';
+                temp.style.left = '-9999px';
+                document.body.appendChild(temp);
+                temp.focus();
+                temp.select();
+                document.execCommand('copy');
+                document.body.removeChild(temp);
+
+                var icon = $('#copy-mt-ticket-icon');
+                icon.removeClass('bi-copy').addClass('bi-check-lg text-success');
+                setTimeout(function() {
+                    icon.animate({ opacity: 0 }, 400, function() {
+                        icon.removeClass('bi-check-lg text-success').addClass('bi-copy').css('opacity', 1);
+                    });
+                }, 2000);
             });
 
             // Dropdown selection state tracking for reverts

@@ -152,14 +152,12 @@ class TasksController extends BaseController
             'labels' => $labels,
         ];
 
-        $this->createJiraIssueFromTask(194);
+        $model->insert($insertData);
+        $insertId = $model->getInsertID();
 
-        //        $model->insert($insertData);
-//        $insertId = $model->getInsertID();
-//
-//        if ($insertId) {
-//            $this->createJiraIssueFromTask($insertId);
-//        }
+        if ($insertId) {
+            $this->createJiraIssueFromTask($insertId);
+        }
 
         $referer = $this->request->getServer('HTTP_REFERER');
         $redirectUrl = '/tasks';
@@ -1298,6 +1296,12 @@ class TasksController extends BaseController
                 'name' => JiraMapping::PRIORITIES[$log['priority']],
             ],
             'labels' => $jiraLabels,
+            'reporter' => [
+                'name' => $usersModel->getUsernameById($log['created_by']) ?? session()->get('username'),
+            ],
+            'assignee' => [
+                'name' => $usersModel->getUsernameById($log['assignee']) ?? session()->get('username'),
+            ],
             'duedate' => $dueDate,
             'timetracking' => [
                 'originalEstimate' => JiraMapping::ESTIMATES[$log['size']],
@@ -1453,16 +1457,14 @@ class TasksController extends BaseController
                 'name' => JiraMapping::PRIORITIES[$log['priority']],
             ],
             'labels' => $jiraLabels,
+            'assignee' => [
+                'name' => $usersModel->getUsernameById($log['assignee']) ?? session()->get('username'),
+            ],
             'duedate' => $dueDate,
             'timetracking' => [
                 'originalEstimate' => JiraMapping::ESTIMATES[$log['size']],
             ]
         ];
-
-        $assigneeName = $usersModel->getUsernameById($log['assignee']);
-        if (!empty($assigneeName)) {
-            $payloadFields['assignee'] = ['name' => $assigneeName];
-        }
 
         $payload = [
             'fields' => $payloadFields
