@@ -424,6 +424,11 @@ class TasksController extends BaseController
                         'created_by' => $post['created_by'],
                     ]);
 
+                    $log = $model->find($logId);
+                    if ($log && !empty($log['mt_jira_ticket'])) {
+                        $this->uploadAttachmentToJira($logId, $log['mt_jira_ticket'], $file_path, $file_name);
+                    }
+
                     return redirect()
                         ->to('/tasks/view/' . $post['log_id'])
                         ->with('success', "File successfully uploaded.");
@@ -436,6 +441,78 @@ class TasksController extends BaseController
         return redirect()
             ->to('/tasks/view/' . $post['log_id'])
             ->with('error', "An error occurred. File was not uploaded successfully.");
+    }
+
+    public function uploadAttachmentToJira($taskId, $ticketId, $filePath, $fileName)
+    {
+        $jiraEndpoint = getenv('MT_JIRA_UPLOAD_ATTACHMENT');
+        $jiraToken = getenv('MT_JIRA_AUTH_TOKEN');
+
+        if (strpos($jiraEndpoint, '{key}') !== false) {
+            $jiraEndpoint = str_replace('{key}', $ticketId, $jiraEndpoint);
+        } elseif (strpos($jiraEndpoint, '{id}') !== false) {
+            $jiraEndpoint = str_replace('{id}', $ticketId, $jiraEndpoint);
+        } else {
+            $jiraEndpoint = rtrim($jiraEndpoint, '/') . '/' . $ticketId . '/attachments';
+        }
+
+        if (!file_exists($filePath)) {
+            return false;
+        }
+
+        $mimeType = function_exists('mime_content_type') ? mime_content_type($filePath) : 'application/octet-stream';
+        if (!$mimeType) $mimeType = 'application/octet-stream';
+
+        $cfile = new \CURLFile($filePath, $mimeType, $fileName);
+
+        $payload = [
+            'file' => $cfile
+        ];
+
+        try {
+            $curl = curl_init();
+            curl_setopt_array($curl, [
+                CURLOPT_URL => $jiraEndpoint,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => '',
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 60,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => 'POST',
+                CURLOPT_POSTFIELDS => $payload,
+                CURLOPT_HTTPHEADER => [
+                    'Authorization: Bearer ' . $jiraToken,
+                    'X-Atlassian-Token: no-check'
+                ],
+            ]);
+
+            $body = curl_exec($curl);
+            $statusCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+            $errorMessage = curl_error($curl);
+            curl_close($curl);
+
+            // Log the API request
+            $apiLogModel = new JiraApiLogModel();
+            $status = ($statusCode >= 200 && $statusCode < 300) ? 'SUCCESS' : 'FAILED';
+            
+            $apiLogModel->logRequest(
+                $taskId,
+                'UPLOAD_ATTACHMENT',
+                $jiraEndpoint,
+                "File upload: {$fileName}",
+                $body,
+                $statusCode,
+                $errorMessage,
+                $status
+            );
+
+            return $status === 'SUCCESS';
+        } catch (\Exception $e) {
+            $apiLogModel = new JiraApiLogModel();
+            $apiLogModel->logRequest($taskId, 'UPLOAD_ATTACHMENT', $jiraEndpoint, "File upload: {$fileName}", $e->getMessage(), 500, $e->getMessage(), 'FAILED');
+            return false;
+        }
     }
 
     public function exportAsExcel()
