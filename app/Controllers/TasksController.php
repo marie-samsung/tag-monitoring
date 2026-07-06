@@ -1275,7 +1275,7 @@ class TasksController extends BaseController
         }
 
         $baseDate = !empty($log['start_date']) ? $log['start_date'] : $log['created_at'];
-        $dueDate = date('Y-m-d', strtotime($baseDate . ' + 7 days'));
+        $dueDate = date('Y-m-d', strtotime($baseDate . ' + 10 days'));
 
         // Prepare the payload based on Task details
         $payloadFields = [
