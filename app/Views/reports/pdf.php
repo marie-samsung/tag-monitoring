@@ -656,7 +656,7 @@
                         plugins: {
                             legend: {
                                 position: 'bottom',
-                                labels: { boxWidth: 10, padding: 8, font: { size: 8 } }
+                                labels: { boxWidth: 24, padding: 16, font: { size: 20 } }
                             }
                         }
                     }
@@ -683,8 +683,8 @@
                         maintainAspectRatio: false,
                         plugins: { legend: { display: false } },
                         scales: {
-                            y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 8 } } },
-                            x: { ticks: { font: { size: 8 } } }
+                            y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 20 } } },
+                            x: { ticks: { font: { size: 20 } } }
                         }
                     }
                 });
@@ -722,8 +722,8 @@
                             maintainAspectRatio: false,
                             plugins: { legend: { display: false } },
                             scales: {
-                                y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 8 } } },
-                                x: { ticks: { font: { size: 8 } } }
+                                y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 20 } } },
+                                x: { ticks: { font: { size: 20 } } }
                             }
                         }
                     });
