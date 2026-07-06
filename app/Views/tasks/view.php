@@ -323,35 +323,33 @@
                 </div>
             </div>
 
-            <!-- Type -->
+            <!-- Labels -->
             <div class="mb-3 pb-2 border-bottom border-light">
-                <span class="d-block text-primary fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">TASK TYPE</span>
-                <div class="fw-semibold mt-1 badge" style="<?= random_bg_style($type) ?>">
-                    <?= esc($type) ?>
+                <span class="d-block text-primary fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Labels / Tags</span>
+                <div class="mt-1 d-flex flex-wrap gap-1.5">
+                    <?php if (!empty($log['labels'])): ?>
+                        <?php foreach (explode(',', $log['labels']) as $lbl): 
+                            $lbl = trim($lbl);
+                            $labelUrl = site_url('tasks') . '?' . http_build_query(['labels' => [$lbl]]);
+                        ?>
+                            <a href="<?= $labelUrl ?>" class="text-decoration-none" title="Filter by <?= esc($lbl) ?>">
+                                <span class="badge bg-primary text-white d-inline-flex align-items-center gap-1 rounded-pill px-3 py-1" 
+                                      style="font-size: 0.8rem; font-weight: 500; background-color: var(--color-badge-primary-bg) !important; color: var(--color-badge-primary-text) !important; border: 1px solid var(--color-badge-primary-border) !important; cursor: pointer; transition: transform 0.15s ease;"
+                                      onmouseover="this.style.transform='scale(1.05)';" onmouseout="this.style.transform='scale(1)';">
+                                    <i class="bi bi-tag-fill text-primary" style="font-size: 0.75rem; opacity: 0.7;"></i>
+                                    <?= esc($lbl) ?>
+                                </span>
+                            </a>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <span class="text-muted" style="font-size: 0.9rem;">—</span>
+                    <?php endif; ?>
                 </div>
             </div>
 
-            <!-- Size -->
-            <div class="mb-3 pb-2 border-bottom border-light">
-                <span class="d-block text-primary fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">T-SHIRT SIZE</span>
-                <div id="sizeValue" class="fw-semibold mt-1 badge <?= size_class($log['size']) ?>">
-                    <?= esc($size) ?>
-                </div>
-
-                <div class="form-text mt-1 text-muted fw-medium" style="font-size: 0.75rem; min-height: 1.25rem;">
-                    <i class="bi bi-info-circle-fill text-primary"></i> <?= Constants::ACTIVITY_SIZES_DESCRIPTIONS[$log['size']] ?>
-                </div>
-            </div>
-
-            <div class="mb-3 pb-2 border-bottom border-light">
-                <span class="d-block text-primary fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">PRIORITY</span>
-                <div class="fw-semibold mt-1 badge <?= priority_class($log['priority']) ?>">
-                    <?= esc($priority) ?>
-                </div>
-            </div>
-
+            <!-- Description or Related Tags -->
             <?php if ($showRelatedTags): ?>
-                <div class="mb-3 pb-2 border-bottom border-light">
+                <div class="mb-4 pb-3 border-bottom border-light">
                     <div class="d-flex align-items-center justify-content-between">
                         <span class="text-primary fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Related Tags</span>
                         <?php if ($jiraTicketRecord): ?>
@@ -400,7 +398,7 @@
                     </div>
                 </div>
             <?php else: ?>
-                <div class="mb-3 pb-2 border-bottom border-light">
+                <div class="mb-4 pb-3 border-bottom border-light">
                     <span class="d-block text-primary fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Description</span>
                     <div class="mt-1 task-description" style="font-size: 0.9rem; line-height: 1.5; color: var(--color-text-base);">
                         <?= clean_html_comment($log['description'] ?: '—') ?>
@@ -408,102 +406,122 @@
                 </div>
             <?php endif; ?>
 
-            <!-- Team -->
-            <div class="mb-3 pb-2 border-bottom border-light">
-                <span class="d-block text-primary fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Team</span>
-                <div class="fw-semibold mt-1 badge" style="<?= random_bg_style($team) ?>">
-                    <?= esc($team ?: '—') ?>
-                </div>
-            </div>
+            <!-- Side-by-Side Metadata Grid -->
+            <div class="row g-4 mb-3">
+                <!-- Left Side: Task Properties -->
+                <div class="col-md-6 border-end border-light pe-md-4">
+                    <h6 class="fw-bold text-secondary mb-3" style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px;">Task Properties</h6>
+                    
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <span class="d-block text-primary fw-medium" style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px;">Task Type</span>
+                            <div class="fw-semibold mt-1 badge" style="<?= random_bg_style($type) ?>"><?= esc($type) ?></div>
+                        </div>
+                        
+                        <div class="col-6">
+                            <span class="d-block text-primary fw-medium" style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px;">T-Shirt Size</span>
+                            <div id="sizeValue" class="fw-semibold mt-1 badge <?= size_class($log['size']) ?>" data-bs-toggle="tooltip" title="<?= esc(Constants::ACTIVITY_SIZES_DESCRIPTIONS[$log['size']]) ?>"><?= $size ?></div>
+                        </div>
 
-            <!-- Project -->
-            <div class="mb-3 pb-2 border-bottom border-light">
-                <span class="d-block text-primary fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Project</span>
-                <div class="fw-semibold mt-1 badge" style="<?= random_bg_style($project) ?>">
-                    <?= esc($project ?: '—') ?>
-                </div>
-            </div>
+                        <div class="col-6">
+                            <span class="d-block text-primary fw-medium" style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px;">Priority</span>
+                            <div>
+                                <span class="fw-semibold mt-1 badge <?= priority_class($log['priority']) ?>"><?= esc($priority) ?></span>
+                            </div>
+                        </div>
 
-            <div class="mb-3 pb-2 border-bottom border-light">
-                <span class="d-block text-primary fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Ticket ID</span>
-                <div class="mt-1 d-flex align-items-center gap-2" style="font-size: 0.9rem; color: var(--color-text-base);">
-                    <?php if (!empty($log['ticket_id'])) : ?>
-                        <a href="<?= Constants::JIRA_LINK . $log['ticket_id'] ?>" target="_blank" class="apple-link" id="ticket-id-link">
-                            <?= esc($log['ticket_id']) ?>
-                        </a>
-                        <button type="button" class="btn btn-link p-0 text-muted border-0 d-inline-flex align-items-center justify-content-center" id="copy-ticket-btn" title="Copy Ticket ID" style="box-shadow: none;">
-                            <i class="bi bi-copy fs-6" id="copy-ticket-icon"></i>
-                        </button>
-                    <?php else: ?>
-                        <span class="text-muted">—</span>
-                    <?php endif; ?>
-                </div>
-            </div>
+                        <div class="col-6">
+                            <span class="d-block text-primary fw-medium" style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px;">Team</span>
+                            <div class="fw-semibold mt-1 badge" style="<?= random_bg_style($team) ?>"><?= esc($team ?: '—') ?></div>
+                        </div>
 
-            <h5 class="fw-bold mt-4 mb-3 text-secondary" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;">Request Details</h5>
-            
-            <div class="mb-3 pb-2 border-bottom border-light">
-                <span class="d-block text-primary fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Requested By</span>
-                <div class="mt-1" style="font-size: 0.9rem; color: var(--color-text-base);">
-                    <?= esc($log['requested_by'] ?: '—') ?>
-                </div>
-            </div>
+                        <div class="col-6">
+                            <span class="d-block text-primary fw-medium" style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px;">Project</span>
+                            <div class="fw-semibold mt-1 badge" style="<?= random_bg_style($project) ?>"><?= esc($project ?: '—') ?></div>
+                        </div>
 
-            <div class="mb-3 pb-2 border-bottom border-light">
-                <span class="d-block text-primary fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Requested Date</span>
-                <div class="mt-1" style="font-size: 0.9rem; color: var(--color-text-base);">
-                    <?= esc($log['requested_date'] ?: '—') ?>
-                </div>
-            </div>
+                        <div class="col-6">
+                            <span class="d-block text-primary fw-medium" style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px;">Ticket ID</span>
+                            <div class="mt-1 d-flex align-items-center gap-2" style="font-size: 0.9rem;">
+                                <?php if (!empty($log['ticket_id'])) : ?>
+                                    <a href="<?= Constants::JIRA_LINK . $log['ticket_id'] ?>" target="_blank" class="apple-link fw-bold" id="ticket-id-link"><?= esc($log['ticket_id']) ?></a>
+                                    <button type="button" class="btn btn-link p-0 text-muted border-0 d-inline-flex align-items-center justify-content-center" id="copy-ticket-btn" title="Copy Ticket ID" style="box-shadow: none;"><i class="bi bi-copy fs-6" id="copy-ticket-icon"></i></button>
+                                <?php else: ?>
+                                    <span class="text-muted">—</span>
+                                <?php endif; ?>
+                            </div>
+                        </div>
 
-            <div class="mb-3 pb-2 border-bottom border-light">
-                <span class="d-block text-primary fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Start Date</span>
-                <div class="mt-1" style="font-size: 0.9rem; color: var(--color-text-base);">
-                    <?= esc($log['start_date'] ?: '—') ?>
+                        <div class="col-6">
+                            <span class="d-block text-primary fw-medium" style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px;">MT JIRA Ticket</span>
+                            <div class="mt-1 d-flex align-items-center gap-2" style="font-size: 0.9rem;">
+                                <?php if (!empty($log['mt_jira_ticket'])) : ?>
+                                    <a href="<?= Constants::MT_JIRA_LINK . $log['mt_jira_ticket'] ?>" target="_blank" class="apple-link fw-bold" id="mt-ticket-id-link"><?= esc($log['mt_jira_ticket']) ?></a>
+                                    <button type="button" class="btn btn-link p-0 text-muted border-0 d-inline-flex align-items-center justify-content-center" id="copy-mt-ticket-btn" title="Copy MT JIRA Ticket" style="box-shadow: none;"><i class="bi bi-copy fs-6" id="copy-mt-ticket-icon"></i></button>
+                                <?php else: ?>
+                                    <span class="text-muted">—</span>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
 
-            <div class="mb-3 pb-2 border-bottom border-light">
-                <span class="d-block text-primary fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Finished Date</span>
-                <div class="mt-1" id="finished-date-value" style="font-size: 0.9rem; color: var(--color-text-base);">
-                    <?= esc($log['finished_date'] ?: '—') ?>
-                </div>
-            </div>
+                <!-- Right Side: Timeline & Campaign Details -->
+                <div class="col-md-6 ps-md-4">
+                    <h6 class="fw-bold text-secondary mb-3" style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px;">Timeline & Campaign</h6>
+                    
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <span class="d-block text-primary fw-medium" style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px;">Requested By</span>
+                            <div class="fw-semibold mt-1 text-secondary" style="font-size: 0.85rem;"><?= esc($log['requested_by'] ?: '—') ?></div>
+                        </div>
 
-            <div class="mb-3 pb-2 border-bottom border-light">
-                <span class="d-block text-primary fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Created At</span>
-                <div class="mt-1" style="font-size: 0.9rem; color: var(--color-text-base);">
-                    <?= esc($log['created_at'] ?: '—') ?>
-                </div>
-            </div>
+                        <div class="col-6">
+                            <span class="d-block text-primary fw-medium" style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px;">Requested Date</span>
+                            <div class="fw-semibold mt-1 text-secondary" style="font-size: 0.85rem;"><?= esc($log['requested_date'] ?: '—') ?></div>
+                        </div>
 
-            <div class="mb-3 pb-2 border-bottom border-light">
-                <span class="d-block text-primary fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Updated At</span>
-                <div class="mt-1" style="font-size: 0.9rem; color: var(--color-text-base);">
-                    <?= esc($log['updated_at'] ?: '—') ?>
-                </div>
-            </div>
+                        <div class="col-6">
+                            <span class="d-block text-primary fw-medium" style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px;">Start Date</span>
+                            <div class="fw-semibold mt-1 text-secondary" style="font-size: 0.85rem;"><?= esc($log['start_date'] ?: '—') ?></div>
+                        </div>
 
-            <h5 class="fw-bold mt-4 mb-3 text-secondary" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;">Campaign Details</h5>
-            
-            <div class="mb-3 pb-2 border-bottom border-light">
-                <span class="d-block text-primary fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Department</span>
-                <div class="mt-1" style="font-size: 0.9rem; color: var(--color-text-base);">
-                    <?= esc($log['department_id'] ?? '—') ?>
-                </div>
-            </div>
-            
-            <div class="mb-3 pb-2 border-bottom border-light">
-                <span class="d-block text-primary fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Campaign Status</span>
-                <div class="mt-1" style="font-size: 0.9rem; color: var(--color-text-base);">
-                    <?= esc(Constants::CAMPAIGN_STATUS[$log['campaign_status']] ?? '—') ?>
-                </div>
-            </div>
+                        <div class="col-6">
+                            <span class="d-block text-primary fw-medium" style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px;">Finished Date</span>
+                            <div class="fw-semibold mt-1 text-secondary" style="font-size: 0.85rem;" id="finished-date-value"><?= esc($log['finished_date'] ?: '—') ?></div>
+                        </div>
 
-            <div class="mb-3 pb-2 border-bottom border-light">
-                <span class="d-block text-primary fw-medium" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Campaign ID</span>
-                <div class="mt-1" style="font-size: 0.9rem; color: var(--color-text-base);">
-                    <?= esc($log['campaign_id'] ?: '—') ?>
+                        <div class="col-6">
+                            <span class="d-block text-primary fw-medium" style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px;">Department</span>
+                            <div class="fw-semibold mt-1 text-secondary" style="font-size: 0.85rem;"><?= esc($log['department_id'] ?? '—') ?></div>
+                        </div>
+
+                        <div class="col-6">
+                            <span class="d-block text-primary fw-medium" style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px;">Campaign Status</span>
+                            <?php
+                                $cStatus = Constants::CAMPAIGN_STATUS[$log['campaign_status']] ?? '—';
+                                if (empty($log['campaign_status'])) {
+                                    $cStatus = '—';
+                                }
+                            ?>
+                            <div class="fw-semibold mt-1 badge" style="<?= random_bg_style($cStatus) ?>"><?= esc($cStatus) ?></div>
+                        </div>
+
+                        <div class="col-12">
+                            <span class="d-block text-primary fw-medium" style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px;">Campaign ID</span>
+                            <div class="fw-semibold mt-1 text-secondary text-truncate" style="font-size: 0.85rem;" title="<?= esc($log['campaign_id']) ?>"><?= esc($log['campaign_id'] ?: '—') ?></div>
+                        </div>
+
+                        <div class="col-6">
+                            <span class="d-block text-primary fw-medium" style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px;">Created At</span>
+                            <div class="fw-semibold text-muted" style="font-size: 0.75rem;"><?= esc($log['created_at'] ?: '—') ?></div>
+                        </div>
+
+                        <div class="col-6">
+                            <span class="d-block text-primary fw-medium" style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px;">Updated At</span>
+                            <div class="fw-semibold text-muted" style="font-size: 0.75rem;"><?= esc($log['updated_at'] ?: '—') ?></div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -784,10 +802,30 @@
                 icon.removeClass('bi-copy').addClass('bi-check-lg text-success');
                 setTimeout(function() {
                     icon.animate({ opacity: 0 }, 400, function() {
-                        icon.removeClass('bi-check-lg text-success').addClass('bi-copy');
-                        icon.animate({ opacity: 1 }, 800);
+                        icon.removeClass('bi-check-lg text-success').addClass('bi-copy').css('opacity', 1);
                     });
-                }, 1200);
+                }, 2000);
+            });
+
+            $('#copy-mt-ticket-btn').on('click', function() {
+                var ticketId = $('#mt-ticket-id-link').text().trim();
+                var temp = document.createElement('textarea');
+                temp.value = ticketId;
+                temp.style.position = 'fixed';
+                temp.style.left = '-9999px';
+                document.body.appendChild(temp);
+                temp.focus();
+                temp.select();
+                document.execCommand('copy');
+                document.body.removeChild(temp);
+
+                var icon = $('#copy-mt-ticket-icon');
+                icon.removeClass('bi-copy').addClass('bi-check-lg text-success');
+                setTimeout(function() {
+                    icon.animate({ opacity: 0 }, 400, function() {
+                        icon.removeClass('bi-check-lg text-success').addClass('bi-copy').css('opacity', 1);
+                    });
+                }, 2000);
             });
 
             // Dropdown selection state tracking for reverts

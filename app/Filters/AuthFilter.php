@@ -36,7 +36,7 @@ class AuthFilter implements FilterInterface
             $db = \Config\Database::connect();
 
             // Auto-heal database: run migration check
-            if (!$db->fieldExists('role_id', 'users') || !$db->fieldExists('profile_photo', 'users') || !$db->tableExists('role_permissions') || !$db->tableExists('roles') || !$db->fieldExists('js_code', 'tags') || !$db->tableExists('notifications')) {
+            if (!$db->fieldExists('role_id', 'users') || !$db->fieldExists('profile_photo', 'users') || !$db->tableExists('role_permissions') || !$db->tableExists('roles') || !$db->fieldExists('js_code', 'tags') || !$db->tableExists('notifications') || !$db->fieldExists('mt_jira_ticket', 'activity_logs')) {
                 self::autoMigrate($db);
             }
 
@@ -228,6 +228,11 @@ class AuthFilter implements FilterInterface
                 `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY (`id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;");
+        }
+
+        // Add mt_jira_ticket column to activity_logs
+        if (!$db->fieldExists('mt_jira_ticket', 'activity_logs')) {
+            $db->query("ALTER TABLE `activity_logs` ADD COLUMN `mt_jira_ticket` VARCHAR(50) DEFAULT NULL AFTER `ticket_id`");
         }
     }
 

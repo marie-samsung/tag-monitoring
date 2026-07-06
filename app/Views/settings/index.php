@@ -128,6 +128,12 @@ foreach ($roles as $r) {
         <button class="apple-tab-btn active" id="tab-general-btn" onclick="switchTab('general')">
             <i class="bi bi-sliders me-1"></i> General Settings
         </button>
+        <button class="apple-tab-btn" id="tab-jira-btn" onclick="switchTab('jira')">
+            <i class="bi bi-kanban me-1"></i> Martech JIRA
+        </button>
+        <button class="apple-tab-btn" id="tab-api-logs-btn" onclick="switchTab('api-logs')">
+            <i class="bi bi-journal-code me-1"></i> API Logs
+        </button>
         <button class="apple-tab-btn" id="tab-users-btn" onclick="switchTab('users')">
             <i class="bi bi-people-fill me-1"></i> Users Management
         </button>
@@ -173,7 +179,7 @@ foreach ($roles as $r) {
                 </div>
 
                 <!-- Toggle 3: Force Me Mode System-Wide -->
-                <div class="d-flex align-items-start justify-content-between p-3 rounded-3 border mb-4 bg-white shadow-sm" style="transition: all 0.2s ease;">
+                <div class="d-flex align-items-start justify-content-between p-3 rounded-3 border mb-3 bg-white shadow-sm" style="transition: all 0.2s ease;">
                     <div style="flex: 1; padding-right: 20px;">
                         <h6 class="fw-bold mb-1">Force Me Mode System-Wide</h6>
                         <span class="text-secondary" style="font-size: 0.8rem;">Force all non-administrative users to view only their assigned tasks. They will not be able to turn off Me Mode. Administrative users are unaffected.</span>
@@ -183,9 +189,88 @@ foreach ($roles as $r) {
                     </div>
                 </div>
 
+                <!-- Dropdown: CodeIgniter Environment -->
+                <div class="d-flex align-items-start justify-content-between p-3 rounded-3 border mb-4 bg-white shadow-sm" style="transition: all 0.2s ease;">
+                    <div style="flex: 1; padding-right: 20px;">
+                        <h6 class="fw-bold mb-1">CodeIgniter Environment Mode</h6>
+                        <span class="text-secondary" style="font-size: 0.8rem;">Switch the application environment between **Development** (displays verbose error logs, debug toolbar, and disables query caching) and **Production** (hides detailed error logs and optimizes system performance).</span>
+                    </div>
+                    <div class="d-flex align-items-center" style="height: 24px;">
+                        <select name="ci_environment" id="ciEnvironment" class="form-select form-select-xs" style="width: auto; min-width: 140px; cursor: pointer;">
+                            <option value="development" <?= ($ci_environment === 'development') ? 'selected' : '' ?>>Development</option>
+                            <option value="production" <?= ($ci_environment === 'production') ? 'selected' : '' ?>>Production</option>
+                        </select>
+                    </div>
+                </div>
+
                 <div class="d-flex justify-content-start">
                     <button type="submit" class="apple-btn-primary btn-action-hover px-4">
                         <i class="bi bi-check-circle-fill me-1.5"></i> Save Settings
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- TAB: MARTECH JIRA SETTINGS -->
+    <!-- ============================================== -->
+    <div class="settings-tab-content d-none" id="tab-jira">
+        <div class="apple-settings-card mt-2">
+            <h4 class="fw-bold mb-3">Martech JIRA Configuration</h4>
+            <p class="text-secondary small mb-4">Configure the API endpoints, project key, and authentication token for JIRA integration.</p>
+            
+            <form action="<?= site_url('settings/save-jira-settings') ?>" method="post">
+                <?= csrf_field() ?>
+                
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold mb-1">Create JIRA Issue Endpoint</label>
+                        <p class="text-secondary small mb-2">Endpoint used when submitting a new task.</p>
+                        <input type="text" class="form-control" name="mt_jira_create_issue" value="<?= esc($envVars['MT_JIRA_CREATE_ISSUE'] ?? '') ?>" placeholder="https://your-domain.atlassian.net/rest/api/2/issue">
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold mb-1">Edit JIRA Details Endpoint</label>
+                        <p class="text-secondary small mb-2">Endpoint used for updating existing issue properties.</p>
+                        <input type="text" class="form-control" name="mt_jira_edit_issue" value="<?= esc($envVars['MT_JIRA_EDIT_ISSUE'] ?? '') ?>" placeholder="https://your-domain.atlassian.net/rest/api/2/issue/">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold mb-1">Update JIRA Status Endpoint</label>
+                        <p class="text-secondary small mb-2">Endpoint used to transition an issue's status.</p>
+                        <input type="text" class="form-control" name="mt_jira_update_status" value="<?= esc($envVars['MT_JIRA_UPDATE_STATUS'] ?? '') ?>" placeholder="https://your-domain.atlassian.net/rest/api/2/issue/{id}/transitions">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold mb-1">Upload Attachment Endpoint</label>
+                        <p class="text-secondary small mb-2">Endpoint for pushing attachments to a JIRA issue.</p>
+                        <input type="text" class="form-control" name="mt_jira_upload_attachment" value="<?= esc($envVars['MT_JIRA_UPLOAD_ATTACHMENT'] ?? '') ?>" placeholder="https://your-domain.atlassian.net/rest/api/2/issue/{id}/attachments">
+                    </div>
+
+                    <hr class="my-2 border-secondary opacity-25">
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold mb-1">Project Key</label>
+                        <p class="text-secondary small mb-2">The default project key (e.g. MEACRMMT).</p>
+                        <input type="text" class="form-control" name="mt_jira_project_key" value="<?= esc($envVars['MT_JIRA_PROJECT_KEY'] ?? '') ?>" placeholder="MEACRMMT">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold mb-1">Authentication Token</label>
+                        <p class="text-secondary small mb-2">The Bearer token or PAT used to authenticate.</p>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="mt_jira_auth_token" name="mt_jira_auth_token" value="<?= esc($envVars['MT_JIRA_AUTH_TOKEN'] ?? '') ?>" placeholder="Enter token...">
+                            <button class="btn btn-outline-secondary" type="button" onclick="const input = document.getElementById('mt_jira_auth_token'); const icon = this.querySelector('i'); if (input.type === 'password') { input.type = 'text'; icon.classList.remove('bi-eye'); icon.classList.add('bi-eye-slash'); } else { input.type = 'password'; icon.classList.remove('bi-eye-slash'); icon.classList.add('bi-eye'); }">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-top d-flex justify-content-start">
+                    <button type="submit" class="apple-btn-primary btn-action-hover px-4">
+                        <i class="bi bi-check-circle-fill me-1.5"></i> Save JIRA Settings
                     </button>
                 </div>
             </form>
@@ -496,10 +581,109 @@ foreach ($roles as $r) {
                 </tbody>
             </table>
         </div>
+        </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- TAB: API LOGS -->
+    <!-- ============================================== -->
+    <div class="settings-tab-content d-none" id="tab-api-logs">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h4 class="fw-bold mb-1">JIRA API Logs</h4>
+                <p class="text-secondary small mb-0">View API logs and retry failed JIRA requests.</p>
+            </div>
+            <div>
+                <select id="api-log-filter" class="form-select form-select-sm" onchange="filterApiLogs()">
+                    <option value="all">All Statuses</option>
+                    <option value="SUCCESS">Success</option>
+                    <option value="FAILED">Failed</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="table-responsive rounded-3 border bg-white">
+            <table class="table table-hover align-middle mb-0 apple-table" id="api-logs-table">
+                <thead class="table-light">
+                    <tr>
+                        <th class="text-secondary" style="font-weight: 600; font-size: 0.85rem;">ID</th>
+                        <th class="text-secondary" style="font-weight: 600; font-size: 0.85rem;">Task ID</th>
+                        <th class="text-secondary" style="font-weight: 600; font-size: 0.85rem;">Type</th>
+                        <th class="text-secondary" style="font-weight: 600; font-size: 0.85rem;">Endpoint</th>
+                        <th class="text-secondary" style="font-weight: 600; font-size: 0.85rem;">Payload</th>
+                        <th class="text-secondary" style="font-weight: 600; font-size: 0.85rem;">Response</th>
+                        <th class="text-secondary" style="font-weight: 600; font-size: 0.85rem;">Status</th>
+                        <th class="text-secondary" style="font-weight: 600; font-size: 0.85rem;">Retries</th>
+                        <th class="text-secondary" style="font-weight: 600; font-size: 0.85rem;">Date</th>
+                        <th class="text-secondary text-end" style="font-weight: 600; font-size: 0.85rem;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (empty($apiLogs)): ?>
+                        <tr>
+                            <td colspan="10" class="text-center py-4 text-muted">No API logs found.</td>
+                        </tr>
+                    <?php else: ?>
+                        <?php foreach ($apiLogs as $log): ?>
+                            <tr class="api-log-row" data-status="<?= esc($log['status']) ?>">
+                                <td><span class="text-muted small">#<?= esc($log['id']) ?></span></td>
+                                <td>
+                                    <?php if ($log['task_id']): ?>
+                                        <a href="<?= site_url('tasks/view/' . esc($log['task_id'])) ?>" class="text-primary text-decoration-none fw-medium" target="_blank">
+                                            <?= esc($log['task_id']) ?>
+                                        </a>
+                                    <?php else: ?>
+                                        <span class="text-muted">-</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td><span class="badge bg-secondary"><?= esc($log['request_type']) ?></span></td>
+                                <td>
+                                    <span class="d-inline-block text-truncate" style="max-width: 150px; font-size: 0.85rem;" title="<?= esc($log['endpoint_url']) ?>">
+                                        <?= esc($log['endpoint_url']) ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="d-inline-block text-truncate" style="max-width: 150px; font-size: 0.85rem; font-family: monospace;" title="<?= esc($log['payload']) ?>">
+                                        <?= esc($log['payload']) ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="d-inline-block text-truncate" style="max-width: 150px; font-size: 0.85rem; font-family: monospace;" title="<?= esc($log['response_body']) ?>">
+                                        <?= esc($log['response_body']) ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <?php if ($log['status'] === 'SUCCESS'): ?>
+                                        <span class="badge bg-success text-white"><i class="bi bi-check-circle me-1"></i> Success</span>
+                                    <?php else: ?>
+                                        <span class="badge bg-danger text-white" title="<?= esc($log['error_message']) ?>"><i class="bi bi-x-circle me-1"></i> Failed</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <?php if ($log['retry_count'] > 0): ?>
+                                        <span class="badge bg-warning text-dark rounded-pill"><?= esc($log['retry_count']) ?></span>
+                                    <?php else: ?>
+                                        <span class="text-muted small">0</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td><span class="text-muted small"><?= date('M d, H:i', strtotime($log['created_at'])) ?></span></td>
+                                <td class="text-end">
+                                    <?php if ($log['status'] !== 'SUCCESS'): ?>
+                                        <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2" onclick="retryApiLog(<?= esc($log['id']) ?>)">
+                                            <i class="bi bi-arrow-clockwise"></i> Retry
+                                        </button>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
+</div>
 
-    
 
 <!-- ============================================== -->
 <!-- MODAL: ADD NEW USER -->
@@ -835,6 +1019,55 @@ foreach ($roles as $r) {
         document.getElementById('delete-user-form').action = `<?= site_url('settings/user/delete/') ?>${user.id}`;
         const modal = new bootstrap.Modal(document.getElementById('deleteUserModal'));
         modal.show();
+    }
+    // API Logs Filter
+    function filterApiLogs() {
+        const status = document.getElementById('api-log-filter').value;
+        const rows = document.querySelectorAll('.api-log-row');
+        
+        rows.forEach(row => {
+            if (status === 'all' || row.dataset.status === status) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    // API Logs Retry
+    function retryApiLog(id) {
+        if (!confirm('Are you sure you want to retry this JIRA API request?')) {
+            return;
+        }
+        
+        // Show loading state
+        const btn = event.currentTarget;
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+        btn.disabled = true;
+
+        fetch(`<?= site_url('settings/retry-api-log/') ?>${id}`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/json',
+                '<?= csrf_token() ?>': '<?= csrf_hash() ?>'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Success: ' + data.message);
+            } else {
+                alert('Error: ' + data.message);
+            }
+            window.location.reload();
+        })
+        .catch(err => {
+            alert('An unexpected error occurred while retrying the request.');
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+        });
     }
 </script>
 

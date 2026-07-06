@@ -55,6 +55,10 @@ class SettingsController extends BaseController
         $backupHandler = new \App\Libraries\BackupHandler();
         $autoBackupSettings = $backupHandler->getSettings();
 
+        // 5. Fetch API Logs
+        $apiLogModel = new \App\Models\JiraApiLogModel();
+        $apiLogs = $apiLogModel->orderBy('id', 'DESC')->findAll(100); // Limit to top 100 for performance
+
         return view('settings/index', [
             'users' => $users,
             'roles' => $roles,
@@ -62,6 +66,9 @@ class SettingsController extends BaseController
             'backups' => $backups,
             'autoBackupSettings' => $autoBackupSettings,
             'systemSettings' => self::getSystemSettings(),
+            'ci_environment' => self::getCodeIgniterEnvironment(),
+            'envVars'        => self::getEnvVariables(),
+            'apiLogs'        => $apiLogs,
         ]);
     }
 
@@ -488,6 +495,41 @@ class SettingsController extends BaseController
     }
 
     /**
+     * Get the CodeIgniter environment mode from the root .env file.
+     */
+    public static function getCodeIgniterEnvironment(): string
+    {
+        $envFile = ROOTPATH . '.env';
+        if (file_exists($envFile)) {
+            $content = file_get_contents($envFile);
+            if (preg_match('/^\s*CI_ENVIRONMENT\s*=\s*(\w+)/m', $content, $matches)) {
+                return trim($matches[1]);
+            }
+        }
+        return 'production';
+    }
+
+    /**
+     * Update the CodeIgniter environment mode in the root .env file.
+     */
+    public static function setCodeIgniterEnvironment(string $env): bool
+    {
+        $envFile = ROOTPATH . '.env';
+        if (!file_exists($envFile)) {
+            return false;
+        }
+
+        $content = file_get_contents($envFile);
+        if (preg_match('/^\s*CI_ENVIRONMENT\s*=\s*\w+/m', $content)) {
+            $newContent = preg_replace('/^(\s*CI_ENVIRONMENT\s*=\s*)\w+/m', '${1}' . $env, $content);
+        } else {
+            $newContent = $content . "\nCI_ENVIRONMENT = " . $env . "\n";
+        }
+
+        return file_put_contents($envFile, $newContent) !== false;
+    }
+
+    /**
      * Get the general system settings.
      */
     public static function getSystemSettings(): array
@@ -536,12 +578,199 @@ class SettingsController extends BaseController
             mkdir($dir, 0777, true);
         }
 
-        if (file_put_contents($settingsFile, json_encode($settings, JSON_PRETTY_PRINT)) !== false) {
-            session()->setFlashdata('active_tab', 'general');
-            return redirect()->to(site_url('settings'))->with('success', 'General system settings saved successfully.');
+        // Save system settings to JSON
+        $savedJson = file_put_contents($settingsFile, json_encode($settings, JSON_PRETTY_PRINT)) !== false;
+
+        // Save CI environment to .env
+        $ciEnv = $this->request->getPost('ci_environment');
+        $savedEnv = true;
+        if (in_array($ciEnv, ['development', 'production'])) {
+            $savedEnv = self::setCodeIgniterEnvironment($ciEnv);
         }
 
         session()->setFlashdata('active_tab', 'general');
+
+        if ($savedJson && $savedEnv) {
+            return redirect()->to(site_url('settings'))->with('success', 'General system settings saved successfully.');
+        } elseif ($savedJson) {
+            return redirect()->to(site_url('settings'))->with('warning', 'General settings saved, but failed to update environment in root .env file.');
+        }
+
         return redirect()->to(site_url('settings'))->with('error', 'Failed to save general system settings.');
+    }
+
+    /**
+     * Get all environment variables from the .env file.
+     */
+    public static function getEnvVariables(): array
+    {
+        $envFile = ROOTPATH . '.env';
+        $vars = [];
+        if (file_exists($envFile)) {
+            $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+            foreach ($lines as $line) {
+                $line = trim($line);
+                if (empty($line) || str_starts_with($line, '#')) {
+                    continue;
+                }
+                if (strpos($line, '=') !== false) {
+                    list($key, $value) = explode('=', $line, 2);
+                    $vars[trim($key)] = trim($value, " '\"");
+                }
+            }
+        }
+        return $vars;
+    }
+
+    /**
+     * Safely update or append multiple variables in the root .env file.
+     */
+    public static function updateEnvVariables(array $updates): bool
+    {
+        $envFile = ROOTPATH . '.env';
+        if (!file_exists($envFile)) {
+            // Try to create it if it doesn't exist
+            file_put_contents($envFile, '');
+        }
+
+        $content = file_get_contents($envFile);
+        
+        foreach ($updates as $key => $value) {
+            $value = trim($value);
+            // We'll wrap the value in single quotes to be safe, unless it's empty
+            $safeValue = $value === '' ? '' : "'" . str_replace("'", "\'", $value) . "'";
+
+            // Check if key exists
+            if (preg_match('/^(\s*' . preg_quote($key, '/') . '\s*=)(.*)$/m', $content)) {
+                $content = preg_replace('/^(\s*' . preg_quote($key, '/') . '\s*=)(.*)$/m', '${1}' . $safeValue, $content);
+            } else {
+                $content .= "\n" . $key . "=" . $safeValue . "\n";
+            }
+        }
+
+        // Clean up multiple newlines that might occur
+        $content = preg_replace("/\n{3,}/", "\n\n", $content);
+
+        return file_put_contents($envFile, $content) !== false;
+    }
+
+    /**
+     * Save Jira specific settings directly to the .env file.
+     */
+    public function saveJiraSettings()
+    {
+        $permissions = session()->get('permissions') ?? [];
+        if (empty($permissions['settings'])) {
+            return redirect()->to(site_url('dashboard'))
+                ->with('error', 'You do not have permission to access the Settings section.');
+        }
+
+        $updates = [
+            'MT_JIRA_CREATE_ISSUE'    => $this->request->getPost('mt_jira_create_issue'),
+            'MT_JIRA_EDIT_ISSUE'      => $this->request->getPost('mt_jira_edit_issue'),
+            'MT_JIRA_UPDATE_STATUS'   => $this->request->getPost('mt_jira_update_status'),
+            'MT_JIRA_UPLOAD_ATTACHMENT' => $this->request->getPost('mt_jira_upload_attachment'),
+            'MT_JIRA_AUTH_TOKEN'      => $this->request->getPost('mt_jira_auth_token'),
+            'MT_JIRA_PROJECT_KEY'     => $this->request->getPost('mt_jira_project_key'),
+        ];
+
+        session()->setFlashdata('active_tab', 'jira');
+
+        if (self::updateEnvVariables($updates)) {
+            return redirect()->to(site_url('settings'))->with('success', 'Jira settings successfully updated in .env.');
+        }
+
+        return redirect()->to(site_url('settings'))->with('error', 'Failed to update Jira settings.');
+    }
+
+    /**
+     * Retry a failed JIRA API request.
+     */
+    public function retryApiLog($id)
+    {
+        $permissions = session()->get('permissions') ?? [];
+        if (empty($permissions['settings'])) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Unauthorized']);
+        }
+
+        $apiLogModel = new \App\Models\JiraApiLogModel();
+        $log = $apiLogModel->find($id);
+
+        if (!$log) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Log not found']);
+        }
+
+        $jiraToken = getenv('MT_JIRA_AUTH_TOKEN');
+        if (empty($jiraToken)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'JIRA Auth Token is not configured.']);
+        }
+
+        $endpoint = $log['endpoint_url'];
+        $payload = $log['payload'];
+        $requestType = $log['request_type'];
+
+        try {
+            $curl = curl_init();
+
+            // Determine HTTP method
+            $httpMethod = 'POST';
+            if ($requestType === 'EDIT_ISSUE') {
+                $httpMethod = 'PUT';
+            }
+
+            curl_setopt_array($curl, [
+                CURLOPT_URL => $endpoint,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => '',
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 30,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => $httpMethod,
+                CURLOPT_POSTFIELDS => $payload,
+                CURLOPT_HTTPHEADER => [
+                    'Authorization: Bearer ' . $jiraToken,
+                    'Content-Type: application/json',
+                    'Accept: application/json',
+                    'User-Agent: PostmanRuntime/7.32.3',
+                    'Expect:'
+                ],
+            ]);
+
+            $body = curl_exec($curl);
+            $statusCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+            $errorMessage = curl_error($curl);
+            curl_close($curl);
+
+            $status = ($statusCode >= 200 && $statusCode < 300) ? 'SUCCESS' : 'FAILED';
+
+            // Update log entry
+            $apiLogModel->update($id, [
+                'status' => $status,
+                'status_code' => $statusCode,
+                'response_body' => $body,
+                'error_message' => $errorMessage,
+                'retry_count' => $log['retry_count'] + 1,
+            ]);
+
+            session()->setFlashdata('active_tab', 'api-logs');
+
+            if ($status === 'SUCCESS') {
+                return $this->response->setJSON(['success' => true, 'message' => 'Request retried successfully.']);
+            } else {
+                return $this->response->setJSON(['success' => false, 'message' => 'Request failed with status ' . $statusCode]);
+            }
+        } catch (\Exception $e) {
+            $apiLogModel->update($id, [
+                'status' => 'FAILED',
+                'status_code' => 500,
+                'error_message' => $e->getMessage(),
+                'retry_count' => $log['retry_count'] + 1,
+            ]);
+            
+            session()->setFlashdata('active_tab', 'api-logs');
+
+            return $this->response->setJSON(['success' => false, 'message' => 'Exception occurred: ' . $e->getMessage()]);
+        }
     }
 }

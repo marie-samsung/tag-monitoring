@@ -967,3 +967,172 @@ table.file-table th:nth-child(3) {
     gap: 12px;
     justify-content: center;
 }
+
+/* ==========================================
+   9. Custom Tags Input UI Components
+   ========================================== */
+.tags-input-container {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    min-height: 38px;
+    border-radius: 8px;
+    border: 1px solid var(--color-border-input);
+    background-color: var(--color-card-bg);
+    cursor: text;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.tags-input-container.focused {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 0.25rem var(--color-primary-focus-shadow);
+    outline: none;
+}
+
+.tags-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+}
+
+.tags-input-container .tag-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    border-radius: 9999px;
+    background-color: var(--color-badge-primary-bg);
+    color: var(--color-badge-primary-text);
+    border: 1px solid var(--color-badge-primary-border);
+    animation: tagScaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    user-select: none;
+}
+
+.tags-input-container .tag-badge .tag-remove-btn {
+    cursor: pointer;
+    font-size: 0.85rem;
+    opacity: 0.6;
+    transition: opacity var(--transition-fast), transform var(--transition-fast);
+    display: inline-flex;
+    align-items: center;
+}
+
+.tags-input-container .tag-badge .tag-remove-btn:hover {
+    opacity: 1;
+    transform: scale(1.15);
+}
+
+.tags-input-container .tag-field {
+    border: none;
+    outline: none;
+    padding: 0;
+    margin: 0;
+    flex-grow: 1;
+    background: transparent;
+    color: var(--color-text-base);
+    font-size: 0.875rem;
+    min-width: 120px;
+    height: 26px;
+}
+
+@keyframes tagScaleIn {
+    0% {
+        transform: scale(0.7);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes tagScaleOut {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(0.7);
+        opacity: 0;
+    }
+}
+
+.tags-input-container .tag-badge.removing {
+    animation: tagScaleOut 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ==========================================
+   10. Select2 Apple Style Overrides
+   ========================================== */
+.select2-container--default .select2-selection--multiple {
+    border: 1px solid var(--color-border-input) !important;
+    border-radius: 8px !important;
+    min-height: 34px !important;
+    background-color: var(--color-card-bg) !important;
+    padding: 2px 4px !important;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast) !important;
+}
+
+.select2-container--default.select2-container--focus .select2-selection--multiple {
+    border-color: var(--color-primary) !important;
+    box-shadow: 0 0 0 0.25rem var(--color-primary-focus-shadow) !important;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice {
+    background-color: var(--color-badge-primary-bg) !important;
+    color: var(--color-badge-primary-text) !important;
+    border: 1px solid var(--color-badge-primary-border) !important;
+    border-radius: 9999px !important;
+    padding: 2px 8px !important;
+    font-size: 0.8rem !important;
+    font-weight: 500 !important;
+    margin-top: 4px !important;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+    color: var(--color-badge-primary-text) !important;
+    border-right: none !important;
+    margin-right: 6px !important;
+    padding-right: 4px !important;
+    opacity: 0.6;
+    font-weight: bold;
+    display: inline-block !important;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice__display {
+    padding-left: 6px !important;
+    padding-right: 6px !important;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+    background-color: transparent !important;
+    opacity: 1;
+}
+
+.select2-container--default .select2-search--inline .select2-search__field {
+    font-family: var(--font-sans);
+    color: var(--color-text-base);
+    margin-top: 5px !important;
+}
+
+.select2-dropdown {
+    border: 1px solid var(--color-border-input) !important;
+    border-radius: 8px !important;
+    box-shadow: var(--shadow-md) !important;
+    overflow: hidden;
+}
+
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+    background-color: var(--color-primary) !important;
+    color: white !important;
+}
+
+.select2-container--default .select2-results__option {
+    font-size: 0.85rem;
+    padding: 6px 12px;
+}

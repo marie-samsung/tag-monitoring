@@ -6,6 +6,8 @@
 
 <?= $this->section('content') ?>
 
+
+
 <?php
     use App\Models\Constants;
     $sysSettings = \App\Controllers\SettingsController::getSystemSettings();
@@ -60,6 +62,32 @@
                         <textarea name="description" id="description"
                             class="form-control"
                             rows="12"><?= esc($log['description']) ?></textarea>
+                    </div>
+
+                    <!-- Labels -->
+                    <div class="mb-4">
+                        <label class="form-label-sm fw-semibold text-secondary mb-1">Labels / Tags</label>
+                        <select name="labels[]" class="form-select select2-multiple" multiple="multiple" data-placeholder="Select or type to create new labels" style="width: 100%;">
+                            <?php 
+                            $selectedLabels = [];
+                            if (!empty($log['labels'])) {
+                                $selectedLabels = array_filter(array_map('trim', explode(',', $log['labels'])));
+                            }
+                            $allLabels = $all_labels ?? [];
+                            $allOptions = array_unique(array_merge($allLabels, $selectedLabels));
+                            sort($allOptions);
+
+                            foreach ($allOptions as $lbl): 
+                                if (empty(trim($lbl))) continue;
+                            ?>
+                                <option value="<?= esc($lbl) ?>" <?= in_array($lbl, $selectedLabels) ? 'selected' : '' ?>>
+                                    <?= esc($lbl) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <div class="form-text mt-1 text-muted" style="font-size: 0.75rem;">
+                            Select existing labels or type to create new ones. Labels must not contain spaces.
+                        </div>
                     </div>
                 </div>
 
@@ -360,6 +388,13 @@
 
             var detailsHtml = `<?= $detailsHtml ?? null ?>`;
             $('#details').summernote('code', detailsHtml);
+        });
+
+        $('.select2-multiple').select2({
+            tags: true,
+            tokenSeparators: [',', ' '],
+            width: '100%',
+            placeholder: "Select or type to create new labels"
         });
     });
 </script>

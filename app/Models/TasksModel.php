@@ -16,6 +16,7 @@ class TasksModel extends Model
         'team_id',
         'project',
         'ticket_id',
+        'mt_jira_ticket',
         'assignee',
         'requested_by',
         'status',
@@ -29,10 +30,19 @@ class TasksModel extends Model
         'updated_by',
         'campaign_status',
         'campaign_id',
+        'labels',
     ];
 
     protected $useTimestamps = true;
     protected $useSoftDeletes = true;
+
+    protected function initialize()
+    {
+        parent::initialize();
+        if (!$this->db->fieldExists('labels', $this->table)) {
+            $this->db->query("ALTER TABLE {$this->table} ADD `labels` VARCHAR(500) NULL DEFAULT NULL AFTER `campaign_id` ");
+        }
+    }
 
     public function filterLogs($filters = [], $paginate = 0)
     {
@@ -121,6 +131,16 @@ class TasksModel extends Model
                 $this->where('status !=', Constants::ACTIVITY_LOGS_STATUS_COMPLETED);
             }
         }
+
+        if (!empty($filters['labels'])) {
+            $labels = is_array($filters['labels']) ? $filters['labels'] : [$filters['labels']];
+            $this->groupStart();
+            foreach ($labels as $label) {
+                $this->orWhere("FIND_IN_SET(" . $this->db->escape($label) . ", labels) >", 0);
+            }
+            $this->groupEnd();
+        }
+
 
         // Dynamic Sort options
         $sortBy = $filters['sort_by'] ?? 'created_at';
@@ -237,6 +257,16 @@ class TasksModel extends Model
             $this->where('assignee', $filters['assignee']);
         }
 
+        if (!empty($filters['labels'])) {
+            $labels = is_array($filters['labels']) ? $filters['labels'] : [$filters['labels']];
+            $this->groupStart();
+            foreach ($labels as $label) {
+                $this->orWhere("FIND_IN_SET(" . $this->db->escape($label) . ", labels) >", 0);
+            }
+            $this->groupEnd();
+        }
+
+
         $results = $this->select('status, COUNT(*) as count')
                         ->groupBy('status')
                         ->findAll();
@@ -305,6 +335,29 @@ class TasksModel extends Model
 
         return $this->findAll();
     }
+
+    public function getAllLabels()
+    {
+        $builder = $this->db->table($this->table);
+        $builder->select('labels');
+        $builder->where('labels IS NOT NULL');
+        $builder->where('labels !=', '');
+        $rows = $builder->get()->getResultArray();
+
+        $allLabels = [];
+        foreach ($rows as $row) {
+            $labels = explode(',', $row['labels']);
+            foreach ($labels as $lbl) {
+                $lbl = trim($lbl);
+                if ($lbl !== '' && !in_array($lbl, $allLabels)) {
+                    $allLabels[] = $lbl;
+                }
+            }
+        }
+        sort($allLabels);
+        return $allLabels;
+    }
+
 
     protected function applyRoleFilters()
     {

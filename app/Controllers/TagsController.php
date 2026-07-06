@@ -265,6 +265,9 @@ class TagsController extends BaseController
                         $activityLogsModel->update($activityLog['id'], [
                             'status' => Constants::ACTIVITY_LOGS_STATUS_REVIEW,
                         ]);
+
+                        $tasksController = new \App\Controllers\TasksController();
+                        $tasksController->updateJiraStatusFromTask($activityLog['id'], $activityLog['status'], Constants::ACTIVITY_LOGS_STATUS_REVIEW);
                     }
                 }
 
@@ -280,6 +283,9 @@ class TagsController extends BaseController
                         $activityLogsModel->update($activityLog['id'], [
                             'status' => Constants::ACTIVITY_LOGS_STATUS_BLOCKED,
                         ]);
+
+                        $tasksController = new \App\Controllers\TasksController();
+                        $tasksController->updateJiraStatusFromTask($activityLog['id'], $activityLog['status'], Constants::ACTIVITY_LOGS_STATUS_BLOCKED);
                     }
                 }
             }
@@ -415,6 +421,9 @@ class TagsController extends BaseController
                 $activityLogModel->update($activityLog['id'], [
                     'status' => Constants::ACTIVITY_LOGS_STATUS_COMPLETED,
                 ]);
+
+                $tasksController = new \App\Controllers\TasksController();
+                $tasksController->updateJiraStatusFromTask($activityLog['id'], $activityLog['status'], Constants::ACTIVITY_LOGS_STATUS_COMPLETED);
             }
         }
 
@@ -507,6 +516,9 @@ class TagsController extends BaseController
                         $activityLogModel->update($activityLog['id'], [
                             'status' => Constants::ACTIVITY_LOGS_STATUS_COMPLETED,
                         ]);
+
+                        $tasksController = new \App\Controllers\TasksController();
+                        $tasksController->updateJiraStatusFromTask($activityLog['id'], $activityLog['status'], Constants::ACTIVITY_LOGS_STATUS_COMPLETED);
                     }
                 }
             }
@@ -697,7 +709,7 @@ class TagsController extends BaseController
         }
 
         // Auto-add Task
-        $tasksModel->insert([
+        $taskId = $tasksModel->insert([
             'title' => $title . ' | ' . $property['name'],
             'description' => $description . '</ul>',
             'subsidiary_id' => $property['subsidiary_id'],
@@ -712,6 +724,11 @@ class TagsController extends BaseController
             'requested_date' => date('Y-m-d'),
             'start_date' => date('Y-m-d'),
         ]);
+
+        if ($taskId) {
+            $tasksController = new \App\Controllers\TasksController();
+            $tasksController->createJiraIssueFromTask($taskId);
+        }
     }
 
     public function exportAsExcel()

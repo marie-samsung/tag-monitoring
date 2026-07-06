@@ -21,4 +21,10 @@ class UsersModel extends Model
 
     protected $useTimestamps = true;
     protected $useSoftDeletes = false;
+
+    public function getUsernameById($id)
+    {
+        $user = $this->find($id);
+        return $user ? $user['username'] : null;
+    }
 }
