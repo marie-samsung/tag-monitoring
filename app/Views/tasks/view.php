@@ -672,21 +672,119 @@ $hideAssigneeSystemWide = $sysSettings['hide_assignee_system_wide'] ?? false;
                 </div>
 
                 <form action="<?= site_url('tasks/upload') ?>" method="post" enctype="multipart/form-data"
-                    class="mt-3 pt-3 border-top">
+                    class="mt-3 pt-3 border-top" id="taskUploadForm">
                     <input type="hidden" name="log_id" value="<?= esc($log['id']) ?>">
                     <input type="hidden" name="created_by" value="<?= session()->get('user_id') ?>">
+                    
                     <div class="d-flex flex-column gap-2">
-                        <label for="file_path" class="form-label-xs text-primary fw-medium">Upload Attachment</label>
-                        <div class="d-flex gap-2 align-items-center justify-content-between">
-                            <input type="file" name="file_path" class="form-control form-control-xs" required
-                                style="max-width: 70%;">
-                            <button type="submit" class="apple-btn-primary btn-sm px-3"
-                                onclick="return confirm('Confirm uploading of this file?');">
-                                Upload
+                        <label class="form-label-xs text-primary fw-medium">Upload Attachment</label>
+                        <div class="upload-zone p-4 text-center border border-2 border-dashed rounded-3 bg-white" id="taskUploadZone" style="cursor: pointer; transition: all 0.2s ease; border-color: rgba(0, 0, 0, 0.15);">
+                            <div class="mb-2 d-inline-flex align-items-center justify-content-center rounded-circle" style="width: 50px; height: 50px; background-color: rgba(0, 113, 227, 0.1);">
+                                <i class="bi bi-cloud-arrow-up text-primary fs-3"></i>
+                            </div>
+                            <h6 class="fw-bold mb-1">Select or drop file</h6>
+                            <p class="text-secondary small mb-3">Drag & drop your file here, or click to browse</p>
+                            <input type="file" name="file_path" id="task_file_input" class="form-control d-none" required>
+                            <button type="button" class="apple-btn-secondary btn-sm px-3" id="taskBrowseButton">
+                                Choose File
                             </button>
+
+                            <div class="mt-3 p-2 bg-light border rounded-3 d-inline-flex align-items-center gap-2 d-none" id="taskFileSelectedDisplay">
+                                <i class="bi bi-check-circle-fill text-success"></i>
+                                <span class="fw-semibold text-dark small text-truncate" style="max-width: 200px;" id="taskFileSelectedName"></span>
+                                <button type="button" class="btn btn-sm btn-link text-danger p-0 ms-2 text-decoration-none fw-bold" id="taskBtnRemoveFile" style="font-size: 1.1rem; line-height: 1;" title="Remove file">&times;</button>
+                            </div>
                         </div>
                     </div>
+
+                    <div class="d-flex justify-content-end mt-3 d-none" id="taskUploadAction">
+                        <button type="submit" class="apple-btn-primary btn-sm px-4" id="taskUploadSubmitBtn"
+                            onclick="return confirm('Confirm uploading of this file?');">
+                            Upload File
+                        </button>
+                    </div>
                 </form>
+
+                <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    const taskUploadZone = document.getElementById('taskUploadZone');
+                    const taskBrowseButton = document.getElementById('taskBrowseButton');
+                    const taskFileInput = document.getElementById('task_file_input');
+                    const taskFileSelectedDisplay = document.getElementById('taskFileSelectedDisplay');
+                    const taskFileSelectedName = document.getElementById('taskFileSelectedName');
+                    const taskBtnRemoveFile = document.getElementById('taskBtnRemoveFile');
+                    const taskUploadAction = document.getElementById('taskUploadAction');
+
+                    if (taskUploadZone) {
+                        const triggerInputClick = (e) => {
+                            if (e.target !== taskBtnRemoveFile && !taskBtnRemoveFile.contains(e.target) && e.target !== taskUploadSubmitBtn && !taskUploadAction.contains(e.target)) {
+                                taskFileInput.click();
+                            }
+                        };
+
+                        taskUploadZone.addEventListener('click', triggerInputClick);
+                        taskBrowseButton.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            taskFileInput.click();
+                        });
+
+                        taskFileInput.addEventListener('change', () => {
+                            if (taskFileInput.files.length > 0) {
+                                taskFileSelectedName.textContent = taskFileInput.files[0].name;
+                                taskFileSelectedDisplay.classList.remove('d-none');
+                                taskBrowseButton.classList.add('d-none');
+                                taskUploadAction.classList.remove('d-none');
+                                taskUploadAction.classList.add('d-flex');
+                            } else {
+                                taskFileSelectedName.textContent = '';
+                                taskFileSelectedDisplay.classList.add('d-none');
+                                taskBrowseButton.classList.remove('d-none');
+                                taskUploadAction.classList.add('d-none');
+                                taskUploadAction.classList.remove('d-flex');
+                            }
+                        });
+
+                        taskBtnRemoveFile.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            taskFileInput.value = '';
+                            taskFileInput.dispatchEvent(new Event('change'));
+                        });
+
+                        // Prevent default drag behaviors
+                        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                            taskUploadZone.addEventListener(eventName, preventDefaults, false);
+                            document.body.addEventListener(eventName, preventDefaults, false);
+                        });
+
+                        function preventDefaults (e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                        }
+
+                        // Drag and drop event listeners
+                        ['dragenter', 'dragover'].forEach(eventName => {
+                            taskUploadZone.addEventListener(eventName, (e) => {
+                                taskUploadZone.style.borderColor = '#0071e3';
+                                taskUploadZone.style.backgroundColor = 'rgba(0, 113, 227, 0.05)';
+                            });
+                        });
+
+                        ['dragleave', 'drop'].forEach(eventName => {
+                            taskUploadZone.addEventListener(eventName, (e) => {
+                                taskUploadZone.style.borderColor = 'rgba(0, 0, 0, 0.15)';
+                                taskUploadZone.style.backgroundColor = '#ffffff';
+                            });
+                        });
+
+                        taskUploadZone.addEventListener('drop', (e) => {
+                            if (e.dataTransfer.files.length > 0) {
+                                taskFileInput.files = e.dataTransfer.files;
+                                taskFileInput.dispatchEvent(new Event('change'));
+                            }
+                        });
+                    }
+                });
+                </script>
             </div>
 
             <div class="d-flex align-items-center gap-2 mt-4 pt-3 border-top">
