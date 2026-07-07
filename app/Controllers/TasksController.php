@@ -485,6 +485,7 @@ class TasksController extends BaseController
                 CURLOPT_HTTPHEADER => [
                     'Authorization: Bearer ' . $jiraToken,
                     'X-Atlassian-Token: no-check',
+                    'User-Agent: PostmanRuntime/7.54.0',
                     'Accept: application/json',
                     'Expect:'
                 ],
