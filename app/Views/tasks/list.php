@@ -850,8 +850,13 @@ $isAdmin = (int) session()->get('user_role') === Constants::USER_ROLE_ADMIN || (
                                         class="apple-link fw-bold">
                                         <?= esc($log['ticket_id']) ?>
                                     </a>
+                                <?php elseif (!empty($log['mt_jira_ticket'])): ?>
+                                    <a href="<?= Constants::MT_JIRA_LINK . $log['mt_jira_ticket'] ?>" target="_blank"
+                                        class="apple-link fw-bold text-success">
+                                        <?= esc($log['mt_jira_ticket']) ?>
+                                    </a>
                                 <?php else: ?>
-                                    <span class="text-secondary small">—</span>
+                                    <span class="text-secondary small">-</span>
                                 <?php endif; ?>
                             </td>
                             <?php if (!$hideAssigneeSystemWide): ?>
