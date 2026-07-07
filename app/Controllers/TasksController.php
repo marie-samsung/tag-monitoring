@@ -1364,6 +1364,11 @@ class TasksController extends BaseController
         // Convert list items to Jira bullets
         $html = preg_replace('/<li>/i', "\n* ", $html);
 
+        // Convert bold, italic, and underline
+        $html = preg_replace('/<(b|strong)[^>]*>(.*?)<\/\1>/is', '*$2*', $html);
+        $html = preg_replace('/<(i|em)[^>]*>(.*?)<\/\1>/is', '_$2_', $html);
+        $html = preg_replace('/<u[^>]*>(.*?)<\/u>/is', '+$1+', $html);
+
         // Strip the rest of the HTML tags
         $text = strip_tags($html);
 

@@ -352,7 +352,7 @@ $tagRequestsModel = new TagRequestsModel();
                     <p>Launch verification has been completed.</p>
                     <p>For QA, as this was only a date extension, scope was limited to validating the tag expiry date,
                         published status, and console logs.</p>
-                    <p>All checks were completed <span style="color: green; font-weight: bold;">successfully</span>.</p>
+                    <p>All checks were completed <b><font color="#008000">successfully</font></b>.</p>
                     <p>Will proceed to closing this task.</p>
                 </div>
                 <div class="d-flex justify-content-end mt-4 gap-2">
