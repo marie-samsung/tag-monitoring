@@ -698,12 +698,34 @@ $hideAssigneeSystemWide = $sysSettings['hide_assignee_system_wide'] ?? false;
                     </div>
 
                     <div class="d-flex justify-content-end mt-3 d-none" id="taskUploadAction">
-                        <button type="submit" class="apple-btn-primary btn-sm px-4" id="taskUploadSubmitBtn"
-                            onclick="return confirm('Confirm uploading of this file?');">
+                        <button type="button" class="apple-btn-primary btn-sm px-4" id="taskUploadSubmitBtn" data-bs-toggle="modal" data-bs-target="#uploadWarningModal">
                             Upload File
                         </button>
                     </div>
                 </form>
+
+                <!-- File Upload Warning Modal -->
+                <div class="modal fade" id="uploadWarningModal" tabindex="-1" aria-labelledby="uploadWarningModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header px-4 py-3">
+                                <h5 class="modal-title fw-bold" id="uploadWarningModalLabel">
+                                    <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>Upload Confirmation
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body p-4 text-center">
+                                <i class="bi bi-shield-lock text-warning mb-3 d-block" style="font-size: 3rem;"></i>
+                                <h6 class="fw-bold mb-2">Is this file decrypted?</h6>
+                                <p class="mb-0 fs-6 text-secondary">Please ensure the file you are uploading is <strong>fully decrypted</strong>. Encrypted files cannot be opened or viewed once they are uploaded to JIRA.</p>
+                            </div>
+                            <div class="modal-footer px-4 py-3 d-flex justify-content-center gap-2 border-0">
+                                <button type="button" class="apple-btn-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+                                <button type="button" class="apple-btn-primary px-4 bg-primary" onclick="document.getElementById('taskUploadForm').submit();">Proceed</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 <script>
                 document.addEventListener('DOMContentLoaded', function () {

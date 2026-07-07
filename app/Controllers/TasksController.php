@@ -1326,10 +1326,35 @@ class TasksController extends BaseController
         ]);
     }
 
-    private function formatHtmlForJira($html)
+    private function formatHtmlForJira($html, &$extractedImages = null)
     {
         if (empty($html))
             return '';
+
+        if ($extractedImages !== null) {
+            $html = preg_replace_callback('/<img\s+[^>]*src=["\']data:image\/([^;]+);base64,([^"\']+)["\'][^>]*>/i', function($matches) use (&$extractedImages) {
+                $ext = $matches[1];
+                if ($ext === 'jpeg') $ext = 'jpg';
+                $base64 = $matches[2];
+                $data = base64_decode($base64);
+                
+                $filename = 'inline_' . substr(md5(uniqid()), 0, 8) . '.' . $ext;
+                $tempDir = WRITEPATH . 'uploads/temp';
+                if (!is_dir($tempDir)) {
+                    mkdir($tempDir, 0777, true);
+                }
+                
+                $tempPath = $tempDir . '/' . $filename;
+                file_put_contents($tempPath, $data);
+                
+                $extractedImages[] = [
+                    'path' => $tempPath,
+                    'name' => $filename
+                ];
+                
+                return " !$filename! ";
+            }, $html);
+        }
 
         // Convert line breaks and paragraphs
         $html = preg_replace('/<br\s*\/?>/i', "\n", $html);
@@ -1388,6 +1413,8 @@ class TasksController extends BaseController
         $baseDate = !empty($log['start_date']) ? $log['start_date'] : $log['created_at'];
         $dueDate = date('Y-m-d', strtotime($baseDate . ' + 10 days'));
 
+        $extractedImages = [];
+
         // Prepare the payload based on Task details
         $payloadFields = [
             'project' => [
@@ -1402,7 +1429,7 @@ class TasksController extends BaseController
                     'name' => Constants::TEAMS[$log['team_id']]
                 ]
             ],
-            'description' => $this->formatHtmlForJira($log['description'] ?? $log['title']),
+            'description' => $this->formatHtmlForJira($log['description'] ?? $log['title'], $extractedImages),
             'customfield_24905' => $log['project'],
             'customfield_12014' => $subsidiary['name'],
             'priority' => [
@@ -1486,8 +1513,16 @@ class TasksController extends BaseController
                     $commentsModel = new TaskCommentsModel();
                     $oldTicketId = !empty($log['mt_jira_ticket']) ? trim((string) $log['mt_jira_ticket']) : 'None';
 
-                    // Update task with the new MT JIRA ticket ID
+                    // Update local DB
                     $model->update($id, ['mt_jira_ticket' => $ticketId]);
+
+                    // Upload inline images
+                    if (!empty($extractedImages)) {
+                        foreach ($extractedImages as $img) {
+                            $this->uploadAttachmentToJira($id, $ticketId, $img['path'], $img['name']);
+                            @unlink($img['path']); // clean up temp file
+                        }
+                    }
 
                     // Add an update comment
                     $commentsModel->insert([
@@ -1625,6 +1660,8 @@ class TasksController extends BaseController
         $baseDate = !empty($log['start_date']) ? $log['start_date'] : $log['created_at'];
         $dueDate = date('Y-m-d', strtotime($baseDate . ' + 7 days'));
 
+        $extractedImages = [];
+
         $payloadFields = [
             'summary' => $log['title'],
             'components' => [
@@ -1632,7 +1669,7 @@ class TasksController extends BaseController
                     'name' => Constants::TEAMS[$log['team_id']]
                 ]
             ],
-            'description' => $this->formatHtmlForJira($log['description'] ?? $log['title']),
+            'description' => $this->formatHtmlForJira($log['description'] ?? $log['title'], $extractedImages),
             'priority' => [
                 'name' => JiraMapping::PRIORITIES[$log['priority']],
             ],
@@ -1690,6 +1727,12 @@ class TasksController extends BaseController
                 $errorMessage,
                 $status
             );
+            if ($status === 'SUCCESS' && !empty($extractedImages)) {
+                foreach ($extractedImages as $img) {
+                    $this->uploadAttachmentToJira($id, $log['mt_jira_ticket'], $img['path'], $img['name']);
+                    @unlink($img['path']); // clean up temp file
+                }
+            }
 
             return $status === 'SUCCESS';
         } catch (\Exception $e) {
