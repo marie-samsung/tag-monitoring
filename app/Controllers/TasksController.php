@@ -480,7 +480,7 @@ class TasksController extends BaseController
                 CURLOPT_TIMEOUT => 60,
                 CURLOPT_FOLLOWLOCATION => true,
                 CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-                CURLOPT_CUSTOMREQUEST => 'POST',
+                CURLOPT_POST => true,
                 CURLOPT_POSTFIELDS => $payload,
                 CURLOPT_HTTPHEADER => [
                     'Authorization: Bearer ' . $jiraToken,

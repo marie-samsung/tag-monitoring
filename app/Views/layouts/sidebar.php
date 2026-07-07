@@ -535,7 +535,7 @@ foreach ($overflowItems as $item) {
                                 html += `
                                 <li>
                                     <div class="dropdown-item py-2 border-bottom notification-item-wrapper d-flex align-items-center justify-content-between" style="white-space: normal; ${bgStyle} transition: all 0.2s ease; padding-right: 10px;">
-                                        <a href="#" class="notification-item text-decoration-none d-flex align-items-start gap-2 flex-grow-1" data-id="${n.id}" data-task="${n.task_id}">
+                                        <a href="#" class="notification-item text-decoration-none d-flex align-items-start gap-2 flex-grow-1" data-id="${n.id}" data-task="${n.task_id}" data-message="${n.message.replace(/"/g, '&quot;')}">
                                             <i class="bi ${iconClass} mt-1"></i>
                                             <div>
                                                 <div style="font-size: 0.85rem; line-height: 1.3; color: var(--color-text-base);">
@@ -599,10 +599,17 @@ foreach ($overflowItems as $item) {
             e.preventDefault();
             const notifId = $(this).data('id');
             const taskId = $(this).data('task');
+            const message = $(this).data('message') || '';
 
             let csrfVal = '';
             if ($('input[name="csrf_test_name"]').length > 0) {
                 csrfVal = $('input[name="csrf_test_name"]').val();
+            }
+
+            let redirectUrl = '<?= site_url("tasks/view/") ?>' + taskId;
+            if (message.includes('API Logs')) {
+                localStorage.setItem('activeSettingsTab', 'api-logs');
+                redirectUrl = '<?= site_url("settings") ?>';
             }
 
             $.ajax({
@@ -611,10 +618,10 @@ foreach ($overflowItems as $item) {
                 data: { csrf_test_name: csrfVal },
                 dataType: 'json',
                 success: function (res) {
-                    window.location.href = '<?= site_url("tasks/view/") ?>' + taskId;
+                    window.location.href = redirectUrl;
                 },
                 error: function () {
-                    window.location.href = '<?= site_url("tasks/view/") ?>' + taskId;
+                    window.location.href = redirectUrl;
                 }
             });
         });
