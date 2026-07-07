@@ -461,7 +461,8 @@ class TasksController extends BaseController
         }
 
         $mimeType = function_exists('mime_content_type') ? mime_content_type($filePath) : 'application/octet-stream';
-        if (!$mimeType) $mimeType = 'application/octet-stream';
+        if (!$mimeType)
+            $mimeType = 'application/octet-stream';
 
         $cfile = new \CURLFile($filePath, $mimeType, $fileName);
 
@@ -495,7 +496,7 @@ class TasksController extends BaseController
             // Log the API request
             $apiLogModel = new JiraApiLogModel();
             $status = ($statusCode >= 200 && $statusCode < 300) ? 'SUCCESS' : 'FAILED';
-            
+
             $apiLogModel->logRequest(
                 $taskId,
                 'UPLOAD_ATTACHMENT',
@@ -1318,6 +1319,30 @@ class TasksController extends BaseController
         ]);
     }
 
+    private function formatHtmlForJira($html)
+    {
+        if (empty($html))
+            return '';
+
+        // Convert line breaks and paragraphs
+        $html = preg_replace('/<br\s*\/?>/i', "\n", $html);
+        $html = preg_replace('/<\/p>/i', "\n\n", $html);
+
+        // Convert list items to Jira bullets
+        $html = preg_replace('/<li>/i', "\n* ", $html);
+
+        // Strip the rest of the HTML tags
+        $text = strip_tags($html);
+
+        // Decode HTML entities (e.g. &nbsp; to space)
+        $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+        // Clean up excessive newlines
+        $text = preg_replace("/\n\s*\n\s*\n/", "\n\n", $text);
+
+        return trim($text);
+    }
+
     public function createJiraIssueFromTask($id)
     {
         $model = new TasksModel();
@@ -1370,7 +1395,7 @@ class TasksController extends BaseController
                     'name' => Constants::TEAMS[$log['team_id']]
                 ]
             ],
-            'description' => strip_tags($log['description'] ?? $log['title']),
+            'description' => $this->formatHtmlForJira($log['description'] ?? $log['title']),
             'customfield_24905' => $log['project'],
             'customfield_12014' => $subsidiary['name'],
             'priority' => [
@@ -1467,7 +1492,7 @@ class TasksController extends BaseController
 
                     // Check if the current status requires transitioning the JIRA ticket from To Do
                     $currentStatus = $log['status'];
-                    $mappedJiraStatus = \App\Models\JiraMapping::STATUS_MAPPING[(int)$currentStatus] ?? null;
+                    $mappedJiraStatus = \App\Models\JiraMapping::STATUS_MAPPING[(int) $currentStatus] ?? null;
 
                     if ($mappedJiraStatus && $mappedJiraStatus !== \App\Models\JiraMapping::JIRA_STATUS_TODO) {
                         $oldJiraStatus = \App\Models\JiraMapping::JIRA_STATUS_TODO;
@@ -1600,7 +1625,7 @@ class TasksController extends BaseController
                     'name' => Constants::TEAMS[$log['team_id']]
                 ]
             ],
-            'description' => strip_tags($log['description'] ?? $log['title']),
+            'description' => $this->formatHtmlForJira($log['description'] ?? $log['title']),
             'priority' => [
                 'name' => JiraMapping::PRIORITIES[$log['priority']],
             ],
