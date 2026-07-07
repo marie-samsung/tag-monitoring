@@ -2,6 +2,7 @@ writable/logs/*
 writable/cache/*
 writable/debugbar/*
 writable/session/*
+writable/uploads/test-files/*
 writable/.htaccess
 writable/index.html
 writable/uploads/new_tag_requests/test-files/*
