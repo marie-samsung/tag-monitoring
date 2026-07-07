@@ -19,8 +19,11 @@ class NotificationsController extends BaseController
             return $this->response->setJSON(['success' => false, 'message' => 'Not logged in.']);
         }
 
+        $reqLimit = $this->request->getGet('limit');
+        $limit = ($reqLimit === 'all') ? 0 : (int) ($reqLimit ?: 15);
+
         $model = new NotificationsModel();
-        $notifications = $model->getUserNotifications($userId, 20);
+        $notifications = $model->getUserNotifications($userId, $limit);
         
         $unreadCount = 0;
         // Enrich notifications with sender name
@@ -77,6 +80,40 @@ class NotificationsController extends BaseController
         }
 
         return $this->response->setJSON(['success' => false, 'csrf_hash' => csrf_hash()]);
+    }
+
+    public function markAllRead()
+    {
+        if (!$this->request->isAJAX()) {
+            return redirect()->to('/');
+        }
+
+        $userId = session()->get('user_id');
+        if (!$userId) {
+            return $this->response->setJSON(['success' => false]);
+        }
+
+        $model = new NotificationsModel();
+        $model->where('user_id', $userId)->set(['is_read' => 1])->update();
+
+        return $this->response->setJSON(['success' => true, 'csrf_hash' => csrf_hash()]);
+    }
+
+    public function markAllUnread()
+    {
+        if (!$this->request->isAJAX()) {
+            return redirect()->to('/');
+        }
+
+        $userId = session()->get('user_id');
+        if (!$userId) {
+            return $this->response->setJSON(['success' => false]);
+        }
+
+        $model = new NotificationsModel();
+        $model->where('user_id', $userId)->set(['is_read' => 0])->update();
+
+        return $this->response->setJSON(['success' => true, 'csrf_hash' => csrf_hash()]);
     }
 
     private function timeElapsedString($datetime, $full = false) 

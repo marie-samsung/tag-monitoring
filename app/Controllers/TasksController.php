@@ -1332,26 +1332,27 @@ class TasksController extends BaseController
             return '';
 
         if ($extractedImages !== null) {
-            $html = preg_replace_callback('/<img\s+[^>]*src=["\']data:image\/([^;]+);base64,([^"\']+)["\'][^>]*>/i', function($matches) use (&$extractedImages) {
+            $html = preg_replace_callback('/<img\s+[^>]*src=["\']data:image\/([^;]+);base64,([^"\']+)["\'][^>]*>/i', function ($matches) use (&$extractedImages) {
                 $ext = $matches[1];
-                if ($ext === 'jpeg') $ext = 'jpg';
+                if ($ext === 'jpeg')
+                    $ext = 'jpg';
                 $base64 = $matches[2];
                 $data = base64_decode($base64);
-                
+
                 $filename = 'inline_' . substr(md5(uniqid()), 0, 8) . '.' . $ext;
                 $tempDir = WRITEPATH . 'uploads/temp';
                 if (!is_dir($tempDir)) {
                     mkdir($tempDir, 0777, true);
                 }
-                
+
                 $tempPath = $tempDir . '/' . $filename;
                 file_put_contents($tempPath, $data);
-                
+
                 $extractedImages[] = [
                     'path' => $tempPath,
                     'name' => $filename
                 ];
-                
+
                 return " !$filename! ";
             }, $html);
         }
@@ -1379,8 +1380,6 @@ class TasksController extends BaseController
     {
         $model = new TasksModel();
         $log = $model->find($id);
-        $subsidiariesModel = new SubsidiariesModel();
-        $subsidiary = $subsidiariesModel->find($log['subsidiary_id']);
         $usersModel = new UsersModel();
 
         if (!$log) {
@@ -1431,7 +1430,7 @@ class TasksController extends BaseController
             ],
             'description' => $this->formatHtmlForJira($log['description'] ?? $log['title'], $extractedImages),
             'customfield_24905' => $log['project'],
-            'customfield_12014' => $subsidiary['name'],
+            'customfield_12014' => Constants::ACTIVITY_LOG_SUBSIDIARIES[$log['subsidiary_id']],
             'priority' => [
                 'name' => JiraMapping::PRIORITIES[$log['priority']],
             ],

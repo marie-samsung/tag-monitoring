@@ -17,6 +17,8 @@ $routes->group('notifications', function ($routes) {
     $routes->get('unread', 'NotificationsController::getUnread');
     $routes->post('mark-read/(:num)', 'NotificationsController::markAsRead/$1');
     $routes->post('toggle-read/(:num)', 'NotificationsController::toggleRead/$1');
+    $routes->post('mark-all-read', 'NotificationsController::markAllRead');
+    $routes->post('mark-all-unread', 'NotificationsController::markAllUnread');
 });
 
 $routes->group('tags', function ($routes) {

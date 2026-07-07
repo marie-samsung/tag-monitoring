@@ -381,9 +381,13 @@ foreach ($overflowItems as $item) {
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="notificationsDropdown"
                     style="width: 320px; max-height: 400px; overflow-y: auto; border-radius: 12px; border: 1px solid var(--color-border-input); padding: 0;">
-                    <li class="dropdown-header text-uppercase px-3 pt-3 pb-2 text-muted"
+                    <li class="dropdown-header text-uppercase px-3 pt-3 pb-2 text-muted d-flex justify-content-between align-items-center"
                         style="font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px; border-bottom: 1px solid rgba(0,0,0,0.05); background: var(--color-secondary-bg); border-top-left-radius: 12px; border-top-right-radius: 12px;">
-                        Notifications
+                        <span>Notifications</span>
+                        <div>
+                            <button class="btn btn-sm btn-link p-0 text-muted" id="markAllReadBtn" title="Mark all as read" style="font-size: 0.85rem;"><i class="bi bi-envelope-open-fill"></i></button>
+                            <button class="btn btn-sm btn-link p-0 text-muted ms-2" id="markAllUnreadBtn" title="Mark all as unread" style="font-size: 0.85rem;"><i class="bi bi-envelope-fill"></i></button>
+                        </div>
                     </li>
                     <div id="notificationsList">
                         <li><span class="dropdown-item py-3 text-center text-muted"
@@ -504,9 +508,9 @@ foreach ($overflowItems as $item) {
             }, 5000);
         };
 
-        const fetchNotifications = () => {
+        const fetchNotifications = (limit = 15) => {
             $.ajax({
-                url: '<?= site_url("notifications/unread") ?>',
+                url: '<?= site_url("notifications/unread") ?>?limit=' + limit,
                 method: 'GET',
                 dataType: 'json',
                 success: function (res) {
@@ -554,6 +558,14 @@ foreach ($overflowItems as $item) {
                             `;
                             });
 
+                            if (limit !== 'all' && res.notifications.length >= 15) {
+                                html += `
+                                    <li class="border-top text-center" style="background: var(--color-secondary-bg); border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;">
+                                        <button class="btn btn-sm btn-link text-decoration-none w-100 py-2" id="viewAllNotificationsBtn" style="font-size: 0.8rem; font-weight: 500;">View All</button>
+                                    </li>
+                                `;
+                            }
+
                             if (!isInitialLoad && newNotifications.length > 0) {
                                 // Show a popup for the most recent new notification
                                 const latestNotif = newNotifications[0];
@@ -568,7 +580,13 @@ foreach ($overflowItems as $item) {
         };
 
         fetchNotifications();
-        setInterval(fetchNotifications, 15000);
+        setInterval(() => fetchNotifications(), 15000);
+
+        $(document).on('click', '#viewAllNotificationsBtn', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            fetchNotifications('all');
+        });
 
         $(document).on('click', '.toggle-read-btn', function (e) {
             e.preventDefault();
@@ -589,6 +607,50 @@ foreach ($overflowItems as $item) {
                 success: function (res) {
                     if (res.success) {
                         // Refresh notifications to update styles and count
+                        fetchNotifications();
+                    }
+                }
+            });
+        });
+
+        $(document).on('click', '#markAllReadBtn', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            let csrfVal = '';
+            if ($('input[name="csrf_test_name"]').length > 0) {
+                csrfVal = $('input[name="csrf_test_name"]').val();
+            }
+
+            $.ajax({
+                url: '<?= site_url("notifications/mark-all-read") ?>',
+                method: 'POST',
+                data: { csrf_test_name: csrfVal },
+                dataType: 'json',
+                success: function (res) {
+                    if (res.success) {
+                        fetchNotifications();
+                    }
+                }
+            });
+        });
+
+        $(document).on('click', '#markAllUnreadBtn', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            let csrfVal = '';
+            if ($('input[name="csrf_test_name"]').length > 0) {
+                csrfVal = $('input[name="csrf_test_name"]').val();
+            }
+
+            $.ajax({
+                url: '<?= site_url("notifications/mark-all-unread") ?>',
+                method: 'POST',
+                data: { csrf_test_name: csrfVal },
+                dataType: 'json',
+                success: function (res) {
+                    if (res.success) {
                         fetchNotifications();
                     }
                 }
