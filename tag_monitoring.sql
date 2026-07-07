@@ -267,8 +267,8 @@ CREATE TABLE `activity_log_files` (
   `id` int(11) NOT NULL,
   `file_name` varchar(200) NOT NULL,
   `file_path` varchar(500) NOT NULL,
-  `log_id` tinyint(4) NOT NULL,
-  `created_by` tinyint(4) NOT NULL,
+  `log_id` int(11) NOT NULL,
+  `created_by` int(11) NOT NULL,
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

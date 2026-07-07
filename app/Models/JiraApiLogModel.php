@@ -97,9 +97,6 @@ class JiraApiLogModel extends Model
             $currentUserId = (function_exists('session') && session('user_id')) ? session('user_id') : 0;
             
             foreach ($admins as $admin) {
-                // Prevent self-notification if admin triggered it
-                if ($admin['id'] == $currentUserId) continue;
-
                 $notificationsModel->insert([
                     'user_id' => $admin['id'],
                     'sender_id' => $currentUserId,

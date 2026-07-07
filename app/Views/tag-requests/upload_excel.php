@@ -156,7 +156,7 @@ Upload Tag Request Form
                 <?= csrf_field() ?>
                 
                 <!-- Drag & Drop Zone -->
-                <div class="upload-zone p-5 text-center mb-4 border border-2 border-dashed rounded-3 bg-white" id="uploadZone" style="cursor: pointer; transition: all var(--transition-fast); border-color: rgba(0, 0, 0, 0.15) !important;">
+                <div class="upload-zone p-5 text-center mb-4 border border-2 border-dashed rounded-3 bg-white" id="uploadZone" style="cursor: pointer; transition: all 0.2s ease; border-color: rgba(0, 0, 0, 0.15);">
                     <div class="upload-icon-wrapper mb-3 d-inline-flex align-items-center justify-content-center rounded-circle" style="width: 80px; height: 80px; background-color: var(--color-badge-primary-bg);">
                         <i class="bi bi-file-earmark-excel text-primary" style="font-size: 2.5rem;"></i>
                     </div>
@@ -226,11 +226,23 @@ document.addEventListener('DOMContentLoaded', function () {
             excelFileInput.dispatchEvent(new Event('change'));
         });
 
-        // Drag and drop event listeners
-        uploadZone.addEventListener('dragover', (e) => {
+        // Prevent default drag behaviors
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadZone.addEventListener(eventName, preventDefaults, false);
+            document.body.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults (e) {
             e.preventDefault();
-            uploadZone.style.borderColor = 'var(--color-primary)';
-            uploadZone.style.backgroundColor = 'var(--color-badge-primary-bg)';
+            e.stopPropagation();
+        }
+
+        // Drag and drop event listeners
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadZone.addEventListener(eventName, (e) => {
+                uploadZone.style.borderColor = 'var(--color-primary)';
+                uploadZone.style.backgroundColor = 'var(--color-badge-primary-bg)';
+            });
         });
 
         ['dragleave', 'drop'].forEach(eventName => {
@@ -241,7 +253,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         uploadZone.addEventListener('drop', (e) => {
-            e.preventDefault();
             if (e.dataTransfer.files.length > 0) {
                 const file = e.dataTransfer.files[0];
                 if (file.name.endsWith('.xlsx')) {

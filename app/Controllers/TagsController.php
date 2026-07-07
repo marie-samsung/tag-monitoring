@@ -721,6 +721,7 @@ class TagsController extends BaseController
             'type' => $isRenewal ? Constants::ACTIVITY_TYPE_RENEWAL : Constants::ACTIVITY_TYPE_REQUEST,
             'size' => Constants::ACTIVITY_SIZE_M,
             'created_by' => session()->get('user_id') ?? 0,
+            'requested_by' => 'SDSME/MENAO',
             'requested_date' => date('Y-m-d'),
             'start_date' => date('Y-m-d'),
         ]);
