@@ -669,14 +669,14 @@ foreach ($roles as $r) {
                                 <td><span class="text-muted small"><?= date('M d, H:i', strtotime($log['created_at'])) ?></span></td>
                                 <td class="text-end">
                                     <div class="d-inline-flex gap-2">
-                                        <button type="button" class="btn btn-sm btn-outline-info py-0 px-2" onclick="viewApiLog(<?= htmlspecialchars(json_encode($log), ENT_QUOTES, 'UTF-8') ?>)">
-                                            <i class="bi bi-eye"></i> View
-                                        </button>
                                         <?php if ($log['status'] !== 'SUCCESS'): ?>
                                             <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2" onclick="retryApiLog(<?= esc($log['id']) ?>)">
                                                 <i class="bi bi-arrow-clockwise"></i> Retry
                                             </button>
                                         <?php endif; ?>
+                                        <button type="button" class="btn btn-sm btn-outline-info py-0 px-2" onclick="viewApiLog(<?= htmlspecialchars(json_encode($log), ENT_QUOTES, 'UTF-8') ?>)">
+                                            <i class="bi bi-eye"></i> View
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -912,7 +912,7 @@ foreach ($roles as $r) {
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
             <div class="modal-header px-4 py-3">
-                <h5 class="modal-title fw-bold">API Log Details</h5>
+                <h5 class="modal-title fw-bold" id="viewLogTitle">API Log Details</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-4">
@@ -1127,11 +1127,15 @@ foreach ($roles as $r) {
         document.getElementById('viewLogPayload').textContent = formatJsonStr(log.payload || '');
         document.getElementById('viewLogResponse').textContent = formatJsonStr(log.response_body || '');
         
+        let titleHtml = 'API Log Details';
         if (log.status === 'SUCCESS') {
+            titleHtml += ' <span class="badge bg-success ms-2 align-middle" style="font-size: 0.8rem;"><i class="bi bi-check-circle me-1"></i>Success</span>';
             document.getElementById('viewLogRetryBtn').style.display = 'none';
         } else {
+            titleHtml += ' <span class="badge bg-danger ms-2 align-middle" style="font-size: 0.8rem;"><i class="bi bi-x-circle me-1"></i>Failed</span>';
             document.getElementById('viewLogRetryBtn').style.display = 'inline-block';
         }
+        document.getElementById('viewLogTitle').innerHTML = titleHtml;
         
         const modal = new bootstrap.Modal(document.getElementById('viewApiLogModal'));
         modal.show();
