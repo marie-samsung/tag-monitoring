@@ -484,7 +484,9 @@ class TasksController extends BaseController
                 CURLOPT_POSTFIELDS => $payload,
                 CURLOPT_HTTPHEADER => [
                     'Authorization: Bearer ' . $jiraToken,
-                    'X-Atlassian-Token: no-check'
+                    'X-Atlassian-Token: no-check',
+                    'Accept: application/json',
+                    'Expect:'
                 ],
             ]);
 
@@ -501,7 +503,11 @@ class TasksController extends BaseController
                 $taskId,
                 'UPLOAD_ATTACHMENT',
                 $jiraEndpoint,
-                "File upload: {$fileName}",
+                json_encode([
+                    'type' => 'multipart/form-data',
+                    'file_path' => $filePath,
+                    'file_name' => $fileName
+                ], JSON_PRETTY_PRINT),
                 $body,
                 $statusCode,
                 $errorMessage,

@@ -712,10 +712,46 @@ class SettingsController extends BaseController
         try {
             $curl = curl_init();
 
-            // Determine HTTP method
+            // Determine HTTP method and base headers
             $httpMethod = 'POST';
             if ($requestType === 'EDIT_ISSUE') {
                 $httpMethod = 'PUT';
+            }
+
+            $headers = [
+                'Authorization: Bearer ' . $jiraToken,
+                'Content-Type: application/json',
+                'Accept: application/json',
+                'User-Agent: PostmanRuntime/7.32.3',
+                'Expect:'
+            ];
+
+            // Reconstruct multipart/form-data for attachments
+            if ($requestType === 'UPLOAD_ATTACHMENT') {
+                $payloadData = json_decode($payload, true);
+                if (is_array($payloadData) && isset($payloadData['file_path'])) {
+                    $filePath = $payloadData['file_path'];
+                    $fileName = $payloadData['file_name'];
+                    
+                    if (!file_exists($filePath)) {
+                        return $this->response->setJSON(['success' => false, 'message' => 'File no longer exists for retry.']);
+                    }
+                    
+                    $mimeType = function_exists('mime_content_type') ? mime_content_type($filePath) : 'application/octet-stream';
+                    if (!$mimeType) $mimeType = 'application/octet-stream';
+                    
+                    $payload = ['file' => new \CURLFile($filePath, $mimeType, $fileName)];
+                    
+                    // Remove Content-Type so cURL automatically sets multipart/form-data with boundary
+                    $headers = array_filter($headers, function($h) {
+                        return strpos($h, 'Content-Type:') === false;
+                    });
+                    
+                    // Add Atlassian Token
+                    $headers[] = 'X-Atlassian-Token: no-check';
+                } else {
+                    return $this->response->setJSON(['success' => false, 'message' => 'Invalid payload format for attachment retry.']);
+                }
             }
 
             curl_setopt_array($curl, [
@@ -726,16 +762,17 @@ class SettingsController extends BaseController
                 CURLOPT_TIMEOUT => 30,
                 CURLOPT_FOLLOWLOCATION => true,
                 CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-                CURLOPT_CUSTOMREQUEST => $httpMethod,
-                CURLOPT_POSTFIELDS => $payload,
-                CURLOPT_HTTPHEADER => [
-                    'Authorization: Bearer ' . $jiraToken,
-                    'Content-Type: application/json',
-                    'Accept: application/json',
-                    'User-Agent: PostmanRuntime/7.32.3',
-                    'Expect:'
-                ],
+                CURLOPT_HTTPHEADER => array_values($headers),
             ]);
+
+            // Set method and payload
+            if ($requestType === 'UPLOAD_ATTACHMENT') {
+                curl_setopt($curl, CURLOPT_POST, true);
+                curl_setopt($curl, CURLOPT_POSTFIELDS, $payload);
+            } else {
+                curl_setopt($curl, CURLOPT_CUSTOMREQUEST, $httpMethod);
+                curl_setopt($curl, CURLOPT_POSTFIELDS, $payload);
+            }
 
             $body = curl_exec($curl);
             $statusCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
