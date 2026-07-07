@@ -668,11 +668,16 @@ foreach ($roles as $r) {
                                 </td>
                                 <td><span class="text-muted small"><?= date('M d, H:i', strtotime($log['created_at'])) ?></span></td>
                                 <td class="text-end">
-                                    <?php if ($log['status'] !== 'SUCCESS'): ?>
-                                        <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2" onclick="retryApiLog(<?= esc($log['id']) ?>)">
-                                            <i class="bi bi-arrow-clockwise"></i> Retry
+                                    <div class="d-inline-flex gap-2">
+                                        <button type="button" class="btn btn-sm btn-outline-info py-0 px-2" onclick="viewApiLog(<?= htmlspecialchars(json_encode($log), ENT_QUOTES, 'UTF-8') ?>)">
+                                            <i class="bi bi-eye"></i> View
                                         </button>
-                                    <?php endif; ?>
+                                        <?php if ($log['status'] !== 'SUCCESS'): ?>
+                                            <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2" onclick="retryApiLog(<?= esc($log['id']) ?>)">
+                                                <i class="bi bi-arrow-clockwise"></i> Retry
+                                            </button>
+                                        <?php endif; ?>
+                                    </div>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -901,6 +906,40 @@ foreach ($roles as $r) {
 </div>
 
 <!-- ============================================== -->
+<!-- MODAL: VIEW API LOG -->
+<!-- ============================================== -->
+<div class="modal fade" id="viewApiLogModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header px-4 py-3">
+                <h5 class="modal-title fw-bold">API Log Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Endpoint</label>
+                    <input type="text" class="form-control bg-light" id="viewLogEndpoint" readonly>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Payload</label>
+                    <pre class="bg-light p-3 rounded text-dark overflow-auto mb-0" style="max-height: 250px; font-family: monospace; font-size: 0.85rem; border: 1px solid rgba(0,0,0,0.05);"><code id="viewLogPayload"></code></pre>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Response</label>
+                    <pre class="bg-light p-3 rounded text-dark overflow-auto mb-0" style="max-height: 250px; font-family: monospace; font-size: 0.85rem; border: 1px solid rgba(0,0,0,0.05);"><code id="viewLogResponse"></code></pre>
+                </div>
+            </div>
+            <div class="modal-footer px-4 py-3">
+                <button type="button" class="apple-btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="apple-btn-primary" id="viewLogRetryBtn" onclick="retryApiLogFromModal()">
+                    <i class="bi bi-arrow-clockwise me-1"></i> Retry Request
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================== -->
 <!-- MODAL: DELETE USER CONFIRMATION -->
 <!-- ============================================== -->
 <div class="modal fade" id="deleteUserModal" tabindex="-1" aria-hidden="true">
@@ -1068,6 +1107,45 @@ foreach ($roles as $r) {
             btn.innerHTML = originalHtml;
             btn.disabled = false;
         });
+    }
+
+    let currentApiLogId = null;
+
+    function formatJsonStr(str) {
+        if (!str) return '';
+        try {
+            const obj = JSON.parse(str);
+            return JSON.stringify(obj, null, 4);
+        } catch (e) {
+            return str;
+        }
+    }
+
+    function viewApiLog(log) {
+        currentApiLogId = log.id;
+        document.getElementById('viewLogEndpoint').value = log.endpoint_url || '';
+        document.getElementById('viewLogPayload').textContent = formatJsonStr(log.payload || '');
+        document.getElementById('viewLogResponse').textContent = formatJsonStr(log.response_body || '');
+        
+        if (log.status === 'SUCCESS') {
+            document.getElementById('viewLogRetryBtn').style.display = 'none';
+        } else {
+            document.getElementById('viewLogRetryBtn').style.display = 'inline-block';
+        }
+        
+        const modal = new bootstrap.Modal(document.getElementById('viewApiLogModal'));
+        modal.show();
+    }
+
+    function retryApiLogFromModal() {
+        if (currentApiLogId) {
+            const modalEl = document.getElementById('viewApiLogModal');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) {
+                modal.hide();
+            }
+            retryApiLog(currentApiLogId);
+        }
     }
 </script>
 
