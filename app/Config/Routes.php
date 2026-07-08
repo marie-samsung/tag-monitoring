@@ -111,6 +111,8 @@ $routes->group('tasks', function ($routes) {
     $routes->get('project-export/pdf/(:any)', 'TasksController::exportProjectPDF/$1');
     $routes->get('project-comments/(:any)', 'TasksController::getProjectComments/$1');
     $routes->post('project-comments', 'TasksController::postProjectComment');
+    $routes->post('project-comments/delete', 'TasksController::deleteProjectComment');
+    $routes->post('project-comments/restore', 'TasksController::restoreProjectComment');
     $routes->get('comments/(:num)', 'TasksController::getComments/$1');
 });
 

@@ -1285,6 +1285,9 @@ class TasksController extends BaseController
         $commentsModel = new ProjectCommentsModel();
         $comments = $commentsModel->getProjectComments($projectName);
 
+        $userId = session()->get('user_id');
+        $isAdmin = (Constants::USER_ACCESS_LEVELS[$userId] ?? null) === Constants::USER_ROLE_ADMIN;
+
         $formatted = [];
         foreach ($comments as $comment) {
             $formatted[] = [
@@ -1294,6 +1297,7 @@ class TasksController extends BaseController
                 'user_label' => Constants::USERS[$comment['commented_by']] ?? Constants::USER_SYSTEM_LABEL,
                 'created_at' => $comment['created_at'],
                 'formatted_time' => format_comment_time($comment['created_at']),
+                'can_delete' => ($comment['commented_by'] == $userId || $isAdmin),
             ];
         }
 
@@ -1339,7 +1343,93 @@ class TasksController extends BaseController
                 'user_label' => Constants::USERS[$insertedComment['commented_by']] ?? Constants::USER_SYSTEM_LABEL,
                 'created_at' => $insertedComment['created_at'],
                 'formatted_time' => format_comment_time($insertedComment['created_at']),
+                'can_delete' => true,
             ]
+        ]);
+    }
+
+    public function deleteProjectComment()
+    {
+        $commentsModel = new ProjectCommentsModel();
+        $id = $this->request->getPost('id');
+
+        if (!$id) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Invalid comment ID.',
+                'csrf_hash' => csrf_hash()
+            ]);
+        }
+
+        $comment = $commentsModel->find($id);
+        if (!$comment) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Comment not found.',
+                'csrf_hash' => csrf_hash()
+            ]);
+        }
+
+        $userId = session()->get('user_id');
+        $isAdmin = (Constants::USER_ACCESS_LEVELS[$userId] ?? null) === Constants::USER_ROLE_ADMIN;
+        if ($comment['commented_by'] != $userId && !$isAdmin) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'You are not authorized to delete this comment.',
+                'csrf_hash' => csrf_hash()
+            ]);
+        }
+
+        $commentsModel->delete($id);
+
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => 'Comment deleted.',
+            'csrf_hash' => csrf_hash()
+        ]);
+    }
+
+    public function restoreProjectComment()
+    {
+        $commentsModel = new ProjectCommentsModel();
+        $id = $this->request->getPost('id');
+
+        if (!$id) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Invalid comment ID.',
+                'csrf_hash' => csrf_hash()
+            ]);
+        }
+
+        $comment = $commentsModel->onlyDeleted()->find($id);
+        if (!$comment) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Comment not found or not deleted.',
+                'csrf_hash' => csrf_hash()
+            ]);
+        }
+
+        $userId = session()->get('user_id');
+        $isAdmin = (Constants::USER_ACCESS_LEVELS[$userId] ?? null) === Constants::USER_ROLE_ADMIN;
+        if ($comment['commented_by'] != $userId && !$isAdmin) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'You are not authorized to restore this comment.',
+                'csrf_hash' => csrf_hash()
+            ]);
+        }
+
+        $db = \Config\Database::connect();
+        $db->table('project_comments')
+           ->where('id', $id)
+           ->update(['deleted_at' => null]);
+
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => 'Comment restored.',
+            'csrf_hash' => csrf_hash()
         ]);
     }
 
