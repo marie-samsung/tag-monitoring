@@ -61,6 +61,7 @@ class TasksController extends BaseController
             'labels' => $this->request->getGet('labels'),
         ];
         $data['status_counts'] = $model->getStatusCounts($filters);
+        $data['needs_attention_count'] = $model->getNeedsAttentionCount($filters);
         $data['logs'] = $model->filterLogs($filters, 25);
 
         $data['pager'] = $model->pager;
