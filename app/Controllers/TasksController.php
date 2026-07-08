@@ -525,6 +525,150 @@ class TasksController extends BaseController
         }
     }
 
+    public function addCommentToJira($taskId, $ticketId, $commentText)
+    {
+        $jiraEndpoint = getenv('MT_JIRA_ADD_COMMENT');
+        $jiraToken = getenv('MT_JIRA_AUTH_TOKEN');
+
+        if (empty($jiraEndpoint) || empty($jiraToken)) {
+            return false;
+        }
+
+        if (strpos($jiraEndpoint, '{key}') !== false) {
+            $jiraEndpoint = str_replace('{key}', $ticketId, $jiraEndpoint);
+        } elseif (strpos($jiraEndpoint, '{id}') !== false) {
+            $jiraEndpoint = str_replace('{id}', $ticketId, $jiraEndpoint);
+        } else {
+            $jiraEndpoint = rtrim($jiraEndpoint, '/') . '/' . $ticketId . '/comment';
+        }
+
+        $payload = [
+            'body' => $commentText
+        ];
+
+        try {
+            $curl = curl_init();
+            curl_setopt_array($curl, [
+                CURLOPT_URL => $jiraEndpoint,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => '',
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 30,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => 'POST',
+                CURLOPT_POSTFIELDS => json_encode($payload),
+                CURLOPT_HTTPHEADER => [
+                    'Authorization: Bearer ' . $jiraToken,
+                    'Content-Type: application/json',
+                    'Accept: application/json',
+                    'User-Agent: PostmanRuntime/7.32.3',
+                    'Expect:'
+                ],
+            ]);
+
+            $body = curl_exec($curl);
+            $statusCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+            $errorMessage = curl_error($curl);
+            curl_close($curl);
+
+            // Log the API request
+            $apiLogModel = new JiraApiLogModel();
+            $status = ($statusCode >= 200 && $statusCode < 300) ? 'SUCCESS' : 'FAILED';
+            $apiLogModel->logRequest(
+                $taskId,
+                'ADD_COMMENT',
+                $jiraEndpoint,
+                json_encode($payload),
+                $body,
+                $statusCode,
+                $errorMessage,
+                $status
+            );
+
+            return $statusCode >= 200 && $statusCode < 300;
+        } catch (\Exception $e) {
+            $apiLogModel = new JiraApiLogModel();
+            $apiLogModel->logRequest($taskId, 'ADD_COMMENT', $jiraEndpoint, json_encode($payload), $e->getMessage(), 500, $e->getMessage(), 'FAILED');
+            return false;
+        }
+    }
+
+    public function updateCommentToJira($taskId, $ticketId, $commentId, $commentText)
+    {
+        $jiraEndpoint = getenv('MT_JIRA_UPDATE_COMMENT');
+        $jiraToken = getenv('MT_JIRA_AUTH_TOKEN');
+
+        if (empty($jiraEndpoint) || empty($jiraToken)) {
+            return false;
+        }
+
+        if (strpos($jiraEndpoint, '{key}') !== false) {
+            $jiraEndpoint = str_replace('{key}', $ticketId, $jiraEndpoint);
+        } elseif (strpos($jiraEndpoint, '{id}') !== false) {
+            $jiraEndpoint = str_replace('{id}', $ticketId, $jiraEndpoint);
+        } else {
+            $jiraEndpoint = rtrim($jiraEndpoint, '/');
+        }
+
+        if (strpos($jiraEndpoint, '{commentId}') !== false) {
+            $jiraEndpoint = str_replace('{commentId}', $commentId, $jiraEndpoint);
+        } else {
+            $jiraEndpoint .= '/' . $commentId;
+        }
+
+        $payload = [
+            'body' => $commentText
+        ];
+
+        try {
+            $curl = curl_init();
+            curl_setopt_array($curl, [
+                CURLOPT_URL => $jiraEndpoint,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => '',
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 30,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => 'PUT',
+                CURLOPT_POSTFIELDS => json_encode($payload),
+                CURLOPT_HTTPHEADER => [
+                    'Authorization: Bearer ' . $jiraToken,
+                    'Content-Type: application/json',
+                    'Accept: application/json',
+                    'User-Agent: PostmanRuntime/7.32.3',
+                    'Expect:'
+                ],
+            ]);
+
+            $body = curl_exec($curl);
+            $statusCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+            $errorMessage = curl_error($curl);
+            curl_close($curl);
+
+            // Log the API request
+            $apiLogModel = new JiraApiLogModel();
+            $status = ($statusCode >= 200 && $statusCode < 300) ? 'SUCCESS' : 'FAILED';
+            $apiLogModel->logRequest(
+                $taskId,
+                'UPDATE_COMMENT',
+                $jiraEndpoint,
+                json_encode($payload),
+                $body,
+                $statusCode,
+                $errorMessage,
+                $status
+            );
+
+            return $statusCode >= 200 && $statusCode < 300;
+        } catch (\Exception $e) {
+            $apiLogModel = new JiraApiLogModel();
+            $apiLogModel->logRequest($taskId, 'UPDATE_COMMENT', $jiraEndpoint, json_encode($payload), $e->getMessage(), 500, $e->getMessage(), 'FAILED');
+            return false;
+        }
+    }
+
     public function exportAsExcel()
     {
         helper('custom_functions');
@@ -1737,6 +1881,11 @@ class TasksController extends BaseController
                         'commented_by' => session()->get('user_id') ?? Constants::USER_SYSTEM,
                         'type' => Constants::COMMENT_TYPE_UPDATE,
                     ]);
+
+                    // Send reference link on our system to JIRA as a comment
+                    $referenceLink = site_url('tasks/view/' . $id);
+                    $jiraCommentText = "Reference link on our system: " . $referenceLink;
+                    $this->addCommentToJira($id, $ticketId, $jiraCommentText);
 
                     // Check if the current status requires transitioning the JIRA ticket from To Do
                     $currentStatus = $log['status'];
