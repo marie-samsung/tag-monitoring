@@ -1465,8 +1465,6 @@ class TasksController extends BaseController
     {
         $model = new TasksModel();
         $log = $model->find($id);
-        $subsidiariesModel = new SubsidiariesModel();
-        $subsidiary = $subsidiariesModel->find($log['subsidiary_id']);
         $usersModel = new UsersModel();
 
         if (!$log) {
@@ -1515,7 +1513,7 @@ class TasksController extends BaseController
             ],
             'description' => $this->formatHtmlForJira($log['description'] ?? $log['title']),
             'customfield_24905' => $log['project'],
-            'customfield_12014' => $subsidiary['name'],
+            'customfield_12014' => Constants::ACTIVITY_LOG_SUBSIDIARIES[$log['subsidiary_id']],
             'priority' => [
                 'name' => JiraMapping::PRIORITIES[$log['priority']],
             ],
@@ -1690,7 +1688,6 @@ class TasksController extends BaseController
     {
         $model = new TasksModel();
         $log = $model->find($id);
-        $subsidiariesModel = new SubsidiariesModel();
         $usersModel = new UsersModel();
 
         if (!$log || empty($log['mt_jira_ticket'])) {
@@ -1712,15 +1709,8 @@ class TasksController extends BaseController
         $jiraLabels[] = (string) $log['id'];
         $jiraLabels[] = str_replace(' ', '_', (string) Constants::ACTIVITY_TYPES[$log['type']]);
 
-        $subsidiary = $subsidiariesModel->find($log['subsidiary_id']);
-        if ($subsidiary && !empty($subsidiary['name'])) {
-            $jiraLabels[] = str_replace(' ', '_', (string) $subsidiary['name']);
-        }
         if (!empty($log['ticket_id'])) {
             $jiraLabels[] = str_replace(' ', '_', (string) $log['ticket_id']);
-        }
-        if (!empty($log['project'])) {
-            $jiraLabels[] = str_replace(' ', '_', (string) $log['project']);
         }
 
         if (!empty($log['labels'])) {
@@ -1744,6 +1734,8 @@ class TasksController extends BaseController
                 ]
             ],
             'description' => $this->formatHtmlForJira($log['description'] ?? $log['title']),
+            'customfield_24905' => $log['project'],
+            'customfield_12014' => Constants::ACTIVITY_LOG_SUBSIDIARIES[$log['subsidiary_id']],
             'priority' => [
                 'name' => JiraMapping::PRIORITIES[$log['priority']],
             ],

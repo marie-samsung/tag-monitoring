@@ -210,7 +210,8 @@ $tagRequestsModel = new TagRequestsModel();
                                 <th class="form-label-sm fw-semibold">#</th>
                                 <th class="form-label-sm fw-semibold">Ticket ID</th>
                                 <th class="form-label-sm fw-semibold">Type</th>
-                                <th class="form-label-sm fw-semibold">Comments</th>
+                                <th class="form-label-sm fw-semibold">Tags</th>
+                                <th class="form-label-sm fw-semibold">Created At</th>
                                 <th class="form-label-sm fw-semibold text-center">Actions</th>
                             </tr>
                         </thead>
@@ -317,7 +318,10 @@ $tagRequestsModel = new TagRequestsModel();
                                                 <span class="text-secondary"><?= esc($jira['comments']) ?></span>
                                             <?php endif; ?>
                                         </td>
-                                        <!-- ACTIONS -->
+                                        <td>
+                                            <?= $jira['created_at'] ?>
+                                        </td>
+                                    <!-- ACTIONS -->
                                         <td class="text-center">
                                             <a href="<?= site_url('jira/update-tags/' . $jira['id']) ?>"
                                                 class="apple-btn-secondary btn-sm px-2 py-1"
