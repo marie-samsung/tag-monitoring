@@ -1126,7 +1126,7 @@ $hasActiveFilters = ($activeFiltersCount > 0) || !empty($_GET['keyword']);
                     Launch verification has been completed.<br />
                     For QA, as this was only a date extension, scope was limited to validating the tag expiry date,
                     published status, and console logs.<br />
-                    All checks were completed <span style="color: green; font-weight: bold;">successfully</span>.<br />
+                    All checks were completed <b><font color="#008000">successfully</font></b>.<br />
                     Will proceed to closing this task.
                 </div>
                 <div class="d-flex justify-content-end mt-4 gap-2">
