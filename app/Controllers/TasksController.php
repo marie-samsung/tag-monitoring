@@ -10,6 +10,7 @@ use App\Models\TasksModel;
 use App\Models\Constants;
 use App\Models\UsersModel;
 use App\Models\JiraApiLogModel;
+use App\Models\ProjectCommentsModel;
 use CodeIgniter\Files\Exceptions\FileException;
 
 class TasksController extends BaseController
@@ -1209,6 +1210,14 @@ class TasksController extends BaseController
 
     public function projectView($projectName)
     {
+        // Run migration automatically so it will create the table if doesn't exist
+        try {
+            $migration = \Config\Services::migrations();
+            $migration->latest();
+        } catch (\Throwable $e) {
+            log_message('error', 'Auto migration failed: ' . $e->getMessage());
+        }
+
         $projectName = urldecode($projectName);
         $model = new TasksModel();
 
@@ -1248,6 +1257,16 @@ class TasksController extends BaseController
 
         $progressPercentage = $model->getProjectProgress($projectName, $meMode);
 
+        $projectCommentsModel = new ProjectCommentsModel();
+        $counts = $projectCommentsModel->select('project_name, COUNT(*) as count')
+                                       ->groupBy('project_name')
+                                       ->findAll();
+        $projectCommentCounts = [];
+        foreach ($counts as $row) {
+            $pName = !empty($row['project_name']) ? $row['project_name'] : 'Generic';
+            $projectCommentCounts[$pName] = (int) $row['count'];
+        }
+
         return view('tasks/project_spreadsheet', [
             'project_name' => $projectName,
             'tasks' => $tasks,
@@ -1255,6 +1274,98 @@ class TasksController extends BaseController
             'project_names' => $projectNames,
             'me_mode' => $meMode,
             'progress_percentage' => $progressPercentage,
+            'project_comment_counts' => $projectCommentCounts,
+        ]);
+    }
+
+    public function getProjectComments($projectName)
+    {
+        helper('custom_functions');
+        $projectName = urldecode($projectName);
+        $commentsModel = new ProjectCommentsModel();
+        $comments = $commentsModel->getProjectComments($projectName);
+
+        $formatted = [];
+        foreach ($comments as $comment) {
+            $formatted[] = [
+                'id' => $comment['id'],
+                'comment' => clean_html_comment($comment['comment']),
+                'commented_by' => $comment['commented_by'],
+                'user_label' => Constants::USERS[$comment['commented_by']] ?? Constants::USER_SYSTEM_LABEL,
+                'created_at' => $comment['created_at'],
+                'formatted_time' => format_comment_time($comment['created_at']),
+            ];
+        }
+
+        return $this->response->setJSON([
+            'success' => true,
+            'comments' => $formatted,
+            'csrf_hash' => csrf_hash()
+        ]);
+    }
+
+    public function postProjectComment()
+    {
+        helper('custom_functions');
+        $commentsModel = new ProjectCommentsModel();
+        $post = $this->request->getPost();
+
+        if (!$post || empty($post['comment'])) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'No comment data provided.',
+                'csrf_hash' => csrf_hash()
+            ]);
+        }
+
+        $cleanComment = clean_html_comment($post['comment']);
+
+        $insertedId = $commentsModel->insert([
+            'project_name' => $post['project_name'],
+            'comment' => $cleanComment,
+            'commented_by' => $post['commented_by'],
+        ]);
+
+        $insertedComment = $commentsModel->find($insertedId);
+
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => 'Comment posted successfully.',
+            'csrf_hash' => csrf_hash(),
+            'comment' => [
+                'id' => $insertedComment['id'],
+                'comment' => $insertedComment['comment'],
+                'commented_by' => $insertedComment['commented_by'],
+                'user_label' => Constants::USERS[$insertedComment['commented_by']] ?? Constants::USER_SYSTEM_LABEL,
+                'created_at' => $insertedComment['created_at'],
+                'formatted_time' => format_comment_time($insertedComment['created_at']),
+            ]
+        ]);
+    }
+
+    public function getComments($logId)
+    {
+        helper('custom_functions');
+        $commentsModel = new TaskCommentsModel();
+        $comments = $commentsModel->getRelatedComments($logId);
+
+        $formatted = [];
+        foreach ($comments as $comment) {
+            $formatted[] = [
+                'id' => $comment['id'],
+                'comment' => clean_html_comment($comment['comment']),
+                'commented_by' => $comment['commented_by'],
+                'user_label' => Constants::USERS[$comment['commented_by']] ?? Constants::USER_SYSTEM_LABEL,
+                'is_system' => ($comment['commented_by'] == Constants::USER_SYSTEM),
+                'created_at' => $comment['created_at'],
+                'formatted_time' => format_comment_time($comment['created_at']),
+            ];
+        }
+
+        return $this->response->setJSON([
+            'success' => true,
+            'comments' => $formatted,
+            'csrf_hash' => csrf_hash()
         ]);
     }
 

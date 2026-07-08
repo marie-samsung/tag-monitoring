@@ -337,6 +337,19 @@ $isAdmin = (int)session()->get('user_role') === Constants::USER_ROLE_ADMIN || (i
                 <i class="bi <?= isset($me_mode) && $me_mode ? 'bi-person-fill' : 'bi-person' ?> me-1"></i> Assigned To Me
             </a>
             <?php endif; ?>
+            <button type="button" id="projectCommentsBtn"
+                class="apple-btn-secondary btn-sm px-3 d-inline-flex align-items-center gap-1.5 py-2"
+                style="border-radius: 8px;">
+                <i class="bi bi-chat-left-text-fill text-primary me-1"></i> Project Comments
+                <?php 
+                $activeCount = $project_comment_counts[$project_name] ?? 0;
+                if ($activeCount > 0): 
+                ?>
+                    <span class="badge bg-danger text-white ms-1 rounded-circle" id="projectCommentsCountBadge" style="font-size: 0.7rem; padding: 0.25em 0.5em; min-width: 18px; text-align: center; line-height: 1;">
+                        <?= $activeCount ?>
+                    </span>
+                <?php endif; ?>
+            </button>
             <a href="<?= site_url('tasks/create?project=' . rawurlencode($project_name)) ?>"
                 title="Create a new task for this project"
                 class="apple-btn-primary btn-sm px-3 text-decoration-none d-inline-flex align-items-center gap-1.5 py-2"
@@ -352,11 +365,17 @@ $isAdmin = (int)session()->get('user_role') === Constants::USER_ROLE_ADMIN || (i
             <?php
             $pName = !empty($p) ? $p : 'Generic';
             $isActive = ($pName === $project_name);
+            $count = $project_comment_counts[$pName] ?? 0;
             ?>
             <a href="<?= site_url('tasks/project/' . rawurlencode($pName)) ?>"
                 class="sheet-tab <?= $isActive ? 'active' : '' ?>">
                 <i class="bi bi-file-earmark-spreadsheet-fill <?= $isActive ? 'text-success' : 'text-secondary' ?>"></i>
                 <span><?= esc($pName) ?></span>
+                <?php if ($count > 0): ?>
+                    <span class="badge bg-danger text-white ms-1 rounded-circle project-tab-badge" style="font-size: 0.7rem; padding: 0.25em 0.5em; min-width: 18px; text-align: center; line-height: 1;">
+                        <?= $count ?>
+                    </span>
+                <?php endif; ?>
             </a>
         <?php endforeach; ?>
     </div>
@@ -526,7 +545,9 @@ $isAdmin = (int)session()->get('user_role') === Constants::USER_ROLE_ADMIN || (i
                                 </td>
                                 <td class="comment-cell"
                                     title="<?= esc(strip_tags($task['last_comment'] ?? 'No comments posted yet.')) ?>"
-                                    data-bs-toggle="tooltip" data-bs-placement="left">
+                                    data-bs-toggle="tooltip" data-bs-placement="left"
+                                    data-log-id="<?= $task['id'] ?>"
+                                    data-log-title="<?= esc($task['title']) ?>">
                                     <?= esc(strip_tags($task['last_comment'] ?? '') ?: '—') ?>
                                 </td>
                             </tr>
@@ -542,6 +563,122 @@ $isAdmin = (int)session()->get('user_role') === Constants::USER_ROLE_ADMIN || (i
             <?= $pager->links('default', 'apple_full') ?>
         </div>
     <?php endif; ?>
+
+    <!-- Project Comments Section -->
+    <div class="apple-card p-4 mt-4" style="background: #ffffff; border-radius: 12px; border: 1px solid #e5e5ea; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);">
+        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+            <h5 class="fw-bold mb-0 text-secondary d-flex align-items-center gap-2" style="font-size: 0.95rem; text-transform: uppercase; letter-spacing: 1px;">
+                <i class="bi bi-chat-left-text-fill text-primary"></i>
+                Project Comments &amp; Notes
+            </h5>
+            <span class="badge bg-secondary text-secondary rounded-pill" id="projectCommentsBadgeCountInline" style="font-size: 0.75rem;">
+                <?= $activeCount ?> Note(s)
+            </span>
+        </div>
+
+        <div class="row g-4">
+            <!-- Left Side: Comments Feed -->
+            <div class="col-lg-7 border-end" style="border-color: #e5e5ea !important;">
+                <div id="project-comments-list-inline" class="overflow-y-auto pe-2" style="max-height: 400px; min-height: 100px;">
+                    <div class="text-center py-5 text-muted">
+                        <div class="spinner-border spinner-border-sm text-primary mb-2" role="status"></div>
+                        <span class="d-block">Loading project comments...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side: Post Update Form -->
+            <div class="col-lg-5 ps-lg-4">
+                <form id="project-comment-form-inline">
+                    <input type="hidden" name="project_name" value="<?= esc($project_name) ?>">
+                    <input type="hidden" name="commented_by" value="<?= session()->get('user_id') ?>">
+                    <div class="mb-3">
+                        <label for="project-comment-text-inline" class="form-label small fw-semibold text-secondary">Post a project update</label>
+                        <textarea class="form-control apple-textarea" id="project-comment-text-inline" name="comment" rows="3" placeholder="Write an update about this project..." required style="height: 100px;"></textarea>
+                    </div>
+                    <div class="d-flex justify-content-end">
+                        <button type="submit" class="apple-btn-primary btn-sm px-4 py-2" style="border-radius: 8px;">
+                            Post Update
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Project Comments Offcanvas -->
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="projectCommentsOffcanvas" aria-labelledby="projectCommentsOffcanvasLabel" style="width: 450px; border-left: 1px solid #d1d1d6; box-shadow: -4px 0 20px rgba(0,0,0,0.05); border-top-left-radius: 16px; border-bottom-left-radius: 16px; z-index: 2050 !important;">
+        <div class="offcanvas-header bg-light border-bottom" style="padding: 16px 20px;">
+            <h5 class="offcanvas-title fw-bold text-dark d-flex align-items-center gap-2" id="projectCommentsOffcanvasLabel">
+                <i class="bi bi-chat-left-text-fill text-primary"></i>
+                Comments: <?= esc($project_name) ?>
+            </h5>
+            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close" style="box-shadow: none;"></button>
+        </div>
+        <div class="offcanvas-body d-flex flex-column p-0">
+            <!-- Comments List -->
+            <div id="project-comments-list" class="flex-grow-1 overflow-y-auto p-4" style="background-color: #fafafc;">
+                <div class="text-center py-5 text-muted empty-state">
+                    <i class="bi bi-chat-dots fs-1 mb-2 d-block text-secondary" style="opacity: 0.3;"></i>
+                    <span>Loading project comments...</span>
+                </div>
+            </div>
+            
+            <!-- Post Comment Form -->
+            <div class="p-4 border-top bg-white">
+                <form id="project-comment-form">
+                    <input type="hidden" name="project_name" value="<?= esc($project_name) ?>">
+                    <input type="hidden" name="commented_by" value="<?= session()->get('user_id') ?>">
+                    <div class="mb-3">
+                        <label for="project-comment-text" class="form-label small fw-semibold text-secondary">Post a project update</label>
+                        <textarea class="form-control" id="project-comment-text" name="comment" rows="3" placeholder="Write a comment about this project..." required style="border-radius: 10px; font-size: 0.9rem; resize: none; border-color: #d1d1d6;"></textarea>
+                    </div>
+                    <div class="d-flex justify-content-end">
+                        <button type="submit" class="apple-btn-primary btn-sm px-4 py-2" style="border-radius: 8px;">
+                            Post Comment
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Task Comments Modal -->
+    <div class="modal fade" id="taskCommentsModal" tabindex="-1" aria-labelledby="taskCommentsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 500px;">
+            <div class="modal-content" style="border-radius: 16px; overflow: hidden; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
+                <div class="modal-header bg-light border-bottom px-4 py-3">
+                    <h5 class="modal-title fw-bold text-dark d-flex flex-column" id="taskCommentsModalLabel">
+                        <span class="fs-6 text-primary fw-semibold" id="taskModalLabelSub" style="font-size: 0.75rem;">Task Updates</span>
+                        <span class="fs-5 text-truncate" id="taskModalTitle" style="max-width: 400px; font-size: 1.1rem; margin-top: 2px;">Task Title</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="box-shadow: none;"></button>
+                </div>
+                <div class="modal-body p-0 d-flex flex-column" style="height: 500px; background-color: #fafafc;">
+                    <!-- Task Comments List -->
+                    <div id="task-comments-list" class="flex-grow-1 overflow-y-auto p-4">
+                        <!-- Loaded dynamically -->
+                    </div>
+                    <!-- Post Task Comment Form -->
+                    <div class="p-4 border-top bg-white">
+                        <form id="task-comment-form">
+                            <input type="hidden" name="log_id" id="taskModalLogId" value="">
+                            <input type="hidden" name="commented_by" value="<?= session()->get('user_id') ?>">
+                            <div class="mb-3">
+                                <label for="task-comment-text" class="form-label small fw-semibold text-secondary">Post a task update</label>
+                                <textarea class="form-control" id="task-comment-text" name="comment" rows="2" placeholder="Write an update for this task..." required style="border-radius: 10px; font-size: 0.9rem; resize: none; border-color: #d1d1d6;"></textarea>
+                            </div>
+                            <div class="d-flex justify-content-end">
+                                <button type="submit" class="apple-btn-primary btn-sm px-4 py-2" style="border-radius: 8px;">
+                                    Post Update
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Custom Toast Notification -->
@@ -840,16 +977,338 @@ $isAdmin = (int)session()->get('user_role') === Constants::USER_ROLE_ADMIN || (i
             });
         }
 
-        // Modal view details on comment cell double click
+        // Open Task Comments Modal on comment cell click
         const commentCells = document.querySelectorAll('.comment-cell');
         commentCells.forEach(cell => {
             cell.addEventListener('click', function () {
-                const text = this.getAttribute('title');
-                if (text && text !== 'No comments posted yet.' && text !== '—') {
-                    alert("Latest Update:\n\n" + text);
+                const logId = this.getAttribute('data-log-id');
+                const logTitle = this.getAttribute('data-log-title');
+                openTaskCommentsModal(logId, logTitle, this);
+            });
+        });
+
+        // Project Comments Sidebar Offcanvas
+        const projectCommentsBtn = document.getElementById('projectCommentsBtn');
+        const projectCommentsOffcanvasEl = document.getElementById('projectCommentsOffcanvas');
+        let projectCommentsOffcanvas = null;
+        if (projectCommentsOffcanvasEl) {
+            projectCommentsOffcanvas = new bootstrap.Offcanvas(projectCommentsOffcanvasEl);
+        }
+
+        if (projectCommentsBtn && projectCommentsOffcanvas) {
+            projectCommentsBtn.addEventListener('click', function () {
+                projectCommentsOffcanvas.show();
+                loadProjectComments();
+            });
+        }
+
+        function loadProjectComments() {
+            const projectCommentsList = $('#project-comments-list');
+            const projectCommentsListInline = $('#project-comments-list-inline');
+            const loadingHtml = `
+                <div class="text-center py-5 text-muted">
+                    <div class="spinner-border spinner-border-sm text-primary mb-2" role="status"></div>
+                    <span class="d-block">Loading project comments...</span>
+                </div>
+            `;
+            projectCommentsList.html(loadingHtml);
+            projectCommentsListInline.html(loadingHtml);
+
+            const url = '<?= site_url("tasks/project-comments") ?>/' + encodeURIComponent('<?= esc($project_name) ?>');
+            $.ajax({
+                url: url,
+                type: 'GET',
+                dataType: 'json',
+                success: function (response) {
+                    if (response.success && response.comments) {
+                        renderProjectComments(response.comments);
+                    } else {
+                        const errorHtml = '<div class="alert alert-danger py-2 text-center">Failed to load comments.</div>';
+                        projectCommentsList.html(errorHtml);
+                        projectCommentsListInline.html(errorHtml);
+                    }
+                    if (response.csrf_hash) {
+                        $('input[name="csrf_test_name"]').val(response.csrf_hash);
+                    }
+                },
+                error: function () {
+                    const errorHtml = '<div class="alert alert-danger py-2 text-center">An error occurred while fetching comments.</div>';
+                    projectCommentsList.html(errorHtml);
+                    projectCommentsListInline.html(errorHtml);
+                }
+            });
+        }
+
+        function renderProjectComments(comments) {
+            const list = $('#project-comments-list');
+            const listInline = $('#project-comments-list-inline');
+            list.empty();
+            listInline.empty();
+
+            $('#projectCommentsBadgeCountInline').text(comments.length + ' Note(s)');
+
+            if (comments.length === 0) {
+                const emptyHtml = `
+                    <div class="text-center py-5 text-muted empty-state">
+                        <i class="bi bi-chat-dots fs-1 mb-2 d-block text-secondary" style="opacity: 0.3;"></i>
+                        <span>No comments yet for this project.</span>
+                    </div>
+                `;
+                list.html(emptyHtml);
+                listInline.html(emptyHtml);
+                return;
+            }
+
+            comments.forEach(comment => {
+                const commentHtml = `
+                    <div class="mb-3 p-3 rounded-3 comment-item" style="background: #ffffff; border: 1px solid rgba(0, 0, 0, 0.05); box-shadow: 0 2px 4px rgba(0,0,0,0.01);">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="fw-semibold text-primary" style="font-size: 0.8rem;">
+                                ${comment.user_label}
+                            </span>
+                            <span class="text-muted" style="font-size: 0.72rem;">${comment.formatted_time}</span>
+                        </div>
+                        <div style="font-size: 0.85rem; color: var(--color-text-base); word-break: break-word; white-space: pre-wrap;">${comment.comment}</div>
+                    </div>
+                `;
+                list.append(commentHtml);
+
+                const commentHtmlInline = `
+                    <div class="mb-3 p-3 rounded-3 comment-item" style="background: #f8f9fa; border: 1px solid rgba(0, 0, 0, 0.03); box-shadow: 0 2px 4px rgba(0,0,0,0.005);">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="fw-semibold text-primary" style="font-size: 0.8rem;">
+                                ${comment.user_label}
+                            </span>
+                            <span class="text-muted" style="font-size: 0.72rem;">${comment.formatted_time}</span>
+                        </div>
+                        <div style="font-size: 0.85rem; color: var(--color-text-base); word-break: break-word; white-space: pre-wrap;">${comment.comment}</div>
+                    </div>
+                `;
+                listInline.append(commentHtmlInline);
+            });
+        }
+
+        $(document).on('submit', '#project-comment-form, #project-comment-form-inline', function (e) {
+            e.preventDefault();
+            const form = $(this);
+            const submitBtn = form.find('button[type="submit"]');
+            const commentInput = form.find('textarea[name="comment"]');
+            const commentText = commentInput.val().trim();
+
+            if (!commentText) return;
+
+            submitBtn.prop('disabled', true).text('Posting...');
+
+            const csrfToken = $('input[name="csrf_test_name"]').val();
+            const postData = form.serialize() + '&csrf_test_name=' + csrfToken;
+
+            $.ajax({
+                url: '<?= site_url("tasks/project-comments") ?>',
+                type: 'POST',
+                data: postData,
+                dataType: 'json',
+                success: function (response) {
+                    submitBtn.prop('disabled', false).text(form.attr('id') === 'project-comment-form' ? 'Post Comment' : 'Post Update');
+                    if (response.success && response.comment) {
+                        $('#project-comment-text').val('');
+                        $('#project-comment-text-inline').val('');
+                        loadProjectComments(); // reload lists
+                        showToast('success', response.message);
+
+                        // Increment active project count badges dynamically
+                        const countBadge = $('#projectCommentsCountBadge');
+                        const activeTabBadge = $('.sheet-tab.active .project-tab-badge');
+
+                        if (countBadge.length > 0) {
+                            const newCount = parseInt(countBadge.text().trim()) + 1;
+                            countBadge.text(newCount);
+                            if (activeTabBadge.length > 0) {
+                                activeTabBadge.text(newCount);
+                            } else {
+                                $('.sheet-tab.active').append(`
+                                    <span class="badge bg-danger text-white ms-1 rounded-circle project-tab-badge" style="font-size: 0.7rem; padding: 0.25em 0.5em; min-width: 18px; text-align: center; line-height: 1;">
+                                        ${newCount}
+                                    </span>
+                                `);
+                            }
+                        } else {
+                            $('#projectCommentsBtn').append(`
+                                <span class="badge bg-danger text-white ms-1 rounded-circle" id="projectCommentsCountBadge" style="font-size: 0.7rem; padding: 0.25em 0.5em; min-width: 18px; text-align: center; line-height: 1;">
+                                    1
+                                </span>
+                            `);
+                            $('.sheet-tab.active').append(`
+                                <span class="badge bg-danger text-white ms-1 rounded-circle project-tab-badge" style="font-size: 0.7rem; padding: 0.25em 0.5em; min-width: 18px; text-align: center; line-height: 1;">
+                                    1
+                                </span>
+                            `);
+                        }
+                    } else {
+                        showToast('error', response.message || 'Failed to post comment.');
+                    }
+                    if (response.csrf_hash) {
+                        $('input[name="csrf_test_name"]').val(response.csrf_hash);
+                    }
+                },
+                error: function () {
+                    submitBtn.prop('disabled', false).text(form.attr('id') === 'project-comment-form' ? 'Post Comment' : 'Post Update');
+                    showToast('error', 'An error occurred while posting comment.');
                 }
             });
         });
+
+        // Task Comments Modal Logic
+        let activeCommentCell = null;
+        const taskCommentsModalEl = document.getElementById('taskCommentsModal');
+        let taskCommentsModal = null;
+        if (taskCommentsModalEl) {
+            taskCommentsModal = new bootstrap.Modal(taskCommentsModalEl);
+        }
+
+        function openTaskCommentsModal(logId, logTitle, cellElement) {
+            activeCommentCell = cellElement;
+            $('#taskModalLogId').val(logId);
+            $('#taskModalTitle').text(logTitle);
+            $('#task-comment-text').val('');
+
+            const list = $('#task-comments-list');
+            list.html(`
+                <div class="text-center py-5 text-muted">
+                    <div class="spinner-border spinner-border-sm text-primary mb-2" role="status"></div>
+                    <span class="d-block">Loading task updates...</span>
+                </div>
+            `);
+
+            taskCommentsModal.show();
+
+            const url = '<?= site_url("tasks/comments") ?>/' + logId;
+            $.ajax({
+                url: url,
+                type: 'GET',
+                dataType: 'json',
+                success: function (response) {
+                    if (response.success && response.comments) {
+                        renderTaskComments(response.comments);
+                    } else {
+                        list.html('<div class="alert alert-danger py-2 text-center">Failed to load updates.</div>');
+                    }
+                    if (response.csrf_hash) {
+                        $('input[name="csrf_test_name"]').val(response.csrf_hash);
+                    }
+                },
+                error: function () {
+                    list.html('<div class="alert alert-danger py-2 text-center">An error occurred while loading updates.</div>');
+                }
+            });
+        }
+
+        function renderTaskComments(comments) {
+            const list = $('#task-comments-list');
+            list.empty();
+
+            if (comments.length === 0) {
+                list.html(`
+                    <div class="text-center py-5 text-muted empty-state">
+                        <i class="bi bi-info-circle fs-1 mb-2 d-block text-secondary" style="opacity: 0.3;"></i>
+                        <span>No updates yet for this task.</span>
+                    </div>
+                `);
+                return;
+            }
+
+            comments.forEach(comment => {
+                const isSystem = comment.is_system;
+                const bg = isSystem ? 'var(--color-alert-info-bg)' : '#ffffff';
+                const border = isSystem ? 'rgba(0, 113, 227, 0.08)' : 'rgba(0, 0, 0, 0.05)';
+                const textClass = isSystem ? 'text-info' : 'text-primary';
+
+                const commentHtml = `
+                    <div class="mb-3 p-3 rounded-3 comment-item" style="background: ${bg}; border: 1px solid ${border}; box-shadow: 0 2px 4px rgba(0,0,0,0.01);">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="fw-semibold ${textClass}" style="font-size: 0.8rem;">
+                                ${comment.user_label}
+                            </span>
+                            <span class="text-muted" style="font-size: 0.72rem;">${comment.formatted_time}</span>
+                        </div>
+                        <div style="font-size: 0.85rem; color: var(--color-text-base); word-break: break-word; white-space: pre-wrap;">${comment.comment}</div>
+                    </div>
+                `;
+                list.append(commentHtml);
+            });
+
+            // Scroll list to bottom
+            setTimeout(function() {
+                list.animate({ scrollTop: list.prop("scrollHeight") }, 300);
+            }, 100);
+        }
+
+        $('#task-comment-form').on('submit', function (e) {
+            e.preventDefault();
+            const form = $(this);
+            const submitBtn = form.find('button[type="submit"]');
+            const commentText = $('#task-comment-text').val().trim();
+
+            if (!commentText) return;
+
+            submitBtn.prop('disabled', true).text('Posting...');
+
+            const csrfToken = $('input[name="csrf_test_name"]').val();
+            const postData = form.serialize() + '&csrf_test_name=' + csrfToken;
+
+            $.ajax({
+                url: '<?= site_url("tasks/comment") ?>',
+                type: 'POST',
+                data: postData,
+                dataType: 'json',
+                success: function (response) {
+                    submitBtn.prop('disabled', false).text('Post Update');
+                    if (response.success && response.comment) {
+                        $('#task-comment-text').val('');
+                        
+                        // Reload comments list in modal
+                        const logId = $('#taskModalLogId').val();
+                        const url = '<?= site_url("tasks/comments") ?>/' + logId;
+                        $.ajax({
+                            url: url,
+                            type: 'GET',
+                            dataType: 'json',
+                            success: function (res) {
+                                if (res.success && res.comments) {
+                                    renderTaskComments(res.comments);
+                                }
+                            }
+                        });
+
+                        // Dynamically update spreadsheet cell value and tooltip
+                        if (activeCommentCell) {
+                            const rawCommentText = $('<div>').html(response.comment.comment).text().trim();
+                            $(activeCommentCell).text(rawCommentText || '—');
+                            $(activeCommentCell).attr('title', rawCommentText || 'No comments posted yet.');
+                            
+                            // Re-init bootstrap tooltip
+                            const tooltipInst = bootstrap.Tooltip.getInstance(activeCommentCell);
+                            if (tooltipInst) {
+                                tooltipInst.setContent({ '.tooltip-inner': rawCommentText || 'No comments posted yet.' });
+                            }
+                        }
+
+                        showToast('success', response.message);
+                    } else {
+                        showToast('error', response.message || 'Failed to post update.');
+                    }
+                    if (response.csrf_hash) {
+                        $('input[name="csrf_test_name"]').val(response.csrf_hash);
+                    }
+                },
+                error: function () {
+                    submitBtn.prop('disabled', false).text('Post Update');
+                    showToast('error', 'An error occurred while posting update.');
+                }
+            });
+        });
+
+        // Load project comments automatically on page load
+        loadProjectComments();
     });
 </script>
 

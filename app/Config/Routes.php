@@ -107,6 +107,9 @@ $routes->group('tasks', function ($routes) {
     $routes->post('bulk-assignee', 'TasksController::bulkAssignee');
     $routes->get('project-export/excel/(:any)', 'TasksController::exportProjectExcel/$1');
     $routes->get('project-export/pdf/(:any)', 'TasksController::exportProjectPDF/$1');
+    $routes->get('project-comments/(:any)', 'TasksController::getProjectComments/$1');
+    $routes->post('project-comments', 'TasksController::postProjectComment');
+    $routes->get('comments/(:num)', 'TasksController::getComments/$1');
 });
 
 $routes->group('settings', function ($routes) {
