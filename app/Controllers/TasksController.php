@@ -357,6 +357,17 @@ class TasksController extends BaseController
             'type' => Constants::COMMENT_TYPE_COMMENT,
         ]);
 
+        // Sync comment to JIRA if task is associated with a JIRA ticket
+        if ($insertedId) {
+            $tasksModel = new TasksModel();
+            $task = $tasksModel->find($post['log_id']);
+            if ($task && !empty($task['mt_jira_ticket'])) {
+                $commenterName = Constants::USERS[$post['commented_by']] ?? Constants::USER_SYSTEM_LABEL;
+                $jiraCommentText = $commenterName . " commented:\n" . $this->formatHtmlForJira($cleanComment);
+                $this->addCommentToJira($task['id'], $task['mt_jira_ticket'], $jiraCommentText);
+            }
+        }
+
         // Process Mentions
         preg_match_all('/@(\w+)/', $cleanComment, $matches);
         if (!empty($matches[1])) {
@@ -1884,7 +1895,7 @@ class TasksController extends BaseController
 
                     // Send reference link on our system to JIRA as a comment
                     $referenceLink = site_url('tasks/view/' . $id);
-                    $jiraCommentText = "Reference link on our system: " . $referenceLink;
+                    $jiraCommentText = "Reference: " . $referenceLink;
                     $this->addCommentToJira($id, $ticketId, $jiraCommentText);
 
                     // Check if the current status requires transitioning the JIRA ticket from To Do
