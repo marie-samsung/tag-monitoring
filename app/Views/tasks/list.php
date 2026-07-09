@@ -228,9 +228,9 @@ $isAdmin = (int) session()->get('user_role') === Constants::USER_ROLE_ADMIN || (
     </div>
 
     <!-- Dashboard Status Counts -->
-    <div class="row g-3 mb-4">
+    <div class="row g-3 mb-4 row-cols-2 row-cols-md-3 row-cols-lg-5">
         <!-- Pending Card -->
-        <div class="col-6 col-md-3">
+        <div class="col">
             <a href="<?= getGroupFilterUrl('pending') ?>" class="dashboard-metric-link">
                 <div
                     class="dashboard-metric-card card-pending <?= ($filters['status_group'] ?? '') === 'pending' ? 'active' : '' ?>">
@@ -244,7 +244,7 @@ $isAdmin = (int) session()->get('user_role') === Constants::USER_ROLE_ADMIN || (
             </a>
         </div>
         <!-- In Progress Card -->
-        <div class="col-6 col-md-3">
+        <div class="col">
             <a href="<?= getGroupFilterUrl('in_progress') ?>" class="dashboard-metric-link">
                 <div
                     class="dashboard-metric-card card-in-progress <?= ($filters['status_group'] ?? '') === 'in_progress' ? 'active' : '' ?>">
@@ -258,7 +258,7 @@ $isAdmin = (int) session()->get('user_role') === Constants::USER_ROLE_ADMIN || (
             </a>
         </div>
         <!-- Blocked/Hold Card -->
-        <div class="col-6 col-md-3">
+        <div class="col">
             <a href="<?= getGroupFilterUrl('blocked') ?>" class="dashboard-metric-link">
                 <div
                     class="dashboard-metric-card card-blocked <?= ($filters['status_group'] ?? '') === 'blocked' ? 'active' : '' ?>">
@@ -271,8 +271,22 @@ $isAdmin = (int) session()->get('user_role') === Constants::USER_ROLE_ADMIN || (
                 </div>
             </a>
         </div>
+        <!-- Needs Attention Card -->
+        <div class="col">
+            <a href="<?= getGroupFilterUrl('needs_attention') ?>" class="dashboard-metric-link">
+                <div
+                    class="dashboard-metric-card card-needs-attention <?= ($filters['status_group'] ?? '') === 'needs_attention' ? 'active' : '' ?>">
+                    <div class="dashboard-metric-info">
+                        <span class="dashboard-metric-label">Needs Attention</span>
+                        <h3 class="dashboard-metric-value"><?= $needs_attention_count ?? 0 ?></h3>
+                        <span class="dashboard-metric-desc">Start date > 4 days ago</span>
+                    </div>
+                    <i class="bi bi-exclamation-triangle-fill dashboard-metric-icon"></i>
+                </div>
+            </a>
+        </div>
         <!-- Completed Card -->
-        <div class="col-6 col-md-3">
+        <div class="col">
             <a href="<?= getGroupFilterUrl('completed') ?>" class="dashboard-metric-link">
                 <div
                     class="dashboard-metric-card card-completed <?= ($filters['status_group'] ?? '') === 'completed' ? 'active' : '' ?>">
@@ -579,6 +593,8 @@ $isAdmin = (int) session()->get('user_role') === Constants::USER_ROLE_ADMIN || (
                             $groupLabel = 'Blocked/Hold';
                         elseif ($val === 'completed')
                             $groupLabel = 'Completed';
+                        elseif ($val === 'needs_attention')
+                            $groupLabel = 'Needs Attention';
                         $label = 'Status Group: ' . $groupLabel;
                     } elseif ($key === 'priority') {
                         $label = 'Priority: ' . (Constants::PRIORITIES[$val] ?? $val);
@@ -1100,6 +1116,7 @@ $isAdmin = (int) session()->get('user_role') === Constants::USER_ROLE_ADMIN || (
         text-decoration: none !important;
         color: inherit !important;
         display: block;
+        height: 100%;
     }
 
     .dashboard-metric-card {
@@ -1115,6 +1132,7 @@ $isAdmin = (int) session()->get('user_role') === Constants::USER_ROLE_ADMIN || (
         position: relative;
         overflow: hidden;
         cursor: pointer;
+        height: 100%;
     }
 
     .dashboard-metric-card:hover {
@@ -1145,6 +1163,10 @@ $isAdmin = (int) session()->get('user_role') === Constants::USER_ROLE_ADMIN || (
         background-color: var(--color-badge-danger-text);
     }
 
+    .dashboard-metric-card.card-needs-attention::before {
+        background-color: var(--color-badge-orange-text);
+    }
+
     .dashboard-metric-card.card-completed::before {
         background-color: var(--color-badge-success-text);
     }
@@ -1167,6 +1189,11 @@ $isAdmin = (int) session()->get('user_role') === Constants::USER_ROLE_ADMIN || (
     .dashboard-metric-card.card-blocked.active {
         background-color: var(--color-badge-danger-bg);
         border-color: var(--color-badge-danger-border);
+    }
+
+    .dashboard-metric-card.card-needs-attention.active {
+        background-color: var(--color-badge-orange-bg);
+        border-color: var(--color-badge-orange-border);
     }
 
     .dashboard-metric-card.card-completed.active {
@@ -1243,6 +1270,11 @@ $isAdmin = (int) session()->get('user_role') === Constants::USER_ROLE_ADMIN || (
     .dashboard-metric-card.card-blocked:hover .dashboard-metric-icon,
     .dashboard-metric-card.card-blocked.active .dashboard-metric-icon {
         color: var(--color-badge-danger-text);
+    }
+
+    .dashboard-metric-card.card-needs-attention:hover .dashboard-metric-icon,
+    .dashboard-metric-card.card-needs-attention.active .dashboard-metric-icon {
+        color: var(--color-badge-orange-text);
     }
 
     .dashboard-metric-card.card-completed:hover .dashboard-metric-icon,

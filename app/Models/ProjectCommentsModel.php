@@ -17,6 +17,8 @@ class ProjectCommentsModel extends Model
     ];
 
     protected $useTimestamps = true;
+    protected $useSoftDeletes = true;
+    protected $deletedField  = 'deleted_at';
 
     public function getProjectComments($projectName)
     {

@@ -121,6 +121,12 @@ class TasksModel extends Model
                 $this->whereIn('status', [7]);
             } elseif ($filters['status_group'] === 'completed') {
                 $this->whereIn('status', [6]);
+            } elseif ($filters['status_group'] === 'needs_attention') {
+                $fourDaysAgo = date('Y-m-d H:i:s', strtotime('-4 days'));
+                $this->where('status !=', Constants::ACTIVITY_LOGS_STATUS_COMPLETED);
+                $this->where('start_date IS NOT NULL');
+                $this->where('start_date !=', '0000-00-00 00:00:00');
+                $this->where('start_date <', $fourDaysAgo);
             }
         } elseif (!empty($filters['status'])) {
             $this->where('status', $filters['status']);
@@ -276,6 +282,63 @@ class TasksModel extends Model
             $counts[(int)$row['status']] = (int)$row['count'];
         }
         return $counts;
+    }
+
+    public function getNeedsAttentionCount($filters = [])
+    {
+        $this->applyRoleFilters();
+        
+        unset($filters['status']);
+        unset($filters['status_group']);
+        
+        if (!empty($filters['keyword'])) {
+            $this->groupStart()
+                 ->like('title', $filters['keyword'])
+                 ->orLike('description', $filters['keyword'])
+                 ->orLike('ticket_id', $filters['keyword'])
+                 ->groupEnd();
+        }
+
+        if (!empty($filters['subsidiary_id'])) {
+            $this->where('subsidiary_id', $filters['subsidiary_id']);
+        }
+
+        if (!empty($filters['team_id'])) {
+            $this->where('team_id', $filters['team_id']);
+        }
+
+        if (!empty($filters['project'])) {
+            $this->where('project', $filters['project']);
+        }
+
+        if (!empty($filters['type'])) {
+            $this->where('type', $filters['type']);
+        }
+
+        if (!empty($filters['priority'])) {
+            $this->where('priority', $filters['priority']);
+        }
+
+        if (!empty($filters['campaign_status'])) {
+            $this->where('campaign_status', $filters['campaign_status']);
+        }
+
+        if (!empty($filters['me_mode'])) {
+            $userId = session()->get('user_id');
+            if ($userId !== null) {
+                $this->where('assignee', $userId);
+            }
+        } elseif (!empty($filters['assignee'])) {
+            $this->where('assignee', $filters['assignee']);
+        }
+        
+        $fourDaysAgo = date('Y-m-d H:i:s', strtotime('-4 days'));
+        $this->where('status !=', Constants::ACTIVITY_LOGS_STATUS_COMPLETED);
+        $this->where('start_date IS NOT NULL');
+        $this->where('start_date !=', '0000-00-00 00:00:00');
+        $this->where('start_date <', $fourDaysAgo);
+
+        return $this->countAllResults();
     }
 
     public function getProjectLogs($projectName, $limit = null, $meMode = false)

@@ -712,7 +712,7 @@ $isAdmin = (int)session()->get('user_role') === Constants::USER_ROLE_ADMIN || (i
             const messageEl = $('#toastMessage');
             const iconEl = $('#toastIcon');
 
-            messageEl.text(message);
+            messageEl.html(message);
 
             toast.removeClass('bg-success bg-danger bg-warning text-dark text-white border-0');
 
@@ -1066,7 +1066,10 @@ $isAdmin = (int)session()->get('user_role') === Constants::USER_ROLE_ADMIN || (i
                             <span class="fw-semibold text-primary" style="font-size: 0.8rem;">
                                 ${comment.user_label}
                             </span>
-                            <span class="text-muted" style="font-size: 0.72rem;">${comment.formatted_time}</span>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="text-muted" style="font-size: 0.72rem;">${comment.formatted_time}</span>
+                                ${comment.can_delete ? `<i class="bi bi-trash text-danger delete-project-comment-btn cursor-pointer" style="font-size: 0.8rem; cursor: pointer;" data-id="${comment.id}" title="Delete comment"></i>` : ''}
+                            </div>
                         </div>
                         <div style="font-size: 0.85rem; color: var(--color-text-base); word-break: break-word; white-space: pre-wrap;">${comment.comment}</div>
                     </div>
@@ -1079,7 +1082,10 @@ $isAdmin = (int)session()->get('user_role') === Constants::USER_ROLE_ADMIN || (i
                             <span class="fw-semibold text-primary" style="font-size: 0.8rem;">
                                 ${comment.user_label}
                             </span>
-                            <span class="text-muted" style="font-size: 0.72rem;">${comment.formatted_time}</span>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="text-muted" style="font-size: 0.72rem;">${comment.formatted_time}</span>
+                                ${comment.can_delete ? `<i class="bi bi-trash text-danger delete-project-comment-btn cursor-pointer" style="font-size: 0.8rem; cursor: pointer;" data-id="${comment.id}" title="Delete comment"></i>` : ''}
+                            </div>
                         </div>
                         <div style="font-size: 0.85rem; color: var(--color-text-base); word-break: break-word; white-space: pre-wrap;">${comment.comment}</div>
                     </div>
@@ -1116,33 +1122,7 @@ $isAdmin = (int)session()->get('user_role') === Constants::USER_ROLE_ADMIN || (i
                         showToast('success', response.message);
 
                         // Increment active project count badges dynamically
-                        const countBadge = $('#projectCommentsCountBadge');
-                        const activeTabBadge = $('.sheet-tab.active .project-tab-badge');
-
-                        if (countBadge.length > 0) {
-                            const newCount = parseInt(countBadge.text().trim()) + 1;
-                            countBadge.text(newCount);
-                            if (activeTabBadge.length > 0) {
-                                activeTabBadge.text(newCount);
-                            } else {
-                                $('.sheet-tab.active').append(`
-                                    <span class="badge bg-danger text-white ms-1 rounded-circle project-tab-badge" style="font-size: 0.7rem; padding: 0.25em 0.5em; min-width: 18px; text-align: center; line-height: 1;">
-                                        ${newCount}
-                                    </span>
-                                `);
-                            }
-                        } else {
-                            $('#projectCommentsBtn').append(`
-                                <span class="badge bg-danger text-white ms-1 rounded-circle" id="projectCommentsCountBadge" style="font-size: 0.7rem; padding: 0.25em 0.5em; min-width: 18px; text-align: center; line-height: 1;">
-                                    1
-                                </span>
-                            `);
-                            $('.sheet-tab.active').append(`
-                                <span class="badge bg-danger text-white ms-1 rounded-circle project-tab-badge" style="font-size: 0.7rem; padding: 0.25em 0.5em; min-width: 18px; text-align: center; line-height: 1;">
-                                    1
-                                </span>
-                            `);
-                        }
+                        updateProjectCommentBadges(1);
                     } else {
                         showToast('error', response.message || 'Failed to post comment.');
                     }
@@ -1153,6 +1133,167 @@ $isAdmin = (int)session()->get('user_role') === Constants::USER_ROLE_ADMIN || (i
                 error: function () {
                     submitBtn.prop('disabled', false).text(form.attr('id') === 'project-comment-form' ? 'Post Comment' : 'Post Update');
                     showToast('error', 'An error occurred while posting comment.');
+                }
+            });
+        });
+
+        // Update Project Comments Badges
+        function updateProjectCommentBadges(delta) {
+            const countBadge = $('#projectCommentsCountBadge');
+            const activeTabBadge = $('.sheet-tab.active .project-tab-badge');
+
+            if (countBadge.length > 0) {
+                const currentCount = parseInt(countBadge.text().trim());
+                const newCount = Math.max(0, currentCount + delta);
+                if (newCount > 0) {
+                    countBadge.text(newCount);
+                    if (activeTabBadge.length > 0) {
+                        activeTabBadge.text(newCount);
+                    }
+                } else {
+                    countBadge.remove();
+                    activeTabBadge.remove();
+                }
+            } else if (delta > 0) {
+                $('#projectCommentsBtn').append(`
+                    <span class="badge bg-danger text-white ms-1 rounded-circle" id="projectCommentsCountBadge" style="font-size: 0.7rem; padding: 0.25em 0.5em; min-width: 18px; text-align: center; line-height: 1;">
+                        ${delta}
+                    </span>
+                `);
+                $('.sheet-tab.active').append(`
+                    <span class="badge bg-danger text-white ms-1 rounded-circle project-tab-badge" style="font-size: 0.7rem; padding: 0.25em 0.5em; min-width: 18px; text-align: center; line-height: 1;">
+                        ${delta}
+                    </span>
+                `);
+            }
+        }
+
+        // Show Toast with 30-second Undo delete countdown
+        function showDeleteToastWithUndo(commentId) {
+            const toast = $('#toastNotification');
+            const messageEl = $('#toastMessage');
+            const iconEl = $('#toastIcon');
+
+            toast.removeClass('bg-success bg-danger bg-warning text-dark text-white border-0');
+            toast.css({
+                'background-color': 'var(--color-alert-warning-bg)',
+                'color': 'var(--color-alert-warning-text)',
+                'border': '1px solid rgba(180, 107, 0, 0.2)'
+            });
+            iconEl.html('<i class="bi bi-trash-fill fs-5" style="color: var(--color-alert-warning-text);"></i>');
+
+            let countdown = 30;
+            
+            function updateToastText() {
+                messageEl.html(`Comment deleted. <a href="#" class="undo-comment-delete text-decoration-underline fw-bold" data-id="${commentId}" style="color: inherit; margin-left: 8px;">Undo (${countdown}s)</a>`);
+            }
+
+            updateToastText();
+            toast.fadeIn(300);
+
+            if (window.toastTimeout) {
+                clearTimeout(window.toastTimeout);
+            }
+            if (window.toastInterval) {
+                clearInterval(window.toastInterval);
+            }
+
+            window.toastInterval = setInterval(function () {
+                countdown--;
+                if (countdown <= 0) {
+                    clearInterval(window.toastInterval);
+                    toast.fadeOut(300);
+                } else {
+                    updateToastText();
+                }
+            }, 1000);
+
+            // Timeout to clear interval and fade out
+            window.toastTimeout = setTimeout(function () {
+                clearInterval(window.toastInterval);
+                toast.fadeOut(300);
+            }, 30000);
+        }
+
+        // Delete comment handler
+        $(document).on('click', '.delete-project-comment-btn', function (e) {
+            e.preventDefault();
+            const btn = $(this);
+            const commentId = btn.data('id');
+            if (!commentId) return;
+
+            window.themeConfirm({
+                title: 'Delete Comment',
+                message: 'Are you sure you want to delete this comment?',
+                confirmText: 'Delete',
+                cancelText: 'Cancel',
+                type: 'danger'
+            }).then((confirmed) => {
+                if (confirmed) {
+                    const csrfToken = $('input[name="csrf_test_name"]').val();
+                    $.ajax({
+                        url: '<?= site_url("tasks/project-comments/delete") ?>',
+                        type: 'POST',
+                        data: {
+                            id: commentId,
+                            csrf_test_name: csrfToken
+                        },
+                        dataType: 'json',
+                        success: function (response) {
+                            if (response.success) {
+                                loadProjectComments(); // reload feed list
+                                updateProjectCommentBadges(-1); // decrement badges
+                                showDeleteToastWithUndo(commentId); // show undo toast
+                            } else {
+                                showToast('error', response.message || 'Failed to delete comment.');
+                            }
+                            if (response.csrf_hash) {
+                                $('input[name="csrf_test_name"]').val(response.csrf_hash);
+                            }
+                        },
+                        error: function () {
+                            showToast('error', 'An error occurred while deleting comment.');
+                        }
+                    });
+                }
+            });
+        });
+
+        // Undo Delete comment handler
+        $(document).on('click', '.undo-comment-delete', function (e) {
+            e.preventDefault();
+            const btn = $(this);
+            const commentId = btn.data('id');
+            if (!commentId) return;
+
+            const csrfToken = $('input[name="csrf_test_name"]').val();
+            
+            if (window.toastTimeout) clearTimeout(window.toastTimeout);
+            if (window.toastInterval) clearInterval(window.toastInterval);
+            $('#toastNotification').fadeOut(300);
+
+            $.ajax({
+                url: '<?= site_url("tasks/project-comments/restore") ?>',
+                type: 'POST',
+                data: {
+                    id: commentId,
+                    csrf_test_name: csrfToken
+                },
+                dataType: 'json',
+                success: function (response) {
+                    if (response.success) {
+                        loadProjectComments(); // reload feed list
+                        updateProjectCommentBadges(1); // restore badges
+                        showToast('success', 'Comment restored.');
+                    } else {
+                        showToast('error', response.message || 'Failed to restore comment.');
+                    }
+                    if (response.csrf_hash) {
+                        $('input[name="csrf_test_name"]').val(response.csrf_hash);
+                    }
+                },
+                error: function () {
+                    showToast('error', 'An error occurred while restoring comment.');
                 }
             });
         });
