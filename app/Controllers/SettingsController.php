@@ -708,6 +708,9 @@ class SettingsController extends BaseController
         }
 
         $endpoint = $log['endpoint_url'];
+        if (empty($endpoint)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Endpoint URL is not defined for this log entry.']);
+        }
         $payload = $log['payload'];
         $requestType = $log['request_type'];
 

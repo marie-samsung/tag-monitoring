@@ -461,6 +461,10 @@ class TasksController extends BaseController
         $jiraEndpoint = getenv('MT_JIRA_UPLOAD_ATTACHMENT');
         $jiraToken = getenv('MT_JIRA_AUTH_TOKEN');
 
+        if (empty($jiraEndpoint) || empty($jiraToken)) {
+            return false;
+        }
+
         if (strpos($jiraEndpoint, '{key}') !== false) {
             $jiraEndpoint = str_replace('{key}', $ticketId, $jiraEndpoint);
         } elseif (strpos($jiraEndpoint, '{id}') !== false) {
@@ -1752,6 +1756,10 @@ class TasksController extends BaseController
         $jiraToken = getenv('MT_JIRA_AUTH_TOKEN');
         $projectKey = getenv('MT_JIRA_PROJECT_KEY');
 
+        if (empty($jiraEndpoint) || empty($jiraToken) || empty($projectKey)) {
+            return false;
+        }
+
         $jiraLabels = [];
         $jiraLabels[] = (string) $log['id'];
         $jiraLabels[] = str_replace(' ', '_', (string) Constants::ACTIVITY_TYPES[$log['type']]);
@@ -1989,6 +1997,10 @@ class TasksController extends BaseController
         $jiraEndpoint = getenv('MT_JIRA_EDIT_ISSUE');
         $jiraToken = getenv('MT_JIRA_AUTH_TOKEN');
 
+        if (empty($jiraEndpoint) || empty($jiraToken)) {
+            return false;
+        }
+
         if (strpos($jiraEndpoint, '{key}') !== false) {
             $jiraEndpoint = str_replace('{key}', $log['mt_jira_ticket'], $jiraEndpoint);
         } elseif (strpos($jiraEndpoint, '{id}') !== false) {
@@ -2129,6 +2141,10 @@ class TasksController extends BaseController
 
         $jiraEndpoint = getenv('MT_JIRA_UPDATE_STATUS');
         $jiraToken = getenv('MT_JIRA_AUTH_TOKEN');
+
+        if (empty($jiraEndpoint) || empty($jiraToken)) {
+            return false;
+        }
 
         if (strpos($jiraEndpoint, '{key}') !== false) {
             $jiraEndpoint = str_replace('{key}', $log['mt_jira_ticket'], $jiraEndpoint);
