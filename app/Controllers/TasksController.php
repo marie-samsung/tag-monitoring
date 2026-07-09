@@ -461,7 +461,7 @@ class TasksController extends BaseController
         $jiraEndpoint = getenv('MT_JIRA_UPLOAD_ATTACHMENT');
         $jiraToken = getenv('MT_JIRA_AUTH_TOKEN');
 
-        if (empty($jiraEndpoint) || empty($jiraToken)) {
+        if (empty($jiraEndpoint)) {
             return false;
         }
 
@@ -545,7 +545,7 @@ class TasksController extends BaseController
         $jiraEndpoint = getenv('MT_JIRA_ADD_COMMENT');
         $jiraToken = getenv('MT_JIRA_AUTH_TOKEN');
 
-        if (empty($jiraEndpoint) || empty($jiraToken)) {
+        if (empty($jiraEndpoint)) {
             return false;
         }
 
@@ -614,7 +614,7 @@ class TasksController extends BaseController
         $jiraEndpoint = getenv('MT_JIRA_UPDATE_COMMENT');
         $jiraToken = getenv('MT_JIRA_AUTH_TOKEN');
 
-        if (empty($jiraEndpoint) || empty($jiraToken)) {
+        if (empty($jiraEndpoint)) {
             return false;
         }
 
@@ -1756,7 +1756,7 @@ class TasksController extends BaseController
         $jiraToken = getenv('MT_JIRA_AUTH_TOKEN');
         $projectKey = getenv('MT_JIRA_PROJECT_KEY');
 
-        if (empty($jiraEndpoint) || empty($jiraToken) || empty($projectKey)) {
+        if (empty($jiraEndpoint)) {
             return false;
         }
 
@@ -1916,59 +1916,61 @@ class TasksController extends BaseController
 
                         if ($transitionId) {
                             $jiraEndpointUpdate = getenv('MT_JIRA_UPDATE_STATUS');
-                            if (strpos($jiraEndpointUpdate, '{key}') !== false) {
-                                $jiraEndpointUpdate = str_replace('{key}', $ticketId, $jiraEndpointUpdate);
-                            } elseif (strpos($jiraEndpointUpdate, '{id}') !== false) {
-                                $jiraEndpointUpdate = str_replace('{id}', $ticketId, $jiraEndpointUpdate);
-                            } else {
-                                $jiraEndpointUpdate = rtrim($jiraEndpointUpdate, '/') . '/' . $ticketId . '/transitions';
-                            }
+                            if (!empty($jiraEndpointUpdate)) {
+                                if (strpos($jiraEndpointUpdate, '{key}') !== false) {
+                                    $jiraEndpointUpdate = str_replace('{key}', $ticketId, $jiraEndpointUpdate);
+                                } elseif (strpos($jiraEndpointUpdate, '{id}') !== false) {
+                                    $jiraEndpointUpdate = str_replace('{id}', $ticketId, $jiraEndpointUpdate);
+                                } else {
+                                    $jiraEndpointUpdate = rtrim($jiraEndpointUpdate, '/') . '/' . $ticketId . '/transitions';
+                                }
 
-                            $transitionPayload = [
-                                'transition' => [
-                                    'id' => $transitionId
-                                ]
-                            ];
+                                $transitionPayload = [
+                                    'transition' => [
+                                        'id' => $transitionId
+                                    ]
+                                ];
 
-                            try {
-                                $curl2 = curl_init();
-                                curl_setopt_array($curl2, [
-                                    CURLOPT_URL => $jiraEndpointUpdate,
-                                    CURLOPT_RETURNTRANSFER => true,
-                                    CURLOPT_ENCODING => '',
-                                    CURLOPT_MAXREDIRS => 10,
-                                    CURLOPT_TIMEOUT => 30,
-                                    CURLOPT_FOLLOWLOCATION => true,
-                                    CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-                                    CURLOPT_CUSTOMREQUEST => 'POST',
-                                    CURLOPT_POSTFIELDS => json_encode($transitionPayload),
-                                    CURLOPT_HTTPHEADER => [
-                                        'Authorization: Bearer ' . $jiraToken,
-                                        'Content-Type: application/json',
-                                        'Accept: application/json',
-                                        'User-Agent: PostmanRuntime/7.32.3',
-                                        'Expect:'
-                                    ],
-                                ]);
+                                try {
+                                    $curl2 = curl_init();
+                                    curl_setopt_array($curl2, [
+                                        CURLOPT_URL => $jiraEndpointUpdate,
+                                        CURLOPT_RETURNTRANSFER => true,
+                                        CURLOPT_ENCODING => '',
+                                        CURLOPT_MAXREDIRS => 10,
+                                        CURLOPT_TIMEOUT => 30,
+                                        CURLOPT_FOLLOWLOCATION => true,
+                                        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                                        CURLOPT_CUSTOMREQUEST => 'POST',
+                                        CURLOPT_POSTFIELDS => json_encode($transitionPayload),
+                                        CURLOPT_HTTPHEADER => [
+                                            'Authorization: Bearer ' . $jiraToken,
+                                            'Content-Type: application/json',
+                                            'Accept: application/json',
+                                            'User-Agent: PostmanRuntime/7.32.3',
+                                            'Expect:'
+                                        ],
+                                    ]);
 
-                                $body2 = curl_exec($curl2);
-                                $statusCode2 = curl_getinfo($curl2, CURLINFO_HTTP_CODE);
-                                $errorMessage2 = curl_error($curl2);
-                                curl_close($curl2);
+                                    $body2 = curl_exec($curl2);
+                                    $statusCode2 = curl_getinfo($curl2, CURLINFO_HTTP_CODE);
+                                    $errorMessage2 = curl_error($curl2);
+                                    curl_close($curl2);
 
-                                $status2 = ($statusCode2 >= 200 && $statusCode2 < 300) ? 'SUCCESS' : 'FAILED';
-                                $apiLogModel->logRequest(
-                                    $id,
-                                    'UPDATE_STATUS',
-                                    $jiraEndpointUpdate,
-                                    json_encode($transitionPayload),
-                                    $body2,
-                                    $statusCode2,
-                                    $errorMessage2,
-                                    $status2
-                                );
-                            } catch (\Exception $e) {
-                                $apiLogModel->logRequest($id, 'UPDATE_STATUS', $jiraEndpointUpdate, json_encode($transitionPayload), $e->getMessage(), 500, $e->getMessage(), 'FAILED');
+                                    $status2 = ($statusCode2 >= 200 && $statusCode2 < 300) ? 'SUCCESS' : 'FAILED';
+                                    $apiLogModel->logRequest(
+                                        $id,
+                                        'UPDATE_STATUS',
+                                        $jiraEndpointUpdate,
+                                        json_encode($transitionPayload),
+                                        $body2,
+                                        $statusCode2,
+                                        $errorMessage2,
+                                        $status2
+                                    );
+                                } catch (\Exception $e) {
+                                    $apiLogModel->logRequest($id, 'UPDATE_STATUS', $jiraEndpointUpdate, json_encode($transitionPayload), $e->getMessage(), 500, $e->getMessage(), 'FAILED');
+                                }
                             }
                         }
                     }
@@ -1997,7 +1999,7 @@ class TasksController extends BaseController
         $jiraEndpoint = getenv('MT_JIRA_EDIT_ISSUE');
         $jiraToken = getenv('MT_JIRA_AUTH_TOKEN');
 
-        if (empty($jiraEndpoint) || empty($jiraToken)) {
+        if (empty($jiraEndpoint)) {
             return false;
         }
 
@@ -2142,7 +2144,7 @@ class TasksController extends BaseController
         $jiraEndpoint = getenv('MT_JIRA_UPDATE_STATUS');
         $jiraToken = getenv('MT_JIRA_AUTH_TOKEN');
 
-        if (empty($jiraEndpoint) || empty($jiraToken)) {
+        if (empty($jiraEndpoint)) {
             return false;
         }
 
