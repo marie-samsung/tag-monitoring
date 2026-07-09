@@ -670,6 +670,8 @@ class SettingsController extends BaseController
             'MT_JIRA_EDIT_ISSUE'      => $this->request->getPost('mt_jira_edit_issue'),
             'MT_JIRA_UPDATE_STATUS'   => $this->request->getPost('mt_jira_update_status'),
             'MT_JIRA_UPLOAD_ATTACHMENT' => $this->request->getPost('mt_jira_upload_attachment'),
+            'MT_JIRA_ADD_COMMENT'     => $this->request->getPost('mt_jira_add_comment'),
+            'MT_JIRA_UPDATE_COMMENT'  => $this->request->getPost('mt_jira_update_comment'),
             'MT_JIRA_AUTH_TOKEN'      => $this->request->getPost('mt_jira_auth_token'),
             'MT_JIRA_PROJECT_KEY'     => $this->request->getPost('mt_jira_project_key'),
         ];
@@ -706,6 +708,9 @@ class SettingsController extends BaseController
         }
 
         $endpoint = $log['endpoint_url'];
+        if (empty($endpoint)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Endpoint URL is not defined for this log entry.']);
+        }
         $payload = $log['payload'];
         $requestType = $log['request_type'];
 
@@ -714,7 +719,7 @@ class SettingsController extends BaseController
 
             // Determine HTTP method and base headers
             $httpMethod = 'POST';
-            if ($requestType === 'EDIT_ISSUE') {
+            if ($requestType === 'EDIT_ISSUE' || $requestType === 'UPDATE_COMMENT') {
                 $httpMethod = 'PUT';
             }
 

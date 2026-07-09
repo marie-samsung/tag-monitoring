@@ -357,6 +357,17 @@ class TasksController extends BaseController
             'type' => Constants::COMMENT_TYPE_COMMENT,
         ]);
 
+        // Sync comment to JIRA if task is associated with a JIRA ticket
+        if ($insertedId) {
+            $tasksModel = new TasksModel();
+            $task = $tasksModel->find($post['log_id']);
+            if ($task && !empty($task['mt_jira_ticket'])) {
+                $commenterName = Constants::USERS[$post['commented_by']] ?? Constants::USER_SYSTEM_LABEL;
+                $jiraCommentText = $commenterName . " commented:\n" . $this->formatHtmlForJira($cleanComment);
+                $this->addCommentToJira($task['id'], $task['mt_jira_ticket'], $jiraCommentText);
+            }
+        }
+
         // Process Mentions
         preg_match_all('/@(\w+)/', $cleanComment, $matches);
         if (!empty($matches[1])) {
@@ -450,6 +461,10 @@ class TasksController extends BaseController
         $jiraEndpoint = getenv('MT_JIRA_UPLOAD_ATTACHMENT');
         $jiraToken = getenv('MT_JIRA_AUTH_TOKEN');
 
+        if (empty($jiraEndpoint)) {
+            return false;
+        }
+
         if (strpos($jiraEndpoint, '{key}') !== false) {
             $jiraEndpoint = str_replace('{key}', $ticketId, $jiraEndpoint);
         } elseif (strpos($jiraEndpoint, '{id}') !== false) {
@@ -521,6 +536,150 @@ class TasksController extends BaseController
         } catch (\Exception $e) {
             $apiLogModel = new JiraApiLogModel();
             $apiLogModel->logRequest($taskId, 'UPLOAD_ATTACHMENT', $jiraEndpoint, "File upload: {$fileName}", $e->getMessage(), 500, $e->getMessage(), 'FAILED');
+            return false;
+        }
+    }
+
+    public function addCommentToJira($taskId, $ticketId, $commentText)
+    {
+        $jiraEndpoint = getenv('MT_JIRA_ADD_COMMENT');
+        $jiraToken = getenv('MT_JIRA_AUTH_TOKEN');
+
+        if (empty($jiraEndpoint)) {
+            return false;
+        }
+
+        if (strpos($jiraEndpoint, '{key}') !== false) {
+            $jiraEndpoint = str_replace('{key}', $ticketId, $jiraEndpoint);
+        } elseif (strpos($jiraEndpoint, '{id}') !== false) {
+            $jiraEndpoint = str_replace('{id}', $ticketId, $jiraEndpoint);
+        } else {
+            $jiraEndpoint = rtrim($jiraEndpoint, '/') . '/' . $ticketId . '/comment';
+        }
+
+        $payload = [
+            'body' => $commentText
+        ];
+
+        try {
+            $curl = curl_init();
+            curl_setopt_array($curl, [
+                CURLOPT_URL => $jiraEndpoint,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => '',
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 30,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => 'POST',
+                CURLOPT_POSTFIELDS => json_encode($payload),
+                CURLOPT_HTTPHEADER => [
+                    'Authorization: Bearer ' . $jiraToken,
+                    'Content-Type: application/json',
+                    'Accept: application/json',
+                    'User-Agent: PostmanRuntime/7.32.3',
+                    'Expect:'
+                ],
+            ]);
+
+            $body = curl_exec($curl);
+            $statusCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+            $errorMessage = curl_error($curl);
+            curl_close($curl);
+
+            // Log the API request
+            $apiLogModel = new JiraApiLogModel();
+            $status = ($statusCode >= 200 && $statusCode < 300) ? 'SUCCESS' : 'FAILED';
+            $apiLogModel->logRequest(
+                $taskId,
+                'ADD_COMMENT',
+                $jiraEndpoint,
+                json_encode($payload),
+                $body,
+                $statusCode,
+                $errorMessage,
+                $status
+            );
+
+            return $statusCode >= 200 && $statusCode < 300;
+        } catch (\Exception $e) {
+            $apiLogModel = new JiraApiLogModel();
+            $apiLogModel->logRequest($taskId, 'ADD_COMMENT', $jiraEndpoint, json_encode($payload), $e->getMessage(), 500, $e->getMessage(), 'FAILED');
+            return false;
+        }
+    }
+
+    public function updateCommentToJira($taskId, $ticketId, $commentId, $commentText)
+    {
+        $jiraEndpoint = getenv('MT_JIRA_UPDATE_COMMENT');
+        $jiraToken = getenv('MT_JIRA_AUTH_TOKEN');
+
+        if (empty($jiraEndpoint)) {
+            return false;
+        }
+
+        if (strpos($jiraEndpoint, '{key}') !== false) {
+            $jiraEndpoint = str_replace('{key}', $ticketId, $jiraEndpoint);
+        } elseif (strpos($jiraEndpoint, '{id}') !== false) {
+            $jiraEndpoint = str_replace('{id}', $ticketId, $jiraEndpoint);
+        } else {
+            $jiraEndpoint = rtrim($jiraEndpoint, '/');
+        }
+
+        if (strpos($jiraEndpoint, '{commentId}') !== false) {
+            $jiraEndpoint = str_replace('{commentId}', $commentId, $jiraEndpoint);
+        } else {
+            $jiraEndpoint .= '/' . $commentId;
+        }
+
+        $payload = [
+            'body' => $commentText
+        ];
+
+        try {
+            $curl = curl_init();
+            curl_setopt_array($curl, [
+                CURLOPT_URL => $jiraEndpoint,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => '',
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 30,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => 'PUT',
+                CURLOPT_POSTFIELDS => json_encode($payload),
+                CURLOPT_HTTPHEADER => [
+                    'Authorization: Bearer ' . $jiraToken,
+                    'Content-Type: application/json',
+                    'Accept: application/json',
+                    'User-Agent: PostmanRuntime/7.32.3',
+                    'Expect:'
+                ],
+            ]);
+
+            $body = curl_exec($curl);
+            $statusCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+            $errorMessage = curl_error($curl);
+            curl_close($curl);
+
+            // Log the API request
+            $apiLogModel = new JiraApiLogModel();
+            $status = ($statusCode >= 200 && $statusCode < 300) ? 'SUCCESS' : 'FAILED';
+            $apiLogModel->logRequest(
+                $taskId,
+                'UPDATE_COMMENT',
+                $jiraEndpoint,
+                json_encode($payload),
+                $body,
+                $statusCode,
+                $errorMessage,
+                $status
+            );
+
+            return $statusCode >= 200 && $statusCode < 300;
+        } catch (\Exception $e) {
+            $apiLogModel = new JiraApiLogModel();
+            $apiLogModel->logRequest($taskId, 'UPDATE_COMMENT', $jiraEndpoint, json_encode($payload), $e->getMessage(), 500, $e->getMessage(), 'FAILED');
             return false;
         }
     }
@@ -1597,6 +1756,10 @@ class TasksController extends BaseController
         $jiraToken = getenv('MT_JIRA_AUTH_TOKEN');
         $projectKey = getenv('MT_JIRA_PROJECT_KEY');
 
+        if (empty($jiraEndpoint)) {
+            return false;
+        }
+
         $jiraLabels = [];
         $jiraLabels[] = (string) $log['id'];
         $jiraLabels[] = str_replace(' ', '_', (string) Constants::ACTIVITY_TYPES[$log['type']]);
@@ -1738,6 +1901,11 @@ class TasksController extends BaseController
                         'type' => Constants::COMMENT_TYPE_UPDATE,
                     ]);
 
+                    // Send reference link on our system to JIRA as a comment
+                    $referenceLink = site_url('tasks/view/' . $id);
+                    $jiraCommentText = "Reference: " . $referenceLink;
+                    $this->addCommentToJira($id, $ticketId, $jiraCommentText);
+
                     // Check if the current status requires transitioning the JIRA ticket from To Do
                     $currentStatus = $log['status'];
                     $mappedJiraStatus = \App\Models\JiraMapping::STATUS_MAPPING[(int) $currentStatus] ?? null;
@@ -1748,59 +1916,61 @@ class TasksController extends BaseController
 
                         if ($transitionId) {
                             $jiraEndpointUpdate = getenv('MT_JIRA_UPDATE_STATUS');
-                            if (strpos($jiraEndpointUpdate, '{key}') !== false) {
-                                $jiraEndpointUpdate = str_replace('{key}', $ticketId, $jiraEndpointUpdate);
-                            } elseif (strpos($jiraEndpointUpdate, '{id}') !== false) {
-                                $jiraEndpointUpdate = str_replace('{id}', $ticketId, $jiraEndpointUpdate);
-                            } else {
-                                $jiraEndpointUpdate = rtrim($jiraEndpointUpdate, '/') . '/' . $ticketId . '/transitions';
-                            }
+                            if (!empty($jiraEndpointUpdate)) {
+                                if (strpos($jiraEndpointUpdate, '{key}') !== false) {
+                                    $jiraEndpointUpdate = str_replace('{key}', $ticketId, $jiraEndpointUpdate);
+                                } elseif (strpos($jiraEndpointUpdate, '{id}') !== false) {
+                                    $jiraEndpointUpdate = str_replace('{id}', $ticketId, $jiraEndpointUpdate);
+                                } else {
+                                    $jiraEndpointUpdate = rtrim($jiraEndpointUpdate, '/') . '/' . $ticketId . '/transitions';
+                                }
 
-                            $transitionPayload = [
-                                'transition' => [
-                                    'id' => $transitionId
-                                ]
-                            ];
+                                $transitionPayload = [
+                                    'transition' => [
+                                        'id' => $transitionId
+                                    ]
+                                ];
 
-                            try {
-                                $curl2 = curl_init();
-                                curl_setopt_array($curl2, [
-                                    CURLOPT_URL => $jiraEndpointUpdate,
-                                    CURLOPT_RETURNTRANSFER => true,
-                                    CURLOPT_ENCODING => '',
-                                    CURLOPT_MAXREDIRS => 10,
-                                    CURLOPT_TIMEOUT => 30,
-                                    CURLOPT_FOLLOWLOCATION => true,
-                                    CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-                                    CURLOPT_CUSTOMREQUEST => 'POST',
-                                    CURLOPT_POSTFIELDS => json_encode($transitionPayload),
-                                    CURLOPT_HTTPHEADER => [
-                                        'Authorization: Bearer ' . $jiraToken,
-                                        'Content-Type: application/json',
-                                        'Accept: application/json',
-                                        'User-Agent: PostmanRuntime/7.32.3',
-                                        'Expect:'
-                                    ],
-                                ]);
+                                try {
+                                    $curl2 = curl_init();
+                                    curl_setopt_array($curl2, [
+                                        CURLOPT_URL => $jiraEndpointUpdate,
+                                        CURLOPT_RETURNTRANSFER => true,
+                                        CURLOPT_ENCODING => '',
+                                        CURLOPT_MAXREDIRS => 10,
+                                        CURLOPT_TIMEOUT => 30,
+                                        CURLOPT_FOLLOWLOCATION => true,
+                                        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                                        CURLOPT_CUSTOMREQUEST => 'POST',
+                                        CURLOPT_POSTFIELDS => json_encode($transitionPayload),
+                                        CURLOPT_HTTPHEADER => [
+                                            'Authorization: Bearer ' . $jiraToken,
+                                            'Content-Type: application/json',
+                                            'Accept: application/json',
+                                            'User-Agent: PostmanRuntime/7.32.3',
+                                            'Expect:'
+                                        ],
+                                    ]);
 
-                                $body2 = curl_exec($curl2);
-                                $statusCode2 = curl_getinfo($curl2, CURLINFO_HTTP_CODE);
-                                $errorMessage2 = curl_error($curl2);
-                                curl_close($curl2);
+                                    $body2 = curl_exec($curl2);
+                                    $statusCode2 = curl_getinfo($curl2, CURLINFO_HTTP_CODE);
+                                    $errorMessage2 = curl_error($curl2);
+                                    curl_close($curl2);
 
-                                $status2 = ($statusCode2 >= 200 && $statusCode2 < 300) ? 'SUCCESS' : 'FAILED';
-                                $apiLogModel->logRequest(
-                                    $id,
-                                    'UPDATE_STATUS',
-                                    $jiraEndpointUpdate,
-                                    json_encode($transitionPayload),
-                                    $body2,
-                                    $statusCode2,
-                                    $errorMessage2,
-                                    $status2
-                                );
-                            } catch (\Exception $e) {
-                                $apiLogModel->logRequest($id, 'UPDATE_STATUS', $jiraEndpointUpdate, json_encode($transitionPayload), $e->getMessage(), 500, $e->getMessage(), 'FAILED');
+                                    $status2 = ($statusCode2 >= 200 && $statusCode2 < 300) ? 'SUCCESS' : 'FAILED';
+                                    $apiLogModel->logRequest(
+                                        $id,
+                                        'UPDATE_STATUS',
+                                        $jiraEndpointUpdate,
+                                        json_encode($transitionPayload),
+                                        $body2,
+                                        $statusCode2,
+                                        $errorMessage2,
+                                        $status2
+                                    );
+                                } catch (\Exception $e) {
+                                    $apiLogModel->logRequest($id, 'UPDATE_STATUS', $jiraEndpointUpdate, json_encode($transitionPayload), $e->getMessage(), 500, $e->getMessage(), 'FAILED');
+                                }
                             }
                         }
                     }
@@ -1828,6 +1998,10 @@ class TasksController extends BaseController
 
         $jiraEndpoint = getenv('MT_JIRA_EDIT_ISSUE');
         $jiraToken = getenv('MT_JIRA_AUTH_TOKEN');
+
+        if (empty($jiraEndpoint)) {
+            return false;
+        }
 
         if (strpos($jiraEndpoint, '{key}') !== false) {
             $jiraEndpoint = str_replace('{key}', $log['mt_jira_ticket'], $jiraEndpoint);
@@ -1969,6 +2143,10 @@ class TasksController extends BaseController
 
         $jiraEndpoint = getenv('MT_JIRA_UPDATE_STATUS');
         $jiraToken = getenv('MT_JIRA_AUTH_TOKEN');
+
+        if (empty($jiraEndpoint)) {
+            return false;
+        }
 
         if (strpos($jiraEndpoint, '{key}') !== false) {
             $jiraEndpoint = str_replace('{key}', $log['mt_jira_ticket'], $jiraEndpoint);

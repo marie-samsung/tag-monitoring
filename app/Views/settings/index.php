@@ -248,6 +248,18 @@ foreach ($roles as $r) {
                         <input type="text" class="form-control" name="mt_jira_upload_attachment" value="<?= esc($envVars['MT_JIRA_UPLOAD_ATTACHMENT'] ?? '') ?>" placeholder="https://your-domain.atlassian.net/rest/api/2/issue/{id}/attachments">
                     </div>
 
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold mb-1">Add JIRA Comment Endpoint</label>
+                        <p class="text-secondary small mb-2">Endpoint for posting comments to a JIRA issue.</p>
+                        <input type="text" class="form-control" name="mt_jira_add_comment" value="<?= esc($envVars['MT_JIRA_ADD_COMMENT'] ?? '') ?>" placeholder="https://your-domain.atlassian.net/rest/api/2/issue/{id}/comment">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold mb-1">Update JIRA Comment Endpoint</label>
+                        <p class="text-secondary small mb-2">Endpoint for editing/updating comments on a JIRA issue.</p>
+                        <input type="text" class="form-control" name="mt_jira_update_comment" value="<?= esc($envVars['MT_JIRA_UPDATE_COMMENT'] ?? '') ?>" placeholder="https://your-domain.atlassian.net/rest/api/2/issue/{id}/comment/{commentId}">
+                    </div>
+
                     <hr class="my-2 border-secondary opacity-25">
 
                     <div class="col-md-6">
