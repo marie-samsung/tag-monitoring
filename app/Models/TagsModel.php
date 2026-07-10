@@ -103,10 +103,6 @@ class TagsModel extends Model
             $hasActiveFilters = true;
         }
 
-        if ($hasActiveFilters) {
-            $this->orderBy('properties.name', 'ASC');
-        }
-
         if (!empty($sortBy)) {
             if ($sortBy === 'id') {
                 $this->orderBy('tags.id', $sortDir);
@@ -123,6 +119,9 @@ class TagsModel extends Model
             } elseif ($sortBy === 'updated_at') {
                 $this->orderBy('tags.updated_at', $sortDir);
             }
+
+            if ($hasActiveFilters)
+                $this->orderBy('properties.id', 'ASC');
         } else {
             if (!empty($filters['is_repository'])) {
                 $this->orderBy('properties.subsidiary_id', 'ASC');

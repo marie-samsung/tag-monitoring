@@ -727,7 +727,7 @@ class TagsController extends BaseController
         ]);
 
         if ($taskId) {
-            $tasksController = new \App\Controllers\TasksController();
+            $tasksController = new TasksController();
             $tasksController->createJiraIssueFromTask($taskId);
         }
     }
