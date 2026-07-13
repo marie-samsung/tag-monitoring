@@ -833,14 +833,26 @@ Tag Request: Create
             var relatedTags = [];
             vendors.forEach(function(vendor) {
                 var vendorLower = vendor.toLowerCase();
+                var tempRelated = [];
                 allExistingTags.forEach(function(existingTag) {
                     var existingLower = (existingTag.tag_name || '').toLowerCase();
                     if (existingLower.includes('(' + vendorLower)) {
-                        if (!selectedSubsidiaryId || existingTag.subsidiary_id == selectedSubsidiaryId) {
-                            relatedTags.push(existingTag);
-                        }
+                        tempRelated.push(existingTag);
                     }
                 });
+
+                if (selectedSubsidiaryId) {
+                    var filtered = tempRelated.filter(function(tag) {
+                        return tag.subsidiary_id == selectedSubsidiaryId;
+                    });
+                    if (filtered.length > 0) {
+                        relatedTags = relatedTags.concat(filtered);
+                    } else {
+                        relatedTags = relatedTags.concat(tempRelated);
+                    }
+                } else {
+                    relatedTags = relatedTags.concat(tempRelated);
+                }
             });
             
             var groupedTags = {};
