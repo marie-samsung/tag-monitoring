@@ -14,7 +14,7 @@ Tag Request: Create
     use App\Models\TasksModel;
 
     $propertiesModel = new PropertiesModel();
-    $propertiesList = $propertiesModel->select('id, name, is_shop')->findAll();
+    $propertiesList = $propertiesModel->select('id, name, is_shop, subsidiary_id')->findAll();
     $property = isset($property_id) ? $propertiesModel->find($property_id) : null;
 
     $vendorsModel = new VendorsModel();
@@ -26,7 +26,7 @@ Tag Request: Create
     $tasksModel = new TasksModel();
 
     $tagsModel = new \App\Models\TagsModel();
-    $allTags = $tagsModel->select('tags.name as tag_name, properties.name as property_name')
+    $allTags = $tagsModel->select('tags.name as tag_name, properties.name as property_name, properties.subsidiary_id')
                          ->join('properties', 'properties.id = tags.property_id', 'left')
                          ->findAll();
 ?>
@@ -102,6 +102,7 @@ Tag Request: Create
                             <?php foreach ($propertiesList as $prop): ?>
                                 <option value="<?= esc($prop['id']) ?>"
                                     data-is-shop="<?= $prop['is_shop'] == Constants::YES ? 'Shop' : 'AEM' ?>"
+                                    data-subsidiary-id="<?= esc($prop['subsidiary_id'] ?? '') ?>"
                                     <?= old('property_id', $requests['property_id'] ?? ($extracted_data['property_id'] ?? '')) == $prop['id'] ? 'selected' : '' ?>>
                                     <?= esc($prop['name']) ?>
                                 </option>
@@ -735,6 +736,7 @@ Tag Request: Create
                     $searchField.val(parts.join('-')).trigger('input');
                 }
             }
+            updateRelatedTags();
         });
 
         var tempSearchValue = '';
@@ -752,6 +754,24 @@ Tag Request: Create
         });
 
         var allExistingTags = <?= json_encode($allTags) ?>;
+
+        window.copyTagText = function(text, el) {
+            const temp = document.createElement('textarea');
+            temp.value = text;
+            temp.style.position = 'fixed';
+            temp.style.left = '-9999px';
+            document.body.appendChild(temp);
+            temp.focus();
+            temp.select();
+            document.execCommand('copy');
+            document.body.removeChild(temp);
+
+            const originalClass = el.className;
+            el.className = 'bi bi-check text-success';
+            setTimeout(() => {
+                el.className = originalClass;
+            }, 1200);
+        };
 
         function updateRelatedTags() {
             var selectedTags = $('select[name="tags[]"]').val() || [];
@@ -780,13 +800,18 @@ Tag Request: Create
                 });
             }
             
+            var selectedPropertyOption = $('select[name="property_id"] option:selected');
+            var selectedSubsidiaryId = selectedPropertyOption.data('subsidiary-id') || '';
+            
             var relatedTags = [];
             vendors.forEach(function(vendor) {
                 var vendorLower = vendor.toLowerCase();
                 allExistingTags.forEach(function(existingTag) {
                     var existingLower = (existingTag.tag_name || '').toLowerCase();
                     if (existingLower.includes('(' + vendorLower)) {
-                        relatedTags.push(existingTag);
+                        if (!selectedSubsidiaryId || existingTag.subsidiary_id == selectedSubsidiaryId) {
+                            relatedTags.push(existingTag);
+                        }
                     }
                 });
             });
@@ -809,7 +834,10 @@ Tag Request: Create
                     html += '<div class="fw-bold text-dark small mb-1"><i class="bi bi-building me-1 text-muted"></i>' + prop + '</div>';
                     html += '<div class="ms-2">';
                     Array.from(groupedTags[prop]).forEach(function(t) {
-                        html += '<div class="badge bg-secondary me-1 mb-1" style="font-weight: 500; font-size: 0.8rem; user-select: text; cursor: text;">' + t + '</div>';
+                        html += '<div class="badge bg-secondary me-1 mb-1 d-inline-flex align-items-center gap-1" style="font-weight: 500; font-size: 0.8rem; user-select: text; max-width: 100%;">';
+                        html += '<i class="bi bi-copy text-light-50 cursor-pointer flex-shrink-0" style="cursor: pointer; font-size: 0.75rem;" onclick="copyTagText(\'' + t.replace(/'/g, "\\'") + '\', this)" title="Copy Tag"></i>';
+                        html += '<span class="text-truncate" style="min-width: 0;" title="' + t.replace(/"/g, '&quot;') + '">' + t + '</span>';
+                        html += '</div>';
                     });
                     html += '</div></div>';
                 });
