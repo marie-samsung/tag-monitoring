@@ -699,9 +699,9 @@ foreach ($roles as $r) {
         </div>
 
         <!-- API Logs Pagination -->
-        <?php if (isset($apiLogsPager)): ?>
-            <div class="d-flex justify-content-end mt-4">
-                <?= $apiLogsPager->links('apilogs') ?>
+        <?php if (isset($apiLogsPager) && $apiLogsPager->getPageCount('apilogs') > 1): ?>
+            <div class="mt-4 d-flex justify-content-center">
+                <?= $apiLogsPager->links('apilogs', 'apple_full') ?>
             </div>
         <?php endif; ?>
     </div>
