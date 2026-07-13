@@ -707,11 +707,13 @@ class SettingsController extends BaseController
             return $this->response->setJSON(['success' => false, 'message' => 'JIRA Auth Token is not configured.']);
         }
 
-        $endpoint = $log['endpoint_url'];
+        $json = $this->request->getJSON();
+
+        $endpoint = ($json && isset($json->endpoint)) ? $json->endpoint : $log['endpoint_url'];
         if (empty($endpoint)) {
             return $this->response->setJSON(['success' => false, 'message' => 'Endpoint URL is not defined for this log entry.']);
         }
-        $payload = $log['payload'];
+        $payload = ($json && isset($json->payload)) ? $json->payload : $log['payload'];
         $requestType = $log['request_type'];
 
         try {
@@ -788,6 +790,8 @@ class SettingsController extends BaseController
 
             // Update log entry
             $apiLogModel->update($id, [
+                'endpoint_url' => $endpoint,
+                'payload' => ($requestType === 'UPLOAD_ATTACHMENT' && is_array($payload)) ? json_encode(['file_path' => $filePath, 'file_name' => $fileName]) : $payload,
                 'status' => $status,
                 'status_code' => $statusCode,
                 'response_body' => $body,
@@ -804,6 +808,8 @@ class SettingsController extends BaseController
             }
         } catch (\Exception $e) {
             $apiLogModel->update($id, [
+                'endpoint_url' => $endpoint,
+                'payload' => ($requestType === 'UPLOAD_ATTACHMENT' && is_array($payload)) ? json_encode(['file_path' => $filePath ?? '', 'file_name' => $fileName ?? '']) : (is_array($payload) ? json_encode($payload) : $payload),
                 'status' => 'FAILED',
                 'status_code' => 500,
                 'error_message' => $e->getMessage(),

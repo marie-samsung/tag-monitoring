@@ -930,11 +930,12 @@ foreach ($roles as $r) {
             <div class="modal-body p-4">
                 <div class="mb-3">
                     <label class="form-label fw-bold">Endpoint</label>
-                    <input type="text" class="form-control bg-light" id="viewLogEndpoint" readonly>
+                    <input type="text" class="form-control bg-light" id="viewLogEndpoint">
                 </div>
                 <div class="mb-3">
                     <label class="form-label fw-bold">Payload</label>
-                    <pre class="bg-light p-3 rounded text-dark overflow-auto mb-0" style="max-height: 250px; font-family: monospace; font-size: 0.85rem; border: 1px solid rgba(0,0,0,0.05);"><code id="viewLogPayload"></code></pre>
+                    <pre id="viewLogPayloadContainer" class="bg-light p-3 rounded text-dark overflow-auto mb-0" style="max-height: 250px; font-family: monospace; font-size: 0.85rem; border: 1px solid rgba(0,0,0,0.05);"><code id="viewLogPayload"></code></pre>
+                    <textarea id="viewLogPayloadInput" class="form-control font-monospace bg-light" rows="8" style="font-size: 0.85rem; display: none;"></textarea>
                 </div>
                 <div class="mb-3">
                     <label class="form-label fw-bold">Response</label>
@@ -1086,25 +1087,38 @@ foreach ($roles as $r) {
     }
 
     // API Logs Retry
-    function retryApiLog(id) {
+    function retryApiLog(id, endpoint = null, payload = null) {
         if (!confirm('Are you sure you want to retry this JIRA API request?')) {
             return;
         }
         
         // Show loading state
-        const btn = event.currentTarget;
-        const originalHtml = btn.innerHTML;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
-        btn.disabled = true;
+        const btn = window.event ? window.event.currentTarget : null;
+        let originalHtml = '';
+        if (btn) {
+            originalHtml = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+            btn.disabled = true;
+        }
 
-        fetch(`<?= site_url('settings/retry-api-log/') ?>${id}`, {
+        const bodyData = {};
+        if (endpoint !== null) bodyData.endpoint = endpoint;
+        if (payload !== null) bodyData.payload = payload;
+
+        const fetchOptions = {
             method: 'POST',
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
                 'Content-Type': 'application/json',
                 '<?= csrf_token() ?>': '<?= csrf_hash() ?>'
             }
-        })
+        };
+
+        if (Object.keys(bodyData).length > 0) {
+            fetchOptions.body = JSON.stringify(bodyData);
+        }
+
+        fetch(`<?= site_url('settings/retry-api-log/') ?>${id}`, fetchOptions)
         .then(response => response.json())
         .then(data => {
             if (data.success) {
@@ -1116,8 +1130,10 @@ foreach ($roles as $r) {
         })
         .catch(err => {
             alert('An unexpected error occurred while retrying the request.');
-            btn.innerHTML = originalHtml;
-            btn.disabled = false;
+            if (btn) {
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+            }
         });
     }
 
@@ -1137,15 +1153,22 @@ foreach ($roles as $r) {
         currentApiLogId = log.id;
         document.getElementById('viewLogEndpoint').value = log.endpoint_url || '';
         document.getElementById('viewLogPayload').textContent = formatJsonStr(log.payload || '');
+        document.getElementById('viewLogPayloadInput').value = formatJsonStr(log.payload || '');
         document.getElementById('viewLogResponse').textContent = formatJsonStr(log.response_body || '');
         
         let titleHtml = 'API Log Details';
         if (log.status === 'SUCCESS') {
             titleHtml += ' <span class="badge bg-success ms-2 align-middle" style="font-size: 0.8rem;"><i class="bi bi-check-circle me-1"></i>Success</span>';
             document.getElementById('viewLogRetryBtn').style.display = 'none';
+            document.getElementById('viewLogEndpoint').setAttribute('readonly', true);
+            document.getElementById('viewLogPayloadContainer').style.display = 'block';
+            document.getElementById('viewLogPayloadInput').style.display = 'none';
         } else {
             titleHtml += ' <span class="badge bg-danger ms-2 align-middle" style="font-size: 0.8rem;"><i class="bi bi-x-circle me-1"></i>Failed</span>';
             document.getElementById('viewLogRetryBtn').style.display = 'inline-block';
+            document.getElementById('viewLogEndpoint').removeAttribute('readonly');
+            document.getElementById('viewLogPayloadContainer').style.display = 'none';
+            document.getElementById('viewLogPayloadInput').style.display = 'block';
         }
         document.getElementById('viewLogTitle').innerHTML = titleHtml;
         
@@ -1155,12 +1178,15 @@ foreach ($roles as $r) {
 
     function retryApiLogFromModal() {
         if (currentApiLogId) {
+            const endpoint = document.getElementById('viewLogEndpoint').value;
+            const payload = document.getElementById('viewLogPayloadInput').value;
+
             const modalEl = document.getElementById('viewApiLogModal');
             const modal = bootstrap.Modal.getInstance(modalEl);
             if (modal) {
                 modal.hide();
             }
-            retryApiLog(currentApiLogId);
+            retryApiLog(currentApiLogId, endpoint, payload);
         }
     }
 </script>
