@@ -697,6 +697,13 @@ foreach ($roles as $r) {
                 </tbody>
             </table>
         </div>
+
+        <!-- API Logs Pagination -->
+        <?php if (isset($apiLogsPager)): ?>
+            <div class="d-flex justify-content-end mt-4">
+                <?= $apiLogsPager->links('apilogs') ?>
+            </div>
+        <?php endif; ?>
     </div>
 </div>
 </div>
@@ -1000,6 +1007,12 @@ foreach ($roles as $r) {
         let activeTab = '<?= session()->getFlashdata('active_tab') ?? '' ?>';
         if (!activeTab) {
             activeTab = localStorage.getItem('activeSettingsTab') || 'general';
+        }
+        
+        // Force API logs tab if paginating
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('page_apilogs')) {
+            activeTab = 'api-logs';
         }
         if (activeTab && document.getElementById(`tab-${activeTab}`)) {
             switchTab(activeTab);

@@ -57,7 +57,8 @@ class SettingsController extends BaseController
 
         // 5. Fetch API Logs
         $apiLogModel = new \App\Models\JiraApiLogModel();
-        $apiLogs = $apiLogModel->orderBy('id', 'DESC')->findAll(100); // Limit to top 100 for performance
+        $apiLogs = $apiLogModel->orderBy('id', 'DESC')->paginate(20, 'apilogs');
+        $apiLogsPager = $apiLogModel->pager;
 
         return view('settings/index', [
             'users' => $users,
@@ -69,6 +70,7 @@ class SettingsController extends BaseController
             'ci_environment' => self::getCodeIgniterEnvironment(),
             'envVars'        => self::getEnvVariables(),
             'apiLogs'        => $apiLogs,
+            'apiLogsPager'   => $apiLogsPager,
         ]);
     }
 
