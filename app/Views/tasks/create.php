@@ -12,6 +12,16 @@ Task: Create
     use App\Models\Constants;
     $sysSettings = \App\Controllers\SettingsController::getSystemSettings();
     $hideAssigneeSystemWide = $sysSettings['hide_assignee_system_wide'] ?? false;
+
+    $tagsModelInst = new \App\Models\TagsModel();
+    $tagReqModelInst = new \App\Models\TagRequestsModel();
+    $tasksModelInst = new \App\Models\TasksModel();
+
+    $names1 = array_column($tagsModelInst->select('requester_name')->distinct()->where('requester_name !=', '')->where('requester_name IS NOT NULL')->findAll(), 'requester_name');
+    $names2 = array_column($tagReqModelInst->select('requester_name')->distinct()->where('requester_name !=', '')->where('requester_name IS NOT NULL')->findAll(), 'requester_name');
+    $names3 = array_column($tasksModelInst->select('requested_by')->distinct()->where('requested_by !=', '')->where('requested_by IS NOT NULL')->findAll(), 'requested_by');
+    $requesterNamesList = array_unique(array_merge($names1, $names2, $names3));
+    sort($requesterNamesList);
 ?>
 
 <div class="container-fluid px-0">
@@ -109,7 +119,13 @@ Task: Create
                             <label for="requested_by" class="form-label-sm fw-semibold text-secondary mb-1">Requested By</label>
                             <input type="text" name="requested_by" id="requested_by"
                                 class="form-control form-control-xs"
+                                list="requested-by-list"
                                 value="<?= old('requested_by', $log['requested_by'] ?? '') ?>">
+                            <datalist id="requested-by-list">
+                                <?php foreach ($requesterNamesList as $name): ?>
+                                    <option value="<?= esc($name) ?>"></option>
+                                <?php endforeach; ?>
+                            </datalist>
                         </div>
 
                         <!-- Requested Date -->

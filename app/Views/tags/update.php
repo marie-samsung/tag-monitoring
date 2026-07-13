@@ -38,6 +38,21 @@
 
     $tagsModel = new TagsModel();
     $conditionsList = array_column($tagsModel->select('conditions')->distinct()->where('conditions !=', '')->where('conditions IS NOT NULL')->orderBy('conditions', 'ASC')->findAll(), 'conditions');
+
+    $tagsModelInst = new \App\Models\TagsModel();
+    $tagReqModelInst = new \App\Models\TagRequestsModel();
+    $tasksModelInst = new \App\Models\TasksModel();
+
+    $names1 = array_column($tagsModelInst->select('requester_name')->distinct()->where('requester_name !=', '')->where('requester_name IS NOT NULL')->findAll(), 'requester_name');
+    $names2 = array_column($tagReqModelInst->select('requester_name')->distinct()->where('requester_name !=', '')->where('requester_name IS NOT NULL')->findAll(), 'requester_name');
+    $names3 = array_column($tasksModelInst->select('requested_by')->distinct()->where('requested_by !=', '')->where('requested_by IS NOT NULL')->findAll(), 'requested_by');
+    $requesterNamesList = array_unique(array_merge($names1, $names2, $names3));
+    sort($requesterNamesList);
+
+    $emails1 = array_column($tagsModelInst->select('requester_email')->distinct()->where('requester_email !=', '')->where('requester_email IS NOT NULL')->findAll(), 'requester_email');
+    $emails2 = array_column($tagReqModelInst->select('requester_email')->distinct()->where('requester_email !=', '')->where('requester_email IS NOT NULL')->findAll(), 'requester_email');
+    $requesterEmailsList = array_unique(array_merge($emails1, $emails2));
+    sort($requesterEmailsList);
     ?>
 
     <?php if (isset($validation)): ?>
@@ -180,8 +195,14 @@
                                 for="requester_name">Name</label>
                             <input type="text" name="requester_name" id="requester_name"
                                 class="form-control form-control-xs"
+                                list="requester-name-list"
                                 value="<?= esc(old('requester_name', $tag['requester_name'] ?? '')) ?>"
                                 placeholder="Requester Name">
+                            <datalist id="requester-name-list">
+                                <?php foreach ($requesterNamesList as $name): ?>
+                                    <option value="<?= esc($name) ?>"></option>
+                                <?php endforeach; ?>
+                            </datalist>
                         </div>
 
                         <!-- Email Address -->
@@ -190,8 +211,14 @@
                                 Address</label>
                             <input type="email" name="requester_email" id="requester_email"
                                 class="form-control form-control-xs"
+                                list="requester-email-list"
                                 value="<?= esc(old('requester_email', $tag['requester_email'] ?? '')) ?>"
                                 placeholder="email@example.com">
+                            <datalist id="requester-email-list">
+                                <?php foreach ($requesterEmailsList as $email): ?>
+                                    <option value="<?= esc($email) ?>"></option>
+                                <?php endforeach; ?>
+                            </datalist>
                         </div>
                     </div>
                 </div>
