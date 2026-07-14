@@ -122,6 +122,7 @@ class TagsModel extends Model
 
             if ($hasActiveFilters)
                 $this->orderBy('properties.id', 'ASC');
+
         } else {
             if (!empty($filters['is_repository'])) {
                 $this->orderBy('properties.subsidiary_id', 'ASC');

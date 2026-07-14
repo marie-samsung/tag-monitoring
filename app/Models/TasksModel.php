@@ -428,7 +428,7 @@ class TasksModel extends Model
         $userId = session()->get('user_id');
         if ($userId !== null) {
             $userRole = Constants::USER_ACCESS_LEVELS[$userId] ?? null;
-            if ($userRole !== Constants::USER_ROLE_ADMIN) {
+            if (($userRole !== Constants::USER_ROLE_ADMIN && $userRole !== Constants::USER_ROLE_MEDIA_TAGGING)) {
                 $userTeam = Constants::USER_TEAMS[$userId] ?? null;
                 if ($userTeam !== null) {
                     $this->where('team_id', $userTeam);
