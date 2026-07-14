@@ -52,6 +52,7 @@ class TasksModel extends Model
                  ->like('title', $filters['keyword'])
                  ->orLike('description', $filters['keyword'])
                  ->orLike('ticket_id', $filters['keyword'])
+                 ->orLike('mt_jira_ticket', $filters['keyword'])
                  ->groupEnd();
         }
 

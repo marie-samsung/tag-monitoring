@@ -132,10 +132,10 @@ class TagsModel extends Model
                 $this->orderBy(
                     '(CASE 
                         WHEN tags.al_end_date < CURDATE() AND tags.status = 1 THEN 0
-                        WHEN tags.al_end_date <= DATE_ADD(CURDATE(), INTERVAL 16 DAY) AND tags.status = 5 THEN 1
-                        WHEN tags.al_end_date <= DATE_ADD(CURDATE(), INTERVAL 16 DAY) AND tags.status = 9 THEN 2
-                        WHEN tags.al_end_date <= DATE_ADD(CURDATE(), INTERVAL 9 DAY) AND tags.status = 1 THEN 3
-                        WHEN tags.al_end_date <= DATE_ADD(CURDATE(), INTERVAL 16 DAY) AND tags.status = 4 THEN 4
+                        WHEN tags.al_end_date <= DATE_ADD(CURDATE(), INTERVAL 16 DAY) AND tags.status = 5 THEN 1 /** Updated in AL */
+                        WHEN tags.al_end_date <= DATE_ADD(CURDATE(), INTERVAL 16 DAY) AND tags.status = 9 THEN 2 /** On Hold */
+                        WHEN tags.al_end_date <= DATE_ADD(CURDATE(), INTERVAL 9 DAY) AND tags.status = 1 THEN 3 /** Enabled */
+                        WHEN tags.al_end_date <= DATE_ADD(CURDATE(), INTERVAL 16 DAY) AND tags.status = 4 THEN 4 /** Pending Verification */
                         WHEN tags.al_end_date <= DATE_ADD(CURDATE(), INTERVAL 16 DAY) AND tags.status = 1 THEN 5
                         WHEN tags.status = 4 THEN 6
                         WHEN tags.status = 1 THEN 7
