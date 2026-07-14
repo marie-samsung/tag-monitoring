@@ -807,10 +807,7 @@ $hasActiveFilters = ($activeFiltersCount > 0) || !empty($_GET['keyword']);
                     if (!empty($tags)) {
                         $tagIds = array_column($tags, 'id');
                         
-                        $tickets = $jiraHistoryModel->getBatchRelatedTickets($tagIds, [
-                            Constants::JIRA_TYPE_DATE_EXTENSION_RULE,
-                            Constants::JIRA_TYPE_UPDATE_RULE
-                        ]);
+                        $tickets = $jiraHistoryModel->getBatchRelatedTickets($tagIds, array_keys(Constants::JIRA_TICKET_TYPES));
                         
                         $tempTicketMap = [];
                         foreach ($tickets as $t) {
@@ -822,23 +819,15 @@ $hasActiveFilters = ($activeFiltersCount > 0) || !empty($_GET['keyword']);
                             $tTags = array_unique($tTags);
                             
                             foreach ($tTags as $id) {
-                                if (!isset($tempTicketMap[$id])) {
-                                    $tempTicketMap[$id] = ['DATE_EXT' => null, 'UPDATE' => null];
-                                }
-                                if ($t['type'] == Constants::JIRA_TYPE_DATE_EXTENSION_RULE) {
-                                    $tempTicketMap[$id]['DATE_EXT'] = $t['ticket_id'];
-                                } else if ($t['type'] == Constants::JIRA_TYPE_UPDATE_RULE) {
-                                    $tempTicketMap[$id]['UPDATE'] = $t['ticket_id'];
-                                }
+                                // Since getBatchRelatedTickets returns results ordered by created_at ASC,
+                                // the last (most recent) ticket ID will naturally overwrite earlier ones.
+                                $tempTicketMap[$id] = $t['ticket_id'];
                             }
                         }
                         
                         $ticketIdsToFetch = [];
                         foreach ($tagIds as $id) {
-                            $tid = null;
-                            if (isset($tempTicketMap[$id])) {
-                                $tid = $tempTicketMap[$id]['DATE_EXT'] ?? $tempTicketMap[$id]['UPDATE'];
-                            }
+                            $tid = $tempTicketMap[$id] ?? null;
                             $ticketMap[$id] = $tid;
                             if ($tid) {
                                 $ticketIdsToFetch[] = $tid;
