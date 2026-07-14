@@ -395,7 +395,7 @@ class TagsController extends BaseController
         $jiraModel = new JiraHistoryModel();
         $activityLogModel = new TasksModel();
         $commentsModel = new TaskCommentsModel();
-        $requestedDate = $tag['requested_date'];
+        $requestedDate = $tag['requested_date'] ?? $tag['al_end_date'];
 
         if (!$tag) {
             return redirect()
