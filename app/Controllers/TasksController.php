@@ -363,8 +363,18 @@ class TasksController extends BaseController
             $task = $tasksModel->find($post['log_id']);
             if ($task && !empty($task['mt_jira_ticket'])) {
                 $commenterName = Constants::USERS[$post['commented_by']] ?? Constants::USER_SYSTEM_LABEL;
-                $jiraCommentText = $commenterName . " commented:\n" . $this->formatHtmlForJira($cleanComment);
+
+                $extractedImages = [];
+                $jiraCommentText = $commenterName . " commented:\n" . $this->formatHtmlForJira($cleanComment, $extractedImages);
+
                 $this->addCommentToJira($task['id'], $task['mt_jira_ticket'], $jiraCommentText);
+
+                if (!empty($extractedImages)) {
+                    foreach ($extractedImages as $img) {
+                        $this->uploadAttachmentToJira($task['id'], $task['mt_jira_ticket'], $img['path'], $img['name']);
+                        @unlink($img['path']); // clean up temp file
+                    }
+                }
             }
         }
 
@@ -1299,6 +1309,10 @@ class TasksController extends BaseController
                 $model->update($id, [
                     'project' => $project,
                 ]);
+
+                // Sync the updated project to JIRA
+                $this->updateJiraIssueFromTask($id);
+
                 $updatedCount++;
             }
         }
@@ -1419,8 +1433,8 @@ class TasksController extends BaseController
 
         $projectCommentsModel = new ProjectCommentsModel();
         $counts = $projectCommentsModel->select('project_name, COUNT(*) as count')
-                                       ->groupBy('project_name')
-                                       ->findAll();
+            ->groupBy('project_name')
+            ->findAll();
         $projectCommentCounts = [];
         foreach ($counts as $row) {
             $pName = !empty($row['project_name']) ? $row['project_name'] : 'Generic';
@@ -1583,8 +1597,8 @@ class TasksController extends BaseController
 
         $db = \Config\Database::connect();
         $db->table('project_comments')
-           ->where('id', $id)
-           ->update(['deleted_at' => null]);
+            ->where('id', $id)
+            ->update(['deleted_at' => null]);
 
         return $this->response->setJSON([
             'success' => true,
@@ -1908,11 +1922,11 @@ class TasksController extends BaseController
 
                     // Check if the current status requires transitioning the JIRA ticket from To Do
                     $currentStatus = $log['status'];
-                    $mappedJiraStatus = \App\Models\JiraMapping::STATUS_MAPPING[(int) $currentStatus] ?? null;
+                    $mappedJiraStatus = JiraMapping::STATUS_MAPPING[(int) $currentStatus] ?? null;
 
-                    if ($mappedJiraStatus && $mappedJiraStatus !== \App\Models\JiraMapping::JIRA_STATUS_TODO) {
-                        $oldJiraStatus = \App\Models\JiraMapping::JIRA_STATUS_TODO;
-                        $transitionId = \App\Models\JiraMapping::TRANSITIONS[$oldJiraStatus][$mappedJiraStatus] ?? null;
+                    if ($mappedJiraStatus && $mappedJiraStatus !== JiraMapping::JIRA_STATUS_TODO) {
+                        $oldJiraStatus = JiraMapping::JIRA_STATUS_TODO;
+                        $transitionId = JiraMapping::TRANSITIONS[$oldJiraStatus][$mappedJiraStatus] ?? null;
 
                         if ($transitionId) {
                             $jiraEndpointUpdate = getenv('MT_JIRA_UPDATE_STATUS');

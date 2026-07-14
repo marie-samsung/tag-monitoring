@@ -14,7 +14,7 @@ Tag Request: Create
     use App\Models\TasksModel;
 
     $propertiesModel = new PropertiesModel();
-    $propertiesList = $propertiesModel->select('id, name, is_shop')->findAll();
+    $propertiesList = $propertiesModel->select('id, name, is_shop, subsidiary_id')->findAll();
     $property = isset($property_id) ? $propertiesModel->find($property_id) : null;
 
     $vendorsModel = new VendorsModel();
@@ -26,9 +26,24 @@ Tag Request: Create
     $tasksModel = new TasksModel();
 
     $tagsModel = new \App\Models\TagsModel();
-    $allTags = $tagsModel->select('tags.name as tag_name, properties.name as property_name')
+    $allTags = $tagsModel->select('tags.name as tag_name, properties.name as property_name, properties.subsidiary_id')
                          ->join('properties', 'properties.id = tags.property_id', 'left')
                          ->findAll();
+
+    $tagsModelInst = new \App\Models\TagsModel();
+    $tagReqModelInst = new \App\Models\TagRequestsModel();
+    $tasksModelInst = new \App\Models\TasksModel();
+
+    $names1 = array_column($tagsModelInst->select('requester_name')->distinct()->where('requester_name !=', '')->where('requester_name IS NOT NULL')->findAll(), 'requester_name');
+    $names2 = array_column($tagReqModelInst->select('requester_name')->distinct()->where('requester_name !=', '')->where('requester_name IS NOT NULL')->findAll(), 'requester_name');
+    $names3 = array_column($tasksModelInst->select('requested_by')->distinct()->where('requested_by !=', '')->where('requested_by IS NOT NULL')->findAll(), 'requested_by');
+    $requesterNamesList = array_unique(array_merge($names1, $names2, $names3));
+    sort($requesterNamesList);
+
+    $emails1 = array_column($tagsModelInst->select('requester_email')->distinct()->where('requester_email !=', '')->where('requester_email IS NOT NULL')->findAll(), 'requester_email');
+    $emails2 = array_column($tagReqModelInst->select('requester_email')->distinct()->where('requester_email !=', '')->where('requester_email IS NOT NULL')->findAll(), 'requester_email');
+    $requesterEmailsList = array_unique(array_merge($emails1, $emails2));
+    sort($requesterEmailsList);
 ?>
 
 <?php if (session()->getFlashdata('error')): ?>
@@ -102,6 +117,7 @@ Tag Request: Create
                             <?php foreach ($propertiesList as $prop): ?>
                                 <option value="<?= esc($prop['id']) ?>"
                                     data-is-shop="<?= $prop['is_shop'] == Constants::YES ? 'Shop' : 'AEM' ?>"
+                                    data-subsidiary-id="<?= esc($prop['subsidiary_id'] ?? '') ?>"
                                     <?= old('property_id', $requests['property_id'] ?? ($extracted_data['property_id'] ?? '')) == $prop['id'] ? 'selected' : '' ?>>
                                     <?= esc($prop['name']) ?>
                                 </option>
@@ -160,8 +176,14 @@ Tag Request: Create
                         <label class="form-label-sm fw-semibold text-secondary mb-1" for="requester_name">Name</label>
                         <input type="text" name="requester_name" id="requester_name"
                             class="form-control form-control-xs"
+                            list="requester-name-list"
                             value="<?= old('requester_name', $old['requester_name'] ?? ($extracted_data['requester_name'] ?? '')) ?>"
                             placeholder="Requester Name">
+                        <datalist id="requester-name-list">
+                            <?php foreach ($requesterNamesList as $name): ?>
+                                <option value="<?= esc($name) ?>"></option>
+                            <?php endforeach; ?>
+                        </datalist>
                     </div>
 
                     <!-- Email Address -->
@@ -169,8 +191,14 @@ Tag Request: Create
                         <label class="form-label-sm fw-semibold text-secondary mb-1" for="requester_email">Email Address</label>
                         <input type="email" name="requester_email" id="requester_email"
                             class="form-control form-control-xs"
+                            list="requester-email-list"
                             value="<?= old('requester_email', $old['requester_email'] ?? ($extracted_data['requester_email'] ?? '')) ?>"
                             placeholder="email@example.com">
+                        <datalist id="requester-email-list">
+                            <?php foreach ($requesterEmailsList as $email): ?>
+                                <option value="<?= esc($email) ?>"></option>
+                            <?php endforeach; ?>
+                        </datalist>
                     </div>
                 </div>
             </div>
@@ -735,6 +763,7 @@ Tag Request: Create
                     $searchField.val(parts.join('-')).trigger('input');
                 }
             }
+            updateRelatedTags();
         });
 
         var tempSearchValue = '';
@@ -752,6 +781,24 @@ Tag Request: Create
         });
 
         var allExistingTags = <?= json_encode($allTags) ?>;
+
+        window.copyTagText = function(text, el) {
+            const temp = document.createElement('textarea');
+            temp.value = text;
+            temp.style.position = 'fixed';
+            temp.style.left = '-9999px';
+            document.body.appendChild(temp);
+            temp.focus();
+            temp.select();
+            document.execCommand('copy');
+            document.body.removeChild(temp);
+
+            const originalClass = el.className;
+            el.className = 'bi bi-check text-success';
+            setTimeout(() => {
+                el.className = originalClass;
+            }, 1200);
+        };
 
         function updateRelatedTags() {
             var selectedTags = $('select[name="tags[]"]').val() || [];
@@ -780,15 +827,32 @@ Tag Request: Create
                 });
             }
             
+            var selectedPropertyOption = $('select[name="property_id"] option:selected');
+            var selectedSubsidiaryId = selectedPropertyOption.data('subsidiary-id') || '';
+            
             var relatedTags = [];
             vendors.forEach(function(vendor) {
                 var vendorLower = vendor.toLowerCase();
+                var tempRelated = [];
                 allExistingTags.forEach(function(existingTag) {
                     var existingLower = (existingTag.tag_name || '').toLowerCase();
                     if (existingLower.includes('(' + vendorLower)) {
-                        relatedTags.push(existingTag);
+                        tempRelated.push(existingTag);
                     }
                 });
+
+                if (selectedSubsidiaryId) {
+                    var filtered = tempRelated.filter(function(tag) {
+                        return tag.subsidiary_id == selectedSubsidiaryId;
+                    });
+                    if (filtered.length > 0) {
+                        relatedTags = relatedTags.concat(filtered);
+                    } else {
+                        relatedTags = relatedTags.concat(tempRelated);
+                    }
+                } else {
+                    relatedTags = relatedTags.concat(tempRelated);
+                }
             });
             
             var groupedTags = {};
@@ -809,7 +873,10 @@ Tag Request: Create
                     html += '<div class="fw-bold text-dark small mb-1"><i class="bi bi-building me-1 text-muted"></i>' + prop + '</div>';
                     html += '<div class="ms-2">';
                     Array.from(groupedTags[prop]).forEach(function(t) {
-                        html += '<div class="badge bg-secondary me-1 mb-1" style="font-weight: 500; font-size: 0.8rem; user-select: text; cursor: text;">' + t + '</div>';
+                        html += '<div class="badge bg-secondary me-1 mb-1 d-inline-flex align-items-center gap-1" style="font-weight: 500; font-size: 0.8rem; user-select: text; max-width: 100%;">';
+                        html += '<i class="bi bi-copy text-light-50 cursor-pointer flex-shrink-0" style="cursor: pointer; font-size: 0.75rem;" onclick="copyTagText(\'' + t.replace(/'/g, "\\'") + '\', this)" title="Copy Tag"></i>';
+                        html += '<span class="text-truncate" style="min-width: 0;" title="' + t.replace(/"/g, '&quot;') + '">' + t + '</span>';
+                        html += '</div>';
                     });
                     html += '</div></div>';
                 });

@@ -114,7 +114,7 @@ Tags Renewal: <?= $siteCode ?? null ?>
         <b>3) Expiration Date</b>
         <ul>
             <li><b>as-is :</b> ' . esc($expDate) . '</li>
-            <li><b>to-be :</b> ' . esc($nextExpDate) . '</li>
+            <li><b>to-be :</b> <span id="to-be-date-display">' . esc($nextExpDate) . '</span></li>
         </ul>';
     // Purpose & Goal + Table
     $detailsHtml .= '
@@ -303,7 +303,7 @@ Tags Renewal: <?= $siteCode ?? null ?>
                                 <?php endforeach; ?>
 
                                 <input type="hidden" name="info[ticket_id]" id="info_ticket_id" value="<?= $ticket_id ?>">
-                                <input type="hidden" name="info[al_end_date]" value="<?= $nextExpDate ?>">
+                                <input type="hidden" name="info[al_end_date]" id="info_al_end_date" value="<?= $nextExpDate ?>">
                                 <input type="hidden" name="info[library_name]" class="library-name-input" value="<?= $libraryName ?>">
                             </tbody>
                         </table>
@@ -445,7 +445,12 @@ Tags Renewal: <?= $siteCode ?? null ?>
             dateFormat: "Y-m-d 00:00",
             altInput: true,
             altFormat: "Y-m-d 00:00",
-            allowInput: true
+            allowInput: true,
+            onChange: function(selectedDates, dateStr, instance) {
+                if (selectedDates[0]) {
+                    updateTicketDescriptionDate(selectedDates[0]);
+                }
+            }
         });
         $('#details').summernote({
             height: 360,
@@ -749,10 +754,32 @@ Tags Renewal: <?= $siteCode ?? null ?>
             if (selectedDate) {
                 $('.next-end-date-input').each(function() {
                     if (this._flatpickr && this !== inputEl) {
-                        this._flatpickr.setDate(selectedDate);
+                        this._flatpickr.setDate(selectedDate, true);
                     }
                 });
             }
+        }
+    }
+
+    function updateTicketDescriptionDate(date) {
+        if (!date) return;
+
+        // Format date to DD-MM-YYYY
+        let day = String(date.getDate()).padStart(2, '0');
+        let month = String(date.getMonth() + 1).padStart(2, '0');
+        let year = date.getFullYear();
+        let formattedDate = `${day}-${month}-${year}`;
+
+        // Update hidden form input
+        $('#info_al_end_date').val(formattedDate);
+
+        // Update the value inside Summernote
+        var currentHtml = $('#details').summernote('code');
+        var $temp = $('<div>').html(currentHtml);
+        var $dateSpan = $temp.find('#to-be-date-display');
+        if ($dateSpan.length > 0) {
+            $dateSpan.text(formattedDate);
+            $('#details').summernote('code', $temp.html());
         }
     }
 
