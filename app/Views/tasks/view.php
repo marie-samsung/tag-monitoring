@@ -536,7 +536,9 @@ $hideAssigneeSystemWide = $sysSettings['hide_assignee_system_wide'] ?? false;
                                         id="copy-mt-ticket-btn" title="Copy MT JIRA Ticket" style="box-shadow: none;"><i
                                             class="bi bi-copy fs-6" id="copy-mt-ticket-icon"></i></button>
                                 <?php else: ?>
-                                    <span class="text-muted">—</span>
+                                    <button type="button" class="btn btn-sm btn-outline-primary py-0.5 px-2 d-inline-flex align-items-center gap-1" id="btn-create-mt-jira" data-log-id="<?= $log['id'] ?>" style="font-size: 0.72rem; border-radius: 6px; font-weight: 500; min-height: 24px; box-shadow: none;">
+                                        <i class="bi bi-plus-circle"></i> Create MT JIRA Ticket
+                                    </button>
                                 <?php endif; ?>
                             </div>
                         </div>
@@ -1302,6 +1304,74 @@ $hideAssigneeSystemWide = $sysSettings['hide_assignee_system_wide'] ?? false;
                     error: function (xhr, status, error) {
                         row.css('opacity', '1');
                         showToast('error', 'An error occurred while removing the tag.');
+                    }
+                });
+            });
+
+            // Click handler for creating MT JIRA ticket
+            $('#btn-create-mt-jira').on('click', function () {
+                const btn = $(this);
+                const logId = btn.data('log-id');
+                const csrfToken = $('input[name="csrf_test_name"]').val();
+
+                // Disable button and show loading state
+                btn.prop('disabled', true);
+                btn.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Creating...');
+
+                $.ajax({
+                    url: '<?= site_url("tasks/create-jira") ?>/' + logId,
+                    type: 'POST',
+                    data: {
+                        csrf_test_name: csrfToken
+                    },
+                    dataType: 'json',
+                    success: function (response) {
+                        if (response.success) {
+                            showToast('success', response.message);
+                            
+                            // Replace the button with the link and copy button
+                            const parentDiv = btn.parent();
+                            const linkUrl = '<?= Constants::MT_JIRA_LINK ?>' + response.ticket_id;
+                            
+                            parentDiv.html(`
+                                <a href="${linkUrl}" target="_blank" class="apple-link fw-bold" id="mt-ticket-id-link">${response.ticket_id}</a>
+                                <button type="button" class="btn btn-link p-0 text-muted border-0 d-inline-flex align-items-center justify-content-center" id="copy-mt-ticket-btn" title="Copy MT JIRA Ticket" style="box-shadow: none;">
+                                    <i class="bi bi-copy fs-6" id="copy-mt-ticket-icon"></i>
+                                </button>
+                            `);
+
+                            // Re-bind the copy event for the new copy button
+                            $('#copy-mt-ticket-btn').off('click').on('click', function () {
+                                var ticketId = $('#mt-ticket-id-link').text().trim();
+                                var temp = document.createElement('textarea');
+                                document.body.appendChild(temp);
+                                temp.value = ticketId;
+                                temp.select();
+                                document.execCommand('copy');
+                                document.body.removeChild(temp);
+
+                                var icon = $('#copy-mt-ticket-icon');
+                                icon.removeClass('bi-copy').addClass('bi-check-lg text-success');
+                                showToast('success', 'MT JIRA Ticket ID copied to clipboard!');
+                                setTimeout(function () {
+                                    icon.removeClass('bi-check-lg text-success').addClass('bi-copy');
+                                }, 2000);
+                            });
+                        } else {
+                            btn.prop('disabled', false);
+                            btn.html('<i class="bi bi-plus-circle"></i> Create MT JIRA Ticket');
+                            showToast('error', response.message || 'Failed to create MT JIRA Ticket.');
+                        }
+
+                        // Always update CSRF token
+                        if (response.csrf_hash) {
+                            $('input[name="csrf_test_name"]').val(response.csrf_hash);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        btn.prop('disabled', false);
+                        btn.html('<i class="bi bi-plus-circle"></i> Create MT JIRA Ticket');
+                        showToast('error', 'An error occurred while creating the MT JIRA ticket.');
                     }
                 });
             });
