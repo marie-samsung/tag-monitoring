@@ -2370,11 +2370,11 @@ class TasksController extends BaseController
     public function aiReportView()
     {
         $fabrixUrl = getenv('FABRIX_API_URL') ?: 'https://api.placeholder-fabrix.internal';
-        $fabrixKey = getenv('FABRIX_API_KEY');
+        $fabrixToken = getenv('FABRIX_API_TOKEN');
         $fabrixClient = getenv('FABRIX_CLIENT');
 
         $models = [];
-        if (!empty($fabrixKey) && !empty($fabrixClient)) {
+        if (!empty($fabrixToken) && !empty($fabrixClient)) {
             try {
                 $curl = curl_init();
                 curl_setopt_array($curl, [
@@ -2382,12 +2382,17 @@ class TasksController extends BaseController
                     CURLOPT_RETURNTRANSFER => true,
                     CURLOPT_TIMEOUT => 15,
                     CURLOPT_HTTPHEADER => [
-                        'x-openapi-key: ' . $fabrixKey,
+                        'x-openapi-token: Bearer ' . $fabrixToken,
                         'x-fabrix-client: ' . $fabrixClient,
-                        'Accept: application/json'
+                        'Accept: application/json',
+                        'User-Agent: PostmanRuntime/7.32.3',
+                        'Expect:'
                     ],
                 ]);
+
                 $response = curl_exec($curl);
+
+                var_dump($response);
                 $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
                 curl_close($curl);
 
@@ -2474,7 +2479,7 @@ class TasksController extends BaseController
         ];
 
         $fabrixUrl = getenv('FABRIX_API_URL') ?: 'https://api.placeholder-fabrix.internal';
-        $fabrixKey = getenv('FABRIX_API_KEY');
+        $fabrixToken = getenv('FABRIX_API_TOKEN');
         $fabrixClient = getenv('FABRIX_CLIENT');
 
         $prompt = "You are an assistant creating a weekly project report. Here are the tasks completed last week grouped by project. Summarize the progress. For Media Tagging, explain the purpose of the provided tags. Data: " . json_encode($contextData) . "\n\nFormat each task EXACTLY like this:\n[<Subsidiary>] <Vendor/Title of task>\nOverview: <Overview of the task, if media tagging, overview of the Vendor>\nTasks: <The detailed explanation of the task>\nCurrent Status: <Latest update on the task, what date is it started, what date is it requested>\nGo-Live Date: <finished date, or estimate completion time>\n\nPlease output ONLY the formatted tasks.";
@@ -2489,7 +2494,6 @@ class TasksController extends BaseController
                 CURLOPT_POST => true,
                 CURLOPT_TIMEOUT => 45,
                 CURLOPT_POSTFIELDS => json_encode([
-                    'modelId' => (int)$modelId,
                     'messages' => [
                         ['role' => 'system', 'content' => 'You are an assistant creating a weekly project report.'],
                         ['role' => 'user', 'content' => $prompt]
@@ -2497,8 +2501,11 @@ class TasksController extends BaseController
                 ]),
                 CURLOPT_HTTPHEADER => [
                     'Content-Type: application/json',
-                    'x-openapi-key: ' . $fabrixKey,
-                    'x-fabrix-client: ' . $fabrixClient
+                    'x-openapi-token: Bearer ' . $fabrixToken,
+                    'x-fabrix-client: ' . $fabrixClient,
+                    'x-llm-model-id: ' . (int)$modelId,
+                    'User-Agent: PostmanRuntime/7.32.3',
+                    'Expect:'
                 ],
             ]);
             $response = curl_exec($curl);
