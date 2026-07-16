@@ -2455,8 +2455,18 @@ class TasksController extends BaseController
 
         $db = \Config\Database::connect();
         $builder = $db->table('activity_logs');
-        $builder->where('DATE(created_at) >=', $startDate);
-        $builder->where('DATE(created_at) <=', $endDate);
+        $builder->groupStart()
+            ->where('DATE(created_at) >=', $startDate)
+            ->where('DATE(created_at) <=', $endDate)
+            ->orGroupStart()
+                ->where('DATE(updated_at) >=', $startDate)
+                ->where('DATE(updated_at) <=', $endDate)
+            ->groupEnd()
+            ->orGroupStart()
+                ->where('DATE(finished_date) >=', $startDate)
+                ->where('DATE(finished_date) <=', $endDate)
+            ->groupEnd()
+        ->groupEnd();
         if (!empty($projects)) {
             $builder->whereIn('project', $projects);
         }
@@ -2494,10 +2504,10 @@ class TasksController extends BaseController
         $fabrixKey = getenv('FABRIX_API_KEY');
         $fabrixClient = getenv('FABRIX_CLIENT');
 
-        $prompt = "You are an assistant creating a weekly project report. Here are the tasks completed last week grouped by project. Data: " . json_encode($contextData) . "
+        $prompt = "You are an assistant creating a weekly project report. You MUST generate a report summary for EVERY SINGLE TASK provided in the data below, across all projects. Do not skip any tasks. Data: " . json_encode($contextData) . "
 
-Format each task EXACTLY following this structure based on the provided data:
-▣ [<Subsidiary>] <Vendor/Title of task>
+Format EVERY task EXACTLY following this structure based on the provided data:
+▣ [{subsidiary_name}] {title}
     - Purpose: <Explain the purpose of the project in a professional, non-technical manner. DO NOT show any scripts or raw code>
     - Task: <Explain the task in a professional, non-technical manner>
     - Current Status: <Status Name, started on start_date, requested on requested_date>
