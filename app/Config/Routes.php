@@ -94,6 +94,7 @@ $routes->group('tasks', function ($routes) {
     $routes->get('/', 'TasksController::index');
     $routes->get('ai-report', 'TasksController::aiReportView');
     $routes->post('ai-report/generate', 'TasksController::generateAiReport');
+    $routes->post('ai-report/download', 'TasksController::downloadAiReport');
     $routes->get('project/(:any)', 'TasksController::projectView/$1');
     $routes->get('export', 'TasksController::exportAsExcel');
     $routes->get('view/(:num)', 'TasksController::view/$1');

@@ -2474,15 +2474,37 @@ class TasksController extends BaseController
             'week' => $week,
             'start_date' => $startDate,
             'end_date' => $endDate,
-            'tasks' => $tasks,
+            'tasks' => [],
             'tags' => $tagsData
         ];
 
+        foreach ($tasks as $task) {
+            $subId = $task['subsidiary_id'] ?? 0;
+            $subName = \App\Models\Constants::ACTIVITY_LOG_SUBSIDIARIES[$subId] ?? 'Unknown Subsidiary';
+            
+            $statusId = $task['status'] ?? 0;
+            $statusName = \App\Models\Constants::ACTIVITY_LOGS_STATUS[$statusId] ?? 'Unknown Status';
+            
+            $task['subsidiary_name'] = $subName;
+            $task['status_name'] = $statusName;
+            $contextData['tasks'][] = $task;
+        }
+
         $fabrixUrl = getenv('FABRIX_API_URL') ?: 'https://api.placeholder-fabrix.internal';
-        $fabrixToken = getenv('FABRIX_API_TOKEN');
+        $fabrixKey = getenv('FABRIX_API_KEY');
         $fabrixClient = getenv('FABRIX_CLIENT');
 
-        $prompt = "You are an assistant creating a weekly project report. Here are the tasks completed last week grouped by project. Summarize the progress. For Media Tagging, explain the purpose of the provided tags. Data: " . json_encode($contextData) . "\n\nFormat each task EXACTLY like this:\n[<Subsidiary>] <Vendor/Title of task>\nOverview: <Overview of the task, if media tagging, overview of the Vendor>\nTasks: <The detailed explanation of the task>\nCurrent Status: <Latest update on the task, what date is it started, what date is it requested>\nGo-Live Date: <finished date, or estimate completion time>\n\nPlease output ONLY the formatted tasks.";
+        $prompt = "You are an assistant creating a weekly project report. Here are the tasks completed last week grouped by project. Data: " . json_encode($contextData) . "
+
+Format each task EXACTLY following this structure based on the provided data:
+▣ [<Subsidiary>] <Vendor/Title of task>
+    - Purpose: <Explain the purpose of the project in a professional, non-technical manner. DO NOT show any scripts or raw code>
+    - Task: <Explain the task in a professional, non-technical manner>
+    - Current Status: <Status Name, started on start_date, requested on requested_date>
+    - Next Steps: <What is the next logical step based on status>
+    - Go-Live Date: <finished_date or estimate completion time>
+
+Please output ONLY the formatted tasks using this exact structure, separated by empty lines.";
 
         // Attempt API Call
         $aiResponseText = "";
@@ -2528,12 +2550,32 @@ class TasksController extends BaseController
 
         // Mock fallback if empty
         if (empty(trim($aiResponseText)) || strpos($aiResponseText, 'Failed') !== false || strpos($aiResponseText, 'Exception') !== false) {
-            $aiResponseText .= "[Samsung Electronics] Create New Web Portal\n";
-            $aiResponseText .= "Overview: Development of a new corporate portal\n";
-            $aiResponseText .= "Tasks: Developed homepage and integrated Auth API\n";
-            $aiResponseText .= "Current Status: In Progress, started on $startDate, requested on $startDate\n";
-            $aiResponseText .= "Go-Live Date: $endDate\n";
+            $aiResponseText .= "▣ [SGE] Create New Web Portal\n";
+            $aiResponseText .= "    - Purpose: The purpose of this project is to develop a new corporate portal to improve internal communications.\n";
+            $aiResponseText .= "    - Task: Developed homepage and integrated authentication API securely.\n";
+            $aiResponseText .= "    - Current Status: In Progress, started on $startDate, requested on $startDate\n";
+            $aiResponseText .= "    - Next Steps: Submit for QA review\n";
+            $aiResponseText .= "    - Go-Live Date: $endDate\n\n";
+            $aiResponseText .= "▣ [MENAO] Implement Data Tracking\n";
+            $aiResponseText .= "    - Purpose: Track user behavior across the new portal to gain valuable analytics insights.\n";
+            $aiResponseText .= "    - Task: Configured analytics tags to capture page views.\n";
+            $aiResponseText .= "    - Current Status: Completed\n";
+            $aiResponseText .= "    - Next Steps: Monitor data flow in the analytics dashboard\n";
+            $aiResponseText .= "    - Go-Live Date: $endDate\n";
         }
+
+        return view('tasks/ai_report_result', [
+            'reportText' => $aiResponseText,
+            'week' => $week
+        ]);
+    }
+
+    public function downloadAiReport()
+    {
+        $post = $this->request->getPost();
+        $aiResponseText = $post['reportText'] ?? '';
+        $week = $post['week'] ?? 'Unknown';
+        $format = $post['format'] ?? 'word';
 
         if ($format == 'word' && class_exists('\PhpOffice\PhpWord\PhpWord')) {
             $phpWord = new \PhpOffice\PhpWord\PhpWord();
