@@ -161,6 +161,7 @@ class TagsController extends BaseController
             'requester_name' => $reqName,
             'requester_email' => $reqEmail,
             'requester_organization' => $organizationId,
+            'requested_date' => !empty($post['requested_date']) ? $post['requested_date'] : null,
         ];
 
         $model->insert($insertTagData);
@@ -302,6 +303,7 @@ class TagsController extends BaseController
             'requester_name' => $post['requester_name'],
             'requester_email' => $post['requester_email'],
             'requester_organization' => $organizationId,
+            'requested_date' => !empty($post['requested_date']) ? $post['requested_date'] : null,
         ];
 
         $model->update($id, $updateData);
