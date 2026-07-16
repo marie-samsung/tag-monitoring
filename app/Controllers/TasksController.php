@@ -2391,8 +2391,6 @@ class TasksController extends BaseController
                 ]);
 
                 $response = curl_exec($curl);
-
-                var_dump($response);
                 $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
                 curl_close($curl);
 
@@ -2501,7 +2499,7 @@ class TasksController extends BaseController
         }
 
         $fabrixUrl = getenv('FABRIX_API_URL') ?: 'https://api.placeholder-fabrix.internal';
-        $fabrixKey = getenv('FABRIX_API_KEY');
+        $fabrixToken = getenv('FABRIX_API_TOKEN');
         $fabrixClient = getenv('FABRIX_CLIENT');
 
         $prompt = "You are an assistant creating a weekly project report. You MUST generate a report summary for EVERY SINGLE TASK provided in the data below, across all projects. Do not skip any tasks. Data: " . json_encode($contextData) . "
