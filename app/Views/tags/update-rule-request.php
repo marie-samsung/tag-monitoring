@@ -260,8 +260,7 @@
                 $count = 0; 
                 $nextExpDate = '';
                 if ($tags) {
-                    $expDate = date('d-m-Y', strtotime($tags[0]['al_end_date'] ?? ''));
-                    $nextExpDate = date('d-m-Y', strtotime('+61 days', strtotime($expDate)));
+                    $expDate = $nextExpDate = date('d-m-Y', strtotime($tags[0]['al_end_date'] ?? ''));
                 }
             ?>
             <div class="d-flex flex-column flex-grow-1">
