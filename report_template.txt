@@ -1,0 +1,55 @@
+▣ [SESAR] New Implementation of Amazon Demand-Side Platform Tag
+	- Purpose: The purpose of this project is to implement a new Amazon DSP tag which will build a bridge between the shoppers browsing your CoA/CoC lines and Amazon's programmatic advertising ecosystem. This enables us to target users based on what they are actively looking to buy. (CoA = Company of Apple, CoC = Company of China (All Chinese phone users))
+	- Task: Implement new tags on AEM and Shop sections
+		○ AEM: Main, Page View, and Add To Cart
+		○ Shop: Checkout, and Order Confirmation
+	- Current Status:
+		○ Dentsu team initiated the request, it is now pending approval from Samsung POC
+	- Next Steps:
+		○ Submit New Tag Request to HQ / CNX
+	- Go-Live Date:
+		○ 24 July 2026
+
+▣ [MENA] Project CEJ : Auto Voucher Delivery & Checkout Auto-Fill
+	- Purpose: The purpose of this project is to eliminate the manual method of copying and pasting voucher codes from a messaging platform to S.com, by implementing this, the system auto-applies the discount instantly when the Cart page is opened.
+	- Expected Benefits:
+		○ Seamless redemption - eliminates manual copy-paste, speeding up purchase
+		○ Error reduction - removes typo-related checkout failures
+		○ Higher conversion - smoother experience encourages completing of Samsung product purchases
+		○ Enhanced Journey - directs users from WhatsApp/Email straight to a ready-to-checkout page
+	- Task: Implement and deploy the SVoucher tag on all markets
+	- Current Status:
+		○ Completed (Published Live):
+			§ SGE AR
+			§ SGE
+			§ SESAR
+			§ SESAR EN
+			§ SETK
+			§ SEIL
+		○ Approved for Implementation:
+			§ SEMAG
+			§ SEPAK
+			§ SEEG
+		○ Pending for Submission:
+			§ SELV
+	- Next Steps:
+		○ Submit New Tag Request  for SELV to HQ/CNX
+		○ Submit New Rule Request for SEMAG, SEPAK, & SEEG to HQ/CNX
+	- Go-Live Date:
+        ○ 9 July 2026
+
+W23
+▣ [SETK] New Implementation of Firework Tag
+	- Purpose: The purpose of this project is to implement a new Firework tag related to Purchase Tracking. The goal of this is to achieve 100% purchase tracking across all participating local markets. This addition is recommended by Suwon office which will allow markets to have greater control and visibility over sales data generated through S.com
+	- Task: Implement new tags on AEM and Shop sections
+		○ Main / Page View tag
+		○ Order Confirmation tag
+	- Current Status:
+		○ Completed: Submitted New Tag Request for HQ Review
+		○ Pending: Waiting for HQ Review
+	- Next Steps:
+		○ Submit New Implementation Request
+		○ Request for data collection verification from SETK team
+	- Go-Live Date:
+        ○ 24 June 2026
+
