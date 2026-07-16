@@ -498,7 +498,7 @@ class TagsController extends BaseController
                 }
             }
 
-            $requestedDate = $tag['requested_date'];
+            $requestedDate = $tag['requested_date'] ?? $tag['al_end_date'];
 
             if ($hasTicketId) {
                 $activityLog = $activityLogModel->where('ticket_id', $jiraTicket[0]['ticket_id'])->first();
