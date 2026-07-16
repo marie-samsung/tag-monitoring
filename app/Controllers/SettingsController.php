@@ -337,6 +337,75 @@ class SettingsController extends BaseController
     }
 
     /**
+     * Helper to split INSERT INTO values safely.
+     */
+    private function splitInsertValues($valuesString)
+    {
+        $rows = [];
+        $currentRow = '';
+        $inQuote = false;
+        $quoteChar = '';
+        $escaped = false;
+        $depth = 0;
+        $length = strlen($valuesString);
+        
+        for ($i = 0; $i < $length; $i++) {
+            $char = $valuesString[$i];
+            
+            if ($escaped) {
+                $currentRow .= $char;
+                $escaped = false;
+                continue;
+            }
+            
+            if ($char === '\\') {
+                $currentRow .= $char;
+                $escaped = true;
+                continue;
+            }
+            
+            if ($char === "'" || $char === '"' || $char === '`') {
+                if ($inQuote) {
+                    if ($char === $quoteChar) {
+                        $inQuote = false;
+                        $quoteChar = '';
+                    }
+                } else {
+                    $inQuote = true;
+                    $quoteChar = $char;
+                }
+            }
+            
+            if (!$inQuote) {
+                if ($char === '(') {
+                    $depth++;
+                }
+                
+                if ($depth > 0) {
+                    $currentRow .= $char;
+                }
+                
+                if ($char === ')') {
+                    $depth--;
+                    if ($depth === 0) {
+                        $trimmed = trim($currentRow);
+                        if (!empty($trimmed)) {
+                            $rows[] = $trimmed;
+                        }
+                        $currentRow = '';
+                    }
+                }
+            } else {
+                if ($depth > 0) {
+                    $currentRow .= $char;
+                }
+            }
+        }
+        
+        return $rows;
+    }
+
+    /**
      * Restore the database from a backup file.
      */
     public function restoreBackup($filename)
@@ -348,44 +417,116 @@ class SettingsController extends BaseController
             return redirect()->to(site_url('settings'))->with('error', 'Backup file not found.');
         }
 
-        $sql = file_get_contents($filePath);
-        if (empty($sql)) {
-            return redirect()->to(site_url('settings'))->with('error', 'Backup file is empty.');
-        }
-
         $db = \Config\Database::connect();
 
-        // Restore using native mysqli multi-query for full SQL transaction parsing
-        if ($db->connID instanceof \mysqli) {
-            $db->connID->query("SET FOREIGN_KEY_CHECKS=0");
-            
-            if ($db->connID->multi_query($sql)) {
-                do {
-                    // Flush and free all results to proceed to next query
-                    if ($result = $db->connID->store_result()) {
-                        $result->free();
-                    }
-                } while ($db->connID->more_results() && $db->connID->next_result());
-            }
+        $db->query("SET FOREIGN_KEY_CHECKS=0");
 
-            $db->connID->query("SET FOREIGN_KEY_CHECKS=1");
+        $handle = fopen($filePath, 'r');
+        if (!$handle) {
+            return redirect()->to(site_url('settings'))->with('error', 'Failed to open backup file.');
+        }
 
-            if ($db->connID->errno) {
-                return redirect()->to(site_url('settings'))
-                    ->with('error', 'Database restore error: ' . $db->connID->error);
-            }
-        } else {
-            // Fallback for non-mysqli connections: split statements manually
-            // (Note: This is just a fallback, mysqli is the standard DBDriver in this project)
-            $queries = explode(";\n", $sql);
-            $db->query("SET FOREIGN_KEY_CHECKS=0");
-            foreach ($queries as $query) {
-                $query = trim($query);
-                if (!empty($query)) {
-                    $db->query($query);
+        $query = '';
+        $inQuote = false;
+        $quoteChar = '';
+        $escaped = false;
+        $error = null;
+
+        while (($line = fgets($handle)) !== false) {
+            if (!$inQuote) {
+                $trimmedLine = trim($line);
+                if (strpos($trimmedLine, '--') === 0 || strpos($trimmedLine, '#') === 0) {
+                    continue;
                 }
             }
-            $db->query("SET FOREIGN_KEY_CHECKS=1");
+
+            $length = strlen($line);
+            for ($i = 0; $i < $length; $i++) {
+                $char = $line[$i];
+
+                if ($escaped) {
+                    $query .= $char;
+                    $escaped = false;
+                    continue;
+                }
+
+                if ($char === '\\') {
+                    $query .= $char;
+                    $escaped = true;
+                    continue;
+                }
+
+                if ($char === "'" || $char === '"' || $char === '`') {
+                    if ($inQuote) {
+                        if ($char === $quoteChar) {
+                            $inQuote = false;
+                            $quoteChar = '';
+                        }
+                    } else {
+                        $inQuote = true;
+                        $quoteChar = $char;
+                    }
+                }
+
+                $query .= $char;
+
+                if ($char === ';' && !$inQuote) {
+                    $trimmedQuery = trim($query);
+                    if (!empty($trimmedQuery)) {
+                        // Check if this is an INSERT statement that we can chunk to avoid max_allowed_packet
+                        if (preg_match('/^INSERT\s+INTO\s+(.+?)\s+VALUES\s+/is', $trimmedQuery, $matches)) {
+                            $prefix = $matches[0];
+                            $valuesPart = substr($trimmedQuery, strlen($prefix));
+                            $valuesPart = rtrim(trim($valuesPart), ';');
+                            $rows = $this->splitInsertValues($valuesPart);
+                            
+                            if (count($rows) > 100) {
+                                $chunks = array_chunk($rows, 100);
+                                foreach ($chunks as $chunk) {
+                                    $chunkQuery = $prefix . implode(",\n", $chunk);
+                                    try {
+                                        $db->query($chunkQuery);
+                                    } catch (\Exception $e) {
+                                        $error = $e->getMessage();
+                                        break 2;
+                                    }
+                                }
+                            } else {
+                                try {
+                                    $db->query($trimmedQuery);
+                                } catch (\Exception $e) {
+                                    $error = $e->getMessage();
+                                    break 2;
+                                }
+                            }
+                        } else {
+                            try {
+                                $db->query($trimmedQuery);
+                                // Flush results if database connection has mysqli results pending
+                                if ($db->connID instanceof \mysqli) {
+                                    while ($db->connID->more_results() && $db->connID->next_result()) {
+                                        if ($result = $db->connID->store_result()) {
+                                            $result->free();
+                                        }
+                                    }
+                                }
+                            } catch (\Exception $e) {
+                                $error = $e->getMessage();
+                                break 2;
+                            }
+                        }
+                    }
+                    $query = '';
+                }
+            }
+        }
+
+        fclose($handle);
+        $db->query("SET FOREIGN_KEY_CHECKS=1");
+
+        if ($error) {
+            return redirect()->to(site_url('settings'))
+                ->with('error', 'Database restore error: ' . $error);
         }
 
         return redirect()->to(site_url('settings'))->with('success', 'Database restored successfully from "' . esc($filename) . '".');
@@ -419,20 +560,23 @@ class SettingsController extends BaseController
             // 2. Dump all rows
             $rows = $db->table($table)->get()->getResultArray();
             if (!empty($rows)) {
-                $sql .= "INSERT INTO `" . $table . "` VALUES \n";
-                $inserts = [];
-                foreach ($rows as $row) {
-                    $vals = [];
-                    foreach ($row as $field => $val) {
-                        if ($val === null) {
-                            $vals[] = 'NULL';
-                        } else {
-                            $vals[] = "'" . $db->escapeString($val) . "'";
+                $chunks = array_chunk($rows, 100);
+                foreach ($chunks as $chunk) {
+                    $sql .= "INSERT INTO `" . $table . "` VALUES \n";
+                    $inserts = [];
+                    foreach ($chunk as $row) {
+                        $vals = [];
+                        foreach ($row as $field => $val) {
+                            if ($val === null) {
+                                $vals[] = 'NULL';
+                            } else {
+                                $vals[] = "'" . $db->escapeString($val) . "'";
+                            }
                         }
+                        $inserts[] = "(" . implode(', ', $vals) . ")";
                     }
-                    $inserts[] = "(" . implode(', ', $vals) . ")";
+                    $sql .= implode(",\n", $inserts) . ";\n\n";
                 }
-                $sql .= implode(",\n", $inserts) . ";\n\n";
             }
         }
 

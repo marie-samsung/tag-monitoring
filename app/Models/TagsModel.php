@@ -103,10 +103,6 @@ class TagsModel extends Model
             $hasActiveFilters = true;
         }
 
-        if ($hasActiveFilters) {
-            $this->orderBy('properties.name', 'ASC');
-        }
-
         if (!empty($sortBy)) {
             if ($sortBy === 'id') {
                 $this->orderBy('tags.id', $sortDir);
@@ -123,6 +119,10 @@ class TagsModel extends Model
             } elseif ($sortBy === 'updated_at') {
                 $this->orderBy('tags.updated_at', $sortDir);
             }
+
+            if ($hasActiveFilters)
+                $this->orderBy('properties.id', 'ASC');
+
         } else {
             if (!empty($filters['is_repository'])) {
                 $this->orderBy('properties.subsidiary_id', 'ASC');
@@ -133,10 +133,10 @@ class TagsModel extends Model
                 $this->orderBy(
                     '(CASE 
                         WHEN tags.al_end_date < CURDATE() AND tags.status = 1 THEN 0
-                        WHEN tags.al_end_date <= DATE_ADD(CURDATE(), INTERVAL 16 DAY) AND tags.status = 5 THEN 1
-                        WHEN tags.al_end_date <= DATE_ADD(CURDATE(), INTERVAL 16 DAY) AND tags.status = 9 THEN 2
-                        WHEN tags.al_end_date <= DATE_ADD(CURDATE(), INTERVAL 9 DAY) AND tags.status = 1 THEN 3
-                        WHEN tags.al_end_date <= DATE_ADD(CURDATE(), INTERVAL 16 DAY) AND tags.status = 4 THEN 4
+                        WHEN tags.al_end_date <= DATE_ADD(CURDATE(), INTERVAL 16 DAY) AND tags.status = 5 THEN 1 /** Updated in AL */
+                        WHEN tags.al_end_date <= DATE_ADD(CURDATE(), INTERVAL 16 DAY) AND tags.status = 9 THEN 2 /** On Hold */
+                        WHEN tags.al_end_date <= DATE_ADD(CURDATE(), INTERVAL 9 DAY) AND tags.status = 1 THEN 3 /** Enabled */
+                        WHEN tags.al_end_date <= DATE_ADD(CURDATE(), INTERVAL 16 DAY) AND tags.status = 4 THEN 4 /** Pending Verification */
                         WHEN tags.al_end_date <= DATE_ADD(CURDATE(), INTERVAL 16 DAY) AND tags.status = 1 THEN 5
                         WHEN tags.status = 4 THEN 6
                         WHEN tags.status = 1 THEN 7

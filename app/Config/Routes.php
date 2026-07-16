@@ -103,6 +103,7 @@ $routes->group('tasks', function ($routes) {
     $routes->post('update-assignee/(:num)', 'TasksController::updateAssignee/$1');
     $routes->post('update-priority/(:num)', 'TasksController::updatePriority/$1');
     $routes->post('update-ticket-id/(:num)', 'TasksController::updateTicketId/$1');
+    $routes->post('create-jira/(:num)', 'TasksController::createJiraIssue/$1');
     $routes->post('remove-tag/(:num)', 'TasksController::removeTag/$1');
     $routes->post('bulk-status', 'TasksController::bulkStatus');
     $routes->post('bulk-project', 'TasksController::bulkProject');

@@ -202,20 +202,23 @@ class BackupHandler
             // 2. Dump all rows
             $rows = $db->table($table)->get()->getResultArray();
             if (!empty($rows)) {
-                $sql .= "INSERT INTO `" . $table . "` VALUES \n";
-                $inserts = [];
-                foreach ($rows as $row) {
-                    $vals = [];
-                    foreach ($row as $field => $val) {
-                        if ($val === null) {
-                            $vals[] = 'NULL';
-                        } else {
-                            $vals[] = "'" . $db->escapeString($val) . "'";
+                $chunks = array_chunk($rows, 100);
+                foreach ($chunks as $chunk) {
+                    $sql .= "INSERT INTO `" . $table . "` VALUES \n";
+                    $inserts = [];
+                    foreach ($chunk as $row) {
+                        $vals = [];
+                        foreach ($row as $field => $val) {
+                            if ($val === null) {
+                                $vals[] = 'NULL';
+                            } else {
+                                $vals[] = "'" . $db->escapeString($val) . "'";
+                            }
                         }
+                        $inserts[] = "(" . implode(', ', $vals) . ")";
                     }
-                    $inserts[] = "(" . implode(', ', $vals) . ")";
+                    $sql .= implode(",\n", $inserts) . ";\n\n";
                 }
-                $sql .= implode(",\n", $inserts) . ";\n\n";
             }
         }
 

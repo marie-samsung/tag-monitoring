@@ -11,6 +11,7 @@ use App\Models\Constants;
 use App\Models\UsersModel;
 use App\Models\JiraApiLogModel;
 use App\Models\ProjectCommentsModel;
+use App\Models\NotificationsModel;
 use CodeIgniter\Files\Exceptions\FileException;
 
 class TasksController extends BaseController
@@ -159,6 +160,18 @@ class TasksController extends BaseController
 
         if ($insertId) {
             $this->createJiraIssueFromTask($insertId);
+
+            // Send notification to the assignee if they are a valid user
+            if ($assigneeId && array_key_exists((int)$assigneeId, Constants::USERS)) {
+                $notificationsModel = new NotificationsModel();
+                $notificationsModel->insert([
+                    'user_id'   => (int)$assigneeId,
+                    'sender_id' => session()->get('user_id') ?: 0,
+                    'task_id'   => $insertId,
+                    'message'   => "assigned the task '" . $insertData['title'] . "' to you.",
+                    'is_read'   => 0
+                ]);
+            }
         }
 
         $referer = $this->request->getServer('HTTP_REFERER');
@@ -252,6 +265,18 @@ class TasksController extends BaseController
                 'commented_by' => session()->get('user_id'),
                 'type' => Constants::COMMENT_TYPE_UPDATE,
             ]);
+
+            // Send notification to the assignee if they are a valid user
+            if (array_key_exists($assigneeId, Constants::USERS)) {
+                $notificationsModel = new NotificationsModel();
+                $notificationsModel->insert([
+                    'user_id'   => $assigneeId,
+                    'sender_id' => session()->get('user_id') ?: 0,
+                    'task_id'   => $id,
+                    'message'   => "assigned the task '" . $log['title'] . "' to you.",
+                    'is_read'   => 0
+                ]);
+            }
         }
 
         if ((int) $log['priority'] != (int) $post['priority']) {
@@ -942,6 +967,18 @@ class TasksController extends BaseController
 
             $this->updateJiraIssueFromTask($id);
 
+            // Send notification to the assignee if they are a valid user
+            if (array_key_exists($assigneeId, Constants::USERS)) {
+                $notificationsModel = new NotificationsModel();
+                $notificationsModel->insert([
+                    'user_id'   => $assigneeId,
+                    'sender_id' => session()->get('user_id') ?: 0,
+                    'task_id'   => $id,
+                    'message'   => "assigned the task '" . $log['title'] . "' to you.",
+                    'is_read'   => 0
+                ]);
+            }
+
             $insertedComment = $commentsModel->find($insertedId);
             $commentData = [
                 'comment' => $insertedComment['comment'],
@@ -1372,6 +1409,18 @@ class TasksController extends BaseController
                     'assignee' => $assigneeId,
                 ]);
                 $updatedCount++;
+
+                // Send notification to the assignee if they are a valid user
+                if (array_key_exists($assigneeId, Constants::USERS)) {
+                    $notificationsModel = new NotificationsModel();
+                    $notificationsModel->insert([
+                        'user_id'   => $assigneeId,
+                        'sender_id' => session()->get('user_id') ?: 0,
+                        'task_id'   => $id,
+                        'message'   => "assigned the task '" . $log['title'] . "' to you.",
+                        'is_read'   => 0
+                    ]);
+                }
             }
         }
 
@@ -1998,6 +2047,34 @@ class TasksController extends BaseController
         } catch (\Exception $e) {
             return false;
         }
+    }
+
+    public function createJiraIssue($id)
+    {
+        if (!$this->request->isAJAX()) {
+            return redirect()->to('/tasks');
+        }
+
+        $success = $this->createJiraIssueFromTask($id);
+
+        if ($success) {
+            $model = new TasksModel();
+            $log = $model->find($id);
+            $ticketId = $log['mt_jira_ticket'] ?? '';
+
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => 'MT JIRA Ticket created successfully.',
+                'ticket_id' => $ticketId,
+                'csrf_hash' => csrf_hash()
+            ]);
+        }
+
+        return $this->response->setJSON([
+            'success' => false,
+            'message' => 'Failed to create MT JIRA Ticket. Please check API Logs.',
+            'csrf_hash' => csrf_hash()
+        ]);
     }
 
     public function updateJiraIssueFromTask($id)
