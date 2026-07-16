@@ -149,8 +149,19 @@
                             </div>
                         </div>
 
-                        <!-- Launch Link -->
+                        <!-- Requested Date -->
                         <div class="col-md-6">
+                            <label class="form-label-sm fw-semibold text-secondary mb-1" for="requested_date">Requested Date</label>
+                            <div class="position-relative">
+                                <input type="text" name="requested_date" id="requested_date"
+                                    class="form-control form-control-xs pe-5"
+                                    value="<?= !empty($tag['requested_date']) ? date('Y-m-d', strtotime($tag['requested_date'])) : '' ?>">
+                                <i class="bi bi-calendar-event text-muted position-absolute" style="right: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; font-size: 0.875rem;"></i>
+                            </div>
+                        </div>
+
+                        <!-- Launch Link -->
+                        <div class="col-md-12">
                             <label for="ref_link" class="form-label-sm fw-semibold text-secondary mb-1">Launch
                                 Link</label>
                             <input type="text" name="ref_link" id="ref_link" class="form-control form-control-xs"
@@ -207,8 +218,7 @@
 
                         <!-- Email Address -->
                         <div class="col-md-4">
-                            <label class="form-label-sm fw-semibold text-secondary mb-1" for="requester_email">Email
-                                Address</label>
+                            <label class="form-label-sm fw-semibold text-secondary mb-1" for="requester_email">Email Address</label>
                             <input type="email" name="requester_email" id="requester_email"
                                 class="form-control form-control-xs"
                                 list="requester-email-list"
@@ -291,6 +301,12 @@
             dateFormat: "Y-m-d",
             disableMobile: "true",
             defaultDate: "<?= esc(old('al_end_date', date('Y-m-d', strtotime($tag['al_end_date'])))) ?>"
+        });
+        
+        flatpickr("#requested_date", {
+            dateFormat: "Y-m-d",
+            disableMobile: "true",
+            defaultDate: "<?= !empty($tag['requested_date']) ? date('Y-m-d', strtotime($tag['requested_date'])) : '' ?>"
         });
 
         $('.searchable-select').select2({

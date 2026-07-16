@@ -331,6 +331,14 @@
                                 class="form-control form-control-xs"
                                 value="<?= esc($log['ticket_id']) ?>">
                         </div>
+
+                        <!-- MT Jira Ticket -->
+                        <div class="col-12">
+                            <label for="mt_jira_ticket" class="form-label-sm fw-semibold text-secondary mb-1">MT Jira Ticket</label>
+                            <input type="text" name="mt_jira_ticket" id="mt_jira_ticket"
+                                class="form-control form-control-xs"
+                                value="<?= esc($log['mt_jira_ticket'] ?? '') ?>">
+                        </div>
                     </div>
                 </div>
             </div>

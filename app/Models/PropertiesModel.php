@@ -9,7 +9,7 @@ class PropertiesModel extends Model
 {
     protected $table = 'properties';
     protected $primaryKey = 'id';
-    
+
     protected $allowedFields = [
         'name',
         'is_active', // bool
@@ -54,13 +54,15 @@ class PropertiesModel extends Model
     {
         $property = $this->find($propertyId);
         $country = (new CountriesModel())->find($property['country_id']);
-        $language = (new LanguagesModel())->find($property['language_id']);
+        // $language = (new LanguagesModel())->find($property['language_id']);
 
-        if ($country['code'] != $language['name']) {
-            return $country['code'] . '_' . $language['name'];
-        } else {
-            return $country['code'];
-        }
+        // if ($country['code'] != $language['name']) {
+        //     return $country['code'] . '_' . $language['name'];
+        // } else {
+        //     return $country['code'];
+        // }
+
+        return $country['code'];
     }
 
     public function isShop($propertyId)

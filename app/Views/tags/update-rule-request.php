@@ -133,7 +133,7 @@
         <b style='color:#0071E3; font-size:15px; font-family:-apple-system,BlinkMacSystemFont,sans-serif;'>2.2) Reason when the Target Page is for all :</b>
         <p style='font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:14px; color:#1D1D1F; padding-left:12px;'>". $reason ."</p>
 
-        <b style='color:#0071E3; font-size:15px; font-family:-apple-system,BlinkMacSystemFont,sans-serif;'>3) Expiration Date (to-be) : </b><span style='font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:14px; color:#1D1D1F;'>". $expDateStr ."</span> <br/><br/>
+        <b style='color:#0071E3; font-size:15px; font-family:-apple-system,BlinkMacSystemFont,sans-serif;'>3) Expiration Date (to-be) : </b><span id='to-be-date-display' style='font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:14px; color:#1D1D1F;'>". $expDateStr ."</span> <br/><br/>
 
         <b style='color:#0071E3; font-size:15px; font-family:-apple-system,BlinkMacSystemFont,sans-serif;'>4) Status (to-be) :</b>
         <p style='font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:14px; color:#86868B; font-style:italic; padding-left:12px;'>Insert Local Rule Monitoring File screenshots here...</p>
@@ -345,7 +345,7 @@
                                 <?php endforeach; ?>
 
                                 <input type="hidden" name="info[ticket_id]" id="info_ticket_id" value="<?= $ticket_id ?>">
-                                <input type="hidden" name="info[al_end_date]" value="<?= $nextExpDate ?>">
+                                <input type="hidden" name="info[al_end_date]" id="info_al_end_date" value="<?= $nextExpDate ?>">
                                 <input type="hidden" name="info[library_name]" class="library-name-input" value="<?= $libraryName ?>">
                             </tbody>
                         </table>
@@ -396,7 +396,12 @@
             dateFormat: "Y-m-d 00:00",
             altInput: true,
             altFormat: "Y-m-d 00:00",
-            allowInput: true
+            allowInput: true,
+            onChange: function(selectedDates, dateStr, instance) {
+                if (selectedDates[0]) {
+                    updateTicketDescriptionDate(selectedDates[0]);
+                }
+            }
         });
         $('#details').summernote({
             height: 520,
@@ -678,10 +683,32 @@
             if (selectedDate) {
                 $('.next-end-date-input').each(function() {
                     if (this._flatpickr && this !== inputEl) {
-                        this._flatpickr.setDate(selectedDate);
+                        this._flatpickr.setDate(selectedDate, true);
                     }
                 });
             }
+        }
+    }
+
+    function updateTicketDescriptionDate(date) {
+        if (!date) return;
+
+        // Format date to DD-MM-YYYY
+        let day = String(date.getDate()).padStart(2, '0');
+        let month = String(date.getMonth() + 1).padStart(2, '0');
+        let year = date.getFullYear();
+        let formattedDate = `${day}-${month}-${year}`;
+
+        // Update hidden form input
+        $('#info_al_end_date').val(formattedDate);
+
+        // Update the value inside Summernote
+        var currentHtml = $('#details').summernote('code');
+        var $temp = $('<div>').html(currentHtml);
+        var $dateSpan = $temp.find('#to-be-date-display');
+        if ($dateSpan.length > 0) {
+            $dateSpan.text(formattedDate);
+            $('#details').summernote('code', $temp.html());
         }
     }
 

@@ -948,6 +948,13 @@ class SettingsController extends BaseController
             session()->setFlashdata('active_tab', 'api-logs');
 
             if ($status === 'SUCCESS') {
+                if ($requestType === 'CREATE_ISSUE' && !empty($log['task_id'])) {
+                    $decodedBody = json_decode($body, true);
+                    if (is_array($decodedBody) && !empty($decodedBody['key'])) {
+                        $tasksModel = new \App\Models\TasksModel();
+                        $tasksModel->update($log['task_id'], ['mt_jira_ticket' => $decodedBody['key']]);
+                    }
+                }
                 return $this->response->setJSON(['success' => true, 'message' => 'Request retried successfully.']);
             } else {
                 return $this->response->setJSON(['success' => false, 'message' => 'Request failed with status ' . $statusCode]);

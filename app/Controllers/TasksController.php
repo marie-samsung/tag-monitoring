@@ -317,6 +317,7 @@ class TasksController extends BaseController
             'project' => !empty($post['project']) ? trim($post['project']) : 'Generic',
             'type' => (int) $post['type'] ?? null,
             'ticket_id' => !empty($post['ticket_id']) ? $post['ticket_id'] : null,
+            'mt_jira_ticket' => !empty($post['mt_jira_ticket']) ? $post['mt_jira_ticket'] : null,
             'assignee' => $assigneeId,
             'requested_by' => $post['requested_by'] ?? null,
             'status' => (int) $post['status'],
