@@ -1080,4 +1080,75 @@ class TagsController extends BaseController
 
         return $this->response->setJSON(['status' => 'success', 'message' => 'JavaScript code saved successfully.']);
     }
+
+    public function getAiModels()
+    {
+        $apiUrl = env('FABRIX_API_URL') . '/openapi/llm/v1/models';
+        $apiKey = env('FABRIX_API_KEY') ?? '';
+
+        $client = \Config\Services::curlrequest();
+
+        try {
+            $response = $client->request('POST', $apiUrl, [
+                'headers' => [
+                    'Accept' => 'application/json',
+                    'Content-Type' => 'application/json',
+                    'Authorization' => 'Bearer ' . $apiKey
+                ],
+                'http_errors' => false,
+                'json' => []
+            ]);
+
+            $statusCode = $response->getStatusCode();
+            if ($statusCode >= 200 && $statusCode < 300) {
+                return $this->response->setJSON(json_decode($response->getBody(), true));
+            } else {
+                return $this->response->setJSON(['status' => 'error', 'message' => 'API returned ' . $statusCode]);
+            }
+        } catch (\Exception $e) {
+            return $this->response->setJSON(['status' => 'error', 'message' => $e->getMessage()]);
+        }
+    }
+
+    public function chatWithAi()
+    {
+        $apiUrl = env('FABRIX_API_URL') . '/openapi/llm/v1/chat';
+        $apiKey = env('FABRIX_API_KEY') ?? '';
+
+        $post = $this->request->getJSON();
+        $modelId = $post->modelId ?? null;
+        $message = $post->message ?? '';
+        $context = $post->context ?? '';
+
+        if (!$modelId || !$message) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Missing modelId or message']);
+        }
+
+        $client = \Config\Services::curlrequest();
+
+        try {
+            $response = $client->request('POST', $apiUrl, [
+                'headers' => [
+                    'Accept' => 'application/json',
+                    'Content-Type' => 'application/json',
+                    'Authorization' => 'Bearer ' . $apiKey
+                ],
+                'http_errors' => false,
+                'json' => [
+                    'modelId' => $modelId,
+                    'message' => $message,
+                    'context' => $context
+                ]
+            ]);
+
+            $statusCode = $response->getStatusCode();
+            if ($statusCode >= 200 && $statusCode < 300) {
+                return $this->response->setJSON(json_decode($response->getBody(), true));
+            } else {
+                return $this->response->setJSON(['status' => 'error', 'message' => 'API returned ' . $statusCode]);
+            }
+        } catch (\Exception $e) {
+            return $this->response->setJSON(['status' => 'error', 'message' => $e->getMessage()]);
+        }
+    }
 }

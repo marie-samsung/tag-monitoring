@@ -846,7 +846,7 @@
         // Fetch Models
         function fetchModels() {
             modelSelect.innerHTML = '<option value="">Loading models...</option>';
-            fetch('/openapi/llm/v1/models', {
+            fetch('<?= site_url('tags/ai-models') ?>', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -919,8 +919,7 @@
             // Show typing indicator
             const botMsgElem = appendMessage('Thinking...', 'bot');
 
-            // Replace this with the actual endpoint used for chat
-            const chatEndpoint = '/openapi/llm/v1/chat'; 
+            const chatEndpoint = '<?= site_url('tags/ai-chat') ?>'; 
             
             fetch(chatEndpoint, {
                 method: 'POST',
