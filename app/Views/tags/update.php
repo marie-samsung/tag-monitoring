@@ -309,6 +309,11 @@
 .apple-chat-window {
     width: 380px;
     height: 550px;
+    min-width: 320px;
+    min-height: 400px;
+    max-width: 90vw;
+    max-height: 85vh;
+    resize: both;
     background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
@@ -319,7 +324,7 @@
     flex-direction: column;
     overflow: hidden;
     margin-bottom: 16px;
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    transition: opacity 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     transform-origin: bottom right;
     opacity: 0;
     transform: scale(0.95) translateY(10px);
@@ -407,7 +412,38 @@
     border-radius: 18px;
     font-size: 0.95rem;
     line-height: 1.4;
-    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: normal;
+}
+
+.chat-message p {
+    margin-bottom: 0.5rem;
+}
+.chat-message p:last-child {
+    margin-bottom: 0;
+}
+.chat-message pre {
+    background: rgba(0,0,0,0.05);
+    padding: 8px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    overflow-x: auto;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+.chat-message code {
+    font-family: monospace;
+    background: rgba(0,0,0,0.05);
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+.chat-message.user code {
+    background: rgba(255,255,255,0.2);
+}
+.chat-message ul, .chat-message ol {
+    margin-bottom: 0.5rem;
+    padding-left: 1.5rem;
 }
 
 .chat-message.bot {
@@ -578,6 +614,8 @@
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const picker = flatpickr("#al_end_date", {
@@ -996,7 +1034,11 @@
                     reply = data.reply || data.message;
                 }
 
-                botMsgElem.innerText = reply;
+                if (typeof marked !== 'undefined' && typeof DOMPurify !== 'undefined') {
+                    botMsgElem.innerHTML = DOMPurify.sanitize(marked.parse(reply));
+                } else {
+                    botMsgElem.innerText = reply;
+                }
                 
                 if (reasoning && botMsgElem.parentElement.classList.contains('chat-wrapper')) {
                     const infoIcon = document.createElement('i');
