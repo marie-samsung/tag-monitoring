@@ -1086,7 +1086,8 @@ class TagsController extends BaseController
     private function fetchAiModels()
     {
         $apiUrl = env('FABRIX_API_URL') . '/openapi/llm/v1/models';
-        $apiKey = env('FABRIX_API_KEY') ?? '';
+        $apiKey = env('FABRIX_API_TOKEN') ?? '';
+        $fabrixClient = env('FABRIX_CLIENT') ?? '';
 
         $client = \Config\Services::curlrequest();
 
@@ -1095,7 +1096,10 @@ class TagsController extends BaseController
                 'headers' => [
                     'Accept' => 'application/json',
                     'Content-Type' => 'application/json',
-                    'Authorization' => 'Bearer ' . $apiKey
+                    'x-fabrix-client' => $fabrixClient,
+                    'x-openapi-token' => 'Bearer ' . $apiKey,
+                    'User-Agent' => 'PostmanRuntime/7.54.0',
+                    'Expect' => '',
                 ],
                 'http_errors' => false
             ]);
@@ -1116,8 +1120,9 @@ class TagsController extends BaseController
 
     public function chatWithAi()
     {
-        $apiUrl = env('FABRIX_API_URL') . '/openapi/llm/v1/chat';
-        $apiKey = env('FABRIX_API_KEY') ?? '';
+        $apiUrl = env('FABRIX_API_URL') . '/openapi/llm/chat/completions';
+        $apiKey = env('FABRIX_API_TOKEN') ?? '';
+        $fabrixClient = env('FABRIX_CLIENT') ?? '';
 
         $post = $this->request->getJSON();
         $modelId = $post->modelId ?? null;
@@ -1135,13 +1140,15 @@ class TagsController extends BaseController
                 'headers' => [
                     'Accept' => 'application/json',
                     'Content-Type' => 'application/json',
-                    'Authorization' => 'Bearer ' . $apiKey
+                    'x-fabrix-client' => $fabrixClient,
+                    'x-openapi-token' => 'Bearer ' . $apiKey,
+                    'x-llm-model-id' => $modelId,
+                    'User-Agent' => 'PostmanRuntime/7.54.0',
+                    'Expect' => '',
                 ],
                 'http_errors' => false,
                 'json' => [
-                    'modelId' => $modelId,
-                    'message' => $message,
-                    'context' => $context
+                    "messages" => $message
                 ]
             ]);
 
