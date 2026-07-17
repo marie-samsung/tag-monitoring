@@ -341,6 +341,43 @@
     align-items: center;
 }
 
+.apple-model-select {
+    display: none; /* Select2 will replace this */
+}
+
+.apple-chat-header .select2-container--default .select2-selection--single {
+    border-radius: 12px;
+    border: 1px solid rgba(0,0,0,0.1);
+    background: rgba(255,255,255,0.8);
+    height: 36px;
+    display: flex;
+    align-items: center;
+}
+
+.apple-chat-header .select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: #1d1d1f;
+    font-size: 0.85rem;
+    font-weight: 500;
+    line-height: 36px;
+    padding-left: 12px;
+}
+
+.apple-chat-header .select2-dropdown {
+    border-radius: 12px;
+    border: 1px solid rgba(0,0,0,0.1);
+    box-shadow: 0 10px 24px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.apple-chat-header .select2-results__option {
+    padding: 8px 12px;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.apple-chat-header .select2-container {
+    max-width: 200px;
+}
+
 .apple-chat-title {
     font-weight: 600;
     font-size: 1.1rem;
@@ -349,24 +386,6 @@
     display: flex;
     align-items: center;
     gap: 8px;
-}
-
-.apple-model-select {
-    font-size: 0.85rem;
-    padding: 6px 10px;
-    border-radius: 8px;
-    border: 1px solid rgba(0,0,0,0.1);
-    background: rgba(255,255,255,0.8);
-    color: #1d1d1f;
-    outline: none;
-    cursor: pointer;
-    max-width: 150px;
-    font-family: inherit;
-    transition: border-color 0.2s;
-}
-
-.apple-model-select:focus {
-    border-color: #007aff;
 }
 
 .apple-chat-messages {
@@ -476,6 +495,7 @@
                     <?php foreach ($aiModels as $model): ?>
                         <?php 
                         $modelName = 'Unknown Model';
+                        $modelDesc = '';
                         if (isset($model['name']) && is_array($model['name'])) {
                             foreach ($model['name'] as $nameObj) {
                                 if (($nameObj['languagecode'] ?? '') === 'en') {
@@ -487,8 +507,19 @@
                                 $modelName = $model['name'][0]['content'] ?? $model['name'][0]['conent'] ?? $modelName;
                             }
                         }
+                        if (isset($model['description']) && is_array($model['description'])) {
+                            foreach ($model['description'] as $descObj) {
+                                if (($descObj['languagecode'] ?? '') === 'en') {
+                                    $modelDesc = $descObj['content'] ?? $descObj['conent'] ?? '';
+                                    break;
+                                }
+                            }
+                            if (empty($modelDesc) && !empty($model['description'][0])) {
+                                $modelDesc = $model['description'][0]['content'] ?? $model['description'][0]['conent'] ?? '';
+                            }
+                        }
                         ?>
-                        <option value="<?= esc($model['modelId'] ?? '') ?>"><?= esc($modelName) ?></option>
+                        <option value="<?= esc($model['modelId'] ?? '') ?>" data-description="<?= esc($modelDesc) ?>"><?= esc($modelName) ?></option>
                     <?php endforeach; ?>
                 <?php else: ?>
                     <option value="">No models available</option>
@@ -848,7 +879,28 @@
         const chatInput = document.getElementById('appleChatInput');
         const chatSend = document.getElementById('appleChatSend');
         const chatMessages = document.getElementById('appleChatMessages');
-        const modelSelect = document.getElementById('aiModelSelect');
+        const modelSelect = $('#aiModelSelect');
+
+        // Initialize Select2 for the AI models
+        modelSelect.select2({
+            width: '100%',
+            dropdownParent: $('#appleChatWindow'),
+            placeholder: "Select an AI model",
+            templateResult: function (data) {
+                if (!data.id) return data.text;
+                var desc = $(data.element).data('description') || '';
+                var descHtml = desc ? '<div style="font-size: 0.75rem; color: #6c757d; white-space: normal; line-height: 1.3; margin-top: 3px;">' + desc + '</div>' : '';
+                return $(
+                    '<div style="padding: 4px 0;">' +
+                    '<div style="font-weight: 600; color: #1d1d1f; font-size: 0.9rem;">' + data.text + '</div>' +
+                    descHtml +
+                    '</div>'
+                );
+            },
+            templateSelection: function(data) {
+                return data.text;
+            }
+        });
 
         // Toggle Chat Window
         chatToggle.addEventListener('click', () => {
@@ -863,15 +915,15 @@
             const text = chatInput.value.trim();
             if (!text) return;
 
-            // Add user message to UI
-            appendMessage(text, 'user');
-            chatInput.value = '';
-
-            const modelId = modelSelect.value;
+            const modelId = modelSelect.val();
             if (!modelId) {
                 appendMessage('Please select a model first.', 'bot');
                 return;
             }
+
+            // Add user message to UI
+            appendMessage(text, 'user');
+            chatInput.value = '';
 
             // Get script content from monaco editor if available
             let scriptContent = '';

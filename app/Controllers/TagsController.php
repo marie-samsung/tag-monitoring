@@ -1133,6 +1133,16 @@ class TagsController extends BaseController
             return $this->response->setJSON(['status' => 'error', 'message' => 'Missing modelId or message']);
         }
 
+        $messages = [
+            ['role' => 'system', 'content' => 'You are a helpful assistant helping a developer write and edit JavaScript tagging scripts.']
+        ];
+
+        if ($context) {
+            $messages[] = ['role' => 'system', 'content' => "Here is the current script the user is working on for context:\n\n" . $context];
+        }
+
+        $messages[] = ['role' => 'user', 'content' => $message];
+
         $client = \Config\Services::curlrequest();
 
         try {
@@ -1148,7 +1158,7 @@ class TagsController extends BaseController
                 ],
                 'http_errors' => false,
                 'json' => [
-                    "messages" => $message
+                    "messages" => $messages
                 ]
             ]);
 
