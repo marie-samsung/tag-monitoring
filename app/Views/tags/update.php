@@ -366,7 +366,10 @@
     border-radius: 12px;
     border: 1px solid rgba(0,0,0,0.1);
     box-shadow: 0 10px 24px rgba(0,0,0,0.1);
+    background: #ffffff;
+    color: #1d1d1f;
     overflow: hidden;
+    z-index: 9999;
 }
 
 .apple-chat-header .select2-results__option {
@@ -375,7 +378,8 @@
 }
 
 .apple-chat-header .select2-container {
-    max-width: 200px;
+    width: 240px !important;
+    max-width: 100%;
 }
 
 .apple-chat-title {
@@ -418,6 +422,35 @@
     color: #fff;
     align-self: flex-end;
     border-bottom-right-radius: 4px;
+}
+
+.typing-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    height: 18px;
+    padding: 0 4px;
+}
+
+.typing-indicator span {
+    width: 6px;
+    height: 6px;
+    background-color: #8e8e93;
+    border-radius: 50%;
+    animation: typing 1.4s infinite ease-in-out both;
+}
+
+.typing-indicator span:nth-child(1) {
+    animation-delay: -0.32s;
+}
+
+.typing-indicator span:nth-child(2) {
+    animation-delay: -0.16s;
+}
+
+@keyframes typing {
+    0%, 80%, 100% { transform: scale(0); }
+    40% { transform: scale(1); }
 }
 
 .apple-chat-footer {
@@ -498,7 +531,8 @@
                         $modelDesc = '';
                         if (isset($model['name']) && is_array($model['name'])) {
                             foreach ($model['name'] as $nameObj) {
-                                if (($nameObj['languagecode'] ?? '') === 'en') {
+                                $langCode = strtolower($nameObj['languagecode'] ?? $nameObj['languageCode'] ?? $nameObj['language'] ?? '');
+                                if ($langCode === 'en' || strpos($langCode, 'en') !== false) {
                                     $modelName = $nameObj['content'] ?? $nameObj['conent'] ?? $modelName;
                                     break;
                                 }
@@ -509,7 +543,8 @@
                         }
                         if (isset($model['description']) && is_array($model['description'])) {
                             foreach ($model['description'] as $descObj) {
-                                if (($descObj['languagecode'] ?? '') === 'en') {
+                                $langCode = strtolower($descObj['languagecode'] ?? $descObj['languageCode'] ?? $descObj['language'] ?? '');
+                                if ($langCode === 'en' || strpos($langCode, 'en') !== false) {
                                     $modelDesc = $descObj['content'] ?? $descObj['conent'] ?? '';
                                     break;
                                 }
@@ -932,7 +967,8 @@
             }
 
             // Show typing indicator
-            const botMsgElem = appendMessage('Thinking...', 'bot');
+            const botMsgElem = appendMessage('', 'bot');
+            botMsgElem.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
 
             const chatEndpoint = '<?= site_url('tags/ai-chat') ?>'; 
             
@@ -950,22 +986,55 @@
             })
             .then(res => res.json())
             .then(data => {
-                botMsgElem.textContent = data.reply || data.message || "I'm sorry, I couldn't process your request.";
+                let reply = "I'm sorry, I couldn't process your request.";
+                let reasoning = null;
+                
+                if (data && data.choices && data.choices.length > 0 && data.choices[0].message) {
+                    reply = data.choices[0].message.content || reply;
+                    reasoning = data.choices[0].message.reasoning_content || null;
+                } else if (data.reply || data.message) {
+                    reply = data.reply || data.message;
+                }
+
+                botMsgElem.innerText = reply;
+                
+                if (reasoning && botMsgElem.parentElement.classList.contains('chat-wrapper')) {
+                    const infoIcon = document.createElement('i');
+                    infoIcon.className = 'bi bi-info-circle-fill text-muted';
+                    infoIcon.style.cursor = 'help';
+                    infoIcon.style.fontSize = '1.1rem';
+                    infoIcon.title = reasoning; // Hover to see reasoning
+                    botMsgElem.parentElement.appendChild(infoIcon);
+                }
+
                 chatMessages.scrollTop = chatMessages.scrollHeight;
             })
             .catch(err => {
                 console.error('Error sending message:', err);
-                botMsgElem.textContent = "Error communicating with the LLM API. Check console for details.";
+                botMsgElem.innerText = "Error communicating with the LLM API. Check console for details.";
                 chatMessages.scrollTop = chatMessages.scrollHeight;
             });
         }
 
         function appendMessage(text, sender) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'chat-wrapper';
+            wrapper.style.display = 'flex';
+            wrapper.style.alignItems = 'center';
+            wrapper.style.gap = '8px';
+            wrapper.style.alignSelf = sender === 'user' ? 'flex-end' : 'flex-start';
+            wrapper.style.maxWidth = '100%';
+
             const msgDiv = document.createElement('div');
             msgDiv.className = `chat-message ${sender}`;
-            msgDiv.textContent = text;
-            chatMessages.appendChild(msgDiv);
+            msgDiv.innerText = text;
+            msgDiv.style.alignSelf = 'auto'; // override class styling
+            msgDiv.style.margin = '0';
+            
+            wrapper.appendChild(msgDiv);
+            chatMessages.appendChild(wrapper);
             chatMessages.scrollTop = chatMessages.scrollHeight;
+            
             return msgDiv;
         }
 
