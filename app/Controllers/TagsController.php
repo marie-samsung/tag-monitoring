@@ -197,8 +197,10 @@ class TagsController extends BaseController
         }
 
         if ($this->request->getMethod() === 'GET') {
+            $aiModels = $this->fetchAiModels();
             return view('tags/update', [
-                'tag' => $tag
+                'tag' => $tag,
+                'aiModels' => $aiModels
             ]);
         }
 
@@ -1081,7 +1083,7 @@ class TagsController extends BaseController
         return $this->response->setJSON(['status' => 'success', 'message' => 'JavaScript code saved successfully.']);
     }
 
-    public function getAiModels()
+    private function fetchAiModels()
     {
         $apiUrl = env('FABRIX_API_URL') . '/openapi/llm/v1/models';
         $apiKey = env('FABRIX_API_KEY') ?? '';
@@ -1089,25 +1091,27 @@ class TagsController extends BaseController
         $client = \Config\Services::curlrequest();
 
         try {
-            $response = $client->request('POST', $apiUrl, [
+            $response = $client->request('GET', $apiUrl, [
                 'headers' => [
                     'Accept' => 'application/json',
                     'Content-Type' => 'application/json',
                     'Authorization' => 'Bearer ' . $apiKey
                 ],
-                'http_errors' => false,
-                'json' => []
+                'http_errors' => false
             ]);
 
             $statusCode = $response->getStatusCode();
             if ($statusCode >= 200 && $statusCode < 300) {
-                return $this->response->setJSON(json_decode($response->getBody(), true));
-            } else {
-                return $this->response->setJSON(['status' => 'error', 'message' => 'API returned ' . $statusCode]);
+                $data = json_decode($response->getBody(), true);
+                if (is_array($data)) {
+                    return isset($data['data']) ? $data['data'] : (isset($data[0]) ? $data : array_values($data));
+                }
             }
         } catch (\Exception $e) {
-            return $this->response->setJSON(['status' => 'error', 'message' => $e->getMessage()]);
+            log_message('error', 'Error fetching AI Models: ' . $e->getMessage());
         }
+        
+        return [];
     }
 
     public function chatWithAi()

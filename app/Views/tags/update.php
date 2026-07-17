@@ -472,7 +472,27 @@
                 <i class="bi bi-robot"></i> Script AI
             </h3>
             <select class="apple-model-select" id="aiModelSelect">
-                <option value="">Loading models...</option>
+                <?php if (!empty($aiModels)): ?>
+                    <?php foreach ($aiModels as $model): ?>
+                        <?php 
+                        $modelName = 'Unknown Model';
+                        if (isset($model['name']) && is_array($model['name'])) {
+                            foreach ($model['name'] as $nameObj) {
+                                if (($nameObj['languagecode'] ?? '') === 'en') {
+                                    $modelName = $nameObj['content'] ?? $nameObj['conent'] ?? $modelName;
+                                    break;
+                                }
+                            }
+                            if ($modelName === 'Unknown Model' && !empty($model['name'][0])) {
+                                $modelName = $model['name'][0]['content'] ?? $model['name'][0]['conent'] ?? $modelName;
+                            }
+                        }
+                        ?>
+                        <option value="<?= esc($model['modelId'] ?? '') ?>"><?= esc($modelName) ?></option>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <option value="">No models available</option>
+                <?php endif; ?>
             </select>
         </div>
         <div class="apple-chat-messages" id="appleChatMessages">
@@ -830,70 +850,13 @@
         const chatMessages = document.getElementById('appleChatMessages');
         const modelSelect = document.getElementById('aiModelSelect');
 
-        let modelsFetched = false;
-
         // Toggle Chat Window
         chatToggle.addEventListener('click', () => {
             chatWindow.classList.toggle('active');
             if (chatWindow.classList.contains('active')) {
                 chatInput.focus();
-                if (!modelsFetched) {
-                    fetchModels();
-                }
             }
         });
-
-        // Fetch Models
-        function fetchModels() {
-            modelSelect.innerHTML = '<option value="">Loading models...</option>';
-            fetch('<?= site_url('tags/ai-models') ?>', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: JSON.stringify({})
-            })
-            .then(res => res.json())
-            .then(data => {
-                modelSelect.innerHTML = '';
-                modelsFetched = true;
-                
-                // Handle different JSON structures robustly
-                const models = Array.isArray(data) ? data : (data.data || Object.values(data));
-                let foundModels = false;
-                
-                if (models && models.length > 0) {
-                    models.forEach(model => {
-                        if (model && model.modelId) {
-                            foundModels = true;
-                            let modelName = 'Unknown Model';
-                            if (Array.isArray(model.name)) {
-                                const enName = model.name.find(n => n.languagecode === 'en');
-                                if (enName) {
-                                    modelName = enName.content || enName.conent || modelName;
-                                } else if (model.name[0]) {
-                                    modelName = model.name[0].content || model.name[0].conent || modelName;
-                                }
-                            }
-                            
-                            const option = document.createElement('option');
-                            option.value = model.modelId;
-                            option.textContent = modelName;
-                            modelSelect.appendChild(option);
-                        }
-                    });
-                }
-                
-                if (!foundModels) {
-                    modelSelect.innerHTML = '<option value="">No models available</option>';
-                }
-            })
-            .catch(err => {
-                console.error('Error fetching models:', err);
-                modelSelect.innerHTML = '<option value="">Error loading models</option>';
-            });
-        }
 
         // Handle Send Message
         function sendMessage() {
