@@ -197,8 +197,10 @@ class TagsController extends BaseController
         }
 
         if ($this->request->getMethod() === 'GET') {
+            $aiModels = $this->fetchAiModels();
             return view('tags/update', [
-                'tag' => $tag
+                'tag' => $tag,
+                'aiModels' => $aiModels
             ]);
         }
 
@@ -1079,5 +1081,95 @@ class TagsController extends BaseController
         ]);
 
         return $this->response->setJSON(['status' => 'success', 'message' => 'JavaScript code saved successfully.']);
+    }
+
+    private function fetchAiModels()
+    {
+        $apiUrl = env('FABRIX_API_URL') . '/openapi/llm/v1/models';
+        $apiKey = env('FABRIX_API_TOKEN') ?? '';
+        $fabrixClient = env('FABRIX_CLIENT') ?? '';
+
+        $client = \Config\Services::curlrequest();
+
+        try {
+            $response = $client->request('GET', $apiUrl, [
+                'headers' => [
+                    'Accept' => 'application/json',
+                    'Content-Type' => 'application/json',
+                    'x-fabrix-client' => $fabrixClient,
+                    'x-openapi-token' => 'Bearer ' . $apiKey,
+                    'User-Agent' => 'PostmanRuntime/7.54.0',
+                    'Expect' => '',
+                ],
+                'http_errors' => false
+            ]);
+
+            $statusCode = $response->getStatusCode();
+            if ($statusCode >= 200 && $statusCode < 300) {
+                $data = json_decode($response->getBody(), true);
+                if (is_array($data)) {
+                    return isset($data['data']) ? $data['data'] : (isset($data[0]) ? $data : array_values($data));
+                }
+            }
+        } catch (\Exception $e) {
+            log_message('error', 'Error fetching AI Models: ' . $e->getMessage());
+        }
+        
+        return [];
+    }
+
+    public function chatWithAi()
+    {
+        $apiUrl = env('FABRIX_API_URL') . '/openapi/llm/chat/completions';
+        $apiKey = env('FABRIX_API_TOKEN') ?? '';
+        $fabrixClient = env('FABRIX_CLIENT') ?? '';
+
+        $post = $this->request->getJSON();
+        $modelId = $post->modelId ?? null;
+        $message = $post->message ?? '';
+        $context = $post->context ?? '';
+
+        if (!$modelId || !$message) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Missing modelId or message']);
+        }
+
+        $messages = [
+            ['role' => 'system', 'content' => 'You are a helpful assistant helping a developer write and edit JavaScript tagging scripts.']
+        ];
+
+        if ($context) {
+            $messages[] = ['role' => 'system', 'content' => "Here is the current script the user is working on for context:\n\n" . $context];
+        }
+
+        $messages[] = ['role' => 'user', 'content' => $message];
+
+        $client = \Config\Services::curlrequest();
+
+        try {
+            $response = $client->request('POST', $apiUrl, [
+                'headers' => [
+                    'Accept' => 'application/json',
+                    'Content-Type' => 'application/json',
+                    'x-fabrix-client' => $fabrixClient,
+                    'x-openapi-token' => 'Bearer ' . $apiKey,
+                    'x-llm-model-id' => $modelId,
+                    'User-Agent' => 'PostmanRuntime/7.54.0',
+                    'Expect' => '',
+                ],
+                'http_errors' => false,
+                'json' => [
+                    "messages" => $messages
+                ]
+            ]);
+
+            $statusCode = $response->getStatusCode();
+            if ($statusCode >= 200 && $statusCode < 300) {
+                return $this->response->setJSON(json_decode($response->getBody(), true));
+            } else {
+                return $this->response->setJSON(['status' => 'error', 'message' => 'API returned ' . $statusCode]);
+            }
+        } catch (\Exception $e) {
+            return $this->response->setJSON(['status' => 'error', 'message' => $e->getMessage()]);
+        }
     }
 }
