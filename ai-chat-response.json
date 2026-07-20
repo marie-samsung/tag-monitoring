@@ -1,0 +1,28 @@
+{
+  "id": "chatcmpl-638c6adb-48dd-496d-9c24-c53b68dca603",
+  "object": "chat.completion",
+  "created": 1784288087,
+  "model": "/mnt/models/models/Gauss-open-671B-think-v1.0",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "reasoning_content": "Okay, the user just said \"Hello\". Since I'm a helpful assistant for JavaScript tagging scripts, I should start by greeting them back and asking how I can assist with their tagging needs. Maybe they need help writing a new script, debugging an existing one, or understanding best practices. I should keep my response friendly and open-ended to encourage them to specify their request. Let me make sure to maintain a professional yet approachable tone, as they might be a developer looking for technical guidance. I'll avoid any jargon unless they use it first, and be ready to adapt to their level of expertise. Also, since this is the first interaction, I should set a positive and supportive vibe to build rapport.\n",
+        "content": "\n\nHello! How can I assist you with your JavaScript tagging needs today? Whether you need help writing a new script, debugging an existing one, or understanding best practices for tagging, I’m here to help. Let me know what you’re working on!",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop",
+      "stop_reason": null
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 21,
+    "total_tokens": 217,
+    "completion_tokens": 196,
+    "prompt_tokens_details": null
+  },
+  "prompt_logprobs": null,
+  "kv_transfer_params": null
+}
