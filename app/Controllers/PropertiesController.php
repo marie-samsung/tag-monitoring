@@ -63,11 +63,11 @@ class PropertiesController extends BaseController
         
         if ($model->update($id, ['website' => $website])) {
             return redirect()
-                ->to('/properties')
+                ->back()
                 ->with('success', "Property URL updated successfully.");
         } else {
             return redirect()
-                ->to('/properties')
+                ->back()
                 ->with('error', "Failed to update Property URL.");
         }
     }
