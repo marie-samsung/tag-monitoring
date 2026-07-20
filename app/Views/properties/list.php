@@ -264,6 +264,9 @@ Properties List
                                         <a href="javascript:void(0)" onclick="copyWebsite('<?= esc($property['website']) ?>', this)" title="Copy site URL" class="text-muted ms-2" style="transition: color 0.2s; text-decoration: none; line-height: 1;">
                                             <i class="bi bi-copy" style="font-size: 0.85rem;"></i>
                                         </a>
+                                        <a href="javascript:void(0)" onclick="openEditUrlModal(<?= $property['id'] ?>, '<?= esc($property['website']) ?>')" title="Edit site URL" class="text-primary ms-2" style="transition: color 0.2s; text-decoration: none; line-height: 1;">
+                                            <i class="bi bi-pencil" style="font-size: 0.85rem;"></i>
+                                        </a>
                                     </span>
                                 </td>
                                 <td>
@@ -294,6 +297,31 @@ Properties List
         <?php endif; ?>
     </div>
     <!-- #endregion -->
+</div>
+
+<!-- Edit URL Modal -->
+<div class="modal fade" id="editUrlModal" tabindex="-1" aria-labelledby="editUrlModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow" style="border-radius: 12px;">
+            <div class="modal-header border-bottom-0 pb-0 mt-2">
+                <h5 class="modal-title fw-bold" id="editUrlModalLabel">Edit Site URL</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editUrlForm" method="post" action="">
+                <?= csrf_field() ?>
+                <div class="modal-body pt-3 pb-4">
+                    <div class="mb-2">
+                        <label for="edit_website" class="form-label fw-semibold text-secondary small mb-1">Site URL</label>
+                        <input type="text" class="form-control form-control-sm" id="edit_website" name="website" required style="border-radius: 8px;">
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 pt-0 pb-3">
+                    <button type="button" class="btn btn-light btn-sm px-3 fw-medium" data-bs-dismiss="modal" style="border-radius: 20px;">Cancel</button>
+                    <button type="submit" class="apple-btn-primary btn-sm px-4 fw-medium" style="border-radius: 20px;">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -342,6 +370,15 @@ Properties List
             setTimeout(() => {
                 el.innerHTML = '<i class="bi bi-copy text-secondary fs-7"></i>';
             }, 1200);
+        };
+
+        window.openEditUrlModal = function(id, website) {
+            const form = document.getElementById('editUrlForm');
+            form.action = '<?= site_url('properties/update-url/') ?>' + id;
+            document.getElementById('edit_website').value = website;
+            
+            const modal = new bootstrap.Modal(document.getElementById('editUrlModal'));
+            modal.show();
         };
     });
 </script>

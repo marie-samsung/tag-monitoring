@@ -54,4 +54,21 @@ class PropertiesController extends BaseController
             ->to('/properties')
             ->with('success', "Property {$post['name']} created successfully.");
     }
+
+    public function updateUrl($id)
+    {
+        $model = new PropertiesModel();
+        
+        $website = $this->request->getPost('website');
+        
+        if ($model->update($id, ['website' => $website])) {
+            return redirect()
+                ->to('/properties')
+                ->with('success', "Property URL updated successfully.");
+        } else {
+            return redirect()
+                ->to('/properties')
+                ->with('error', "Failed to update Property URL.");
+        }
+    }
 }
