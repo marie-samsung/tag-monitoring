@@ -196,7 +196,7 @@ class Constants
         self::TEAM_DWF => 'DWF',
         self::TEAM_CRM => 'CRM 2.0',
         self::TEAM_SPOKE => 'Spoke',
-        self::TEAM_OTHER => 'Other',
+//        self::TEAM_OTHER => 'Other',
     ];
 
     public const PROJECT_MEDIA_TAGGING = 1;
