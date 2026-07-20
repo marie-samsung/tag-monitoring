@@ -68,6 +68,7 @@ $routes->group('tag-requests', function ($routes) {
 $routes->group('properties', function ($routes) {
     $routes->get('/', 'PropertiesController::index');
     $routes->match(['get', 'post'], 'create', 'PropertiesController::create');
+    $routes->post('update-url/(:num)', 'PropertiesController::updateUrl/$1');
     // $routes->match(['get', 'post'], 'update/(:num)', 'PropertiesController::update/$1');
     // $routes->post('delete/(:num)', 'PropertiesController::delete/$1');
 });
