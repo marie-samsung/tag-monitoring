@@ -399,11 +399,14 @@
 }
 
 /* Ensure text is readable when highlighted */
-.apple-chat-header .select2-results__option--highlighted {
+.select2-results__option--highlighted,
+.select2-results__option[aria-selected="true"] {
     background-color: #007aff !important;
 }
-.apple-chat-header .select2-results__option--highlighted .ai-model-title,
-.apple-chat-header .select2-results__option--highlighted .ai-model-desc {
+.select2-results__option--highlighted .ai-model-title,
+.select2-results__option--highlighted .ai-model-desc,
+.select2-results__option[aria-selected="true"] .ai-model-title,
+.select2-results__option[aria-selected="true"] .ai-model-desc {
     color: #ffffff !important;
 }
 
@@ -978,6 +981,50 @@
         const chatSend = document.getElementById('appleChatSend');
         const chatMessages = document.getElementById('appleChatMessages');
         const modelSelect = $('#aiModelSelect');
+
+        // Make Chat Window Draggable
+        const chatHeader = document.querySelector('.apple-chat-header');
+        let isDragging = false;
+        let dragOffsetX = 0;
+        let dragOffsetY = 0;
+
+        chatHeader.style.cursor = 'move';
+        
+        chatHeader.addEventListener('mousedown', (e) => {
+            // Ignore drag if clicking on the select dropdown
+            if (e.target.closest('.apple-model-select') || e.target.closest('.select2-container')) {
+                return;
+            }
+            
+            isDragging = true;
+            const rect = chatWindow.getBoundingClientRect();
+            
+            // Switch to fixed positioning if not already
+            if (chatWindow.style.position !== 'fixed') {
+                chatWindow.style.position = 'fixed';
+                chatWindow.style.margin = '0';
+                chatWindow.style.bottom = 'auto';
+                chatWindow.style.right = 'auto';
+                chatWindow.style.left = rect.left + 'px';
+                chatWindow.style.top = rect.top + 'px';
+            }
+            
+            dragOffsetX = e.clientX - chatWindow.getBoundingClientRect().left;
+            dragOffsetY = e.clientY - chatWindow.getBoundingClientRect().top;
+            document.body.style.userSelect = 'none'; // Prevent text selection while dragging
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                chatWindow.style.left = (e.clientX - dragOffsetX) + 'px';
+                chatWindow.style.top = (e.clientY - dragOffsetY) + 'px';
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            document.body.style.userSelect = '';
+        });
 
         // Initialize Select2 for the AI models
         modelSelect.select2({
