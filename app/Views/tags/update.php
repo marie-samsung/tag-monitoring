@@ -382,6 +382,31 @@
     border-bottom: 1px solid rgba(0,0,0,0.05);
 }
 
+.ai-model-item {
+    padding: 2px 0;
+}
+.ai-model-title {
+    font-weight: 600;
+    color: #1d1d1f;
+    font-size: 0.9rem;
+}
+.ai-model-desc {
+    font-size: 0.75rem;
+    color: #6c757d;
+    white-space: normal;
+    line-height: 1.3;
+    margin-top: 3px;
+}
+
+/* Ensure text is readable when highlighted */
+.apple-chat-header .select2-results__option--highlighted {
+    background-color: #007aff !important;
+}
+.apple-chat-header .select2-results__option--highlighted .ai-model-title,
+.apple-chat-header .select2-results__option--highlighted .ai-model-desc {
+    color: #ffffff !important;
+}
+
 .apple-chat-header .select2-container {
     width: 240px !important;
     max-width: 100%;
@@ -962,10 +987,10 @@
             templateResult: function (data) {
                 if (!data.id) return data.text;
                 var desc = $(data.element).data('description') || '';
-                var descHtml = desc ? '<div style="font-size: 0.75rem; color: #6c757d; white-space: normal; line-height: 1.3; margin-top: 3px;">' + desc + '</div>' : '';
+                var descHtml = desc ? '<div class="ai-model-desc">' + desc + '</div>' : '';
                 return $(
-                    '<div style="padding: 4px 0;">' +
-                    '<div style="font-weight: 600; color: #1d1d1f; font-size: 0.9rem;">' + data.text + '</div>' +
+                    '<div class="ai-model-item">' +
+                    '<div class="ai-model-title">' + data.text + '</div>' +
                     descHtml +
                     '</div>'
                 );
