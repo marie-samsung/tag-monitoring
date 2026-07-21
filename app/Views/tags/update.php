@@ -382,6 +382,34 @@
     border-bottom: 1px solid rgba(0,0,0,0.05);
 }
 
+.ai-model-item {
+    padding: 2px 0;
+}
+.ai-model-title {
+    font-weight: 600;
+    color: #1d1d1f;
+    font-size: 0.9rem;
+}
+.ai-model-desc {
+    font-size: 0.75rem;
+    color: #6c757d;
+    white-space: normal;
+    line-height: 1.3;
+    margin-top: 3px;
+}
+
+/* Ensure text is readable when highlighted */
+.select2-results__option--highlighted,
+.select2-results__option[aria-selected="true"] {
+    background-color: #007aff !important;
+}
+.select2-results__option--highlighted .ai-model-title,
+.select2-results__option--highlighted .ai-model-desc,
+.select2-results__option[aria-selected="true"] .ai-model-title,
+.select2-results__option[aria-selected="true"] .ai-model-desc {
+    color: #ffffff !important;
+}
+
 .apple-chat-header .select2-container {
     width: 240px !important;
     max-width: 100%;
@@ -954,6 +982,50 @@
         const chatMessages = document.getElementById('appleChatMessages');
         const modelSelect = $('#aiModelSelect');
 
+        // Make Chat Window Draggable
+        const chatHeader = document.querySelector('.apple-chat-header');
+        let isDragging = false;
+        let dragOffsetX = 0;
+        let dragOffsetY = 0;
+
+        chatHeader.style.cursor = 'move';
+        
+        chatHeader.addEventListener('mousedown', (e) => {
+            // Ignore drag if clicking on the select dropdown
+            if (e.target.closest('.apple-model-select') || e.target.closest('.select2-container')) {
+                return;
+            }
+            
+            isDragging = true;
+            const rect = chatWindow.getBoundingClientRect();
+            
+            // Switch to fixed positioning if not already
+            if (chatWindow.style.position !== 'fixed') {
+                chatWindow.style.position = 'fixed';
+                chatWindow.style.margin = '0';
+                chatWindow.style.bottom = 'auto';
+                chatWindow.style.right = 'auto';
+                chatWindow.style.left = rect.left + 'px';
+                chatWindow.style.top = rect.top + 'px';
+            }
+            
+            dragOffsetX = e.clientX - chatWindow.getBoundingClientRect().left;
+            dragOffsetY = e.clientY - chatWindow.getBoundingClientRect().top;
+            document.body.style.userSelect = 'none'; // Prevent text selection while dragging
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                chatWindow.style.left = (e.clientX - dragOffsetX) + 'px';
+                chatWindow.style.top = (e.clientY - dragOffsetY) + 'px';
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            document.body.style.userSelect = '';
+        });
+
         // Initialize Select2 for the AI models
         modelSelect.select2({
             width: '100%',
@@ -962,10 +1034,10 @@
             templateResult: function (data) {
                 if (!data.id) return data.text;
                 var desc = $(data.element).data('description') || '';
-                var descHtml = desc ? '<div style="font-size: 0.75rem; color: #6c757d; white-space: normal; line-height: 1.3; margin-top: 3px;">' + desc + '</div>' : '';
+                var descHtml = desc ? '<div class="ai-model-desc">' + desc + '</div>' : '';
                 return $(
-                    '<div style="padding: 4px 0;">' +
-                    '<div style="font-weight: 600; color: #1d1d1f; font-size: 0.9rem;">' + data.text + '</div>' +
+                    '<div class="ai-model-item">' +
+                    '<div class="ai-model-title">' + data.text + '</div>' +
                     descHtml +
                     '</div>'
                 );
