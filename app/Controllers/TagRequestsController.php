@@ -83,6 +83,7 @@ class TagRequestsController extends BaseController
         $tagScript = $post['tag_script'] ?? null;
 
         $background = $post['background'] ?? null;
+        $objective = $post['objective'] ?? null;
         $q1 = $post['q1'] ?? null;
         $q2 = $post['q2'] ?? null;
         $q3 = $post['q3'] ?? null;
@@ -99,12 +100,25 @@ class TagRequestsController extends BaseController
             $vendorName = !empty($matches[1]) ? trim($matches[1]) : 'Unknown';
 
             $vendor = $vendorsModel->where('name', $vendorName)->first();
+            $vendorDataToUpdate = [];
+            if ($background) {
+                $vendorDataToUpdate['about'] = $background;
+                $vendorDataToUpdate['reason'] = $background;
+            }
+            if ($objective) {
+                $vendorDataToUpdate['tag_purpose'] = $objective;
+            }
+
             if (!$vendor) {
-                $vendorId = $vendorsModel->insert([
+                $vendorInsertData = array_merge([
                     'name' => $vendorName,
-                ]);
+                ], $vendorDataToUpdate);
+                $vendorId = $vendorsModel->insert($vendorInsertData);
             } else {
                 $vendorId = $vendor['id'];
+                if (!empty($vendorDataToUpdate)) {
+                    $vendorsModel->update($vendorId, $vendorDataToUpdate);
+                }
             }
 
             if ($reqOrg) {
@@ -664,6 +678,7 @@ class TagRequestsController extends BaseController
             'requester_email' => '',
             'tag_script' => '',
             'background' => '',
+            'objective' => '',
             'q1' => '',
             'q2' => '',
             'q3' => '',
@@ -696,6 +711,8 @@ class TagRequestsController extends BaseController
                 $extractedData['tag_script'] = $value;
             } elseif (strpos($key, 'Background') !== false) {
                 $extractedData['background'] = $value;
+            } elseif (strpos($key, 'Objective') !== false) {
+                $extractedData['objective'] = $value;
             } elseif (strpos($key, 'What is the official website of the platform/company?') !== false) {
                 $extractedData['q1'] = $value;
             } elseif (strpos($key, 'What is the duration of usage?') !== false) {

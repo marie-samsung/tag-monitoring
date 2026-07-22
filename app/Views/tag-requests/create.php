@@ -74,14 +74,15 @@ Tag Request: Create
                 <li><strong>Extracted Vendor:</strong> <?= esc($extracted_data['vendor_name']) ?></li>
                 <li><strong>Target Property/Sites:</strong> <?= esc($extracted_data['target_properties']) ?></li>
                 <li><strong>Extracted Tag Script:</strong> <?= esc($extracted_data['tag_script']) ?></li>
-                <li><strong>Background:</strong> <?= esc($extracted_data['background']) ?></li>
+                <li><strong>Background:</strong> <?= esc($extracted_data['background'] ?? '') ?></li>
+                <li><strong>Objective:</strong> <?= esc($extracted_data['objective'] ?? '') ?></li>
                 <li><strong>Requestor Name:</strong> <?= esc($extracted_data['requester_name'] ?? '') ?></li>
                 <li><strong>Requestor Email:</strong> <?= esc($extracted_data['requester_email'] ?? '') ?></li>
-                <li><strong><?= Constants::PURPOSE_GOAL_NEW_TAG[0] ?></strong> <?= esc($extracted_data['q1']) ?></li>
-                <li><strong><?= Constants::PURPOSE_GOAL_NEW_TAG[1] ?></strong> <?= esc($extracted_data['q2']) ?></li>
-                <li><strong><?= Constants::PURPOSE_GOAL_NEW_TAG[2] ?></strong> <?= esc($extracted_data['q3']) ?></li>
-                <li><strong><?= Constants::PURPOSE_GOAL_NEW_TAG[3] ?></strong> <?= esc($extracted_data['q4']) ?></li>
-                <li><strong><?= Constants::PURPOSE_GOAL_NEW_TAG[4] ?></strong> <?= esc($extracted_data['q5']) ?></li>
+                <li><strong><?= Constants::PURPOSE_GOAL_NEW_TAG[0] ?></strong> <?= esc($extracted_data['q1'] ?? '') ?></li>
+                <li><strong><?= Constants::PURPOSE_GOAL_NEW_TAG[1] ?></strong> <?= esc($extracted_data['q2'] ?? '') ?></li>
+                <li><strong><?= Constants::PURPOSE_GOAL_NEW_TAG[2] ?></strong> <?= esc($extracted_data['q3'] ?? '') ?></li>
+                <li><strong><?= Constants::PURPOSE_GOAL_NEW_TAG[3] ?></strong> <?= esc($extracted_data['q4'] ?? '') ?></li>
+                <li><strong><?= Constants::PURPOSE_GOAL_NEW_TAG[4] ?></strong> <?= esc($extracted_data['q5'] ?? '') ?></li>
             </ul>
         </div>
         <?php endif; ?>
@@ -90,6 +91,7 @@ Tag Request: Create
             <?= csrf_field() ?>
             <?php if (!empty($extracted_data)): ?>
                 <input type="hidden" name="background" value="<?= esc($extracted_data['background'] ?? '') ?>">
+                <input type="hidden" name="objective" value="<?= esc($extracted_data['objective'] ?? '') ?>">
                 <input type="hidden" name="q1" value="<?= esc($extracted_data['q1'] ?? '') ?>">
                 <input type="hidden" name="q2" value="<?= esc($extracted_data['q2'] ?? '') ?>">
                 <input type="hidden" name="q3" value="<?= esc($extracted_data['q3'] ?? '') ?>">
