@@ -68,7 +68,7 @@ AI Report Generation
                             }
                         ?>
                             <option value="<?= esc($m['modelId']) ?>" title="<?= esc($modelDesc) ?>">
-                                <?= esc($modelName) ?>
+                                <?= esc($modelName) ?> - <?= esc($modelDesc) ?>
                             </option>
                         <?php endforeach; ?>
                     <?php endif; ?>
@@ -83,36 +83,22 @@ AI Report Generation
             </div>
 
             <div class="mb-4">
-                <label class="form-label fw-semibold text-dark">Select Projects to Include</label>
-                <div class="d-flex flex-wrap gap-3 mt-2">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" name="projects[]" value="DWF" id="projDWF" checked>
-                        <label class="form-check-label" for="projDWF">DWF</label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" name="projects[]" value="Media Tagging" id="projMedia" checked>
-                        <label class="form-check-label" for="projMedia">Media Tagging</label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" name="projects[]" value="CRM" id="projCRM" checked>
-                        <label class="form-check-label" for="projCRM">CRM</label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" name="projects[]" value="Spoke" id="projSpoke" checked>
-                        <label class="form-check-label" for="projSpoke">Spoke</label>
-                    </div>
-                </div>
+                <label class="form-label fw-semibold text-dark">Select Project</label>
+                <select name="projects[]" class="form-select" required style="max-width: 300px; border-radius: 10px;">
+                    <option value="" disabled selected>Choose a project...</option>
+                    <option value="DWF">DWF</option>
+                    <option value="Media Tagging">Media Tagging</option>
+                    <option value="CRM">CRM</option>
+                    <option value="Spoke">Spoke</option>
+                </select>
+                <div class="form-text mt-2 text-muted">Select the project you want to generate a report for.</div>
             </div>
 
             <div class="d-flex align-items-center gap-3 pt-3 border-top mt-4">
-                <button type="button" class="apple-btn-primary px-4 py-2 flex-grow-1" onclick="generateReport('word')" style="border-radius: 10px;">
-                    <i class="bi bi-file-earmark-word-fill me-2"></i> Export as Word (.docx)
-                </button>
-                <button type="button" class="btn btn-outline-danger px-4 py-2 flex-grow-1" onclick="generateReport('pdf')" style="border-radius: 10px;">
-                    <i class="bi bi-file-earmark-pdf-fill me-2"></i> Export as PDF
+                <button type="submit" class="apple-btn-primary px-4 py-2 flex-grow-1" onclick="document.getElementById('loadingOverlay').classList.remove('d-none');" style="border-radius: 10px;">
+                    <i class="bi bi-robot me-2"></i> Generate AI Report
                 </button>
             </div>
-            <input type="hidden" name="format" id="exportFormat" value="word">
         </form>
     </div>
 </div>
@@ -139,28 +125,10 @@ AI Report Generation
             weekInput.value = `${today.getFullYear()}-W${weekStr}`;
         }
     });
-
-    function generateReport(format) {
-        document.getElementById('exportFormat').value = format;
-        
-        // Ensure at least one project is selected
-        const checkboxes = document.querySelectorAll('input[name="projects[]"]:checked');
-        if (checkboxes.length === 0) {
-            alert("Please select at least one project.");
-            return;
-        }
-
-        // Show loading spinner
+    // Handle form submission properly for loading overlay
+    document.getElementById('aiReportForm').addEventListener('submit', function(e) {
         document.getElementById('loadingOverlay').classList.remove('d-none');
-        
-        // Submit form
-        document.getElementById('aiReportForm').submit();
-
-        // 10 seconds is usually enough for the file dialog to pop up.
-        setTimeout(() => {
-            document.getElementById('loadingOverlay').classList.add('d-none');
-        }, 10000);
-    }
+    });
 </script>
 
 <?= $this->endSection() ?>
