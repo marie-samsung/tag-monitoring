@@ -80,6 +80,7 @@ class TagRequestsController extends BaseController
         $excelFileName = $post['excel_file_name'] ?? null;
         $jiraType = $post['type'];
         $endDate = date('Y-m-d', strtotime('+61 days'));
+        $tagScript = $post['tag_script'] ?? null;
 
         $background = $post['background'] ?? null;
         $q1 = $post['q1'] ?? null;
@@ -146,6 +147,7 @@ class TagRequestsController extends BaseController
                     'requester_name' => $reqName,
                     'requester_email' => $reqEmail,
                     'requester_organization' => $organizationId,
+                    'js_code' => $tagScript,
                     'created_by' => session()->get('user_id') ?? 0,
                 ]);
             }

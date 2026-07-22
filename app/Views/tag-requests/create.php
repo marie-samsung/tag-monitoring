@@ -97,6 +97,7 @@ Tag Request: Create
                 <input type="hidden" name="q5" value="<?= esc($extracted_data['q5'] ?? '') ?>">
                 <input type="hidden" name="excel_file_path" value="<?= esc($extracted_data['excel_file_path'] ?? '') ?>">
                 <input type="hidden" name="excel_file_name" value="<?= esc($extracted_data['excel_file_name'] ?? '') ?>">
+                <input type="hidden" name="tag_script" value="<?= esc($extracted_data['tag_script'] ?? '') ?>">
             <?php endif; ?>
 
             <div class="row">
