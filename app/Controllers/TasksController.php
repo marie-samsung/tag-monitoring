@@ -2429,11 +2429,11 @@ class TasksController extends BaseController
     {
         $post = $this->request->getPost();
         $week = $post['week'] ?? null;
-        $projects = $post['projects'] ?? [];
+        $teamId = $post['team_id'] ?? [];
         $format = $post['format'] ?? 'word';
         $modelId = $post['model_id'] ?? null;
 
-        if (empty($week) || empty($projects) || empty($modelId)) {
+        if (empty($week) || empty($teamId) || empty($modelId)) {
             return redirect()->back()->with('error', 'Week, Projects, and AI Model must be selected.');
         }
 
@@ -2465,13 +2465,12 @@ class TasksController extends BaseController
                 ->where('DATE(finished_date) <=', $endDate)
             ->groupEnd()
         ->groupEnd();
-        if (!empty($projects)) {
-            $builder->whereIn('project', $projects);
-        }
+        $builder->where('team_id', $teamId);
+
         $tasks = $builder->get()->getResultArray();
 
         $tagsData = [];
-        if (in_array('Media Tagging', $projects)) {
+        if ($teamId == Constants::TEAM_MEDIA_TAGGING) {
             $tagsBuilder = $db->table('tags');
             $tagsBuilder->where('DATE(created_at) >=', $startDate);
             $tagsBuilder->where('DATE(created_at) <=', $endDate);

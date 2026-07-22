@@ -92,12 +92,11 @@ AI Report Generation
 
             <div class="mb-4">
                 <label class="form-label fw-semibold text-dark">Select Project</label>
-                <select name="projects[]" class="form-select" required style="max-width: 300px; border-radius: 10px;">
+                <select name="team_id" class="form-select" required style="max-width: 300px; border-radius: 10px;">
                     <option value="" disabled selected>Choose a project...</option>
-                    <option value="DWF">DWF</option>
-                    <option value="Media Tagging">Media Tagging</option>
-                    <option value="CRM">CRM</option>
-                    <option value="Spoke">Spoke</option>
+                    <?php foreach (\App\Models\Constants::TEAMS as $id => $name) : ?>
+                        <option value="<?= $id ?>"><?= $name ?></option>
+                    <?php endforeach; ?>
                 </select>
                 <div class="form-text mt-2 text-muted">Select the project you want to generate a report for.</div>
             </div>
