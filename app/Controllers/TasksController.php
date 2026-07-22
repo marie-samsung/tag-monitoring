@@ -2478,33 +2478,36 @@ class TasksController extends BaseController
             $tagsData = $tagsBuilder->get()->getResultArray();
         }
 
-        $contextData = [
-            'week' => $week,
-            'start_date' => $startDate,
-            'end_date' => $endDate,
-            'tasks' => [],
-            'tags' => $tagsData
-        ];
-
-        foreach ($tasks as $task) {
-            $subId = $task['subsidiary_id'] ?? 0;
-            $subName = \App\Models\Constants::ACTIVITY_LOG_SUBSIDIARIES[$subId] ?? 'Unknown Subsidiary';
-            
-            $statusId = $task['status'] ?? 0;
-            $statusName = \App\Models\Constants::ACTIVITY_LOGS_STATUS[$statusId] ?? 'Unknown Status';
-            
-            $task['subsidiary_name'] = $subName;
-            $task['status_name'] = $statusName;
-            $contextData['tasks'][] = $task;
-        }
-
         $fabrixUrl = getenv('FABRIX_API_URL') ?: 'https://api.placeholder-fabrix.internal';
         $fabrixToken = getenv('FABRIX_API_TOKEN');
         $fabrixClient = getenv('FABRIX_CLIENT');
 
-        $prompt = "You are an assistant creating a weekly project report. You MUST generate a report summary for EVERY SINGLE TASK provided in the data below, across all projects. Do not skip any tasks. Data: " . json_encode($contextData) . "
+        $aiResponseText = "";
+        $systemPrompt = "You are an assistant creating a weekly project report. You must process the task provided and output a summary exactly following the requested format.";
 
-Format EVERY task EXACTLY following this structure based on the provided data:
+        if (empty($tasks)) {
+            $aiResponseText = "No tasks found for the selected criteria in week " . esc($week) . ".\n\n";
+            // Mock data for testing purposes if no tasks exist in local DB
+            $aiResponseText .= "▣ [SGE] Mock Web Portal Development\n";
+            $aiResponseText .= "    - Purpose: The purpose of this project is to develop a new corporate portal to improve internal communications.\n";
+            $aiResponseText .= "    - Task: Developed homepage and integrated authentication API securely.\n";
+            $aiResponseText .= "    - Current Status: In Progress, started on $startDate, requested on $startDate\n";
+            $aiResponseText .= "    - Next Steps: Submit for QA review\n";
+            $aiResponseText .= "    - Go-Live Date: $endDate\n";
+        } else {
+            foreach ($tasks as $task) {
+                $subId = $task['subsidiary_id'] ?? 0;
+                $subName = \App\Models\Constants::ACTIVITY_LOG_SUBSIDIARIES[$subId] ?? 'Unknown Subsidiary';
+                
+                $statusId = $task['status'] ?? 0;
+                $statusName = \App\Models\Constants::ACTIVITY_LOGS_STATUS[$statusId] ?? 'Unknown Status';
+                
+                $task['subsidiary_name'] = $subName;
+                $task['status_name'] = $statusName;
+                
+                $prompt = "Analyze this specific task. Data: " . json_encode($task) . "
+
+Format the task EXACTLY following this structure based on the provided data:
 ▣ [{subsidiary_name}] {title}
     - Purpose: <Explain the purpose of the project in a professional, non-technical manner. DO NOT show any scripts or raw code>
     - Task: <Explain the task in a professional, non-technical manner>
@@ -2512,64 +2515,57 @@ Format EVERY task EXACTLY following this structure based on the provided data:
     - Next Steps: <What is the next logical step based on status>
     - Go-Live Date: <finished_date or estimate completion time>
 
-Please output ONLY the formatted tasks using this exact structure, separated by empty lines.";
+Please output ONLY the formatted task using this exact structure.";
 
-        // Attempt API Call
-        $aiResponseText = "";
-        try {
-            $curl = curl_init();
-            curl_setopt_array($curl, [
-                CURLOPT_URL => $fabrixUrl . '/openapi/llm/chat/completions',
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_POST => true,
-                CURLOPT_TIMEOUT => 45,
-                CURLOPT_POSTFIELDS => json_encode([
-                    'messages' => [
-                        ['role' => 'system', 'content' => 'You are an assistant creating a weekly project report.'],
-                        ['role' => 'user', 'content' => $prompt]
-                    ]
-                ]),
-                CURLOPT_HTTPHEADER => [
-                    'Content-Type: application/json',
-                    'x-openapi-token: Bearer ' . $fabrixToken,
-                    'x-fabrix-client: ' . $fabrixClient,
-                    'x-llm-model-id: ' . (int)$modelId,
-                    'User-Agent: PostmanRuntime/7.32.3',
-                    'Expect:'
-                ],
-            ]);
-            $response = curl_exec($curl);
-            $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-            curl_close($curl);
-            
-            if ($httpCode >= 200 && $httpCode < 300 && $response) {
-                $decoded = json_decode($response, true);
-                if (isset($decoded['choices'][0]['message']['content'])) {
-                    $aiResponseText = $decoded['choices'][0]['message']['content'];
-                } else {
-                    $aiResponseText = $decoded['text'] ?? $response;
+                // Attempt API Call
+                try {
+                    $curl = curl_init();
+                    curl_setopt_array($curl, [
+                        CURLOPT_URL => $fabrixUrl . '/openapi/llm/chat/completions',
+                        CURLOPT_RETURNTRANSFER => true,
+                        CURLOPT_POST => true,
+                        CURLOPT_TIMEOUT => 30, // 30 seconds per task should be enough
+                        CURLOPT_POSTFIELDS => json_encode([
+                            'messages' => [
+                                ['role' => 'system', 'content' => $systemPrompt],
+                                ['role' => 'user', 'content' => $prompt]
+                            ]
+                        ]),
+                        CURLOPT_HTTPHEADER => [
+                            'Content-Type: application/json',
+                            'x-openapi-token: Bearer ' . $fabrixToken,
+                            'x-fabrix-client: ' . $fabrixClient,
+                            'x-llm-model-id: ' . (int)$modelId,
+                            'User-Agent: PostmanRuntime/7.32.3',
+                            'Expect:'
+                        ],
+                    ]);
+                    $response = curl_exec($curl);
+                    $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+                    curl_close($curl);
+                    
+                    if ($httpCode >= 200 && $httpCode < 300 && $response) {
+                        $decoded = json_decode($response, true);
+                        if (isset($decoded['choices'][0]['message']['content'])) {
+                            $aiResponseText .= trim($decoded['choices'][0]['message']['content']) . "\n\n";
+                        } else {
+                            $aiResponseText .= trim($decoded['text'] ?? $response) . "\n\n";
+                        }
+                    } else {
+                        // Fallback layout just for this task
+                        $aiResponseText .= "▣ [" . $subName . "] " . ($task['title'] ?? 'Unknown Task') . "\n";
+                        $aiResponseText .= "    - Purpose: Data not successfully generated by AI (API Status: $httpCode).\n";
+                        $aiResponseText .= "    - Task: Please review this task manually.\n";
+                        $aiResponseText .= "    - Current Status: " . $statusName . "\n";
+                        $aiResponseText .= "    - Next Steps: N/A\n";
+                        $aiResponseText .= "    - Go-Live Date: " . ($task['finished_date'] ?? 'TBD') . "\n\n";
+                    }
+                } catch (\Exception $e) {
+                    $aiResponseText .= "▣ [" . $subName . "] " . ($task['title'] ?? 'Unknown Task') . "\n";
+                    $aiResponseText .= "    - Purpose: Exception during AI generation.\n";
+                    $aiResponseText .= "    - Task: Please review this task manually.\n\n";
                 }
-            } else {
-                $aiResponseText = "Failed to communicate with AI API (Status $httpCode). Using fallback layout.\n\n";
             }
-        } catch (\Exception $e) {
-            $aiResponseText = "Exception during API call. Using fallback layout.\n\n";
-        }
-
-        // Mock fallback if empty
-        if (empty(trim($aiResponseText)) || strpos($aiResponseText, 'Failed') !== false || strpos($aiResponseText, 'Exception') !== false) {
-            $aiResponseText .= "▣ [SGE] Create New Web Portal\n";
-            $aiResponseText .= "    - Purpose: The purpose of this project is to develop a new corporate portal to improve internal communications.\n";
-            $aiResponseText .= "    - Task: Developed homepage and integrated authentication API securely.\n";
-            $aiResponseText .= "    - Current Status: In Progress, started on $startDate, requested on $startDate\n";
-            $aiResponseText .= "    - Next Steps: Submit for QA review\n";
-            $aiResponseText .= "    - Go-Live Date: $endDate\n\n";
-            $aiResponseText .= "▣ [MENAO] Implement Data Tracking\n";
-            $aiResponseText .= "    - Purpose: Track user behavior across the new portal to gain valuable analytics insights.\n";
-            $aiResponseText .= "    - Task: Configured analytics tags to capture page views.\n";
-            $aiResponseText .= "    - Current Status: Completed\n";
-            $aiResponseText .= "    - Next Steps: Monitor data flow in the analytics dashboard\n";
-            $aiResponseText .= "    - Go-Live Date: $endDate\n";
         }
 
         return view('tasks/ai_report_result', [
