@@ -14,7 +14,7 @@ AI Report Generation
         border-radius: 16px;
         padding: 30px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.015);
-        max-width: 700px;
+        max-width: 1000px;
         margin: 0 auto;
     }
 </style>
@@ -38,50 +38,58 @@ AI Report Generation
             
             <div class="mb-4">
                 <label class="form-label fw-semibold text-dark mb-3">Select AI Model</label>
-                <div class="row g-3">
-                    <?php if (!empty($models)): ?>
-                        <?php foreach ($models as $idx => $m): 
-                            $modelName = 'Unknown Model';
-                            if (!empty($m['name']) && is_array($m['name'])) {
-                                foreach ($m['name'] as $n) {
-                                    if (isset($n['languageCode']) && $n['languageCode'] === 'en') {
-                                        $modelName = $n['content'];
-                                        break;
-                                    } elseif (isset($n['languageCode']) && $n['languageCode'] === 'ko') {
-                                        $modelName = $n['content'];
+                <div class="dropdown">
+                    <button class="form-select text-start" type="button" id="modelDropdownBtn" data-bs-toggle="dropdown" aria-expanded="false" style="border-radius: 10px;">
+                        Choose a model...
+                    </button>
+                    <div class="dropdown-menu p-3 shadow-sm w-100" aria-labelledby="modelDropdownBtn" style="border-radius: 12px; max-height: 400px; overflow-y: auto;">
+                        <div class="row g-3">
+                            <?php if (!empty($models)): ?>
+                                <?php foreach ($models as $idx => $m): 
+                                    $modelName = 'Unknown Model';
+                                    if (!empty($m['name']) && is_array($m['name'])) {
+                                        foreach ($m['name'] as $n) {
+                                            if (isset($n['languageCode']) && $n['languageCode'] === 'en') {
+                                                $modelName = $n['content'];
+                                                break;
+                                            } elseif (isset($n['languageCode']) && $n['languageCode'] === 'ko') {
+                                                $modelName = $n['content'];
+                                            }
+                                        }
                                     }
-                                }
-                            }
-                            
-                            $modelDesc = '';
-                            if (!empty($m['description']) && is_array($m['description'])) {
-                                foreach ($m['description'] as $d) {
-                                    if (isset($d['languageCode']) && $d['languageCode'] === 'en') {
-                                        $modelDesc = $d['content'];
-                                        break;
-                                    } elseif (isset($d['languageCode']) && $d['languageCode'] === 'ko') {
-                                        $modelDesc = $d['content'];
+                                    
+                                    $modelDesc = '';
+                                    if (!empty($m['description']) && is_array($m['description'])) {
+                                        foreach ($m['description'] as $d) {
+                                            if (isset($d['languageCode']) && $d['languageCode'] === 'en') {
+                                                $modelDesc = $d['content'];
+                                                break;
+                                            } elseif (isset($d['languageCode']) && $d['languageCode'] === 'ko') {
+                                                $modelDesc = $d['content'];
+                                            }
+                                        }
                                     }
-                                }
-                            }
-                        ?>
-                        <div class="col-md-6">
-                            <input type="radio" class="btn-check" name="model_id" id="model_<?= esc($m['modelId']) ?>" value="<?= esc($m['modelId']) ?>" <?= $idx === 0 ? 'checked' : '' ?> required>
-                            <label class="btn btn-outline-primary w-100 text-start p-3 h-100 d-flex flex-column" for="model_<?= esc($m['modelId']) ?>" style="border-radius: 12px; transition: all 0.2s;">
-                                <div class="fw-bold mb-2 fs-6 d-flex align-items-center">
-                                    <i class="bi bi-cpu text-primary me-2 fs-5"></i>
-                                    <?= esc($modelName) ?>
+                                ?>
+                                <div class="col-md-6">
+                                    <input type="radio" class="btn-check model-radio" name="model_id" id="model_<?= esc($m['modelId']) ?>" value="<?= esc($m['modelId']) ?>" data-model-name="<?= esc($modelName) ?>" <?= $idx === 0 ? 'checked' : '' ?> required>
+                                    <label class="btn btn-outline-primary w-100 text-start p-3 h-100 d-flex flex-column" for="model_<?= esc($m['modelId']) ?>" style="border-radius: 12px; transition: all 0.2s;">
+                                        <div class="fw-bold mb-2 fs-6 d-flex align-items-center">
+                                            <i class="bi bi-cpu text-primary me-2 fs-5"></i>
+                                            <?= esc($modelName) ?>
+                                        </div>
+                                        <div class="small text-muted" style="white-space: normal; line-height: 1.4;">
+                                            <?= esc($modelDesc) ?>
+                                        </div>
+                                    </label>
                                 </div>
-                                <div class="small text-muted" style="white-space: normal; line-height: 1.4;">
-                                    <?= esc($modelDesc) ?>
-                                </div>
-                            </label>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <div class="col-12 text-muted">No models found. Please check your API configuration.</div>
+                            <?php endif; ?>
                         </div>
-                        <?php endforeach; ?>
-                    <?php else: ?>
-                        <div class="col-12 text-muted">No models found. Please check your API configuration.</div>
-                    <?php endif; ?>
+                    </div>
                 </div>
+                <div class="form-text mt-2 text-muted">Select which LLM model to use for analyzing the tasks.</div>
             </div>
 
             <div class="mb-4">
@@ -131,6 +139,23 @@ AI Report Generation
             const weekStr = weekNumber.toString().padStart(2, '0');
             weekInput.value = `${today.getFullYear()}-W${weekStr}`;
         }
+        
+        // Update dropdown button text with selected model name
+        const updateDropdownText = () => {
+            const checkedRadio = document.querySelector('.model-radio:checked');
+            if (checkedRadio) {
+                const modelName = checkedRadio.getAttribute('data-model-name');
+                document.getElementById('modelDropdownBtn').innerText = modelName;
+            }
+        };
+
+        // Attach event listeners to all model radio buttons
+        document.querySelectorAll('.model-radio').forEach(radio => {
+            radio.addEventListener('change', updateDropdownText);
+        });
+
+        // Initialize on load
+        updateDropdownText();
     });
     // Handle form submission properly for loading overlay
     document.getElementById('aiReportForm').addEventListener('submit', function(e) {

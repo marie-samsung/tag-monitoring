@@ -2477,6 +2477,26 @@ class TasksController extends BaseController
             $tagsData = $tagsBuilder->get()->getResultArray();
         }
 
+        // Group tasks by ticket ID to reduce AI API calls
+        $groupedTasks = [];
+        foreach ($tasks as $t) {
+            $ticket = trim($t['ticket'] ?? '');
+            if (!empty($ticket)) {
+                if (!isset($groupedTasks[$ticket])) {
+                    $groupedTasks[$ticket] = $t;
+                    $groupedTasks[$ticket]['tasks_combined_count'] = 1;
+                    $groupedTasks[$ticket]['combined_tasks_details'] = "Task 1: " . ($t['description'] ?? '');
+                } else {
+                    $groupedTasks[$ticket]['tasks_combined_count']++;
+                    $count = $groupedTasks[$ticket]['tasks_combined_count'];
+                    $groupedTasks[$ticket]['combined_tasks_details'] .= " | Task $count: " . ($t['description'] ?? '');
+                }
+            } else {
+                $groupedTasks['no_ticket_' . $t['id']] = $t;
+            }
+        }
+        $tasks = array_values($groupedTasks);
+
         $fabrixUrl = getenv('FABRIX_API_URL') ?: 'https://api.placeholder-fabrix.internal';
         $fabrixToken = getenv('FABRIX_API_TOKEN');
         $fabrixClient = getenv('FABRIX_CLIENT');
@@ -2504,7 +2524,7 @@ class TasksController extends BaseController
                 $task['subsidiary_name'] = $subName;
                 $task['status_name'] = $statusName;
                 
-                $prompt = "Analyze this specific task. Data: " . json_encode($task) . "
+                $prompt = "Analyze this specific task (which may contain combined sub-tasks if they share the same ticket). Data: " . json_encode($task) . "
 
 Format the task EXACTLY following this structure based on the provided data:
 ▣ [{subsidiary_name}] {title}
