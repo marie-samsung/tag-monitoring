@@ -2466,14 +2466,17 @@ class TasksController extends BaseController
             ->groupEnd()
         ->groupEnd();
         $builder->where('team_id', $teamId);
+        $builder->where('type !=', \App\Models\Constants::ACTIVITY_TYPE_RENEWAL);
 
         $tasks = $builder->get()->getResultArray();
 
         $tagsData = [];
-        if ($teamId == Constants::TEAM_MEDIA_TAGGING) {
+        if ($teamId == \App\Models\Constants::TEAM_MEDIA_TAGGING) {
             $tagsBuilder = $db->table('tags');
-            $tagsBuilder->where('DATE(created_at) >=', $startDate);
-            $tagsBuilder->where('DATE(created_at) <=', $endDate);
+            $tagsBuilder->select('tags.*, vendors.about as vendor_about, vendors.reason as vendor_reason, vendors.tag_purpose as vendor_tag_purpose, vendors.name as vendor_name');
+            $tagsBuilder->join('vendors', 'vendors.id = tags.vendor_id', 'left');
+            $tagsBuilder->where('DATE(tags.created_at) >=', $startDate);
+            $tagsBuilder->where('DATE(tags.created_at) <=', $endDate);
             $tagsData = $tagsBuilder->get()->getResultArray();
         }
 
@@ -2490,6 +2493,11 @@ class TasksController extends BaseController
             foreach ($comments as $c) {
                 $projectCommentsContext .= "- " . ($c['comment'] ?? '') . "\n";
             }
+        }
+        
+        $tagsContext = "";
+        if (!empty($tagsData)) {
+            $tagsContext = "Vendor/Tag Data for additional context (About, Purpose, Reason):\n" . json_encode($tagsData) . "\n\n";
         }
 
         // Group tasks by project and ticket ID to reduce AI API calls
@@ -2545,6 +2553,8 @@ class TasksController extends BaseController
                 $prompt = "Analyze this specific task (which may contain combined sub-tasks if they share the same ticket). 
                 
 $projectCommentsContext
+
+$tagsContext
 
 Data: " . json_encode($task) . "
 
