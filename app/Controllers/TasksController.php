@@ -2477,19 +2477,37 @@ class TasksController extends BaseController
             $tagsData = $tagsBuilder->get()->getResultArray();
         }
 
-        // Group tasks by ticket ID to reduce AI API calls
+        $projectName = \App\Models\Constants::TEAMS[$teamId] ?? 'Unknown Project';
+
+        $projectCommentsBuilder = $db->table('project_comments');
+        $projectCommentsBuilder->where('project_name', $projectName);
+        $comments = $projectCommentsBuilder->get()->getResultArray();
+        
+        $projectCommentsContext = "Project Comments for Context:\n";
+        if (empty($comments)) {
+            $projectCommentsContext .= "No comments available.\n";
+        } else {
+            foreach ($comments as $c) {
+                $projectCommentsContext .= "- " . ($c['comment'] ?? '') . "\n";
+            }
+        }
+
+        // Group tasks by project and ticket ID to reduce AI API calls
         $groupedTasks = [];
         foreach ($tasks as $t) {
             $ticket = trim($t['ticket'] ?? '');
+            $team = $t['team_id'] ?? 0;
+            
             if (!empty($ticket)) {
-                if (!isset($groupedTasks[$ticket])) {
-                    $groupedTasks[$ticket] = $t;
-                    $groupedTasks[$ticket]['tasks_combined_count'] = 1;
-                    $groupedTasks[$ticket]['combined_tasks_details'] = "Task 1: " . ($t['description'] ?? '');
+                $groupKey = $team . '_' . $ticket;
+                if (!isset($groupedTasks[$groupKey])) {
+                    $groupedTasks[$groupKey] = $t;
+                    $groupedTasks[$groupKey]['tasks_combined_count'] = 1;
+                    $groupedTasks[$groupKey]['combined_tasks_details'] = "Task 1: " . ($t['description'] ?? '');
                 } else {
-                    $groupedTasks[$ticket]['tasks_combined_count']++;
-                    $count = $groupedTasks[$ticket]['tasks_combined_count'];
-                    $groupedTasks[$ticket]['combined_tasks_details'] .= " | Task $count: " . ($t['description'] ?? '');
+                    $groupedTasks[$groupKey]['tasks_combined_count']++;
+                    $count = $groupedTasks[$groupKey]['tasks_combined_count'];
+                    $groupedTasks[$groupKey]['combined_tasks_details'] .= " | Task $count: " . ($t['description'] ?? '');
                 }
             } else {
                 $groupedTasks['no_ticket_' . $t['id']] = $t;
@@ -2524,13 +2542,17 @@ class TasksController extends BaseController
                 $task['subsidiary_name'] = $subName;
                 $task['status_name'] = $statusName;
                 
-                $prompt = "Analyze this specific task (which may contain combined sub-tasks if they share the same ticket). Data: " . json_encode($task) . "
+                $prompt = "Analyze this specific task (which may contain combined sub-tasks if they share the same ticket). 
+                
+$projectCommentsContext
+
+Data: " . json_encode($task) . "
 
 Format the task EXACTLY following this structure based on the provided data:
 ▣ [{subsidiary_name}] {title}
     - Purpose: <Explain the purpose of the project in a professional, non-technical manner. DO NOT show any scripts or raw code>
     - Task: <Explain the task in a professional, non-technical manner>
-    - Current Status: <Status Name, started on start_date, requested on requested_date>
+    - Current Status: <Write a natural, conversational sentence explaining the current status using the provided dates. Example: 'This task is currently in progress, having started on [date].' or 'This project was completed on [date], after being requested on [date].'>
     - Next Steps: <What is the next logical step based on status>
     - Go-Live Date: <finished_date or estimate completion time>
 
