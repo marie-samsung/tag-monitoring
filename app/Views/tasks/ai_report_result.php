@@ -120,8 +120,13 @@ AI Report Results
                 }
         ?>
             <div class="col-12 col-xl-6 mb-4">
-                <div class="ai-report-card h-100">
-                    <h5>▣ <?= esc(trim($title)) ?></h5>
+                <div class="ai-report-card h-100 position-relative">
+                    <h5 class="d-flex justify-content-between align-items-center">
+                        ▣ <?= esc(trim($title)) ?>
+                        <button type="button" class="btn btn-sm btn-outline-secondary copy-btn" title="Copy" data-card-id="card-<?= esc($title) ?>">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                    </h5>
                     
                     <?php if (empty($fields)): ?>
                         <!-- Fallback if regex didn't parse fields strictly, just show raw lines -->
@@ -141,4 +146,24 @@ AI Report Results
         <?php } ?>
     </div>
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const buttons = document.querySelectorAll('.copy-btn');
+    buttons.forEach(btn => {
+      btn.addEventListener('click', function () {
+        const card = this.closest('.ai-report-card');
+        if (!card) return;
+        const text = card.innerText.trim();
+        navigator.clipboard.writeText(text).then(() => {
+          btn.innerHTML = '<i class="bi bi-check-lg"></i>'; // success icon
+          setTimeout(() => btn.innerHTML = '<i class="bi bi-clipboard"></i>', 2000);
+        }).catch(() => {
+          alert('Failed to copy text');
+        });
+      });
+    });
+  });
+</script>
+
 <?= $this->endSection() ?>

@@ -23,7 +23,7 @@ AI Report Generation
     <div class="d-flex justify-content-between align-items-center gap-3 mb-4 pb-3 border-bottom">
         <div>
             <h2 class="mb-0 fw-bold d-flex align-items-center gap-2">
-                <i class="bi bi-robot text-primary"></i> AI Report Generation
+                <i class="bi bi-robot text-primary"></i> AI Report Generation <span class="badge bg-warning text-dark ms-2" style="font-size: 0.5em; vertical-align: middle;">BETA</span>
             </h2>
             <p class="text-secondary small mb-0">Generate an automated weekly performance report using Samsung Fabrix AI.</p>
         </div>
