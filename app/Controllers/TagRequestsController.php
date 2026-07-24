@@ -318,6 +318,31 @@ class TagRequestsController extends BaseController
             $this->saveJiraHistory($request['tags'], $request['property_id'], $ticketId, Constants::JIRA_TYPE_NEW_RULE);
             $this->addTask($request, 'New Rule Request ', $ticketId);
 
+            if (!empty($request['new_tag_ticket'])) {
+                $taskModel = new TasksModel();
+                $tagTask = $taskModel->where('ticket_id', $request['new_tag_ticket'])->first();
+                if ($tagTask && $tagTask['status'] != Constants::ACTIVITY_LOGS_STATUS_COMPLETED) {
+                    $commentsModel = new TaskCommentsModel();
+                    $from = Constants::ACTIVITY_LOGS_STATUS[$tagTask['status']] ?? 'Unknown';
+                    $to = Constants::ACTIVITY_LOGS_STATUS[Constants::ACTIVITY_LOGS_STATUS_COMPLETED];
+
+                    $commentsModel->insert([
+                        'log_id' => $tagTask['id'],
+                        'comment' => "Status updated from [{$from}] to [{$to}] via New Rule Request creation",
+                        'commented_by' => session()->get('user_id') ?? 0,
+                        'type' => Constants::COMMENT_TYPE_UPDATE,
+                    ]);
+
+                    $taskModel->update($tagTask['id'], [
+                        'status' => Constants::ACTIVITY_LOGS_STATUS_COMPLETED,
+                        'finished_date' => date('Y-m-d')
+                    ]);
+
+                    $tasksController = new \App\Controllers\TasksController();
+                    $tasksController->updateJiraStatusFromTask($tagTask['id'], $tagTask['status'], Constants::ACTIVITY_LOGS_STATUS_COMPLETED);
+                }
+            }
+
             return view('tag-requests/create', [
                 'request_id' => $request['id'],
                 'request_type' => Constants::JIRA_TYPE_NEW_RULE,
