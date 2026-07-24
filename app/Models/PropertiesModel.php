@@ -96,7 +96,7 @@ class PropertiesModel extends Model
             $this->where('properties.is_shop', $filters['is_shop']);
         }
 
-        $sortBy = $filters['sort_by'] ?? 'name';
+        $sortBy = $filters['sort_by'] ?? 'subsidiary_id';
         $sortDir = $filters['sort_dir'] ?? 'asc';
         if (!in_array(strtolower($sortDir), ['asc', 'desc'])) {
             $sortDir = 'asc';
@@ -106,7 +106,7 @@ class PropertiesModel extends Model
         if (in_array($sortBy, $allowedColumns)) {
             $this->orderBy($sortBy, $sortDir);
         } else {
-            $this->orderBy('name', 'ASC');
+            $this->orderBy('subsidiary_id', 'ASC');
         }
 
         if ($paginate > 0) {

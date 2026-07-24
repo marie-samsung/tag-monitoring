@@ -53,6 +53,8 @@
     $emails2 = array_column($tagReqModelInst->select('requester_email')->distinct()->where('requester_email !=', '')->where('requester_email IS NOT NULL')->findAll(), 'requester_email');
     $requesterEmailsList = array_unique(array_merge($emails1, $emails2));
     sort($requesterEmailsList);
+
+    $user = session()->get('user_name') ?? 'User';
     ?>
 
     <?php if (isset($validation)): ?>
@@ -585,7 +587,7 @@
     <div class="apple-chat-window" id="appleChatWindow">
         <div class="apple-chat-header">
             <h3 class="apple-chat-title">
-                <i class="bi bi-robot"></i> Script AI
+                <i class="bi bi-robot"></i> JavaScript Assistant
             </h3>
             <select class="apple-model-select" id="aiModelSelect">
                 <?php if (!empty($aiModels)): ?>
@@ -626,7 +628,7 @@
             </select>
         </div>
         <div class="apple-chat-messages" id="appleChatMessages">
-            <div class="chat-message bot">Hello! I'm here to help you with editing the scripts. Select a model and ask me anything!</div>
+            <div class="chat-message bot">Hello <?= $user ?>! Do you need any script assistance today? 😊</div>
         </div>
         <div class="apple-chat-footer">
             <input type="text" class="apple-chat-input" id="appleChatInput" placeholder="Type a message...">
