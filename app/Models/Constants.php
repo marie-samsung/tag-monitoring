@@ -303,6 +303,40 @@ class Constants
         self::ACTIVITY_LOGS_STATUS_BLOCKED => 'Blocked/On Hold',
     ];
 
+    public const TAG_REQUEST_STATUS_REFERENCE_MAPPING = [
+        self::STATUS_REQUEST_HQ_REVIEW, self::STATUS_REQUEST_NEW_RULE_REQUEST_SUBMITTED => [
+            'task' => self::ACTIVITY_LOGS_STATUS_REVIEW,
+            'tag' => self::STATUS_PENDING_VERIFICATION,
+        ],
+        self::STATUS_REQUEST_PENDING_ITEMS => [
+            'task' => self::ACTIVITY_LOGS_STATUS_BLOCKED,
+            'tag' => self::STATUS_ON_HOLD,
+        ],
+        self::STATUS_REQUEST_APPROVED => [
+            'task' => self::ACTIVITY_LOGS_STATUS_COMPLETED,
+            'tag' => self::STATUS_NEW_TAG_SUBMITTED,
+        ],
+        self::STATUS_REQUEST_PUBLISHED => [
+            'task' => self::ACTIVITY_LOGS_STATUS_COMPLETED,
+            'tag' => self::STATUS_ENABLED,
+        ],
+    ];
+
+    public const TASK_STATUS_REFERENCE_MAPPING = [
+        self::ACTIVITY_LOGS_STATUS_REVIEW => [
+            'request' => self::STATUS_REQUEST_HQ_REVIEW,
+            'tag' => self::STATUS_PENDING_VERIFICATION
+        ],
+        self::ACTIVITY_LOGS_STATUS_COMPLETED => [
+            'request' => self::STATUS_REQUEST_PUBLISHED,
+            'tag' => self::STATUS_ENABLED
+        ],
+        self::ACTIVITY_LOGS_STATUS_BLOCKED => [
+            'request' => self::STATUS_REQUEST_PENDING_ITEMS,
+            'tag' => self::STATUS_ON_HOLD
+        ],
+    ];
+
     public const ACTIVITY_TYPE_TASK = 1;
     public const ACTIVITY_TYPE_SUPPORT = 2;
     public const ACTIVITY_TYPE_TROUBLESHOOTING = 3;
