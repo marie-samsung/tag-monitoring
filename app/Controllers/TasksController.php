@@ -2299,35 +2299,61 @@ class TasksController extends BaseController
         // Update Tag Status
         if (isset($mapping['tag']) && ($log['type'] == Constants::ACTIVITY_TYPE_RENEWAL || $log['type'] == Constants::ACTIVITY_TYPE_REQUEST) && $log['team_id'] == Constants::TEAM_MEDIA_TAGGING) {
             if (!empty($log['ticket_id'])) {
-                $jiraHistoryModel = new \App\Models\JiraHistoryModel();
-                $jiraTickets = $jiraHistoryModel->where('ticket_id', $log['ticket_id'])->findAll();
-                if (!empty($jiraTickets)) {
-                    $tagIds = [];
-                    foreach ($jiraTickets as $jt) {
-                        if (!empty($jt['tag_id'])) {
-                            $tagIds[] = (int) $jt['tag_id'];
+                $tagIds = [];
+                
+                // 1. Try to get tags directly from Tag Requests
+                $tagRequestsModel = new \App\Models\TagRequestsModel();
+                $requests = $tagRequestsModel->groupStart()
+                    ->where('new_tag_ticket', $log['ticket_id'])
+                    ->orWhere('new_rule_ticket', $log['ticket_id'])
+                    ->groupEnd()
+                    ->findAll();
+                    
+                foreach ($requests as $request) {
+                    if (!empty($request['tags'])) {
+                        $rawIds = explode(',', $request['tags']);
+                        foreach ($rawIds as $rid) {
+                            if (is_numeric(trim($rid))) {
+                                $tagIds[] = (int) trim($rid);
+                            }
                         }
-                        if (!empty($jt['comments'])) {
-                            $rawIds = explode(',', $jt['comments']);
-                            foreach ($rawIds as $rid) {
-                                if (is_numeric(trim($rid))) {
-                                    $tagIds[] = (int) trim($rid);
+                    }
+                }
+
+                // 2. Fallback to JiraHistoryModel
+                if (empty($tagIds)) {
+                    $jiraHistoryModel = new \App\Models\JiraHistoryModel();
+                    $jiraTickets = $jiraHistoryModel->where('ticket_id', $log['ticket_id'])->findAll();
+                    if (!empty($jiraTickets)) {
+                        foreach ($jiraTickets as $jt) {
+                            if (!empty($jt['tag_id'])) {
+                                $tagIds[] = (int) $jt['tag_id'];
+                            }
+                            if (!empty($jt['comments'])) {
+                                $rawIds = explode(',', $jt['comments']);
+                                foreach ($rawIds as $rid) {
+                                    if (is_numeric(trim($rid))) {
+                                        $tagIds[] = (int) trim($rid);
+                                    }
                                 }
                             }
                         }
                     }
-                    $tagIds = array_unique($tagIds);
-                    if (!empty($tagIds)) {
-                        $tagsModel = new \App\Models\TagsModel();
-                        $query = $tagsModel->whereIn('id', $tagIds);
+                }
 
-                        if ($mapping['tag'] == Constants::STATUS_PENDING_VERIFICATION) {
-                            $query->where('requested_date IS NOT NULL')
-                                  ->where("requested_date != ''");
-                        }
+                $tagIds = array_unique($tagIds);
+                if (!empty($tagIds)) {
+                    $tagsModel = new \App\Models\TagsModel();
+                    $query = $tagsModel->whereIn('id', $tagIds);
 
-                        $query->set(['status' => $mapping['tag']])->update();
+                    if ($mapping['tag'] == Constants::STATUS_PENDING_VERIFICATION && $log['type'] == Constants::ACTIVITY_TYPE_RENEWAL) {
+                        $query->groupStart()
+                              ->where('requested_date IS NOT NULL')
+                              ->where("requested_date != ''")
+                              ->groupEnd();
                     }
+
+                    $query->set(['status' => $mapping['tag']])->update();
                 }
             }
         }

@@ -869,35 +869,45 @@ class TagRequestsController extends BaseController
                     }
 
                     if (isset($mapping['tag'])) {
-                        $jiraHistoryModel = new \App\Models\JiraHistoryModel();
-                        $jiraTickets = $jiraHistoryModel->whereIn('ticket_id', $ticketIds)->findAll();
-                        if (!empty($jiraTickets)) {
-                            $tagIds = [];
-                            foreach ($jiraTickets as $jt) {
-                                if (!empty($jt['tag_id'])) {
-                                    $tagIds[] = (int) $jt['tag_id'];
+                        $tagIds = [];
+                        
+                        // 1. Get tags directly from the tag request
+                        if (!empty($request['tags'])) {
+                            $rawIds = explode(',', $request['tags']);
+                            foreach ($rawIds as $rid) {
+                                if (is_numeric(trim($rid))) {
+                                    $tagIds[] = (int) trim($rid);
                                 }
-                                if (!empty($jt['comments'])) {
-                                    $rawIds = explode(',', $jt['comments']);
-                                    foreach ($rawIds as $rid) {
-                                        if (is_numeric(trim($rid))) {
-                                            $tagIds[] = (int) trim($rid);
+                            }
+                        }
+                        
+                        // 2. Fallback to JiraHistory if empty
+                        if (empty($tagIds)) {
+                            $jiraHistoryModel = new \App\Models\JiraHistoryModel();
+                            $jiraTickets = $jiraHistoryModel->whereIn('ticket_id', $ticketIds)->findAll();
+                            if (!empty($jiraTickets)) {
+                                foreach ($jiraTickets as $jt) {
+                                    if (!empty($jt['tag_id'])) {
+                                        $tagIds[] = (int) $jt['tag_id'];
+                                    }
+                                    if (!empty($jt['comments'])) {
+                                        $rawIds = explode(',', $jt['comments']);
+                                        foreach ($rawIds as $rid) {
+                                            if (is_numeric(trim($rid))) {
+                                                $tagIds[] = (int) trim($rid);
+                                            }
                                         }
                                     }
                                 }
                             }
-                            $tagIds = array_unique($tagIds);
-                            if (!empty($tagIds)) {
-                                $tagsModel = new \App\Models\TagsModel();
-                                $query = $tagsModel->whereIn('id', $tagIds);
+                        }
 
-                                if ($mapping['tag'] == Constants::STATUS_PENDING_VERIFICATION) {
-                                    $query->where('requested_date IS NOT NULL')
-                                          ->where("requested_date != ''");
-                                }
+                        $tagIds = array_unique($tagIds);
+                        if (!empty($tagIds)) {
+                            $tagsModel = new \App\Models\TagsModel();
+                            $query = $tagsModel->whereIn('id', $tagIds);
 
-                                $query->set(['status' => $mapping['tag']])->update();
-                            }
+                            $query->set(['status' => $mapping['tag']])->update();
                         }
                     }
                 }
