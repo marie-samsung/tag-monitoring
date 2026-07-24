@@ -333,15 +333,10 @@ class TasksController extends BaseController
 
         $model->update($id, $updateData);
 
-        if ($updateData['status'] == Constants::ACTIVITY_LOGS_STATUS_BLOCKED) {
+        if (isset(Constants::TASK_STATUS_REFERENCE_MAPPING[$updateData['status']])) {
             $updatedLog = $model->find($id);
             if ($updatedLog) {
-                $this->updateRelatedTagsStatusToOnHold($updatedLog);
-            }
-        } elseif ($updateData['status'] == Constants::ACTIVITY_LOGS_STATUS_REVIEW) {
-            $updatedLog = $model->find($id);
-            if ($updatedLog) {
-                $this->updateRelatedTagsStatusToPendingVerification($updatedLog);
+                $this->updateRelatedStatuses($updatedLog);
             }
         }
 
@@ -883,15 +878,10 @@ class TasksController extends BaseController
 
             $model->update($id, $updateData);
 
-            if ($status == Constants::ACTIVITY_LOGS_STATUS_BLOCKED) {
+            if (isset(Constants::TASK_STATUS_REFERENCE_MAPPING[$status])) {
                 $updatedLog = $model->find($id);
                 if ($updatedLog) {
-                    $this->updateRelatedTagsStatusToOnHold($updatedLog);
-                }
-            } elseif ($status == Constants::ACTIVITY_LOGS_STATUS_REVIEW) {
-                $updatedLog = $model->find($id);
-                if ($updatedLog) {
-                    $this->updateRelatedTagsStatusToPendingVerification($updatedLog);
+                    $this->updateRelatedStatuses($updatedLog);
                 }
             }
 
@@ -1285,15 +1275,10 @@ class TasksController extends BaseController
 
                 $model->update($id, $updateData);
 
-                if ($status == Constants::ACTIVITY_LOGS_STATUS_BLOCKED) {
+                if (isset(Constants::TASK_STATUS_REFERENCE_MAPPING[$status])) {
                     $updatedLog = $model->find($id);
                     if ($updatedLog) {
-                        $this->updateRelatedTagsStatusToOnHold($updatedLog);
-                    }
-                } elseif ($status == Constants::ACTIVITY_LOGS_STATUS_REVIEW) {
-                    $updatedLog = $model->find($id);
-                    if ($updatedLog) {
-                        $this->updateRelatedTagsStatusToPendingVerification($updatedLog);
+                        $this->updateRelatedStatuses($updatedLog);
                     }
                 }
 
@@ -2303,9 +2288,16 @@ class TasksController extends BaseController
         }
     }
 
-    private function updateRelatedTagsStatusToOnHold($log)
+    private function updateRelatedStatuses($log)
     {
-        if (($log['type'] == Constants::ACTIVITY_TYPE_RENEWAL || $log['type'] == Constants::ACTIVITY_TYPE_REQUEST) && $log['team_id'] == Constants::TEAM_MEDIA_TAGGING) {
+        if (!isset(Constants::TASK_STATUS_REFERENCE_MAPPING[$log['status']])) {
+            return;
+        }
+
+        $mapping = Constants::TASK_STATUS_REFERENCE_MAPPING[$log['status']];
+
+        // Update Tag Status
+        if (isset($mapping['tag']) && ($log['type'] == Constants::ACTIVITY_TYPE_RENEWAL || $log['type'] == Constants::ACTIVITY_TYPE_REQUEST) && $log['team_id'] == Constants::TEAM_MEDIA_TAGGING) {
             if (!empty($log['ticket_id'])) {
                 $jiraHistoryModel = new \App\Models\JiraHistoryModel();
                 $jiraTickets = $jiraHistoryModel->where('ticket_id', $log['ticket_id'])->findAll();
@@ -2327,43 +2319,31 @@ class TasksController extends BaseController
                     $tagIds = array_unique($tagIds);
                     if (!empty($tagIds)) {
                         $tagsModel = new \App\Models\TagsModel();
-                        $tagsModel->whereIn('id', $tagIds)->set(['status' => Constants::STATUS_ON_HOLD])->update();
+                        $query = $tagsModel->whereIn('id', $tagIds);
+
+                        if ($mapping['tag'] == Constants::STATUS_PENDING_VERIFICATION) {
+                            $query->where('requested_date IS NOT NULL')
+                                  ->where("requested_date != ''");
+                        }
+
+                        $query->set(['status' => $mapping['tag']])->update();
                     }
                 }
             }
         }
-    }
 
-    private function updateRelatedTagsStatusToPendingVerification($log)
-    {
-        if (($log['type'] == Constants::ACTIVITY_TYPE_RENEWAL || $log['type'] == Constants::ACTIVITY_TYPE_REQUEST) && $log['team_id'] == Constants::TEAM_MEDIA_TAGGING) {
-            if (!empty($log['ticket_id'])) {
-                $jiraHistoryModel = new \App\Models\JiraHistoryModel();
-                $jiraTickets = $jiraHistoryModel->where('ticket_id', $log['ticket_id'])->findAll();
-                if (!empty($jiraTickets)) {
-                    $tagIds = [];
-                    foreach ($jiraTickets as $jt) {
-                        if (!empty($jt['tag_id'])) {
-                            $tagIds[] = (int) $jt['tag_id'];
-                        }
-                        if (!empty($jt['comments'])) {
-                            $rawIds = explode(',', $jt['comments']);
-                            foreach ($rawIds as $rid) {
-                                if (is_numeric(trim($rid))) {
-                                    $tagIds[] = (int) trim($rid);
-                                }
-                            }
-                        }
-                    }
-                    $tagIds = array_unique($tagIds);
-                    if (!empty($tagIds)) {
-                        $tagsModel = new \App\Models\TagsModel();
-                        $tagsModel->whereIn('id', $tagIds)
-                            ->where('requested_date IS NOT NULL')
-                            ->where("requested_date != ''")
-                            ->set(['status' => Constants::STATUS_PENDING_VERIFICATION])
-                            ->update();
-                    }
+        // Update Tag Request Status
+        if (isset($mapping['request']) && !empty($log['ticket_id'])) {
+            $tagRequestsModel = new \App\Models\TagRequestsModel();
+            $requests = $tagRequestsModel->groupStart()
+                ->where('new_tag_ticket', $log['ticket_id'])
+                ->orWhere('new_rule_ticket', $log['ticket_id'])
+                ->groupEnd()
+                ->findAll();
+
+            foreach ($requests as $request) {
+                if ($request['status'] != $mapping['request']) {
+                    $tagRequestsModel->update($request['id'], ['status' => $mapping['request']]);
                 }
             }
         }

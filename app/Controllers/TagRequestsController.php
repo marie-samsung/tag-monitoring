@@ -828,9 +828,10 @@ class TagRequestsController extends BaseController
         $status = $this->request->getPost('status');
 
         if ($model->update($id, ['status' => $status])) {
-            if ($status == Constants::STATUS_REQUEST_APPROVED || $status == Constants::STATUS_REQUEST_PUBLISHED) {
+            if (isset(Constants::TAG_REQUEST_STATUS_REFERENCE_MAPPING[$status])) {
+                $mapping = Constants::TAG_REQUEST_STATUS_REFERENCE_MAPPING[$status];
                 $request = $model->find($id);
-                
+
                 $ticketIds = [];
                 if (!empty($request['new_tag_ticket'])) {
                     $ticketIds[] = $request['new_tag_ticket'];
@@ -838,104 +839,65 @@ class TagRequestsController extends BaseController
                 if (!empty($request['new_rule_ticket'])) {
                     $ticketIds[] = $request['new_rule_ticket'];
                 }
-                
+
                 if (!empty($ticketIds)) {
-                    $taskModel = new TasksModel();
-                    $tasks = $taskModel->whereIn('ticket_id', $ticketIds)->findAll();
-                    
-                    foreach ($tasks as $task) {
-                        if ($task['status'] != Constants::ACTIVITY_LOGS_STATUS_COMPLETED) {
-                            $commentsModel = new TaskCommentsModel();
-                            $from = Constants::ACTIVITY_LOGS_STATUS[$task['status']];
-                            $to = Constants::ACTIVITY_LOGS_STATUS[Constants::ACTIVITY_LOGS_STATUS_COMPLETED];
+                    if (isset($mapping['task'])) {
+                        $taskModel = new TasksModel();
+                        $tasks = $taskModel->whereIn('ticket_id', $ticketIds)->findAll();
 
-                            $commentsModel->insert([
-                                'log_id' => $task['id'],
-                                'comment' => "Status updated from [{$from}] to [{$to}]",
-                                'commented_by' => session()->get('user_id') ?? 0,
-                                'type' => Constants::COMMENT_TYPE_UPDATE,
-                            ]);
+                        foreach ($tasks as $task) {
+                            if ($task['status'] != $mapping['task']) {
+                                $commentsModel = new TaskCommentsModel();
+                                $from = Constants::ACTIVITY_LOGS_STATUS[$task['status']] ?? 'Unknown';
+                                $to = Constants::ACTIVITY_LOGS_STATUS[$mapping['task']] ?? 'Unknown';
 
-                            $taskModel->update($task['id'], [
-                                'status' => Constants::ACTIVITY_LOGS_STATUS_COMPLETED,
-                            ]);
+                                $commentsModel->insert([
+                                    'log_id' => $task['id'],
+                                    'comment' => "Status updated from [{$from}] to [{$to}] via Tag Request",
+                                    'commented_by' => session()->get('user_id') ?? 0,
+                                    'type' => Constants::COMMENT_TYPE_UPDATE,
+                                ]);
 
-                            $tasksController = new \App\Controllers\TasksController();
-                            $tasksController->updateJiraStatusFromTask($task['id'], $task['status'], Constants::ACTIVITY_LOGS_STATUS_COMPLETED);
+                                $taskModel->update($task['id'], [
+                                    'status' => $mapping['task'],
+                                ]);
+
+                                $tasksController = new \App\Controllers\TasksController();
+                                $tasksController->updateJiraStatusFromTask($task['id'], $task['status'], $mapping['task']);
+                            }
                         }
                     }
-                }
-            } elseif ($status == Constants::STATUS_REQUEST_PENDING_ITEMS) {
-                $request = $model->find($id);
-                
-                $ticketIds = [];
-                if (!empty($request['new_tag_ticket'])) {
-                    $ticketIds[] = $request['new_tag_ticket'];
-                }
-                if (!empty($request['new_rule_ticket'])) {
-                    $ticketIds[] = $request['new_rule_ticket'];
-                }
-                
-                if (!empty($ticketIds)) {
-                    $taskModel = new TasksModel();
-                    $tasks = $taskModel->whereIn('ticket_id', $ticketIds)->findAll();
-                    
-                    foreach ($tasks as $task) {
-                        if ($task['status'] != Constants::ACTIVITY_LOGS_STATUS_BLOCKED) {
-                            $commentsModel = new TaskCommentsModel();
-                            $from = Constants::ACTIVITY_LOGS_STATUS[$task['status']];
-                            $to = Constants::ACTIVITY_LOGS_STATUS[Constants::ACTIVITY_LOGS_STATUS_BLOCKED];
 
-                            $commentsModel->insert([
-                                'log_id' => $task['id'],
-                                'comment' => "Status updated from [{$from}] to [{$to}]",
-                                'commented_by' => session()->get('user_id') ?? 0,
-                                'type' => Constants::COMMENT_TYPE_UPDATE,
-                            ]);
+                    if (isset($mapping['tag'])) {
+                        $jiraHistoryModel = new \App\Models\JiraHistoryModel();
+                        $jiraTickets = $jiraHistoryModel->whereIn('ticket_id', $ticketIds)->findAll();
+                        if (!empty($jiraTickets)) {
+                            $tagIds = [];
+                            foreach ($jiraTickets as $jt) {
+                                if (!empty($jt['tag_id'])) {
+                                    $tagIds[] = (int) $jt['tag_id'];
+                                }
+                                if (!empty($jt['comments'])) {
+                                    $rawIds = explode(',', $jt['comments']);
+                                    foreach ($rawIds as $rid) {
+                                        if (is_numeric(trim($rid))) {
+                                            $tagIds[] = (int) trim($rid);
+                                        }
+                                    }
+                                }
+                            }
+                            $tagIds = array_unique($tagIds);
+                            if (!empty($tagIds)) {
+                                $tagsModel = new \App\Models\TagsModel();
+                                $query = $tagsModel->whereIn('id', $tagIds);
 
-                            $taskModel->update($task['id'], [
-                                'status' => Constants::ACTIVITY_LOGS_STATUS_BLOCKED,
-                            ]);
+                                if ($mapping['tag'] == Constants::STATUS_PENDING_VERIFICATION) {
+                                    $query->where('requested_date IS NOT NULL')
+                                          ->where("requested_date != ''");
+                                }
 
-                            $tasksController = new \App\Controllers\TasksController();
-                            $tasksController->updateJiraStatusFromTask($task['id'], $task['status'], Constants::ACTIVITY_LOGS_STATUS_BLOCKED);
-                        }
-                    }
-                }
-            } elseif ($status == Constants::STATUS_REQUEST_REJECTED) {
-                $request = $model->find($id);
-                
-                $ticketIds = [];
-                if (!empty($request['new_tag_ticket'])) {
-                    $ticketIds[] = $request['new_tag_ticket'];
-                }
-                if (!empty($request['new_rule_ticket'])) {
-                    $ticketIds[] = $request['new_rule_ticket'];
-                }
-                
-                if (!empty($ticketIds)) {
-                    $taskModel = new TasksModel();
-                    $tasks = $taskModel->whereIn('ticket_id', $ticketIds)->findAll();
-                    
-                    foreach ($tasks as $task) {
-                        if ($task['status'] != Constants::ACTIVITY_LOGS_STATUS_CANCELLED) {
-                            $commentsModel = new TaskCommentsModel();
-                            $from = Constants::ACTIVITY_LOGS_STATUS[$task['status']];
-                            $to = Constants::ACTIVITY_LOGS_STATUS[Constants::ACTIVITY_LOGS_STATUS_CANCELLED];
-
-                            $commentsModel->insert([
-                                'log_id' => $task['id'],
-                                'comment' => "Status updated from [{$from}] to [{$to}]",
-                                'commented_by' => session()->get('user_id') ?? 0,
-                                'type' => Constants::COMMENT_TYPE_UPDATE,
-                            ]);
-
-                            $taskModel->update($task['id'], [
-                                'status' => Constants::ACTIVITY_LOGS_STATUS_CANCELLED,
-                            ]);
-
-                            $tasksController = new \App\Controllers\TasksController();
-                            $tasksController->updateJiraStatusFromTask($task['id'], $task['status'], Constants::ACTIVITY_LOGS_STATUS_CANCELLED);
+                                $query->set(['status' => $mapping['tag']])->update();
+                            }
                         }
                     }
                 }

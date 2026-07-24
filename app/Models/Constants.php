@@ -304,7 +304,11 @@ class Constants
     ];
 
     public const TAG_REQUEST_STATUS_REFERENCE_MAPPING = [
-        self::STATUS_REQUEST_HQ_REVIEW, self::STATUS_REQUEST_NEW_RULE_REQUEST_SUBMITTED => [
+        self::STATUS_REQUEST_HQ_REVIEW => [
+            'task' => self::ACTIVITY_LOGS_STATUS_REVIEW,
+            'tag' => self::STATUS_PENDING_VERIFICATION,
+        ],
+        self::STATUS_REQUEST_NEW_RULE_REQUEST_SUBMITTED => [
             'task' => self::ACTIVITY_LOGS_STATUS_REVIEW,
             'tag' => self::STATUS_PENDING_VERIFICATION,
         ],
