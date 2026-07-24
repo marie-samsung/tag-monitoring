@@ -2294,6 +2294,11 @@ class TasksController extends BaseController
             return;
         }
 
+        // Do not update tags or tag-requests if this is a "New Tag Request" task that was just completed
+        if ($log['status'] == Constants::ACTIVITY_LOGS_STATUS_COMPLETED && stripos($log['title'], 'New Tag Request') !== false) {
+            return;
+        }
+
         $mapping = Constants::TASK_STATUS_REFERENCE_MAPPING[$log['status']];
 
         // Update Tag Status
