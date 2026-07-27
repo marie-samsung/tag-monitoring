@@ -77,6 +77,10 @@ Upload Tag Request Form
                             <td class="fw-bold text-secondary" style="padding: 12px 16px;">Background</td>
                             <td style="padding: 12px 16px;"><?= nl2br(esc($extracted_data['background'] ?: '—')) ?></td>
                         </tr>
+                        <tr>
+                            <td class="fw-bold text-secondary" style="padding: 12px 16px;">Objective</td>
+                            <td style="padding: 12px 16px;"><?= nl2br(esc($extracted_data['objective'] ?: '—')) ?></td>
+                        </tr>
                         
                         <!-- Answers to the 5 standard questions -->
                         <?php 
@@ -122,6 +126,7 @@ Upload Tag Request Form
             <input type="hidden" name="requester_email" value="<?= esc($extracted_data['requester_email'] ?? '') ?>">
             <input type="hidden" name="tag_script" value="<?= esc($extracted_data['tag_script'] ?? '') ?>">
             <input type="hidden" name="background" value="<?= esc($extracted_data['background'] ?? '') ?>">
+            <input type="hidden" name="objective" value="<?= esc($extracted_data['objective'] ?? '') ?>">
             <input type="hidden" name="q1" value="<?= esc($extracted_data['q1'] ?? '') ?>">
             <input type="hidden" name="q2" value="<?= esc($extracted_data['q2'] ?? '') ?>">
             <input type="hidden" name="q3" value="<?= esc($extracted_data['q3'] ?? '') ?>">
