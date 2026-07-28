@@ -320,7 +320,10 @@ class TagRequestsController extends BaseController
 
             if (!empty($request['new_tag_ticket'])) {
                 $taskModel = new TasksModel();
-                $tagTask = $taskModel->where('ticket_id', $request['new_tag_ticket'])->first();
+                $tagTask = $taskModel
+                    ->where('ticket_id', $request['new_tag_ticket'])
+                    ->whereNotIn('status', [Constants::ACTIVITY_LOGS_STATUS_COMPLETED])
+                    ->first();
                 if ($tagTask && $tagTask['status'] != Constants::ACTIVITY_LOGS_STATUS_COMPLETED) {
                     $commentsModel = new TaskCommentsModel();
                     $from = Constants::ACTIVITY_LOGS_STATUS[$tagTask['status']] ?? 'Unknown';
