@@ -51,7 +51,12 @@ class ReportsController extends BaseController
         echo '<body>';
 
         echo '<h2>Weekly Performance & Activity Report</h2>';
-        echo '<p>Period: <b>' . esc($data['start_date']) . '</b> to <b>' . esc($data['end_date']) . '</b></p>';
+        echo '<p>Period: <b>' . esc($data['start_date']) . '</b> to <b>' . esc($data['end_date']) . '</b>';
+        if (!empty($data['team_id'])) {
+            $teamName = Constants::TEAMS[$data['team_id']] ?? 'Unknown';
+            echo ' | Team: <b>' . esc($teamName) . '</b>';
+        }
+        echo '</p>';
         echo '<p>Generated At: ' . date('d-m-Y H:i:s') . '</p>';
         echo '<br>';
 
@@ -244,9 +249,12 @@ class ReportsController extends BaseController
         // 2. Determine User Role and Team restrictions
         $userId = session()->get('user_id');
         $userRole = Constants::USER_ACCESS_LEVELS[$userId] ?? null;
-        $userTeam = null;
-        if ($userRole !== Constants::USER_ROLE_ADMIN) {
-            $userTeam = Constants::USER_TEAMS[$userId] ?? null;
+        $teamParam = $this->request->getGet('team_id');
+        $selectedTeam = null;
+        if ($teamParam !== null && $teamParam !== '') {
+            $selectedTeam = (int)$teamParam;
+        } elseif ($userRole !== Constants::USER_ROLE_ADMIN) {
+            $selectedTeam = Constants::USER_TEAMS[$userId] ?? null;
         }
 
         // 3. Query Completed Tasks (Finished within range)
@@ -254,8 +262,8 @@ class ReportsController extends BaseController
             ->where('status', Constants::ACTIVITY_LOGS_STATUS_COMPLETED)
             ->where('finished_date >=', $startDate)
             ->where('finished_date <=', $endDate);
-        if ($userTeam !== null) {
-            $completedTasksQuery->where('team_id', $userTeam);
+        if ($selectedTeam !== null) {
+            $completedTasksQuery->where('team_id', $selectedTeam);
         }
         $completedTasks = $completedTasksQuery->orderBy('finished_date', 'DESC')->findAll();
 
@@ -263,8 +271,8 @@ class ReportsController extends BaseController
         $newTasksQuery = $tasksModel
             ->where('created_at >=', $startDateQuery)
             ->where('created_at <=', $endDateQuery);
-        if ($userTeam !== null) {
-            $newTasksQuery->where('team_id', $userTeam);
+        if ($selectedTeam !== null) {
+            $newTasksQuery->where('team_id', $selectedTeam);
         }
         $newTasks = $newTasksQuery->orderBy('created_at', 'DESC')->findAll();
 
@@ -278,8 +286,8 @@ class ReportsController extends BaseController
                     ->where('finished_date >', $endDate)
                 ->groupEnd()
             ->groupEnd();
-        if ($userTeam !== null) {
-            $ongoingTasksQuery->where('team_id', $userTeam);
+        if ($selectedTeam !== null) {
+            $ongoingTasksQuery->where('team_id', $selectedTeam);
         }
         $ongoingTasks = $ongoingTasksQuery->orderBy('priority', 'DESC')->orderBy('created_at', 'DESC')->findAll();
 
@@ -394,6 +402,7 @@ class ReportsController extends BaseController
             'week' => $week,
             'start_date' => $startDate,
             'end_date' => $endDate,
+            'team_id' => $selectedTeam,
             'completed_tasks' => $completedTasks,
             'new_tasks' => $newTasks,
             'ongoing_tasks' => $ongoingTasks,

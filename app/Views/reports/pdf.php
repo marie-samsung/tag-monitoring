@@ -339,6 +339,9 @@
             <p class="report-subtitle">Martech Media Tagging System Audit</p>
         </div>
         <div class="report-meta">
+            <?php if (!empty($team_id) && isset(Constants::TEAMS[$team_id])): ?>
+                <div>Team: <strong><?= esc(Constants::TEAMS[$team_id]) ?></strong></div>
+            <?php endif; ?>
             <div>Period: <strong><?= esc(date('d-m-Y', strtotime($start_date))) ?> to
                     <?= esc(date('d-m-Y', strtotime($end_date))) ?></strong></div>
             <div>Generated: <strong><?= date('d-m-Y H:i') ?></strong></div>

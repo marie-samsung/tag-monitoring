@@ -130,7 +130,7 @@ Weekly Reports & Analytics
         <form method="get" action="<?= site_url('reports') ?>" id="report-filter-form">
             <div class="row align-items-end g-3">
                 <!-- Week Picker -->
-                <div class="col-md-4 col-sm-6">
+                <div class="col-lg-3 col-md-6">
                     <label class="form-label small fw-semibold text-secondary mb-1.5">Select Week (ISO format)</label>
                     <div class="input-group">
                         <input type="week" name="week" class="form-control form-control-xs" value="<?= esc($week) ?>" onchange="clearCustomDates()" style="height: 36px; border-radius: 20px 0 0 20px; border-right: 0;">
@@ -140,7 +140,7 @@ Weekly Reports & Analytics
                 </div>
 
                 <!-- Custom Date Range -->
-                <div class="col-md-4 col-sm-12">
+                <div class="col-lg-3 col-md-6">
                     <label class="form-label small fw-semibold text-secondary mb-1.5">Custom Date Range</label>
                     <div class="d-flex align-items-center gap-2 w-100">
                         <div class="position-relative flex-grow-1">
@@ -155,8 +155,19 @@ Weekly Reports & Analytics
                     </div>
                 </div>
 
+                <!-- Team Filter -->
+                <div class="col-lg-3 col-md-6">
+                    <label class="form-label small fw-semibold text-secondary mb-1.5">Team</label>
+                    <select name="team_id" class="form-select form-select-xs" style="height: 36px; border-radius: 20px;">
+                        <option value="">All Teams</option>
+                        <?php foreach (Constants::TEAMS as $val => $label): ?>
+                            <option value="<?= $val ?>" <?= (string)($team_id ?? '') === (string)$val ? 'selected' : '' ?>><?= esc($label) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
                 <!-- Quick actions -->
-                <div class="col-md-4 col-sm-12">
+                <div class="col-lg-3 col-md-6">
                     <label class="form-label small fw-semibold text-secondary mb-1.5">&nbsp;</label>
                     <div class="d-flex gap-2 w-100" style="height: 36px;">
                         <button type="submit" class="apple-btn-primary btn-sm flex-grow-1 px-3 d-flex align-items-center justify-content-center gap-1.5" style="height: 36px; border-radius: 20px; font-weight: 600;">
@@ -173,11 +184,14 @@ Weekly Reports & Analytics
 
     <!-- Active Period Display -->
     <div class="mb-4">
-        <h4 class="fw-bold mb-1 d-flex align-items-center gap-2">
+        <h4 class="fw-bold mb-1 d-flex align-items-center gap-2 flex-wrap">
             <span class="badge bg-primary rounded-pill px-2.5" style="font-size: 0.8rem; font-weight: 600;">Active Period</span>
+            <?php if (!empty($team_id) && isset(Constants::TEAMS[$team_id])): ?>
+                <span class="badge bg-secondary rounded-pill px-2.5" style="font-size: 0.8rem; font-weight: 600;">Team: <?= esc(Constants::TEAMS[$team_id]) ?></span>
+            <?php endif; ?>
             <span>Week of <?= date('d M Y', strtotime($start_date)) ?> to <?= date('d M Y', strtotime($end_date)) ?></span>
         </h4>
-        <p class="text-muted small mb-0">Showing metrics based on date boundaries: <code><?= esc($start_date) ?></code> to <code><?= esc($end_date) ?></code></p>
+        <p class="text-muted small mb-0">Showing metrics based on date boundaries: <code><?= esc($start_date) ?></code> to <code><?= esc($end_date) ?></code><?= !empty($team_id) && isset(Constants::TEAMS[$team_id]) ? ' for team <code>' . esc(Constants::TEAMS[$team_id]) . '</code>' : '' ?></p>
     </div>
 
     <!-- KPI Summary Row -->
