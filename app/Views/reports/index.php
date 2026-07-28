@@ -271,10 +271,10 @@ Weekly Reports & Analytics
             </div>
         </div>
 
-        <!-- Chart 3: Subsidiary Tag Changes -->
+        <!-- Chart 3: Subsidiary Activity -->
         <div class="col-lg-4 col-md-12">
             <div class="report-kpi-card">
-                <h6 class="fw-bold mb-3"><i class="bi bi-building-fill me-2 text-info"></i>Tag Activity by Subsidiary</h6>
+                <h6 class="fw-bold mb-3"><i class="bi bi-building-fill me-2 text-info"></i>Activity by Subsidiary</h6>
                 <div class="chart-container">
                     <canvas id="reportsSubsidiaryChart"></canvas>
                 </div>
@@ -734,14 +734,14 @@ Weekly Reports & Analytics
             subCtx.font = "14px 'Inter'";
             subCtx.fillStyle = "#86868B";
             subCtx.textAlign = "center";
-            subCtx.fillText("No tag activities recorded for subsidiaries.", subCtx.canvas.width/2, subCtx.canvas.height/2);
+            subCtx.fillText("No activities recorded for subsidiaries.", subCtx.canvas.width/2, subCtx.canvas.height/2);
         } else {
             new Chart(subCtx, {
                 type: 'bar',
                 data: {
                     labels: Object.keys(activeSubs),
                     datasets: [{
-                        label: 'Tag Creations/Updates',
+                        label: 'Activities',
                         data: Object.values(activeSubs),
                         backgroundColor: 'rgba(16, 185, 129, 0.75)',
                         borderColor: 'rgb(16, 185, 129)',

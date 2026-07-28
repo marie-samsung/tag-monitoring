@@ -500,10 +500,10 @@
         </div>
 
         <div class="pdf-charts-row" style="page-break-before: always;">
-            <!-- Chart 3: Tag Activity by Subsidiary -->
+            <!-- Chart 3: Subsidiary Activity -->
             <div class="pdf-chart-col-full">
                 <div class="pdf-chart-card pdf-chart-subsidiary">
-                    <div class="pdf-chart-title">Tag Activity by Subsidiary</div>
+                    <div class="pdf-chart-title">Activity by Subsidiary</div>
                     <div class="pdf-chart-container" style="height: 240px;">
                         <canvas id="pdfSubsidiaryChart"></canvas>
                     </div>
@@ -704,14 +704,14 @@
                     subCtx.font = "12px 'Inter'";
                     subCtx.fillStyle = "#86868B";
                     subCtx.textAlign = "center";
-                    subCtx.fillText("No tag activities recorded for subsidiaries.", subCtx.canvas.width / 2, subCtx.canvas.height / 2);
+                    subCtx.fillText("No activities recorded for subsidiaries.", subCtx.canvas.width / 2, subCtx.canvas.height / 2);
                 } else {
                     new Chart(subCtx, {
                         type: 'bar',
                         data: {
                             labels: Object.keys(activeSubs),
                             datasets: [{
-                                label: 'Tag Creations/Updates',
+                                label: 'Activities',
                                 data: Object.values(activeSubs),
                                 backgroundColor: 'rgba(16, 185, 129, 0.75)',
                                 borderColor: 'rgb(16, 185, 129)',

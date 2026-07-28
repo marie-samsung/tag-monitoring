@@ -291,46 +291,52 @@ class ReportsController extends BaseController
         }
         $ongoingTasks = $ongoingTasksQuery->orderBy('priority', 'DESC')->orderBy('created_at', 'DESC')->findAll();
 
-        // 6. Query New Tag Requests (Created within range)
-        $newRequests = $tagRequestsModel
-            ->select('tag_requests.*, properties.name as property_name, vendors.name as vendor_name')
-            ->join('properties', 'properties.id = tag_requests.property_id', 'left')
-            ->join('vendors', 'vendors.id = tag_requests.vendor_id', 'left')
-            ->where('tag_requests.created_at >=', $startDateQuery)
-            ->where('tag_requests.created_at <=', $endDateQuery)
-            ->orderBy('tag_requests.created_at', 'DESC')
-            ->findAll();
+        // 6. Query New Tag Requests, Published Requests, and Tags
+        // Note: Tag Requests and Tags belong exclusively to Media Tagging team
+        if ($selectedTeam !== null && (int)$selectedTeam !== Constants::TEAM_MEDIA_TAGGING) {
+            $newRequests = [];
+            $publishedRequests = [];
+            $newTags = [];
+            $updatedTags = [];
+        } else {
+            $newRequests = $tagRequestsModel
+                ->select('tag_requests.*, properties.name as property_name, vendors.name as vendor_name')
+                ->join('properties', 'properties.id = tag_requests.property_id', 'left')
+                ->join('vendors', 'vendors.id = tag_requests.vendor_id', 'left')
+                ->where('tag_requests.created_at >=', $startDateQuery)
+                ->where('tag_requests.created_at <=', $endDateQuery)
+                ->orderBy('tag_requests.created_at', 'DESC')
+                ->findAll();
 
-        // 7. Query Published Requests (Published within range)
-        $publishedRequests = $tagRequestsModel
-            ->select('tag_requests.*, properties.name as property_name, vendors.name as vendor_name')
-            ->join('properties', 'properties.id = tag_requests.property_id', 'left')
-            ->join('vendors', 'vendors.id = tag_requests.vendor_id', 'left')
-            ->where('tag_requests.status', Constants::STATUS_REQUEST_PUBLISHED)
-            ->where('tag_requests.updated_at >=', $startDateQuery)
-            ->where('tag_requests.updated_at <=', $endDateQuery)
-            ->orderBy('tag_requests.updated_at', 'DESC')
-            ->findAll();
+            $publishedRequests = $tagRequestsModel
+                ->select('tag_requests.*, properties.name as property_name, vendors.name as vendor_name')
+                ->join('properties', 'properties.id = tag_requests.property_id', 'left')
+                ->join('vendors', 'vendors.id = tag_requests.vendor_id', 'left')
+                ->where('tag_requests.status', Constants::STATUS_REQUEST_PUBLISHED)
+                ->where('tag_requests.updated_at >=', $startDateQuery)
+                ->where('tag_requests.updated_at <=', $endDateQuery)
+                ->orderBy('tag_requests.updated_at', 'DESC')
+                ->findAll();
 
-        // 8. Query Tags Created / Updated
-        $newTags = $tagsModel
-            ->select('tags.*, properties.name as property_name, properties.subsidiary_id, vendors.name as vendor_name')
-            ->join('properties', 'properties.id = tags.property_id', 'left')
-            ->join('vendors', 'vendors.id = tags.vendor_id', 'left')
-            ->where('tags.created_at >=', $startDateQuery)
-            ->where('tags.created_at <=', $endDateQuery)
-            ->orderBy('tags.created_at', 'DESC')
-            ->findAll();
+            $newTags = $tagsModel
+                ->select('tags.*, properties.name as property_name, properties.subsidiary_id, vendors.name as vendor_name')
+                ->join('properties', 'properties.id = tags.property_id', 'left')
+                ->join('vendors', 'vendors.id = tags.vendor_id', 'left')
+                ->where('tags.created_at >=', $startDateQuery)
+                ->where('tags.created_at <=', $endDateQuery)
+                ->orderBy('tags.created_at', 'DESC')
+                ->findAll();
 
-        $updatedTags = $tagsModel
-            ->select('tags.*, properties.name as property_name, properties.subsidiary_id, vendors.name as vendor_name')
-            ->join('properties', 'properties.id = tags.property_id', 'left')
-            ->join('vendors', 'vendors.id = tags.vendor_id', 'left')
-            ->where('tags.updated_at >=', $startDateQuery)
-            ->where('tags.updated_at <=', $endDateQuery)
-            ->where('tags.created_at <', $startDateQuery)
-            ->orderBy('tags.updated_at', 'DESC')
-            ->findAll();
+            $updatedTags = $tagsModel
+                ->select('tags.*, properties.name as property_name, properties.subsidiary_id, vendors.name as vendor_name')
+                ->join('properties', 'properties.id = tags.property_id', 'left')
+                ->join('vendors', 'vendors.id = tags.vendor_id', 'left')
+                ->where('tags.updated_at >=', $startDateQuery)
+                ->where('tags.updated_at <=', $endDateQuery)
+                ->where('tags.created_at <', $startDateQuery)
+                ->orderBy('tags.updated_at', 'DESC')
+                ->findAll();
+        }
 
         // 9. Aggregate counts for charts
         // A. Task Status Counts
@@ -354,14 +360,28 @@ class ReportsController extends BaseController
             }
         }
 
-        // B. Subsidiary distribution (Tags Created/Updated or requests made)
+        // B. Subsidiary distribution (Tasks and Tag Activities across subsidiaries)
         $subsidiaryActivity = [];
-        foreach (Constants::SUBSIDIARIES as $id => $name) {
+        foreach (Constants::ACTIVITY_LOG_SUBSIDIARIES as $id => $name) {
             $subsidiaryActivity[$name] = 0;
+        }
+        foreach ($newTasks as $t) {
+            $subId = (int)$t['subsidiary_id'];
+            $subName = Constants::ACTIVITY_LOG_SUBSIDIARIES[$subId] ?? null;
+            if ($subName) {
+                $subsidiaryActivity[$subName]++;
+            }
+        }
+        foreach ($completedTasks as $t) {
+            $subId = (int)$t['subsidiary_id'];
+            $subName = Constants::ACTIVITY_LOG_SUBSIDIARIES[$subId] ?? null;
+            if ($subName) {
+                $subsidiaryActivity[$subName]++;
+            }
         }
         foreach ($newTags as $tag) {
             $subId = (int)$tag['subsidiary_id'];
-            $subName = Constants::SUBSIDIARIES[$subId] ?? null;
+            $subName = Constants::ACTIVITY_LOG_SUBSIDIARIES[$subId] ?? (Constants::SUBSIDIARIES[$subId] ?? null);
             if ($subName) {
                 $subsidiaryActivity[$subName]++;
             }
@@ -371,7 +391,7 @@ class ReportsController extends BaseController
             $db = \Config\Database::connect();
             $prop = $db->table('properties')->where('id', $req['property_id'])->get()->getRowArray();
             if ($prop) {
-                $subName = Constants::SUBSIDIARIES[$prop['subsidiary_id']] ?? null;
+                $subName = Constants::ACTIVITY_LOG_SUBSIDIARIES[$prop['subsidiary_id']] ?? (Constants::SUBSIDIARIES[$prop['subsidiary_id']] ?? null);
                 if ($subName) {
                     $subsidiaryActivity[$subName]++;
                 }
