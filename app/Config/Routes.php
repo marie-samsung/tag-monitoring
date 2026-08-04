@@ -120,6 +120,10 @@ $routes->group('tasks', function ($routes) {
     $routes->post('project-comments/delete', 'TasksController::deleteProjectComment');
     $routes->post('project-comments/restore', 'TasksController::restoreProjectComment');
     $routes->get('comments/(:num)', 'TasksController::getComments/$1');
+    $routes->post('ai-chat', 'TasksController::chatWithAi');
+    $routes->get('ai-history', 'TasksController::getAiChatHistory');
+    $routes->get('ai-history/(:num)', 'TasksController::getAiChatHistory/$1');
+    $routes->get('ai-conversation/(:num)', 'TasksController::getAiConversation/$1');
 });
 
 $routes->group('settings', function ($routes) {
