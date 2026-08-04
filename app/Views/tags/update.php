@@ -299,7 +299,7 @@
 /* Apple Style Chatbot */
 .apple-chat-widget {
     position: fixed;
-    bottom: 24px;
+    bottom: 80px;
     right: 24px;
     z-index: 1050;
     display: flex;
@@ -587,45 +587,60 @@
     <div class="apple-chat-window" id="appleChatWindow">
         <div class="apple-chat-header">
             <h3 class="apple-chat-title">
-                <i class="bi bi-robot"></i> JavaScript Assistant
+                <i class="bi bi-robot"></i> Script AI
             </h3>
-            <select class="apple-model-select" id="aiModelSelect">
-                <?php if (!empty($aiModels)): ?>
-                    <?php foreach ($aiModels as $model): ?>
-                        <?php 
-                        $modelName = 'Unknown Model';
-                        $modelDesc = '';
-                        if (isset($model['name']) && is_array($model['name'])) {
-                            foreach ($model['name'] as $nameObj) {
-                                $langCode = strtolower($nameObj['languagecode'] ?? $nameObj['languageCode'] ?? $nameObj['language'] ?? '');
-                                if ($langCode === 'en' || strpos($langCode, 'en') !== false) {
-                                    $modelName = $nameObj['content'] ?? $nameObj['conent'] ?? $modelName;
-                                    break;
+            <div class="d-flex align-items-center gap-2">
+                <select class="apple-model-select" id="aiModelSelect">
+                    <?php if (!empty($aiModels)): ?>
+                        <?php foreach ($aiModels as $model): ?>
+                            <?php 
+                            $modelName = 'Unknown Model';
+                            $modelDesc = '';
+                            if (isset($model['name']) && is_array($model['name'])) {
+                                foreach ($model['name'] as $nameObj) {
+                                    $langCode = strtolower($nameObj['languagecode'] ?? $nameObj['languageCode'] ?? $nameObj['language'] ?? '');
+                                    if ($langCode === 'en' || strpos($langCode, 'en') !== false) {
+                                        $modelName = $nameObj['content'] ?? $nameObj['conent'] ?? $modelName;
+                                        break;
+                                    }
+                                }
+                                if ($modelName === 'Unknown Model' && !empty($model['name'][0])) {
+                                    $modelName = $model['name'][0]['content'] ?? $model['name'][0]['conent'] ?? $modelName;
                                 }
                             }
-                            if ($modelName === 'Unknown Model' && !empty($model['name'][0])) {
-                                $modelName = $model['name'][0]['content'] ?? $model['name'][0]['conent'] ?? $modelName;
-                            }
-                        }
-                        if (isset($model['description']) && is_array($model['description'])) {
-                            foreach ($model['description'] as $descObj) {
-                                $langCode = strtolower($descObj['languagecode'] ?? $descObj['languageCode'] ?? $descObj['language'] ?? '');
-                                if ($langCode === 'en' || strpos($langCode, 'en') !== false) {
-                                    $modelDesc = $descObj['content'] ?? $descObj['conent'] ?? '';
-                                    break;
+                            if (isset($model['description']) && is_array($model['description'])) {
+                                foreach ($model['description'] as $descObj) {
+                                    $langCode = strtolower($descObj['languagecode'] ?? $descObj['languageCode'] ?? $descObj['language'] ?? '');
+                                    if ($langCode === 'en' || strpos($langCode, 'en') !== false) {
+                                        $modelDesc = $descObj['content'] ?? $descObj['conent'] ?? '';
+                                        break;
+                                    }
+                                }
+                                if (empty($modelDesc) && !empty($model['description'][0])) {
+                                    $modelDesc = $model['description'][0]['content'] ?? $model['description'][0]['conent'] ?? '';
                                 }
                             }
-                            if (empty($modelDesc) && !empty($model['description'][0])) {
-                                $modelDesc = $model['description'][0]['content'] ?? $model['description'][0]['conent'] ?? '';
-                            }
-                        }
-                        ?>
-                        <option value="<?= esc($model['modelId'] ?? '') ?>" data-description="<?= esc($modelDesc) ?>"><?= esc($modelName) ?></option>
-                    <?php endforeach; ?>
-                <?php else: ?>
-                    <option value="">No models available</option>
-                <?php endif; ?>
-            </select>
+                            ?>
+                            <option value="<?= esc($model['modelId'] ?? '') ?>" data-description="<?= esc($modelDesc) ?>"><?= esc($modelName) ?></option>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <option value="">No models available</option>
+                    <?php endif; ?>
+                </select>
+                <button class="btn btn-sm btn-light border d-flex align-items-center" id="aiChatHistoryBtn" title="History"><i class="bi bi-clock-history"></i></button>
+                <button class="btn btn-sm btn-light border d-flex align-items-center" id="aiChatNewBtn" title="New Chat"><i class="bi bi-plus-lg"></i></button>
+            </div>
+        </div>
+        
+        <!-- History Panel -->
+        <div class="apple-chat-history-panel" id="appleChatHistoryPanel" style="display: none; position: absolute; top: 69px; left: 0; width: 100%; height: calc(100% - 69px); background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); z-index: 10; flex-direction: column;">
+            <div class="p-2 border-bottom fw-bold d-flex justify-content-between align-items-center bg-light">
+                <span>Past Conversations</span>
+                <button class="btn-close" id="appleChatHistoryClose"></button>
+            </div>
+            <div class="list-group list-group-flush" id="appleChatHistoryList" style="overflow-y: auto; flex: 1;">
+                <!-- History items load here -->
+            </div>
         </div>
         <div class="apple-chat-messages" id="appleChatMessages">
             <div class="chat-message bot">Hello <?= $user ?>! Do you need any script assistance today? 😊</div>
@@ -638,7 +653,7 @@
         </div>
     </div>
     <button class="apple-chat-toggle" id="appleChatToggle" title="Toggle AI Chat">
-        <i class="bi bi-chat-dots-fill"></i>
+        <i class="bi bi-robot"></i>
     </button>
 </div>
 
@@ -983,6 +998,93 @@
         const chatSend = document.getElementById('appleChatSend');
         const chatMessages = document.getElementById('appleChatMessages');
         const modelSelect = $('#aiModelSelect');
+        const historyBtn = document.getElementById('aiChatHistoryBtn');
+        const newBtn = document.getElementById('aiChatNewBtn');
+        const historyPanel = document.getElementById('appleChatHistoryPanel');
+        const historyClose = document.getElementById('appleChatHistoryClose');
+        const historyList = document.getElementById('appleChatHistoryList');
+        
+        let currentConversationId = null;
+        const tagId = <?= esc($tag['id'] ?? 0) ?>;
+        
+        historyBtn.addEventListener('click', loadHistoryList);
+        historyClose.addEventListener('click', () => historyPanel.style.display = 'none');
+        newBtn.addEventListener('click', () => {
+            currentConversationId = null;
+            chatMessages.innerHTML = '<div class="chat-message bot">Hello <?= $user ?>! Do you need any script assistance today? 😊</div>';
+            historyPanel.style.display = 'none';
+        });
+
+        function loadHistoryList() {
+            historyList.innerHTML = '<div class="p-3 text-center text-muted small">Loading...</div>';
+            historyPanel.style.display = 'flex';
+            
+            fetch('<?= site_url('tags/ai-history/') ?>' + tagId)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success' && data.data && data.data.length > 0) {
+                        historyList.innerHTML = data.data.map(conv => `
+                            <button type="button" class="list-group-item list-group-item-action border-0 py-2 ai-history-item" data-id="${conv.id}">
+                                <div class="d-flex w-100 justify-content-between align-items-center">
+                                    <h6 class="mb-0 text-truncate" style="max-width: 75%; font-size: 0.85rem;">${conv.title || 'Conversation'}</h6>
+                                    <small class="text-muted text-end" style="font-size: 0.7rem; min-width: 60px;">${new Date(conv.updated_at).toLocaleDateString()}</small>
+                                </div>
+                            </button>
+                        `).join('');
+                        
+                        document.querySelectorAll('.ai-history-item').forEach(btn => {
+                            btn.addEventListener('click', function() {
+                                loadConversation(this.dataset.id);
+                            });
+                        });
+                    } else {
+                        historyList.innerHTML = '<div class="p-3 text-center text-muted small">No past conversations found.</div>';
+                    }
+                })
+                .catch(err => {
+                    historyList.innerHTML = '<div class="p-3 text-center text-danger small">Failed to load history.</div>';
+                });
+        }
+
+        function loadConversation(id) {
+            historyPanel.style.display = 'none';
+            chatMessages.innerHTML = '<div class="p-3 text-center text-muted small">Loading conversation...</div>';
+            
+            fetch('<?= site_url('tags/ai-conversation/') ?>' + id)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        currentConversationId = data.data.id;
+                        chatMessages.innerHTML = '';
+                        try {
+                            const messages = JSON.parse(data.data.messages);
+                            messages.forEach(msg => {
+                                if (msg.role === 'user') {
+                                    appendMessage(msg.content, 'user');
+                                } else if (msg.role === 'assistant') {
+                                    const elem = appendMessage('', 'bot');
+                                    if (typeof marked !== 'undefined' && typeof DOMPurify !== 'undefined') {
+                                        elem.innerHTML = DOMPurify.sanitize(marked.parse(msg.content));
+                                    } else {
+                                        elem.innerText = msg.content;
+                                    }
+                                    
+                                    if (msg.reasoning_content) {
+                                        const infoIcon = document.createElement('i');
+                                        infoIcon.className = 'bi bi-info-circle-fill text-muted';
+                                        infoIcon.style.cursor = 'help';
+                                        infoIcon.style.fontSize = '1.1rem';
+                                        infoIcon.title = msg.reasoning_content;
+                                        elem.parentElement.appendChild(infoIcon);
+                                    }
+                                }
+                            });
+                        } catch (e) {
+                            chatMessages.innerHTML = '<div class="p-3 text-center text-danger small">Failed to parse conversation.</div>';
+                        }
+                    }
+                });
+        }
 
         // Make Chat Window Draggable
         const chatHeader = document.querySelector('.apple-chat-header');
@@ -1093,7 +1195,9 @@
                 body: JSON.stringify({
                     modelId: modelId,
                     message: text,
-                    context: scriptContent // Send current script context to the LLM
+                    context: scriptContent, // Send current script context to the LLM
+                    conversationId: currentConversationId,
+                    tagId: tagId
                 })
             })
             .then(res => res.json())
@@ -1121,6 +1225,10 @@
                     infoIcon.style.fontSize = '1.1rem';
                     infoIcon.title = reasoning; // Hover to see reasoning
                     botMsgElem.parentElement.appendChild(infoIcon);
+                }
+
+                if (data.conversationId) {
+                    currentConversationId = data.conversationId;
                 }
 
                 chatMessages.scrollTop = chatMessages.scrollHeight;
