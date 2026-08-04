@@ -1151,11 +1151,28 @@ class TagsController extends BaseController
 
         // Build the payload for the API
         $apiMessages = [
-            ['role' => 'system', 'content' => 'You are a helpful assistant helping a developer write and edit JavaScript tagging scripts.']
+            ['role' => 'system', 'content' => 'You are a Senior JavaScript Developer with over 10 years of experience, specializing in tracking tags, data layers, and analytics. You are mentoring a colleague on how to write, edit, and optimize JavaScript tagging scripts. Provide clear, professional, and highly optimized code solutions.']
         ];
 
         if ($context) {
             $apiMessages[] = ['role' => 'system', 'content' => "Here is the current script the user is working on for context:\n\n" . $context];
+        }
+
+        if ($tagId) {
+            $tagsModel = new \App\Models\TagsModel();
+            $tag = $tagsModel->find($tagId);
+            if ($tag && !empty($tag['property_id'])) {
+                $propertiesModel = new \App\Models\PropertiesModel();
+                $property = $propertiesModel->find($tag['property_id']);
+                if ($property) {
+                    $fileName = !empty($property['is_shop']) ? 'shop.json' : 'aem.json';
+                    $filePath = FCPATH . 'uploads/digitalData/' . $fileName;
+                    if (file_exists($filePath)) {
+                        $digitalData = file_get_contents($filePath);
+                        $apiMessages[] = ['role' => 'system', 'content' => "Here is the digitalData information for this property:\n\n" . $digitalData];
+                    }
+                }
+            }
         }
 
         // Merge history into the API request
