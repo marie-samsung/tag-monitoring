@@ -299,7 +299,7 @@
 /* Apple Style Chatbot */
 .apple-chat-widget {
     position: fixed;
-    bottom: 80px;
+    bottom: 30px;
     right: 24px;
     z-index: 1050;
     display: flex;
@@ -309,9 +309,9 @@
 }
 
 .apple-chat-window {
-    width: 380px;
+    width: 550px;
     height: 550px;
-    min-width: 320px;
+    min-width: 550px;
     min-height: 400px;
     max-width: 90vw;
     max-height: 85vh;
@@ -565,8 +565,8 @@
     width: 56px;
     height: 56px;
     border-radius: 50%;
-    background: #1d1d1f;
-    color: white;
+    background: whitesmoke;
+    color: #3b82f6;
     border: none;
     box-shadow: 0 4px 14px rgba(0,0,0,0.15);
     cursor: pointer;
@@ -579,7 +579,7 @@
 
 .apple-chat-toggle:hover {
     transform: scale(1.05);
-    background: #333336;
+    background: white;
 }
 </style>
 
