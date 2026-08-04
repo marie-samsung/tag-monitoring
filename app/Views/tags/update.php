@@ -166,6 +166,10 @@
                         <div class="col-md-12">
                             <label for="ref_link" class="form-label-sm fw-semibold text-secondary mb-1">Launch
                                 Link</label>
+                            <a href="<?= $tag['ref_link'] ?>" target="_blank" rel="noopener" class="text-muted ms-1"
+                               style="font-size: 0.75rem; text-decoration: none;" title="View in Adobe Launch">
+                                <i class="bi bi-box-arrow-up-right"></i>
+                            </a>
                             <input type="text" name="ref_link" id="ref_link" class="form-control form-control-xs"
                                 value="<?= esc($tag['ref_link']) ?>" placeholder="https://..." required>
                             <small class="form-text text-muted" style="font-size: 0.75rem;">
