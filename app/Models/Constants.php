@@ -45,6 +45,11 @@ class Constants
         self::JIRA_TYPE_NEW_RULE => 'New Rule',
     ];
 
+    public const REQUEST_TYPE_FIELD = [
+        self::JIRA_TYPE_NEW_TAG => 'new-tag-request',
+        self::JIRA_TYPE_NEW_RULE => 'new-rule-request',
+    ];
+
     public const STATUS_ENABLED = 1;
     public const STATUS_DISABLED = 2;
     public const STATUS_EXPIRED = 3;

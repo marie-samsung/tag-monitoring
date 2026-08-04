@@ -263,6 +263,14 @@ function request_type_label(int $type, int $status): string
     return Constants::REQUEST_TYPES[$type] ?? (Constants::JIRA_TICKET_TYPES[$type] ?? 'Unknown');
 }
 
+function request_type_field(int $type, int $status): string
+{
+    if ($type === Constants::JIRA_TYPE_NEW_TAG && $status === Constants::STATUS_REQUEST_NEW_RULE_REQUEST_SUBMITTED) {
+        return 'new-rule-request';
+    }
+    return Constants::REQUEST_TYPE_FIELD[$type];
+}
+
 /**
  * Safely parses HTML snippet, closes unclosed tags, and strips out dangerous elements like <script> or style sheets that can leak styles.
  */

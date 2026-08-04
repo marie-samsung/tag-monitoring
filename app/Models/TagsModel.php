@@ -145,8 +145,16 @@ class TagsModel extends Model
                     'ASC',
                     false
                 );
-                $this->orderBy('tags.al_end_date', 'ASC');
-                $this->orderBy('properties.id', 'ASC');
+
+                if ($hasActiveFilters) {
+                    $this->orderBy('properties.id', 'ASC');
+                    $this->orderBy('tags.al_end_date', 'ASC');
+                }
+
+                else {
+                    $this->orderBy('tags.al_end_date', 'ASC');
+                    $this->orderBy('properties.id', 'ASC');
+                }
             }
         }
 

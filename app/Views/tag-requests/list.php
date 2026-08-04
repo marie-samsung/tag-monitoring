@@ -574,6 +574,7 @@ Tag: Requests (New Rule, New Tag)
                      <th class="form-label-sm fw-semibold">Subsidiary</th>
                      <th class="form-label-sm fw-semibold">Property</th>
                      <th class="form-label-sm fw-semibold">Ticket ID</th>
+                     <th class="form-label-sm fw-semibold">Vendor</th>
                      <th class="form-label-sm fw-semibold">Type</th>
                      <th class="form-label-sm fw-semibold">Status</th>
                      <th class="form-label-sm fw-semibold">Created At</th>
@@ -629,6 +630,7 @@ Tag: Requests (New Rule, New Tag)
                                     <?= $property['name'] ?>
                                 </a>
                             </td>
+                            <!-- Ticket ID -->
                             <td>
                                 <?php if ($mainTicket): ?>
                                     <a href="<?= Constants::JIRA_LINK . $mainTicket ?>" target="_blank" rel="noopener" class="text-muted me-1" style="font-size: 0.75rem; text-decoration: none;" title="View in JIRA">
@@ -646,7 +648,6 @@ Tag: Requests (New Rule, New Tag)
                                 <?php else: ?>
                                     <span class="text-muted">—</span>
                                 <?php endif; ?>
-                                <span class="text-muted ms-1" style="font-size: 0.8rem;">(<?= $vendors[$request['vendor_id']] ?? '' ?>)</span>
                                 <?php if ($ruleTicket): ?>
                                     <br/>
                                     <small class="text-muted" style="font-size: 0.75rem;">New Rule:</small>
@@ -664,7 +665,15 @@ Tag: Requests (New Rule, New Tag)
                                     <?php endif; ?>
                                 <?php endif; ?>
                             </td>
+                            <!-- Vendor -->
                             <td>
+                                <a href="<?= site_url('tag-requests/view/' . $request['id']) ?>" class="apple-link-dark form-label-sm ms-1" title="View Details">
+                                    <?= $vendors[$request['vendor_id']] ?? '-' ?>
+                                </a>
+                            </td>
+                            <td>
+                                <?php $field = request_type_field((int)$type, (int)$request['status']); ?>
+                                <a href="<?= site_url("tag-requests/{$field}/" . $request['id']) ?>" class="apple-link-dark form-label-sm ms-1" title="View Request">
                                 <?= request_type_label((int)$type, (int)$request['status']) ?>
                             </td>
                             <td>
