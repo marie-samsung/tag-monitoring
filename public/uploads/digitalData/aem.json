@@ -1,0 +1,38 @@
+{
+  "page": {
+    "pageInfo": {
+      "siteCode": "ae",
+      "pageName": "ae:mobile:smartphones:galaxy s:Galaxy S25 Ultra",
+      "pageID": "L2NvbnRlbnQvc2Ftc3VuZy9hZS9zbWFydHBob25lcy9nYWxheHktczI1LXVsdHJhL2J1eQ==",
+      "pageTrack": "flagship pdp",
+      "originPlaform": "web",
+      "siteSection": "ae:consumer"
+    },
+    "pathIndicator": {
+      "depth_2": "mobile",
+      "depth_3": "smartphones",
+      "depth_4": "galaxy s",
+      "depth_5": "Galaxy S25 Ultra"
+    }
+  },
+  "user": {
+    "userDeviceList": [],
+    "sa": ""
+  },
+  "product": {
+    "category": "mobile",
+    "model_code": "SM-S938BZSOMEA,SM-S937BZSOMEA",
+    "model_name": "SM-S938B/DS,SM-S937B/DS",
+    "displayName": "Galaxy S25 Ultra;Galaxy S25 Edge",
+    "pvi_type_code": "01010000",
+    "pvi_type_name": "Mobile",
+    "pvi_subtype_code": "01010100",
+    "pvi_subtype_name": "Smartphone",
+    "pd_type": "",
+    "content_id": "",
+    "products": "",
+    "prodView": "",
+    "pd_sub_type": "Galaxy S",
+    "model_price": "0,4799"
+  }
+}

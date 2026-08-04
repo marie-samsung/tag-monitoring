@@ -12,6 +12,7 @@ use App\Models\SubsidiariesModel;
 use App\Models\TagsModel;
 use App\Models\VendorsModel;
 use App\Models\OrganizationsModel;
+use App\Models\AiConversationsModel;
 use ReflectionException;
 
 class TagsController extends BaseController
@@ -1128,20 +1129,56 @@ class TagsController extends BaseController
         $modelId = $post->modelId ?? null;
         $message = $post->message ?? '';
         $context = $post->context ?? '';
+        $conversationId = $post->conversationId ?? null;
+        $tagId = $post->tagId ?? null;
 
         if (!$modelId || !$message) {
             return $this->response->setJSON(['status' => 'error', 'message' => 'Missing modelId or message']);
         }
+        
+        $aiConversationsModel = new AiConversationsModel();
+        $dbMessages = [];
+        
+        if ($conversationId) {
+            $conversation = $aiConversationsModel->find($conversationId);
+            if ($conversation && !empty($conversation['messages'])) {
+                $dbMessages = json_decode($conversation['messages'], true) ?: [];
+            }
+        }
+        
+        // Append user's new message to the history
+        $dbMessages[] = ['role' => 'user', 'content' => $message];
 
-        $messages = [
-            ['role' => 'system', 'content' => 'You are a helpful assistant helping a developer write and edit JavaScript tagging scripts.']
+        // Build the payload for the API
+        $apiMessages = [
+            ['role' => 'system', 'content' => 'You are a Senior JavaScript Developer with over 10 years of experience, specializing in tracking tags, data layers, and analytics. You are mentoring a colleague on how to write, edit, and optimize JavaScript tagging scripts. Provide clear, professional, and highly optimized code solutions.']
         ];
 
         if ($context) {
-            $messages[] = ['role' => 'system', 'content' => "Here is the current script the user is working on for context:\n\n" . $context];
+            $apiMessages[] = ['role' => 'system', 'content' => "Here is the current script the user is working on for context:\n\n" . $context];
         }
 
-        $messages[] = ['role' => 'user', 'content' => $message];
+        if ($tagId) {
+            $tagsModel = new \App\Models\TagsModel();
+            $tag = $tagsModel->find($tagId);
+            if ($tag && !empty($tag['property_id'])) {
+                $propertiesModel = new \App\Models\PropertiesModel();
+                $property = $propertiesModel->find($tag['property_id']);
+                if ($property) {
+                    $fileName = !empty($property['is_shop']) ? 'shop.json' : 'aem.json';
+                    $filePath = FCPATH . 'uploads/digitalData/' . $fileName;
+                    if (file_exists($filePath)) {
+                        $digitalData = file_get_contents($filePath);
+                        $apiMessages[] = ['role' => 'system', 'content' => "Here is the digitalData information for this property:\n\n" . $digitalData];
+                    }
+                }
+            }
+        }
+
+        // Merge history into the API request
+        foreach ($dbMessages as $msg) {
+            $apiMessages[] = $msg;
+        }
 
         $client = \Config\Services::curlrequest();
 
@@ -1158,18 +1195,81 @@ class TagsController extends BaseController
                 ],
                 'http_errors' => false,
                 'json' => [
-                    "messages" => $messages
+                    "messages" => $apiMessages
                 ]
             ]);
 
             $statusCode = $response->getStatusCode();
             if ($statusCode >= 200 && $statusCode < 300) {
-                return $this->response->setJSON(json_decode($response->getBody(), true));
+                $respData = json_decode($response->getBody(), true);
+                
+                // Extract AI reply
+                $reply = '';
+                $reasoning = null;
+                if (isset($respData['choices'][0]['message'])) {
+                    $reply = $respData['choices'][0]['message']['content'] ?? '';
+                    $reasoning = $respData['choices'][0]['message']['reasoning_content'] ?? null;
+                } elseif (isset($respData['reply'])) {
+                    $reply = $respData['reply'];
+                }
+                
+                // Append AI's reply to the history
+                $dbMessages[] = [
+                    'role' => 'assistant', 
+                    'content' => $reply, 
+                    'reasoning_content' => $reasoning
+                ];
+                
+                // Save to database
+                if ($conversationId) {
+                    $aiConversationsModel->update($conversationId, [
+                        'messages' => json_encode($dbMessages)
+                    ]);
+                } else {
+                    $title = substr($message, 0, 40) . (strlen($message) > 40 ? '...' : '');
+                    $conversationId = $aiConversationsModel->insert([
+                        'user_id' => session()->get('user_id') ?? 0,
+                        'tag_id' => $tagId,
+                        'title' => $title,
+                        'messages' => json_encode($dbMessages)
+                    ]);
+                }
+                
+                $respData['conversationId'] = $conversationId;
+                
+                return $this->response->setJSON($respData);
             } else {
                 return $this->response->setJSON(['status' => 'error', 'message' => 'API returned ' . $statusCode]);
             }
         } catch (\Exception $e) {
             return $this->response->setJSON(['status' => 'error', 'message' => $e->getMessage()]);
         }
+    }
+
+    public function getAiChatHistory($tagId = null)
+    {
+        $aiConversationsModel = new AiConversationsModel();
+        $userId = session()->get('user_id') ?? 0;
+        
+        $query = $aiConversationsModel->where('user_id', $userId);
+        if ($tagId) {
+            $query = $query->where('tag_id', $tagId);
+        }
+        
+        $conversations = $query->orderBy('updated_at', 'DESC')->findAll();
+        
+        return $this->response->setJSON(['status' => 'success', 'data' => $conversations]);
+    }
+
+    public function getAiConversation($id)
+    {
+        $aiConversationsModel = new AiConversationsModel();
+        $conversation = $aiConversationsModel->find($id);
+        
+        if (!$conversation) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Conversation not found']);
+        }
+        
+        return $this->response->setJSON(['status' => 'success', 'data' => $conversation]);
     }
 }

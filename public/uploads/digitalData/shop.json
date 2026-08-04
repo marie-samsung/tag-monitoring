@@ -1,0 +1,83 @@
+{
+  "page": {
+    "pageInfo": {
+      "siteCode": "ae_ar",
+      "siteSection": "shop",
+      "pageURL": "https://stg3.shop.samsung.com/ae_ar/orderConfirmation;orderCode=AE260217-96733062?viewEnd=true",
+      "pageTrack": "shop order confirmation",
+      "currencyCode": "AED",
+      "version": "P6_new"
+    },
+    "pathIndicator": {
+      "depth_2": "orderConfirmation",
+      "depth_3": "",
+      "depth_4": "",
+      "depth_5": "",
+      "depth_6": ""
+    }
+  },
+  "user": {
+    "loginStatus": "logged out",
+    "ssoId": "undefined",
+    "custID": "0da64c2a-b252-4814-9646-79e44f2ec829"
+  },
+  "ecommerce": {
+    "transactionId": "AE260217-96733062",
+    "transaction": {
+      "paymentMethod": "cash on delivery",
+      "addServiceFlag": "trade in_no:samsung mobile care_no:upgrade program_no:warranty_no:installation_no",
+      "promotionFlag": "no",
+      "couponFlag": "no",
+      "pointFlag": "no"
+    },
+    "transactionProducts": [
+      {
+        "modelCode": "VCC4570S3K/XSG",
+        "modelName": "SC4570",
+        "modelDisplay": "canister bagless 2000 w vacuum cleaner with cycloneforce™, hepa filter, black",
+        "modelPrice": 299,
+        "modelRevenue": 299,
+        "modelUnit": 1,
+        "pviType": "vacuum cleaner",
+        "pviSubtype": "canister",
+        "pimSubtype": "canister",
+        "url": "",
+        "iotBrandname": "",
+        "iotShgroup": "",
+        "iotSid": ""
+      },
+      {
+        "modelCode": "VCA-VP78MF",
+        "modelName": "VP-78MF",
+        "modelDisplay": "vca-vp78mf - dust bag for bag type canister model",
+        "modelPrice": 89,
+        "modelRevenue": 89,
+        "modelUnit": 1,
+        "pviType": "vacuum cleaner",
+        "pviSubtype": "accessory",
+        "pimSubtype": "accessory",
+        "url": "",
+        "iotBrandname": "",
+        "iotShgroup": "",
+        "iotSid": ""
+      },
+      {
+        "modelCode": "VCA-SPW90",
+        "modelName": "VCA-SPW90",
+        "modelDisplay": "vca-spw90 - micro fiber mop pads for spinning sweeper",
+        "modelPrice": 69,
+        "modelRevenue": 69,
+        "modelUnit": 1,
+        "pviType": "vacuum cleaner",
+        "pviSubtype": "accessory",
+        "pimSubtype": "accessory",
+        "url": "",
+        "iotBrandname": "",
+        "iotShgroup": "",
+        "iotSid": ""
+      }
+    ],
+    "transactionTotal": 457,
+    "transactionVoucherCode": ""
+  }
+}

@@ -42,6 +42,9 @@ $routes->group('tags', function ($routes) {
     $routes->match(['get', 'post'], 'renewal-justifications/update/(:num)', 'TagsController::updateRenewalJustification/$1');
     $routes->post('save-js-code/(:num)', 'TagsController::saveJsCode/$1');
     $routes->post('ai-chat', 'TagsController::chatWithAi');
+    $routes->get('ai-history', 'TagsController::getAiChatHistory');
+    $routes->get('ai-history/(:num)', 'TagsController::getAiChatHistory/$1');
+    $routes->get('ai-conversation/(:num)', 'TagsController::getAiConversation/$1');
     // $routes->post('delete/(:num)', 'TagsController::delete/$1');
 });
 
