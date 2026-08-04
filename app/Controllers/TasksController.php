@@ -72,6 +72,9 @@ class TasksController extends BaseController
         $data['project_names'] = array_column($distinctProjects, 'project_name');
         $data['all_labels'] = $model->getAllLabels();
 
+        $data['aiModels'] = $this->fetchAiModels();
+        $data['chatWelcomeMessage'] = 'Hello user! How are you? Ask me about the tasks you have logged.';
+
         return view('tasks/list', $data);
 
     }
@@ -2564,6 +2567,42 @@ class TasksController extends BaseController
         }
         
         return $this->response->setJSON(['status' => 'success', 'data' => $conversation]);
+    }
+
+
+    private function fetchAiModels()
+    {
+        $apiUrl = env('FABRIX_API_URL') . '/openapi/llm/v1/models';
+        $apiKey = env('FABRIX_API_TOKEN') ?? '';
+        $fabrixClient = env('FABRIX_CLIENT') ?? '';
+
+        $client = \Config\Services::curlrequest();
+
+        try {
+            $response = $client->request('GET', $apiUrl, [
+                'headers' => [
+                    'Accept' => 'application/json',
+                    'Content-Type' => 'application/json',
+                    'x-fabrix-client' => $fabrixClient,
+                    'x-openapi-token' => 'Bearer ' . $apiKey,
+                    'User-Agent' => 'PostmanRuntime/7.54.0',
+                    'Expect' => '',
+                ],
+                'http_errors' => false
+            ]);
+
+            $statusCode = $response->getStatusCode();
+            if ($statusCode >= 200 && $statusCode < 300) {
+                $data = json_decode($response->getBody(), true);
+                if (is_array($data)) {
+                    return isset($data['data']) ? $data['data'] : (isset($data[0]) ? $data : array_values($data));
+                }
+            }
+        } catch (\Exception $e) {
+            log_message('error', 'Error fetching AI Models: ' . $e->getMessage());
+        }
+        
+        return [];
     }
 
 }

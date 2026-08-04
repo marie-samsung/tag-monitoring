@@ -6,6 +6,7 @@ $conversationEndpoint = $conversationEndpoint ?? site_url('tags/ai-conversation/
 $contextId = $contextId ?? 0;
 $user = session()->get('user_name') ?? 'User';
 $aiModels = $aiModels ?? [];
+$chatWelcomeMessage = $chatWelcomeMessage ?? 'Hello ' . $user . '! How can I help you today? 😊';
 ?>
 
 <style>
@@ -358,7 +359,7 @@ $aiModels = $aiModels ?? [];
         
         <!-- Chat Messages Area -->
         <div class="apple-chat-messages" id="appleChatMessages">
-            <div class="chat-message bot">Hello <?= $user ?>! How can I help you today? 😊</div>
+            <div class="chat-message bot"><?= esc($chatWelcomeMessage) ?></div>
         </div>
         
         <!-- Chat Footer -->
@@ -398,7 +399,7 @@ document.addEventListener('DOMContentLoaded', function() {
         historyClose.addEventListener('click', () => historyPanel.style.display = 'none');
         newBtn.addEventListener('click', () => {
             currentConversationId = null;
-            chatMessages.innerHTML = '<div class="chat-message bot">Hello <?= $user ?>! Do you need any script assistance today? 😊</div>';
+            chatMessages.innerHTML = '<div class="chat-message bot"><?= esc($chatWelcomeMessage) ?></div>';
             historyPanel.style.display = 'none';
         });
 
