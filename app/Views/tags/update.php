@@ -298,32 +298,6 @@
 
 
 <?= view('components/chatbot', ['contextId' => $tag['id'] ?? 0]) ?>
-        </div>
-        
-        <!-- History Panel -->
-        <div class="apple-chat-history-panel" id="appleChatHistoryPanel" style="display: none; position: absolute; top: 69px; left: 0; width: 100%; height: calc(100% - 69px); background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); z-index: 10; flex-direction: column;">
-            <div class="p-2 border-bottom fw-bold d-flex justify-content-between align-items-center bg-light">
-                <span>Past Conversations</span>
-                <button class="btn-close" id="appleChatHistoryClose"></button>
-            </div>
-            <div class="list-group list-group-flush" id="appleChatHistoryList" style="overflow-y: auto; flex: 1;">
-                <!-- History items load here -->
-            </div>
-        </div>
-        <div class="apple-chat-messages" id="appleChatMessages">
-            <div class="chat-message bot">Hello <?= $user ?>! Do you need any script assistance today? 😊</div>
-        </div>
-        <div class="apple-chat-footer">
-            <input type="text" class="apple-chat-input" id="appleChatInput" placeholder="Type a message...">
-            <button class="apple-chat-send" id="appleChatSend" title="Send">
-                <i class="bi bi-send-fill"></i>
-            </button>
-        </div>
-    </div>
-    <button class="apple-chat-toggle" id="appleChatToggle" title="Toggle AI Chat">
-        <i class="bi bi-robot"></i>
-    </button>
-</div>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
