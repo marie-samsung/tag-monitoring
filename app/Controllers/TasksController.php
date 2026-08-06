@@ -71,12 +71,10 @@ class TasksController extends BaseController
         $distinctProjects = $model->getDistinctProjects();
         $data['project_names'] = array_column($distinctProjects, 'project_name');
         $data['all_labels'] = $model->getAllLabels();
-
         $data['aiModels'] = $this->fetchAiModels();
-        $data['chatWelcomeMessage'] = 'Hello user! How are you? Ask me about the tasks you have logged.';
-
+        $user = session()->get('user_name');
+        $data['chatWelcomeMessage'] = "Hello {$user}! Ask me about the tasks, and I will answer based on the data provided. 😄";
         return view('tasks/list', $data);
-
     }
 
     public function create()
@@ -2413,7 +2411,7 @@ class TasksController extends BaseController
         // 1. Get Schema Context
         $db = \Config\Database::connect();
         $schemaContext = "Database schema for Task tables:\n\n";
-        $tables = ['activity_logs', 'activity_log_comments', 'users', 'projects', 'properties', 'tags', 'vendors'];
+        $tables = ['activity_logs', 'activity_log_comments', 'users', 'project_comments', 'properties', 'subsidiaries', 'tags', 'vendors', 'jira_history', 'tag_requests'];
         foreach ($tables as $table) {
             try {
                 $query = $db->query("SHOW CREATE TABLE {$table}");
@@ -2424,17 +2422,18 @@ class TasksController extends BaseController
             } catch (\Exception $e) {}
         }
         
-        $schemaContext .= "Note: team_id, subsidiary_id, status, type are integers mapping to constants. Here are the constant mappings you MUST use to convert natural language (like 'Media Tagging' or 'Pending') to integer IDs:\n";
+        $schemaContext .= "Note: team_id, subsidiary_id, property_id, status, type are integers mapping to constants. Here are the constant mappings you MUST use to convert natural language (like 'Media Tagging' or 'Pending') to integer IDs:\n";
         if (class_exists('\App\Models\Constants')) {
-            $schemaContext .= "TEAMS: " . json_encode(\App\Models\Constants::TEAMS) . "\n";
-            $schemaContext .= "SUBSIDIARIES: " . json_encode(\App\Models\Constants::ACTIVITY_LOG_SUBSIDIARIES) . "\n";
-            $schemaContext .= "STATUS: " . json_encode(\App\Models\Constants::STATUS) . "\n";
-            $schemaContext .= "TICKET TYPES: " . json_encode(\App\Models\Constants::JIRA_TICKET_TYPES) . "\n";
-            $schemaContext .= "PRIORITIES: " . json_encode(\App\Models\Constants::PRIORITIES) . "\n";
-            $schemaContext .= "ACTIVITY_TYPES: " . json_encode(\App\Models\Constants::ACTIVITY_TYPES) . "\n";
-            $schemaContext .= "ACTIVITY_SIZES: " . json_encode(\App\Models\Constants::ACTIVITY_SIZES) . "\n";
+            $schemaContext .= "TEAMS (team_id): " . json_encode(\App\Models\Constants::TEAMS) . "\n";
+            $schemaContext .= "SUBSIDIARIES (subsidiary_id): " . json_encode(\App\Models\Constants::ACTIVITY_LOG_SUBSIDIARIES) . "\n";
+            $schemaContext .= "STATUS (tags.status): " . json_encode(\App\Models\Constants::STATUS) . "\n";
+            $schemaContext .= "TICKET TYPES (jira_history.type, tag_requests.type): " . json_encode(\App\Models\Constants::JIRA_TICKET_TYPES) . "\n";
+            $schemaContext .= "PRIORITIES (activity_logs.priority): " . json_encode(\App\Models\Constants::PRIORITIES) . "\n";
+            $schemaContext .= "ACTIVITY_TYPES: (activity_logs.type)" . json_encode(\App\Models\Constants::ACTIVITY_TYPES) . "\n";
+            $schemaContext .= "ACTIVITY_SIZES: (activity_logs.size)" . json_encode(\App\Models\Constants::ACTIVITY_SIZES) . "\n";
+            $schemaContext .= "ACTIVITY_LOGS_STATUS: (activity_logs.status)" . json_encode(\App\Models\Constants::ACTIVITY_LOGS_STATUS) . "\n";
         }
-        $schemaContext .= "For project, property, tag, or vendor names (and info like about/reason), join with the projects, properties, tags, or vendors tables instead of guessing IDs.\n";
+        $schemaContext .= "For project, property, tag, or vendor names (and info like about/reason), join with the activity_logs.project, properties, tags, or vendors tables instead of guessing IDs.\n";
 
         // Step 1: SQL Generation Call
         $sqlPrompt = [
@@ -2615,5 +2614,4 @@ class TasksController extends BaseController
         
         return [];
     }
-
 }

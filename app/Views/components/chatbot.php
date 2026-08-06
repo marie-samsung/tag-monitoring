@@ -1,5 +1,5 @@
 <?php
-$chatTitle = $chatTitle ?? 'Script AI';
+$chatTitle = $chatTitle ?? 'Script Assistant';
 $chatEndpoint = $chatEndpoint ?? site_url('tags/ai-chat');
 $historyEndpoint = $historyEndpoint ?? site_url('tags/ai-history/');
 $conversationEndpoint = $conversationEndpoint ?? site_url('tags/ai-conversation/');
@@ -395,6 +395,9 @@ document.addEventListener('DOMContentLoaded', function() {
         let currentConversationId = null;
         const tagId = <?= esc($contextId) ?>;
         
+        let sentMessagesHistory = [];
+        let historyIndex = -1;
+        
         historyBtn.addEventListener('click', loadHistoryList);
         historyClose.addEventListener('click', () => historyPanel.style.display = 'none');
         newBtn.addEventListener('click', () => {
@@ -552,6 +555,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const text = chatInput.value.trim();
             if (!text) return;
 
+            if (sentMessagesHistory.length === 0 || sentMessagesHistory[sentMessagesHistory.length - 1] !== text) {
+                sentMessagesHistory.push(text);
+            }
+            historyIndex = sentMessagesHistory.length;
+
             const modelId = modelSelect.val();
             if (!modelId) {
                 appendMessage('Please select a model first.', 'bot');
@@ -654,6 +662,24 @@ document.addEventListener('DOMContentLoaded', function() {
         chatInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 sendMessage();
+            }
+        });
+        chatInput.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (historyIndex > 0) {
+                    historyIndex--;
+                    chatInput.value = sentMessagesHistory[historyIndex];
+                }
+            } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (historyIndex < sentMessagesHistory.length - 1) {
+                    historyIndex++;
+                    chatInput.value = sentMessagesHistory[historyIndex];
+                } else if (historyIndex === sentMessagesHistory.length - 1) {
+                    historyIndex++;
+                    chatInput.value = '';
+                }
             }
         });
     });

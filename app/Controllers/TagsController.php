@@ -199,10 +199,11 @@ class TagsController extends BaseController
 
         if ($this->request->getMethod() === 'GET') {
             $aiModels = $this->fetchAiModels();
+            $user = session()->get('user_name');
             return view('tags/update', [
                 'tag' => $tag,
                 'aiModels' => $aiModels,
-                'chatWelcomeMessage' => 'Hello user! Do you need any help with your javascript today? :)'
+                'chatWelcomeMessage' => "Hello {$user}! Do you need any help with your script today? 😊"
             ]);
         }
 

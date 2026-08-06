@@ -2203,7 +2203,7 @@ $isAdmin = (int) session()->get('user_role') === Constants::USER_ROLE_ADMIN || (
 </script>
 
 <?= view('components/chatbot', [
-    'chatTitle' => 'Task AI', 
+    'chatTitle' => 'Task Assistant', 
     'chatEndpoint' => site_url('tasks/ai-chat'),
     'historyEndpoint' => site_url('tasks/ai-history/'),
     'conversationEndpoint' => site_url('tasks/ai-conversation/')
