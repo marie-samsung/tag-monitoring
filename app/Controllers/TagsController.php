@@ -201,7 +201,8 @@ class TagsController extends BaseController
             $aiModels = $this->fetchAiModels();
             return view('tags/update', [
                 'tag' => $tag,
-                'aiModels' => $aiModels
+                'aiModels' => $aiModels,
+                'chatWelcomeMessage' => 'Hello user! Do you need any help with your javascript today? :)'
             ]);
         }
 
