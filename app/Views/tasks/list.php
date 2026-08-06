@@ -2201,8 +2201,6 @@ $isAdmin = (int) session()->get('user_role') === Constants::USER_ROLE_ADMIN || (
         });
     });
 </script>
-<<<<<<< Updated upstream
-=======
 
 <?= view('components/chatbot', [
     'chatTitle' => 'Task Assistant', 
@@ -2211,5 +2209,4 @@ $isAdmin = (int) session()->get('user_role') === Constants::USER_ROLE_ADMIN || (
     'conversationEndpoint' => site_url('tasks/ai-conversation/')
 ]) ?>
 
->>>>>>> Stashed changes
 <?= $this->endSection() ?>

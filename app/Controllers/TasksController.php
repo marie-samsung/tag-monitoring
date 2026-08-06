@@ -71,16 +71,10 @@ class TasksController extends BaseController
         $distinctProjects = $model->getDistinctProjects();
         $data['project_names'] = array_column($distinctProjects, 'project_name');
         $data['all_labels'] = $model->getAllLabels();
-
-<<<<<<< Updated upstream
-=======
         $data['aiModels'] = $this->fetchAiModels();
         $user = session()->get('user_name');
         $data['chatWelcomeMessage'] = "Hello {$user}! Ask me about the tasks, and I will answer based on the data provided. 😄";
-
->>>>>>> Stashed changes
         return view('tasks/list', $data);
-
     }
 
     public function create()
@@ -2386,8 +2380,6 @@ class TasksController extends BaseController
             }
         }
     }
-<<<<<<< Updated upstream
-=======
 
     public function chatWithAi()
     {
@@ -2622,6 +2614,4 @@ class TasksController extends BaseController
         
         return [];
     }
-
->>>>>>> Stashed changes
 }

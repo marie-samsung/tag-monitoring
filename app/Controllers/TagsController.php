@@ -202,12 +202,8 @@ class TagsController extends BaseController
             $user = session()->get('user_name');
             return view('tags/update', [
                 'tag' => $tag,
-<<<<<<< Updated upstream
-                'aiModels' => $aiModels
-=======
                 'aiModels' => $aiModels,
                 'chatWelcomeMessage' => "Hello {$user}! Do you need any help with your script today? 😊"
->>>>>>> Stashed changes
             ]);
         }
 
