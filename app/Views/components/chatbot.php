@@ -25,8 +25,8 @@ $chatWelcomeMessage = $chatWelcomeMessage ?? 'Hello ' . $user . '! How can I hel
 .apple-chat-window {
     width: 550px;
     height: 550px;
-    min-width: 550px;
-    min-height: 400px;
+    min-width: 300px;
+    min-height: 300px;
     max-width: 90vw;
     max-height: 85vh;
     resize: both;
@@ -144,7 +144,7 @@ $chatWelcomeMessage = $chatWelcomeMessage ?? 'Hello ' . $user . '! How can I hel
 .apple-chat-messages {
     flex: 1;
     overflow-y: auto;
-    padding: 20px;
+    padding: 20px 10px 20px 20px;
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -511,14 +511,44 @@ document.addEventListener('DOMContentLoaded', function() {
 
         document.addEventListener('mousemove', (e) => {
             if (isDragging) {
-                chatWindow.style.left = (e.clientX - dragOffsetX) + 'px';
-                chatWindow.style.top = (e.clientY - dragOffsetY) + 'px';
+                let newLeft = e.clientX - dragOffsetX;
+                let newTop = e.clientY - dragOffsetY;
+                
+                const maxX = window.innerWidth - chatWindow.offsetWidth;
+                const maxY = window.innerHeight - chatWindow.offsetHeight;
+                
+                if (newLeft < 0) newLeft = 0;
+                if (newTop < 0) newTop = 0;
+                if (newLeft > maxX) newLeft = maxX;
+                if (newTop > maxY) newTop = maxY;
+
+                chatWindow.style.left = newLeft + 'px';
+                chatWindow.style.top = newTop + 'px';
             }
         });
 
         document.addEventListener('mouseup', () => {
             isDragging = false;
             document.body.style.userSelect = '';
+        });
+
+        window.addEventListener('resize', () => {
+            if (chatWindow.style.position === 'fixed') {
+                const rect = chatWindow.getBoundingClientRect();
+                let newLeft = rect.left;
+                let newTop = rect.top;
+                
+                const maxX = window.innerWidth - rect.width;
+                const maxY = window.innerHeight - rect.height;
+                
+                if (newLeft > maxX) newLeft = maxX;
+                if (newTop > maxY) newTop = maxY;
+                if (newLeft < 0) newLeft = 0;
+                if (newTop < 0) newTop = 0;
+                
+                chatWindow.style.left = newLeft + 'px';
+                chatWindow.style.top = newTop + 'px';
+            }
         });
 
         // Initialize Select2 for the AI models
@@ -643,7 +673,9 @@ document.addEventListener('DOMContentLoaded', function() {
             wrapper.style.alignItems = 'center';
             wrapper.style.gap = '8px';
             wrapper.style.alignSelf = sender === 'user' ? 'flex-end' : 'flex-start';
+            wrapper.style.justifyContent = sender === 'user' ? 'flex-end' : 'flex-start';
             wrapper.style.maxWidth = '100%';
+            wrapper.style.width = '100%';
 
             const msgDiv = document.createElement('div');
             msgDiv.className = `chat-message ${sender}`;
