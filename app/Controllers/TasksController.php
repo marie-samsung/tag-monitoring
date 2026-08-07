@@ -73,7 +73,7 @@ class TasksController extends BaseController
         $data['all_labels'] = $model->getAllLabels();
         $data['aiModels'] = $this->fetchAiModels();
         $user = session()->get('user_name');
-        $data['chatWelcomeMessage'] = "Hello {$user}! Ask me about the tasks, and I will answer based on the data provided. 😄";
+        $data['chatWelcomeMessage'] = "Hello {$user}! Do you have any questions regarding the tasks? 😄";
         return view('tasks/list', $data);
     }
 
