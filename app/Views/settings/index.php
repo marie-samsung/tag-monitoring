@@ -153,57 +153,100 @@ foreach ($roles as $r) {
             <h4 class="fw-bold mb-3">General Settings</h4>
             <p class="text-secondary small mb-4">Configure system-wide behavior and default visibility parameters.</p>
             
-            <form action="<?= site_url('settings/save-system-settings') ?>" method="post" style="max-width: 600px;">
+            <form action="<?= site_url('settings/save-system-settings') ?>" method="post">
                 <?= csrf_field() ?>
                 
-                <!-- Toggle 1: Hide Assignees by Default for Weekly Reports -->
-                <div class="d-flex align-items-start justify-content-between p-3 rounded-3 border mb-3 bg-white shadow-sm" style="transition: all 0.2s ease;">
-                    <div style="flex: 1; padding-right: 20px;">
-                        <h6 class="fw-bold mb-1">Hide Assignees in Weekly Reports</h6>
-                        <span class="text-secondary" style="font-size: 0.8rem;">By default, weekly performance reports will omit assignee details to focus on aggregated metrics.</span>
+                <div class="row g-4">
+                    <!-- Left Column: System Behavior -->
+                    <div class="col-lg-6">
+                        <div class="p-4 rounded-3 border bg-white shadow-sm h-100">
+                            <h5 class="fw-bold mb-4 text-primary"><i class="bi bi-gear-fill me-2"></i>System Behavior</h5>
+                            
+                            <!-- Toggle 1: Hide Assignees by Default for Weekly Reports -->
+                            <div class="d-flex align-items-start justify-content-between p-3 rounded-3 border mb-3 bg-light" style="transition: all 0.2s ease;">
+                                <div style="flex: 1; padding-right: 20px;">
+                                    <h6 class="fw-bold mb-1">Hide Assignees in Weekly Reports</h6>
+                                    <span class="text-secondary" style="font-size: 0.8rem;">By default, weekly performance reports will omit assignee details to focus on aggregated metrics.</span>
+                                </div>
+                                <div class="form-check form-switch m-0 d-flex align-items-center" style="height: 24px;">
+                                    <input class="form-check-input permission-checkbox" type="checkbox" name="hide_assignee_weekly_reports" id="hideWeeklyReports" value="1" <?= ($systemSettings['hide_assignee_weekly_reports'] ?? true) ? 'checked' : '' ?> style="width: 2.2em; height: 1.1em; cursor: pointer;">
+                                </div>
+                            </div>
+
+                            <!-- Toggle 2: Hide Assignees system-wide across all tables -->
+                            <div class="d-flex align-items-start justify-content-between p-3 rounded-3 border mb-3 bg-light" style="transition: all 0.2s ease;">
+                                <div style="flex: 1; padding-right: 20px;">
+                                    <h6 class="fw-bold mb-1">Hide Assignees System-Wide</h6>
+                                    <span class="text-secondary" style="font-size: 0.8rem;">Completely hide the "Assignee" column, dropdowns, and filtering fields across all task lists.</span>
+                                </div>
+                                <div class="form-check form-switch m-0 d-flex align-items-center" style="height: 24px;">
+                                    <input class="form-check-input permission-checkbox" type="checkbox" name="hide_assignee_system_wide" id="hideSystemWide" value="1" <?= ($systemSettings['hide_assignee_system_wide'] ?? false) ? 'checked' : '' ?> style="width: 2.2em; height: 1.1em; cursor: pointer;">
+                                </div>
+                            </div>
+
+                            <!-- Toggle 3: Force Me Mode System-Wide -->
+                            <div class="d-flex align-items-start justify-content-between p-3 rounded-3 border mb-4 bg-light" style="transition: all 0.2s ease;">
+                                <div style="flex: 1; padding-right: 20px;">
+                                    <h6 class="fw-bold mb-1">Force Me Mode System-Wide</h6>
+                                    <span class="text-secondary" style="font-size: 0.8rem;">Force all non-administrative users to view only their assigned tasks.</span>
+                                </div>
+                                <div class="form-check form-switch m-0 d-flex align-items-center" style="height: 24px;">
+                                    <input class="form-check-input permission-checkbox" type="checkbox" name="force_me_mode_system_wide" id="forceMeModeSystemWide" value="1" <?= ($systemSettings['force_me_mode_system_wide'] ?? false) ? 'checked' : '' ?> style="width: 2.2em; height: 1.1em; cursor: pointer;">
+                                </div>
+                            </div>
+                            
+                            <!-- Dropdown: CodeIgniter Environment -->
+                            <div class="d-flex align-items-center justify-content-between p-3 rounded-3 border bg-light" style="transition: all 0.2s ease;">
+                                <div style="flex: 1; padding-right: 20px;">
+                                    <h6 class="fw-bold mb-1">CodeIgniter Environment Mode</h6>
+                                    <span class="text-secondary" style="font-size: 0.8rem;">Switch between Development and Production modes.</span>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <select name="ci_environment" id="ciEnvironment" class="form-select form-select-sm" style="width: auto; min-width: 140px; cursor: pointer;">
+                                        <option value="development" <?= ($ci_environment === 'development') ? 'selected' : '' ?>>Development</option>
+                                        <option value="production" <?= ($ci_environment === 'production') ? 'selected' : '' ?>>Production</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-check form-switch m-0 d-flex align-items-center" style="height: 24px;">
-                        <input class="form-check-input permission-checkbox" type="checkbox" name="hide_assignee_weekly_reports" id="hideWeeklyReports" value="1" <?= ($systemSettings['hide_assignee_weekly_reports'] ?? true) ? 'checked' : '' ?> style="width: 2.2em; height: 1.1em; cursor: pointer;">
+                    
+                    <!-- Right Column: Rule Monitoring File -->
+                    <div class="col-lg-6">
+                        <div class="p-4 rounded-3 border bg-white shadow-sm">
+                            <h5 class="fw-bold mb-3 text-primary"><i class="bi bi-display me-2"></i>Rule Monitoring File</h5>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Flagship Page</label>
+                                <input type="text" class="form-control" name="flagship_page" value="<?= esc($systemSettings['flagship_page'] ?? '') ?>" placeholder="e.g. /galaxy-s26">
+                                <div class="form-text text-secondary mt-1" style="font-size: 0.8rem;">Appended to the Home URL to automatically generate Target URL</div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold">Flagship Buy Page</label>
+                                <input type="text" class="form-control" name="flagship_buy_page" value="<?= esc($systemSettings['flagship_buy_page'] ?? '') ?>" placeholder="e.g. /galaxy-s26/buy">
+                                <div class="form-text text-secondary mt-1" style="font-size: 0.8rem;">Appended to the Home URL to automatically generate Target URL</div>
+                            </div>
+
+                            <hr class="my-4">
+                            <h6 class="fw-bold mb-3 text-secondary">Excel Report Settings</h6>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Excel Title (Row C3)</label>
+                                <input type="text" class="form-control" name="excel_title_c3" value="<?= esc($systemSettings['excel_title_c3'] ?? '') ?>" placeholder="e.g. S26 Fired Rules">
+                                <div class="form-text text-secondary mt-1" style="font-size: 0.8rem;">This will be inserted as the dynamic title in column C, row 3 of the downloaded Excel report.</div>
+                            </div>
+                            
+                            <div class="mb-2">
+                                <label class="form-label fw-semibold">Excel Title (Row D3)</label>
+                                <input type="text" class="form-control" name="excel_title_d3" value="<?= esc($systemSettings['excel_title_d3'] ?? '') ?>" placeholder="e.g. S26 Buy Fired Rules">
+                                <div class="form-text text-secondary mt-1" style="font-size: 0.8rem;">This will be inserted as the dynamic title in column D, row 3 of the downloaded Excel report.</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Toggle 2: Hide Assignees system-wide across all tables -->
-                <div class="d-flex align-items-start justify-content-between p-3 rounded-3 border mb-3 bg-white shadow-sm" style="transition: all 0.2s ease;">
-                    <div style="flex: 1; padding-right: 20px;">
-                        <h6 class="fw-bold mb-1">Hide Assignees System-Wide</h6>
-                        <span class="text-secondary" style="font-size: 0.8rem;">Completely hide the "Assignee" column, dropdowns, and filtering fields across all task lists, kanbans, spreadsheet views, and ticket details.</span>
-                    </div>
-                    <div class="form-check form-switch m-0 d-flex align-items-center" style="height: 24px;">
-                        <input class="form-check-input permission-checkbox" type="checkbox" name="hide_assignee_system_wide" id="hideSystemWide" value="1" <?= ($systemSettings['hide_assignee_system_wide'] ?? false) ? 'checked' : '' ?> style="width: 2.2em; height: 1.1em; cursor: pointer;">
-                    </div>
-                </div>
-
-                <!-- Toggle 3: Force Me Mode System-Wide -->
-                <div class="d-flex align-items-start justify-content-between p-3 rounded-3 border mb-3 bg-white shadow-sm" style="transition: all 0.2s ease;">
-                    <div style="flex: 1; padding-right: 20px;">
-                        <h6 class="fw-bold mb-1">Force Me Mode System-Wide</h6>
-                        <span class="text-secondary" style="font-size: 0.8rem;">Force all non-administrative users to view only their assigned tasks. They will not be able to turn off Me Mode. Administrative users are unaffected.</span>
-                    </div>
-                    <div class="form-check form-switch m-0 d-flex align-items-center" style="height: 24px;">
-                        <input class="form-check-input permission-checkbox" type="checkbox" name="force_me_mode_system_wide" id="forceMeModeSystemWide" value="1" <?= ($systemSettings['force_me_mode_system_wide'] ?? false) ? 'checked' : '' ?> style="width: 2.2em; height: 1.1em; cursor: pointer;">
-                    </div>
-                </div>
-
-                <!-- Dropdown: CodeIgniter Environment -->
-                <div class="d-flex align-items-start justify-content-between p-3 rounded-3 border mb-4 bg-white shadow-sm" style="transition: all 0.2s ease;">
-                    <div style="flex: 1; padding-right: 20px;">
-                        <h6 class="fw-bold mb-1">CodeIgniter Environment Mode</h6>
-                        <span class="text-secondary" style="font-size: 0.8rem;">Switch the application environment between **Development** (displays verbose error logs, debug toolbar, and disables query caching) and **Production** (hides detailed error logs and optimizes system performance).</span>
-                    </div>
-                    <div class="d-flex align-items-center" style="height: 24px;">
-                        <select name="ci_environment" id="ciEnvironment" class="form-select form-select-xs" style="width: auto; min-width: 140px; cursor: pointer;">
-                            <option value="development" <?= ($ci_environment === 'development') ? 'selected' : '' ?>>Development</option>
-                            <option value="production" <?= ($ci_environment === 'production') ? 'selected' : '' ?>>Production</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="d-flex justify-content-start">
+                <div class="d-flex justify-content-start mt-4">
                     <button type="submit" class="apple-btn-primary btn-action-hover px-4">
                         <i class="bi bi-check-circle-fill me-1.5"></i> Save Settings
                     </button>

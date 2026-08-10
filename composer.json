@@ -14,7 +14,9 @@
         "ext-intl": "*",
         "ext-mbstring": "*",
         "laminas/laminas-escaper": "^2.18",
-        "psr/log": "^3.0"
+        "phpoffice/phpspreadsheet": "^5.9",
+        "psr/log": "^3.0",
+        "symfony/process": "^7.4"
     },
     "require-dev": {
         "codeigniter/coding-standard": "^1.7",
@@ -68,9 +70,11 @@
     "scripts": {
         "test": "phpunit"
     },
-    "repositories": [{
-        "name": "packagist",
-        "type": "composer",
-        "url": "http://repo.packagist.org"
-    }]
+    "repositories": [
+        {
+            "name": "packagist",
+            "type": "composer",
+            "url": "http://repo.packagist.org"
+        }
+    ]
 }

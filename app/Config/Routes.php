@@ -66,6 +66,9 @@ $routes->group('tag-requests', function ($routes) {
     $routes->post('update-status/(:num)', 'TagRequestsController::updateStatus/$1');
     $routes->post('update-type/(:num)', 'TagRequestsController::updateType/$1');
     $routes->match(['get', 'post'], 'create', 'TagRequestsController::create');
+    $routes->match(['get', 'post'], 'capture', 'TagRequestsController::captureTags');
+    $routes->post('generate-excel', 'TagRequestsController::generateCaptureExcel');
+    $routes->get('generate-shop-excel/(:num)', 'TagRequestsController::generateShopExcel/$1');
 });
 
 $routes->group('properties', function ($routes) {

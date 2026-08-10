@@ -711,11 +711,19 @@ class SettingsController extends BaseController
         $hideWeekly = $this->request->getPost('hide_assignee_weekly_reports') === '1';
         $hideSystem = $this->request->getPost('hide_assignee_system_wide') === '1';
         $forceMeMode = $this->request->getPost('force_me_mode_system_wide') === '1';
+        $flagshipPage = $this->request->getPost('flagship_page');
+        $flagshipBuyPage = $this->request->getPost('flagship_buy_page');
+        $excelTitleC3 = $this->request->getPost('excel_title_c3');
+        $excelTitleD3 = $this->request->getPost('excel_title_d3');
 
         $settings = [
             'hide_assignee_weekly_reports' => $hideWeekly,
             'hide_assignee_system_wide'    => $hideSystem,
             'force_me_mode_system_wide'    => $forceMeMode,
+            'flagship_page'                => $flagshipPage,
+            'flagship_buy_page'            => $flagshipBuyPage,
+            'excel_title_c3'               => $excelTitleC3,
+            'excel_title_d3'               => $excelTitleD3,
         ];
 
         $settingsFile = WRITEPATH . 'system_settings.json';
