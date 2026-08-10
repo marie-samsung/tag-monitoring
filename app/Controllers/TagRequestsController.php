@@ -15,7 +15,8 @@ use App\Models\PropertiesModel;
 use App\Models\VendorsModel;
 use App\Models\TagsModel;
 use CodeIgniter\Files\Exceptions\FileException;
-
+use Symfony\Component\Process\Process;
+use Symfony\Component\Process\Exception\ProcessFailedException;
 class TagRequestsController extends BaseController
 {
     public function index()
@@ -954,5 +955,217 @@ class TagRequestsController extends BaseController
             return $this->response->setJSON(['success' => true]);
         }
         return $this->response->setJSON(['success' => false, 'message' => 'Failed to update type']);
+    }
+
+    public function captureTags()
+    {
+        if ($this->request->getMethod() === 'GET') {
+            return view('tag-requests/capture_tags');
+        }
+
+        $post = $this->request->getPost();
+        $targetUrl = $post['target_url'] ?? '';
+        $launchScriptUrl = $post['launch_script_url'] ?? '';
+
+        if (empty($targetUrl)) {
+            return $this->response->setJSON(['success' => false, 'error' => 'Target URL is required.']);
+        }
+
+        $process = new Process([
+            'C:\\Program Files\\nodejs\\node.exe',
+            FCPATH . 'assets/js/capture_tags.js',
+            $targetUrl,
+            $launchScriptUrl
+        ]);
+        
+        $process->setTimeout(75);
+
+        try {
+            $process->mustRun();
+            
+            $output = $process->getOutput();
+            $result = json_decode($output, true);
+            
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                 // UPDATE THIS LINE TO REVEAL THE RAW TEXT
+                 return $this->response->setJSON([
+                     'success' => false, 
+                     'error' => 'Invalid JSON returned from Node.',
+                     'raw_output' => $output,
+                     'raw_error' => $process->getErrorOutput()
+                 ]);
+            }
+            
+            return $this->response->setJSON($result);
+            
+        } catch (ProcessFailedException $exception) {
+            return $this->response->setJSON([
+                'success' => false, 
+                'error' => 'Failed to capture tags: ' . $exception->getMessage()
+            ]);
+        }
+    }
+
+    public function generateCaptureExcel()
+    {
+        $requestId = $this->request->getPost('request_id');
+        $rulesDataJson = $this->request->getPost('rules_data');
+        $rulesData = json_decode($rulesDataJson, true) ?? [];
+
+        $tagRequestsModel = new \App\Models\TagRequestsModel();
+        $propertiesModel = new \App\Models\PropertiesModel();
+        $vendorsModel = new \App\Models\VendorsModel();
+        
+        $request = $tagRequestsModel->find($requestId);
+        if (!$request) {
+            return $this->response->setBody("Invalid request ID");
+        }
+        
+        $property = $propertiesModel->find($request['property_id']);
+        $propertyName = $property ? $property['name'] : 'Unknown Property';
+
+        $tagsModel = new \App\Models\TagsModel();
+        $tagIds = explode(',', $request['tags']);
+        $tagNames = [];
+        foreach ($tagIds as $tagId) {
+            $tag = $tagsModel->find($tagId);
+            if ($tag) {
+                $tagNames[] = $tag['name'];
+            }
+        }
+        if (empty($tagNames)) {
+            $tagNames[] = 'Unknown Tag';
+        }
+        
+        $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load(WRITEPATH . 'uploads/AEM - Local Rule Monitoring Excel.xlsx');
+        $sheet = $spreadsheet->getActiveSheet();
+        
+        // Headers
+        $sheet->setCellValue('B1', $propertyName);
+        
+        if (count($tagNames) > 1) {
+            $sheet->insertNewRowBefore(3, count($tagNames) - 1);
+        }
+        
+        $row = 2;
+        foreach ($tagNames as $name) {
+            $sheet->setCellValue('B' . $row++, $name);
+        }
+        
+        $extractRule = function($rules) {
+            $extracted = [];
+            foreach ($rules as $rule) {
+                if (preg_match('/"([^"]+)"/', $rule, $matches)) {
+                    $extracted[] = $matches[1];
+                } else {
+                    $extracted[] = $rule;
+                }
+            }
+            return $extracted;
+        };
+        
+        // Fired Rules Data
+        $url1Rules = $extractRule($rulesData['url1'] ?? []);
+        $url2Rules = $extractRule($rulesData['url2'] ?? []);
+        $url3Rules = $extractRule($rulesData['url3'] ?? []);
+        
+        $offset = count($tagNames) > 1 ? count($tagNames) - 1 : 0;
+        
+        $settingsFile = WRITEPATH . 'system_settings.json';
+        $systemSettings = file_exists($settingsFile) ? json_decode(file_get_contents($settingsFile), true) : [];
+        $titleC3 = $systemSettings['excel_title_c3'] ?? '';
+        $titleD3 = $systemSettings['excel_title_d3'] ?? '';
+        
+        if ($titleC3) $sheet->setCellValue('C' . (3 + $offset), $titleC3);
+        if ($titleD3) $sheet->setCellValue('D' . (3 + $offset), $titleD3);
+        
+        $sheet->setCellValue('B' . (4 + $offset), count($url1Rules));
+        $sheet->setCellValue('C' . (4 + $offset), count($url2Rules));
+        $sheet->setCellValue('D' . (4 + $offset), count($url3Rules));
+        
+        $sheet->setCellValue('B' . (6 + $offset), count($url1Rules));
+        $sheet->setCellValue('C' . (6 + $offset), count($url2Rules));
+        $sheet->setCellValue('D' . (6 + $offset), count($url3Rules));
+        
+        $rowB = 7 + $offset;
+        foreach ($url1Rules as $rule) {
+            $sheet->setCellValue('B' . $rowB++, $rule);
+        }
+        
+        $rowC = 7 + $offset;
+        foreach ($url2Rules as $rule) {
+            $sheet->setCellValue('C' . $rowC++, $rule);
+        }
+        
+        $rowD = 7 + $offset;
+        foreach ($url3Rules as $rule) {
+            $sheet->setCellValue('D' . $rowD++, $rule);
+        }
+        
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        
+        $filename = $propertyName . ' - Local Rule Monitoring File.xlsx';
+        $filename = preg_replace('/[^a-zA-Z0-9_\-\.\s\(\)]/', '', $filename);
+        
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="' . $filename . '"');
+        header('Cache-Control: max-age=0');
+        
+        $writer->save('php://output');
+        exit;
+    }
+
+    public function generateShopExcel($requestId)
+    {
+        $tagRequestsModel = new \App\Models\TagRequestsModel();
+        $propertiesModel = new \App\Models\PropertiesModel();
+        $tagsModel = new \App\Models\TagsModel();
+        
+        $request = $tagRequestsModel->find($requestId);
+        if (!$request) {
+            return $this->response->setBody("Invalid request ID");
+        }
+        
+        $property = $propertiesModel->find($request['property_id']);
+        $propertyName = $property ? $property['name'] : 'Unknown Property';
+
+        $tagIds = explode(',', $request['tags']);
+        $tagNames = [];
+        foreach ($tagIds as $tagId) {
+            $tag = $tagsModel->find($tagId);
+            if ($tag) {
+                $tagNames[] = $tag['name'];
+            }
+        }
+        if (empty($tagNames)) {
+            $tagNames[] = 'Unknown Tag';
+        }
+        
+        $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load(WRITEPATH . 'uploads/Shop - Local Rule Monitoring Excel.xlsx');
+        $sheet = $spreadsheet->getActiveSheet();
+        
+        // Headers
+        $sheet->setCellValue('B1', $propertyName);
+        
+        if (count($tagNames) > 1) {
+            $sheet->insertNewRowBefore(3, count($tagNames) - 1);
+        }
+        
+        $row = 2;
+        foreach ($tagNames as $name) {
+            $sheet->setCellValue('B' . $row++, $name);
+        }
+        
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        
+        $filename = $propertyName . ' - Local Rule Monitoring File.xlsx';
+        $filename = preg_replace('/[^a-zA-Z0-9_\-\.\s\(\)]/', '', $filename);
+        
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="' . $filename . '"');
+        header('Cache-Control: max-age=0');
+        
+        $writer->save('php://output');
+        exit;
     }
 }

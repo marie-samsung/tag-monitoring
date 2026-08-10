@@ -96,28 +96,51 @@ $hasNewRule = !empty($request['new_rule_ticket']);
 
 <div class="container-fluid px-0">
     <!-- Page Header -->
-    <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
-        <a href="<?= site_url('tag-requests') ?>" class="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; padding: 0;" title="Back to Requests">
-            <i class="bi bi-arrow-left fs-5"></i>
-        </a>
-        <div>
-            <h2 class="mb-0 fw-bold">Request Details</h2>
-            <div class="text-secondary small mb-0 fw-semibold d-flex align-items-center gap-2">
-                <span class="badge bg-secondary"><?= esc(Constants::SUBSIDIARIES[$properties[$request['property_id']]['subsidiary_id']] ?? 'Unknown') ?></span>
-                <span>•</span>
-                <span class="text-muted"><?= esc(request_type_label((int)$request['type'], (int)$request['status'])) ?></span>
-                <?php if ($hasNewTag): ?>
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+        <div class="d-flex align-items-center gap-3">
+            <a href="<?= site_url('tag-requests') ?>" class="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; padding: 0;" title="Back to Requests">
+                <i class="bi bi-arrow-left fs-5"></i>
+            </a>
+            <div>
+                <h2 class="mb-0 fw-bold">Request Details</h2>
+                <div class="text-secondary small mb-0 fw-semibold d-flex align-items-center gap-2">
+                    <span class="badge bg-secondary"><?= esc(Constants::SUBSIDIARIES[$properties[$request['property_id']]['subsidiary_id']] ?? 'Unknown') ?></span>
                     <span>•</span>
-                    <a href="<?= Constants::JIRA_LINK . $request['new_tag_ticket'] ?>" target="_blank" class="apple-link fw-bold">
-                        [<?= esc($request['new_tag_ticket']) ?>]
-                    </a>
-                <?php elseif ($hasNewRule): ?>
-                    <span>•</span>
-                    <a href="<?= Constants::JIRA_LINK . $request['new_rule_ticket'] ?>" target="_blank" class="apple-link fw-bold">
-                        [<?= esc($request['new_rule_ticket']) ?>]
-                    </a>
-                <?php endif; ?>
+                    <span class="text-muted"><?= esc(request_type_label((int)$request['type'], (int)$request['status'])) ?></span>
+                    <?php if ($hasNewTag): ?>
+                        <span>•</span>
+                        <a href="<?= Constants::JIRA_LINK . $request['new_tag_ticket'] ?>" target="_blank" class="apple-link fw-bold">
+                            [<?= esc($request['new_tag_ticket']) ?>]
+                        </a>
+                    <?php elseif ($hasNewRule): ?>
+                        <span>•</span>
+                        <a href="<?= Constants::JIRA_LINK . $request['new_rule_ticket'] ?>" target="_blank" class="apple-link fw-bold">
+                            [<?= esc($request['new_rule_ticket']) ?>]
+                        </a>
+                    <?php endif; ?>
+                </div>
             </div>
+        </div>
+        <div>
+            <?php 
+                $isShop = $properties[$request['property_id']]['is_shop'] ?? false;
+                if ($isShop): 
+                    $shopExcelUrl = site_url('tag-requests/generate-shop-excel/' . $request['id']);
+            ?>
+                <a href="<?= $shopExcelUrl ?>" class="apple-btn-primary text-decoration-none d-flex align-items-center gap-2 py-2 px-3">
+                    <i class="bi bi-file-earmark-excel-fill fs-5"></i> Download Rule Monitoring File
+                </a>
+            <?php else: 
+                $captureUrl = site_url('tag-requests/capture') . '?request_id=' . $request['id'];
+                $targetSite = $properties[$request['property_id']]['website'] ?? '';
+                if (!empty($targetSite)) {
+                    $captureUrl .= '&url=' . urlencode($targetSite);
+                }
+            ?>
+                <a href="<?= $captureUrl ?>" class="apple-btn-primary text-decoration-none d-flex align-items-center gap-2 py-2 px-3">
+                    <i class="bi bi-play-fill fs-5"></i> Capture Tags
+                </a>
+            <?php endif; ?>
         </div>
     </div>
 
