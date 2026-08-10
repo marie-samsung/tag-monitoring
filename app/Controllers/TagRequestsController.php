@@ -1115,12 +1115,50 @@ class TagRequestsController extends BaseController
         exit;
     }
 
-    public function generateShopExcel($requestId)
+    public function shopManualInput($id)
     {
         $tagRequestsModel = new \App\Models\TagRequestsModel();
         $propertiesModel = new \App\Models\PropertiesModel();
         $tagsModel = new \App\Models\TagsModel();
         
+        $request = $tagRequestsModel->find($id);
+        if (!$request) {
+            return redirect()->back()->with('error', 'Request not found.');
+        }
+
+        $property = $propertiesModel->find($request['property_id']);
+        
+        $tagIds = explode(',', $request['tags'] ?? '');
+        $tagNames = [];
+        foreach ($tagIds as $tagId) {
+            $tagId = trim($tagId);
+            if (empty($tagId)) continue;
+            $tag = $tagsModel->find($tagId);
+            if ($tag) {
+                $tagNames[] = $tag['name'];
+            }
+        }
+        
+        $data = [
+            'request' => $request,
+            'property' => $property,
+            'tagNames' => $tagNames
+        ];
+        
+        return view('tag-requests/shop_manual_input', $data);
+    }
+
+    public function generateShopExcel()
+    {
+        $tagRequestsModel = new \App\Models\TagRequestsModel();
+        $propertiesModel = new \App\Models\PropertiesModel();
+        $tagsModel = new \App\Models\TagsModel();
+        
+        $requestId = $this->request->getPost('request_id');
+        $cartLogs = $this->request->getPost('cart_logs') ?? '';
+        $checkoutLogs = $this->request->getPost('checkout_logs') ?? '';
+        $orderLogs = $this->request->getPost('order_logs') ?? '';
+
         $request = $tagRequestsModel->find($requestId);
         if (!$request) {
             return $this->response->setBody("Invalid request ID");
@@ -1154,6 +1192,50 @@ class TagRequestsController extends BaseController
         $row = 2;
         foreach ($tagNames as $name) {
             $sheet->setCellValue('B' . $row++, $name);
+        }
+
+        $extractRule = function($logs) {
+            $extracted = [];
+            $lines = explode("\n", str_replace("\r", "", $logs));
+            foreach ($lines as $line) {
+                $line = trim($line);
+                if (empty($line)) continue;
+                if (preg_match('/"([^"]+)"/', $line, $matches)) {
+                    $extracted[] = $matches[1];
+                } else {
+                    $extracted[] = $line;
+                }
+            }
+            return $extracted;
+        };
+        
+        $cartRules = $extractRule($cartLogs);
+        $checkoutRules = $extractRule($checkoutLogs);
+        $orderRules = $extractRule($orderLogs);
+
+        $offset = count($tagNames) > 1 ? count($tagNames) - 1 : 0;
+
+        $sheet->setCellValue('B' . (4 + $offset), count($cartRules));
+        $sheet->setCellValue('C' . (4 + $offset), count($checkoutRules));
+        $sheet->setCellValue('D' . (4 + $offset), count($orderRules));
+        
+        $sheet->setCellValue('B' . (6 + $offset), count($cartRules));
+        $sheet->setCellValue('C' . (6 + $offset), count($checkoutRules));
+        $sheet->setCellValue('D' . (6 + $offset), count($orderRules));
+
+        $rowB = 7 + $offset;
+        foreach ($cartRules as $rule) {
+            $sheet->setCellValue('B' . $rowB++, $rule);
+        }
+        
+        $rowC = 7 + $offset;
+        foreach ($checkoutRules as $rule) {
+            $sheet->setCellValue('C' . $rowC++, $rule);
+        }
+        
+        $rowD = 7 + $offset;
+        foreach ($orderRules as $rule) {
+            $sheet->setCellValue('D' . $rowD++, $rule);
         }
         
         $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);

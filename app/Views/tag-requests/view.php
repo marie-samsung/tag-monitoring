@@ -125,10 +125,10 @@ $hasNewRule = !empty($request['new_rule_ticket']);
             <?php 
                 $isShop = $properties[$request['property_id']]['is_shop'] ?? false;
                 if ($isShop): 
-                    $shopExcelUrl = site_url('tag-requests/generate-shop-excel/' . $request['id']);
+                    $shopInputUrl = site_url('tag-requests/shop-manual-input/' . $request['id']);
             ?>
-                <a href="<?= $shopExcelUrl ?>" class="apple-btn-primary text-decoration-none d-flex align-items-center gap-2 py-2 px-3">
-                    <i class="bi bi-file-earmark-excel-fill fs-5"></i> Download Rule Monitoring File
+                <a href="<?= $shopInputUrl ?>" class="apple-btn-primary text-decoration-none d-flex align-items-center gap-2 py-2 px-3">
+                    <i class="bi bi-file-earmark-text fs-5"></i> Create Rule Monitoring File
                 </a>
             <?php else: 
                 $captureUrl = site_url('tag-requests/capture') . '?request_id=' . $request['id'];
