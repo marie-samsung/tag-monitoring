@@ -20,6 +20,7 @@ $chatWelcomeMessage = $chatWelcomeMessage ?? 'Hello ' . $user . '! How can I hel
     flex-direction: column;
     align-items: flex-end;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    pointer-events: none;
 }
 
 .apple-chat-window {
@@ -289,6 +290,7 @@ $chatWelcomeMessage = $chatWelcomeMessage ?? 'Hello ' . $user . '! How can I hel
     justify-content: center;
     font-size: 1.5rem;
     transition: transform 0.2s, background 0.2s;
+    pointer-events: auto;
 }
 
 .apple-chat-toggle:hover {

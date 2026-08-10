@@ -9,6 +9,7 @@ use CodeIgniter\Router\RouteCollection;
 $routes->addRedirect('/', 'dashboard');
 $routes->get('dashboard', 'DashboardController::index');
 $routes->get('dashboard/task-tags', 'DashboardController::getTaskTags');
+$routes->get('dashboard/welcome-message', 'DashboardController::getWelcomeMessage');
 $routes->get('testdb', 'TestDB::index');
 $routes->match(['get', 'post'], 'login', 'AuthController::login');
 $routes->get('logout', 'AuthController::logout');
@@ -68,7 +69,8 @@ $routes->group('tag-requests', function ($routes) {
     $routes->match(['get', 'post'], 'create', 'TagRequestsController::create');
     $routes->match(['get', 'post'], 'capture', 'TagRequestsController::captureTags');
     $routes->post('generate-excel', 'TagRequestsController::generateCaptureExcel');
-    $routes->get('generate-shop-excel/(:num)', 'TagRequestsController::generateShopExcel/$1');
+    $routes->get('shop-manual-input/(:num)', 'TagRequestsController::shopManualInput/$1');
+    $routes->post('generate-shop-excel', 'TagRequestsController::generateShopExcel');
 });
 
 $routes->group('properties', function ($routes) {
