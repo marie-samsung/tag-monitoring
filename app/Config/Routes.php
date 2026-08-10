@@ -9,6 +9,7 @@ use CodeIgniter\Router\RouteCollection;
 $routes->addRedirect('/', 'dashboard');
 $routes->get('dashboard', 'DashboardController::index');
 $routes->get('dashboard/task-tags', 'DashboardController::getTaskTags');
+$routes->get('dashboard/welcome-message', 'DashboardController::getWelcomeMessage');
 $routes->get('testdb', 'TestDB::index');
 $routes->match(['get', 'post'], 'login', 'AuthController::login');
 $routes->get('logout', 'AuthController::logout');
