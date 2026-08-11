@@ -62,6 +62,25 @@ class DashboardController extends BaseController
         $data['end_date'] = $endDate;
         $data['date_range'] = $dateRange;
 
+        $userId = session()->get('user_id');
+        $baseColor = '#0071E3'; // Default blue
+        if (class_exists('\App\Models\Constants')) {
+            $baseColor = match ((int)$userId) {
+                \App\Models\Constants::USER_MARIE => '#7B1FA2',
+                \App\Models\Constants::USER_KHRISTINE => '#C2185B',
+                \App\Models\Constants::USER_LUCKY => '#1B5E20',
+                \App\Models\Constants::USER_JANITHA => '#1565C0',
+                \App\Models\Constants::USER_GEORGE => '#E65100',
+                default => '#0071E3',
+            };
+        }
+        $data['user_color'] = $baseColor;
+        $hex = ltrim($baseColor, '#');
+        $data['user_color_r'] = hexdec(substr($hex, 0, 2));
+        $data['user_color_g'] = hexdec(substr($hex, 2, 2));
+        $data['user_color_b'] = hexdec(substr($hex, 4, 2));
+
+
         // 1. Metric Counts
         $data['active_tags'] = $tagsModel->countActiveTags();
         $data['expiring_tags'] = $tagsModel->countExpiringTags();

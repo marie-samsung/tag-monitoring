@@ -249,14 +249,18 @@ Dashboard | Martech TMS
     </div>
 
     <!-- AI Welcome Message Banner -->
-    <div class="row mb-4" id="welcomeBannerRow" style="display: none;">
+    <div class="row mb-4" id="welcomeBannerRow">
         <div class="col-12">
-            <div id="aiWelcomeCard" class="apple-card p-4 d-flex align-items-center shadow-sm" style="background: linear-gradient(135deg, rgba(0,113,227,0.05) 0%, #ffffff 100%); border-left: 4px solid #0071e3; min-height: 80px; border-radius: 16px;">
-                <div class="me-4 fs-2" id="aiWelcomeIcon" style="opacity: 0.8; color: #0071e3;">
-                    <i class="bi bi-stars"></i>
+            <div id="aiWelcomeCard" class="apple-card p-4 d-flex align-items-center shadow-sm" style="background: linear-gradient(135deg, rgba(<?= $user_color_r ?? 0 ?>,<?= $user_color_g ?? 113 ?>,<?= $user_color_b ?? 227 ?>,0.05) 0%, #ffffff 100%); border-left: 4px solid <?= $user_color ?? '#0071e3' ?>; min-height: 80px; border-radius: 16px;">
+                <div class="me-4 fs-2" id="aiWelcomeIcon" style="opacity: 0.8; color: <?= $user_color ?? '#0071e3' ?>;">
+                    <div class="spinner-border spinner-border-sm" role="status" style="width: 1.5rem; height: 1.5rem; border-width: 0.15em;">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
                 </div>
                 <div id="aiWelcomeMessageContainer" class="flex-grow-1">
-                    <p id="aiWelcomeMessageText" class="mb-0 text-dark fw-medium" style="font-size: 1.05rem; line-height: 1.5;"></p>
+                    <p id="aiWelcomeMessageText" class="mb-0 text-dark fw-medium" style="font-size: 1.05rem; line-height: 1.5;">
+                        <span class="text-secondary" id="aiLoadingText"><em>Waking up the AI... (it takes a moment to be this smart) ☕</em></span>
+                    </p>
                 </div>
             </div>
         </div>
@@ -755,6 +759,16 @@ Dashboard | Martech TMS
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    const punchlines = [
+        "Waking up the AI... (it takes a moment to be this smart) ☕",
+        "Bribing the neural networks with digital cookies... 🍪",
+        "Consulting the digital oracle... 🔮",
+        "Brewing some coffee for the AI... ☕",
+        "Loading artificial enthusiasm... 🔋",
+        "Teaching the AI how to say hello... 🤖"
+    ];
+    document.getElementById('aiLoadingText').innerHTML = '<em>' + punchlines[Math.floor(Math.random() * punchlines.length)] + '</em>';
+
     // Fetch AI Welcome Message
     fetch('<?= site_url('dashboard/welcome-message') ?>', {
         headers: {
@@ -784,18 +798,18 @@ document.addEventListener('DOMContentLoaded', function () {
             card.style.borderLeftColor = color;
             card.style.background = `linear-gradient(135deg, rgba(${r},${g},${b},0.08) 0%, #ffffff 100%)`;
             icon.style.color = color;
+            icon.innerHTML = '<i class="bi bi-stars"></i>';
             
             textElement.innerHTML = escapeHtml(data.message).replace(/\n/g, '<br>');
-            bannerRow.style.display = 'block';
             
-            // Simple fade-in effect
-            bannerRow.style.opacity = 0;
+            // Simple fade-in effect for the text
+            textElement.style.opacity = 0;
             let opacity = 0;
             const fadeIn = setInterval(() => {
                 if (opacity >= 1) {
                     clearInterval(fadeIn);
                 }
-                bannerRow.style.opacity = opacity;
+                textElement.style.opacity = opacity;
                 opacity += 0.05;
             }, 20);
         } else {
