@@ -250,6 +250,7 @@ Tag Request: Create
 
 <?php 
     elseif ($request_type == Constants::JIRA_TYPE_NEW_TAG):
+        $requestTags = !empty($tag_ids) ? $tagsModelInst->whereIn('id', (array)$tag_ids)->findAll() : [];
         $property = $propertiesModel->find($property_id);
         $vendor = $vendorsModel->find($vendor_id);
         $siteCode = $propertiesModel->getSiteCode($property_id);
@@ -404,7 +405,7 @@ Tag Request: Create
                 </div>
 
                 <!-- Target Summary Card -->
-                <div class="apple-card flex-grow-1 mb-4">
+                <div class="apple-card mb-4">
                     <h5 class="mb-3 text-primary d-flex align-items-center gap-2 fw-bold">
                         <i class="bi bi-info-circle-fill"></i>
                         <span>Request Details</span>
@@ -425,6 +426,32 @@ Tag Request: Create
                         <span class="fw-semibold text-dark ms-1" style="font-size: 0.9rem;">
                             <?= esc($vendor['name'] ?? '—') ?>
                         </span>
+                    </div>
+                </div>
+
+                <!-- Related Tags Card -->
+                <div class="apple-card flex-grow-1 mb-4">
+                    <h5 class="mb-3 text-primary d-flex align-items-center gap-2 fw-bold">
+                        <i class="bi bi-tags-fill"></i>
+                        <span>Related Tags</span>
+                    </h5>
+                    <div class="d-flex flex-column gap-2">
+                        <?php if (!empty($requestTags)): ?>
+                            <?php foreach ($requestTags as $rtag): ?>
+                                <div class="d-flex justify-content-between align-items-center p-2 rounded" style="background-color: var(--color-bg-base); border: 1px solid rgba(0, 0, 0, 0.05);">
+                                    <a href="<?= site_url('tags/view/' . $rtag['id']) ?>" class="apple-link-dark text-decoration-none fw-semibold" style="font-size: 0.9rem;">
+                                        <?= esc($rtag['name']) ?>
+                                    </a>
+                                    <?php if (!empty($rtag['ref_link'])): ?>
+                                        <a href="<?= esc($rtag['ref_link']) ?>" target="_blank" class="text-muted" title="Open ref_link" style="text-decoration: none;">
+                                            <i class="bi bi-box-arrow-up-right"></i>
+                                        </a>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <p class="text-muted small mb-0">No related tags found.</p>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -467,6 +494,7 @@ Tag Request: Create
 <!-- #endregion -->
 
 <?php elseif ($request_type == Constants::JIRA_TYPE_NEW_RULE) :
+    $requestTags = !empty($tag_ids) ? $tagsModelInst->whereIn('id', (array)$tag_ids)->findAll() : [];
     $property = $propertiesModel->find($property_id);
     $vendor = $vendorsModel->find($vendor_id);
     $siteCode = $propertiesModel->getSiteCode($property_id);
@@ -643,7 +671,7 @@ Tag Request: Create
                 </div>
 
                 <!-- Target Summary Card -->
-                <div class="apple-card flex-grow-1 mb-4">
+                <div class="apple-card mb-4">
                     <h5 class="mb-3 text-primary d-flex align-items-center gap-2 fw-bold">
                         <i class="bi bi-info-circle-fill"></i>
                         <span>Request Details</span>
@@ -678,6 +706,32 @@ Tag Request: Create
                                 Copied!
                             </span>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Related Tags Card -->
+                <div class="apple-card flex-grow-1 mb-4">
+                    <h5 class="mb-3 text-primary d-flex align-items-center gap-2 fw-bold">
+                        <i class="bi bi-tags-fill"></i>
+                        <span>Related Tags</span>
+                    </h5>
+                    <div class="d-flex flex-column gap-2">
+                        <?php if (!empty($requestTags)): ?>
+                            <?php foreach ($requestTags as $rtag): ?>
+                                <div class="d-flex justify-content-between align-items-center p-2 rounded" style="background-color: var(--color-bg-base); border: 1px solid rgba(0, 0, 0, 0.05);">
+                                    <a href="<?= site_url('tags/view/' . $rtag['id']) ?>" class="apple-link-dark text-decoration-none fw-semibold" style="font-size: 0.9rem;">
+                                        <?= esc($rtag['name']) ?>
+                                    </a>
+                                    <?php if (!empty($rtag['ref_link'])): ?>
+                                        <a href="<?= esc($rtag['ref_link']) ?>" target="_blank" class="text-muted" title="Open ref_link" style="text-decoration: none;">
+                                            <i class="bi bi-box-arrow-up-right"></i>
+                                        </a>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <p class="text-muted small mb-0">No related tags found.</p>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>

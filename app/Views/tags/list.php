@@ -389,7 +389,7 @@ $jiraHistoryModel = new JiraHistoryModel();
 $tasksModel = new TasksModel();
 
 $activeFiltersCount = 0;
-$advancedFilterKeys = ['subsidiary_id', 'property_id', 'vendor_id', 'status', 'al_end_date_from', 'al_end_date_to'];
+$advancedFilterKeys = ['subsidiary_id', 'property_id', 'vendor_id', 'status', 'al_end_date_from', 'al_end_date_to', 'sort_by_property'];
 foreach ($advancedFilterKeys as $key) {
     if ($key === 'status') {
         $statusVal = $_GET['status'] ?? null;
@@ -656,6 +656,18 @@ $hasActiveFilters = ($activeFiltersCount > 0) || !empty($_GET['keyword']);
                                 style="right: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; font-size: 0.875rem;"></i>
                         </div>
                     </div>
+
+                    <!-- Sort by Property -->
+                    <div class="col-md-4 col-lg-3">
+                        <label class="form-label-xs fw-semibold text-secondary mb-1">&nbsp;</label>
+                        <div class="form-check form-switch d-flex align-items-center gap-2" style="height: 34px;">
+                            <input class="form-check-input" type="checkbox" name="sort_by_property" value="1"
+                                id="sortByPropertySwitch" <?= (isset($_GET['sort_by_property']) && $_GET['sort_by_property'] == '1') ? 'checked' : '' ?> onchange="this.form.submit()"
+                                style="cursor: pointer; width: 2.4em; height: 1.2em; margin-top: 0;">
+                            <label class="form-check-label small fw-medium text-secondary mb-0"
+                                for="sortByPropertySwitch" style="cursor: pointer; user-select: none;">Sort by Property</label>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -685,6 +697,11 @@ $hasActiveFilters = ($activeFiltersCount > 0) || !empty($_GET['keyword']);
                     if (empty($val))
                         continue;
                     $label = 'Expiry To: ' . date('d-m-Y', strtotime($val));
+                } elseif ($key === 'sort_by_property') {
+                    $val = $_GET['sort_by_property'] ?? null;
+                    if (empty($val))
+                        continue;
+                    $label = 'Sort by Property: Enabled';
                 } else {
                     if (empty($_GET[$key]) && (!isset($_GET[$key]) || $_GET[$key] === '')) {
                         continue;

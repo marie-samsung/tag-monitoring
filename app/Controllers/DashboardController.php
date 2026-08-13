@@ -381,6 +381,7 @@ class DashboardController extends BaseController
             ->select('properties.subsidiary_id, COUNT(tags.id) as count')
             ->join('properties', 'properties.id = tags.property_id', 'left')
             ->where('tags.deleted_at', null)
+            ->whereNotIn('tags.status', [Constants::STATUS_DISABLED, Constants::STATUS_ENDED, Constants::STATUS_EXPIRED])
             ->groupBy('properties.subsidiary_id')
             ->get()
             ->getResultArray();
@@ -899,10 +900,10 @@ class DashboardController extends BaseController
         $inProgressTasks = $tasksModel
             ->where('assignee', $userId)
             ->whereIn('status', [
-                \App\Models\Constants::ACTIVITY_LOGS_STATUS_INVESTIGATION,
-                \App\Models\Constants::ACTIVITY_LOGS_STATUS_IMPLEMENTATION,
-                \App\Models\Constants::ACTIVITY_LOGS_STATUS_QA,
-                \App\Models\Constants::ACTIVITY_LOGS_STATUS_REVIEW
+                Constants::ACTIVITY_LOGS_STATUS_INVESTIGATION,
+                Constants::ACTIVITY_LOGS_STATUS_IMPLEMENTATION,
+                Constants::ACTIVITY_LOGS_STATUS_QA,
+                Constants::ACTIVITY_LOGS_STATUS_REVIEW
             ])
             ->where('deleted_at', null)
             ->countAllResults();
@@ -910,7 +911,14 @@ class DashboardController extends BaseController
         // Blocked
         $blockedTasks = $tasksModel
             ->where('assignee', $userId)
-            ->where('status', \App\Models\Constants::ACTIVITY_LOGS_STATUS_BLOCKED)
+            ->where('status', Constants::ACTIVITY_LOGS_STATUS_BLOCKED)
+            ->where('deleted_at', null)
+            ->countAllResults();
+
+        // To Do
+        $todoTasks = $tasksModel
+            ->where('assignee', $userId)
+            ->where('status', Constants::ACTIVITY_LOGS_STATUS_TO_DO)
             ->where('deleted_at', null)
             ->countAllResults();
 
@@ -918,7 +926,7 @@ class DashboardController extends BaseController
             "Generate a highly inspirational, welcoming, and encouraging welcome message for a dashboard.",
             "The user's name is {$userName} and they belong to the {$teamName} team.",
             "Today is " . date('l') . ", " . date('F jS') . ".",
-            "They currently have {$inProgressTasks} task(s) in progress and {$blockedTasks} task(s) blocked/on-hold."
+            "They currently have {$inProgressTasks} task(s) in progress, {$blockedTasks} task(s) blocked/on-hold, and {$todoTasks} task(s) in their to-do list."
         ];
 
         // Expiring Tags (If Media Tagging Team)
@@ -951,7 +959,7 @@ class DashboardController extends BaseController
         
         $client = \Config\Services::curlrequest();
         
-        $fallbackMessage = "Hello {$userName}! Happy " . date('l') . ", have a wonderful week ahead! You have {$inProgressTasks} task(s) in progress today, and {$blockedTasks} task(s) blocked.";
+        $fallbackMessage = "Hello {$userName}! Happy " . date('l') . ", have a wonderful week ahead! You have {$inProgressTasks} task(s) in progress today, and {$blockedTasks} task(s) blocked, and you have {$todoTasks} on your queue.";
         if (isset($expiringTags) && $expiringTags > 0) {
             $fallbackMessage .= " Please be reminded that there are {$expiringTags} tags expiring in the next 15 days.";
         }
@@ -963,7 +971,7 @@ class DashboardController extends BaseController
                     'Content-Type' => 'application/json',
                     'x-fabrix-client' => $fabrixClient,
                     'x-openapi-token' => 'Bearer ' . $apiKey,
-                    'x-llm-model-id' => '7',
+                    'x-llm-model-id' => '4',
                 ],
                 'http_errors' => false,
                 'json' => [

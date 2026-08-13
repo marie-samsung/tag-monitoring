@@ -102,6 +102,9 @@ class TagsModel extends Model
         if (!empty($filters['status']) && !is_array($filters['status']) && $filters['status'] !== 'all' && $filters['status'] != 145) {
             $hasActiveFilters = true;
         }
+        if ($filters['status'] != Constants::STATUS_DISABLED && $filters['status'] != Constants::STATUS_ENDED && $filters['status'] != Constants::STATUS_EXPIRED) {
+            $this->whereNotIn('tags.status', [Constants::STATUS_DISABLED, Constants::STATUS_ENDED, Constants::STATUS_EXPIRED]);
+        }
 
         if (!empty($sortBy)) {
             if ($sortBy === 'id') {
@@ -129,12 +132,15 @@ class TagsModel extends Model
                 $this->orderBy('properties.name', 'ASC');
                 $this->orderBy('IF(tags.js_code IS NOT NULL AND tags.js_code != "", 1, 0)', 'DESC', false);
                 $this->orderBy('tags.updated_at', 'DESC');
+            } elseif (!empty($filters['sort_by_property'])) {
+                $this->orderBy('tags.property_id', 'ASC');
+                $this->orderBy('tags.name', 'ASC');
             } else {
                 $this->orderBy(
                     '(CASE 
                         WHEN tags.al_end_date < CURDATE() AND tags.status = 1 THEN 0
-                        WHEN tags.al_end_date <= DATE_ADD(CURDATE(), INTERVAL 16 DAY) AND tags.status = 5 THEN 1 /** Updated in AL */
-                        WHEN tags.al_end_date <= DATE_ADD(CURDATE(), INTERVAL 16 DAY) AND tags.status = 9 THEN 2 /** On Hold */
+                        WHEN tags.status = 5 THEN 1 /** Updated in AL */
+                        WHEN tags.status = 9 THEN 2 /** On Hold */
                         WHEN tags.al_end_date <= DATE_ADD(CURDATE(), INTERVAL 9 DAY) AND tags.status = 1 THEN 3 /** Enabled */
                         WHEN tags.al_end_date <= DATE_ADD(CURDATE(), INTERVAL 16 DAY) AND tags.status = 4 THEN 4 /** Pending Verification */
                         WHEN tags.al_end_date <= DATE_ADD(CURDATE(), INTERVAL 16 DAY) AND tags.status = 1 THEN 5

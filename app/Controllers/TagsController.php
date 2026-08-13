@@ -44,6 +44,7 @@ class TagsController extends BaseController
             'al_end_date_to' => $this->request->getGet('al_end_date_to'),
             'sort_by' => $this->request->getGet('sort_by'),
             'sort_dir' => $this->request->getGet('sort_dir'),
+            'sort_by_property' => $this->request->getGet('sort_by_property'),
         ];
         $data['tags'] = $tagModel->filterTags($filters, 25);
         $data['pager'] = $tagModel->pager;
