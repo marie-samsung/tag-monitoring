@@ -82,6 +82,19 @@
             });
         });
 
+        // Global helper for HTML escaping
+        window.escapeHtml = function(text) {
+            if (!text) return '';
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.toString().replace(/[&<>"']/g, function(m) { return map[m]; });
+        };
+
         // Custom Theme Modal Helper Functions (to replace native alert/confirm)
         window.themeConfirm = function ({ title = 'Confirm', message = '', confirmText = 'Confirm', cancelText = 'Cancel', type = 'primary' }) {
             return new Promise((resolve) => {

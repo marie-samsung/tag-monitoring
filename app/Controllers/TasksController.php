@@ -73,6 +73,25 @@ class TasksController extends BaseController
         $data['all_labels'] = $model->getAllLabels();
         $data['aiModels'] = $this->fetchAiModels();
         $user = session()->get('user_name');
+        
+        $userId = session()->get('user_id');
+        $baseColor = '#0071E3'; // Default blue
+        if (class_exists('\App\Models\Constants')) {
+            $baseColor = match ((int)$userId) {
+                \App\Models\Constants::USER_MARIE => '#7B1FA2',
+                \App\Models\Constants::USER_KHRISTINE => '#C2185B',
+                \App\Models\Constants::USER_LUCKY => '#1B5E20',
+                \App\Models\Constants::USER_JANITHA => '#1565C0',
+                \App\Models\Constants::USER_GEORGE => '#E65100',
+                default => '#0071E3',
+            };
+        }
+        $data['user_color'] = $baseColor;
+        $hex = ltrim($baseColor, '#');
+        $data['user_color_r'] = hexdec(substr($hex, 0, 2));
+        $data['user_color_g'] = hexdec(substr($hex, 2, 2));
+        $data['user_color_b'] = hexdec(substr($hex, 4, 2));
+        
         $data['chatWelcomeMessage'] = "Hello {$user}! Do you have any questions regarding the tasks? 😄";
         return view('tasks/list', $data);
     }
@@ -2613,5 +2632,134 @@ class TasksController extends BaseController
         }
         
         return [];
+    }
+
+    public function getWelcomeMessage()
+    {
+        $userName = session()->get('user_name') ?? session()->get('name');
+        $userId = session()->get('user_id');
+        
+        // Count Tasks
+        $tasksModel = new \App\Models\TasksModel();
+        
+        // In Progress (Investigation, Implementation, QA)
+        $inProgressTasks = $tasksModel
+            ->where('assignee', $userId)
+            ->whereIn('status', [
+                \App\Models\Constants::ACTIVITY_LOGS_STATUS_INVESTIGATION,
+                \App\Models\Constants::ACTIVITY_LOGS_STATUS_IMPLEMENTATION,
+                \App\Models\Constants::ACTIVITY_LOGS_STATUS_QA,
+            ])
+            ->where('deleted_at', null)
+            ->countAllResults();
+            
+        // For Review
+        $forReviewTasks = $tasksModel
+            ->where('assignee', $userId)
+            ->where('status', \App\Models\Constants::ACTIVITY_LOGS_STATUS_REVIEW)
+            ->where('deleted_at', null)
+            ->countAllResults();
+            
+        // Blocked
+        $blockedTasks = $tasksModel
+            ->where('assignee', $userId)
+            ->where('status', \App\Models\Constants::ACTIVITY_LOGS_STATUS_BLOCKED)
+            ->where('deleted_at', null)
+            ->countAllResults();
+
+        // To Do
+        $todoTasks = $tasksModel
+            ->where('assignee', $userId)
+            ->where('status', \App\Models\Constants::ACTIVITY_LOGS_STATUS_TO_DO)
+            ->where('deleted_at', null)
+            ->countAllResults();
+
+        $promptParts = [
+            "Generate a highly inspirational, welcoming, and encouraging welcome message for a tasks dashboard.",
+            "The user's name is {$userName}.",
+            "Today is " . date('l') . ", " . date('F jS') . ".",
+            "They currently have {$inProgressTasks} task(s) in progress, {$forReviewTasks} task(s) for review, {$blockedTasks} task(s) blocked, and {$todoTasks} task(s) in their to-do list.",
+            "Please include any random fun fact and a motivational quote.",
+            "Keep it concise, natural, and very friendly. Do not include any placeholder text or markdown like **. Do not mention expiring tags."
+        ];
+
+        $prompt = implode(" ", $promptParts);
+
+        // Call FABRIX API
+        $apiUrl = env('FABRIX_API_URL') . '/openapi/llm/chat/completions';
+        $apiKey = env('FABRIX_API_TOKEN') ?? '';
+        $fabrixClient = env('FABRIX_CLIENT') ?? '';
+        
+        $client = \Config\Services::curlrequest();
+        
+        $fallbackMessage = "Hello {$userName}! Happy " . date('l') . "! You've got {$inProgressTasks} task(s) in progress, {$forReviewTasks} for review, {$blockedTasks} blocked, and {$todoTasks} to do. \"Believe you can and you're halfway there.\" - Theodore Roosevelt 🌟 Let's tackle today's goals with energy!";
+
+        try {
+            $response = $client->request('POST', $apiUrl, [
+                'headers' => [
+                    'Accept' => 'application/json',
+                    'Content-Type' => 'application/json',
+                    'x-fabrix-client' => $fabrixClient,
+                    'x-openapi-token' => 'Bearer ' . $apiKey,
+                    'x-llm-model-id' => '4',
+                ],
+                'http_errors' => false,
+                'json' => [
+                    "messages" => [
+                        ["role" => "system", "content" => "You are a highly motivational AI assistant for a corporate dashboard."],
+                        ["role" => "user", "content" => $prompt]
+                    ],
+                    "temperature" => 0.7
+                ],
+                'timeout' => 15
+            ]);
+            
+            $aiMessage = '';
+            if ($response->getStatusCode() >= 200 && $response->getStatusCode() < 300) {
+                $respData = json_decode($response->getBody(), true);
+                if (isset($respData['choices'][0]['message']['content'])) {
+                    $aiMessage = trim($respData['choices'][0]['message']['content']);
+                } elseif (isset($respData['reply'])) {
+                    $aiMessage = trim($respData['reply']);
+                }
+            }
+            
+            $baseColor = '#0071E3'; // Default blue
+            if (class_exists('\App\Models\Constants')) {
+                $baseColor = match ((int)$userId) {
+                    \App\Models\Constants::USER_MARIE => '#7B1FA2',     // Purple
+                    \App\Models\Constants::USER_KHRISTINE => '#C2185B', // Pink
+                    \App\Models\Constants::USER_LUCKY => '#1B5E20',     // Green
+                    \App\Models\Constants::USER_JANITHA => '#1565C0',   // Blue
+                    \App\Models\Constants::USER_GEORGE => '#E65100',    // Orange
+                    default => '#0071E3',
+                };
+            }
+            $userColor = $baseColor;
+
+            if (empty($aiMessage)) {
+                return $this->response->setJSON(['success' => true, 'message' => $fallbackMessage, 'user_color' => $userColor]);
+            }
+
+            return $this->response->setJSON([
+                'success' => true, 
+                'message' => $aiMessage,
+                'user_color' => $userColor
+            ]);
+
+        } catch (\Exception $e) {
+            $baseColor = '#0071E3'; // Default blue
+            if (class_exists('\App\Models\Constants')) {
+                $baseColor = match ((int)$userId) {
+                    \App\Models\Constants::USER_MARIE => '#7B1FA2',
+                    \App\Models\Constants::USER_KHRISTINE => '#C2185B',
+                    \App\Models\Constants::USER_LUCKY => '#1B5E20',
+                    \App\Models\Constants::USER_JANITHA => '#1565C0',
+                    \App\Models\Constants::USER_GEORGE => '#E65100',
+                    default => '#0071E3',
+                };
+            }
+            return $this->response->setJSON(['success' => true, 'message' => $fallbackMessage, 'user_color' => $baseColor]);
+        }
     }
 }

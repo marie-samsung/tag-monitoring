@@ -180,6 +180,24 @@ $isAdmin = (int) session()->get('user_role') === Constants::USER_ROLE_ADMIN || (
         </div>
     </div>
 
+    <!-- AI Welcome Message Banner -->
+    <div class="row mb-4" id="welcomeBannerRow">
+        <div class="col-12">
+            <div id="aiWelcomeCard" class="apple-card p-4 d-flex align-items-center shadow-sm" style="background: linear-gradient(135deg, rgba(<?= $user_color_r ?? 0 ?>,<?= $user_color_g ?? 113 ?>,<?= $user_color_b ?? 227 ?>,0.05) 0%, #ffffff 100%); border-left: 4px solid <?= $user_color ?? '#0071e3' ?>; min-height: 80px; border-radius: 16px;">
+                <div class="me-4 fs-2" id="aiWelcomeIcon" style="opacity: 0.8; color: <?= $user_color ?? '#0071e3' ?>;">
+                    <div class="spinner-border spinner-border-sm" role="status" style="width: 1.5rem; height: 1.5rem; border-width: 0.15em;">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+                <div id="aiWelcomeMessageContainer" class="flex-grow-1">
+                    <p id="aiWelcomeMessageText" class="mb-0 text-dark fw-medium" style="font-size: 1.05rem; line-height: 1.5;">
+                        <span class="text-secondary" id="aiLoadingText"><em>Waking up the AI... (it takes a moment to be this smart) ☕</em></span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Size Legend Collapse Panel -->
     <div class="collapse" id="sizeLegendCollapse">
         <div class="apple-card mb-4 bg-white">
@@ -2198,6 +2216,64 @@ $isAdmin = (int) session()->get('user_role') === Constants::USER_ROLE_ADMIN || (
                     toast.fadeOut(300);
                 }, 4000);
             }
+        });
+
+        // AI Welcome Message Fetch
+        const punchlines = [
+            "Waking up the AI... (it takes a moment to be this smart) ☕",
+            "Bribing the neural networks with digital cookies... 🍪",
+            "Consulting the digital oracle... 🔮",
+            "Brewing some coffee for the AI... ☕",
+            "Loading artificial enthusiasm... 🔋",
+            "Teaching the AI how to say hello... 🤖"
+        ];
+        document.getElementById('aiLoadingText').innerHTML = '<em>' + punchlines[Math.floor(Math.random() * punchlines.length)] + '</em>';
+
+        fetch('<?= site_url('tasks/welcome-message') ?>', {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data && data.success && data.message) {
+                const bannerRow = document.getElementById('welcomeBannerRow');
+                const card = document.getElementById('aiWelcomeCard');
+                const icon = document.getElementById('aiWelcomeIcon');
+                const textElement = document.getElementById('aiWelcomeMessageText');
+                
+                const color = data.user_color || '#0071e3';
+                let r = 0, g = 113, b = 227;
+                if (color.match(/^#[0-9a-f]{6}$/i)) {
+                    r = parseInt(color.slice(1, 3), 16);
+                    g = parseInt(color.slice(3, 5), 16);
+                    b = parseInt(color.slice(5, 7), 16);
+                }
+                
+                card.style.borderLeftColor = color;
+                card.style.background = `linear-gradient(135deg, rgba(${r},${g},${b},0.08) 0%, #ffffff 100%)`;
+                icon.style.color = color;
+                icon.innerHTML = '<i class="bi bi-stars"></i>';
+                
+                textElement.innerHTML = escapeHtml(data.message).replace(/\n/g, '<br>');
+                
+                textElement.style.opacity = 0;
+                let opacity = 0;
+                const fadeIn = setInterval(() => {
+                    if (opacity >= 1) {
+                        clearInterval(fadeIn);
+                    }
+                    textElement.style.opacity = opacity;
+                    opacity += 0.05;
+                }, 20);
+            } else {
+                document.getElementById('welcomeBannerRow').style.display = 'none';
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching welcome message:', error);
+            document.getElementById('welcomeBannerRow').style.display = 'none';
         });
     });
 </script>
