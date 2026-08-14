@@ -102,6 +102,7 @@ $routes->group('jira', function ($routes) {
 
 $routes->group('tasks', function ($routes) {
     $routes->get('/', 'TasksController::index');
+    $routes->get('welcome-message', 'TasksController::getWelcomeMessage');
     $routes->get('project/(:any)', 'TasksController::projectView/$1');
     $routes->get('export', 'TasksController::exportAsExcel');
     $routes->get('view/(:num)', 'TasksController::view/$1');

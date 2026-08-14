@@ -418,6 +418,10 @@ $hideAssigneeSystemWide = $sysSettings['hide_assignee_system_wide'] ?? false;
                                                 class="apple-link-dark fw-medium text-decoration-none">
                                                 <?= esc($tag['name']) ?>
                                             </a>
+                                            <a href="<?= $tag['ref_link'] ?>" target="_blank" rel="noopener" class="text-muted ms-1"
+                                                style="font-size: 0.75rem; text-decoration: none;" title="View in Adobe Launch">
+                                                <i class="bi bi-box-arrow-up-right"></i>
+                                            </a>
                                             <span class="badge bg-secondary text-secondary small py-0.5 px-1.5"
                                                 style="font-size: 0.7rem; border-radius: 4px;">
                                                 #<?= $tag['id'] ?>

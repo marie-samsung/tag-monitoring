@@ -959,7 +959,7 @@ class DashboardController extends BaseController
         
         $client = \Config\Services::curlrequest();
         
-        $fallbackMessage = "Hello {$userName}! Happy " . date('l') . ", have a wonderful week ahead! You have {$inProgressTasks} task(s) in progress today, and {$blockedTasks} task(s) blocked, and you have {$todoTasks} on your queue.";
+        $fallbackMessage = "Hello {$userName}! Happy " . date('l') . "! You have {$inProgressTasks} task(s) in progress, {$blockedTasks} blocked, and {$todoTasks} to do. \"Believe you can and you're halfway there.\" - Theodore Roosevelt 🌟 Let's tackle today's goals with energy!";
         if (isset($expiringTags) && $expiringTags > 0) {
             $fallbackMessage .= " Please be reminded that there are {$expiringTags} tags expiring in the next 15 days.";
         }
