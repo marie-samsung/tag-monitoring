@@ -2679,7 +2679,7 @@ class TasksController extends BaseController
             "The user's name is {$userName}.",
             "Today is " . date('l') . ", " . date('F jS') . ".",
             "They currently have {$inProgressTasks} task(s) in progress, {$forReviewTasks} task(s) for review, {$blockedTasks} task(s) blocked, and {$todoTasks} task(s) in their to-do list.",
-            "Please include any random fun fact and a motivational quote.",
+            "Generate any surprising random fun fact and a motivational quote.",
             "Keep it concise, natural, and very friendly. Do not include any placeholder text or markdown like **. Do not mention expiring tags."
         ];
 
@@ -2701,7 +2701,7 @@ class TasksController extends BaseController
                     'Content-Type' => 'application/json',
                     'x-fabrix-client' => $fabrixClient,
                     'x-openapi-token' => 'Bearer ' . $apiKey,
-                    'x-llm-model-id' => '4',
+                    'x-llm-model-id' => '7',
                 ],
                 'http_errors' => false,
                 'json' => [
