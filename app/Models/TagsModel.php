@@ -102,9 +102,9 @@ class TagsModel extends Model
         if (!empty($filters['status']) && !is_array($filters['status']) && $filters['status'] !== 'all' && $filters['status'] != 145) {
             $hasActiveFilters = true;
         }
-        if ($filters['status'] != Constants::STATUS_DISABLED && $filters['status'] != Constants::STATUS_ENDED && $filters['status'] != Constants::STATUS_EXPIRED) {
-            $this->whereNotIn('tags.status', [Constants::STATUS_DISABLED, Constants::STATUS_ENDED, Constants::STATUS_EXPIRED]);
-        }
+        // if ($filters['status'] != Constants::STATUS_DISABLED && $filters['status'] != Constants::STATUS_ENDED && $filters['status'] != Constants::STATUS_EXPIRED) {
+        //     $this->whereNotIn('tags.status', [Constants::STATUS_DISABLED, Constants::STATUS_ENDED, Constants::STATUS_EXPIRED]);
+        // }
 
         if (!empty($sortBy)) {
             if ($sortBy === 'id') {

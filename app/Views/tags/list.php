@@ -624,9 +624,8 @@ $hasActiveFilters = ($activeFiltersCount > 0) || !empty($_GET['keyword']);
                         <label class="form-label-xs fw-semibold text-secondary mb-1">Status</label>
                         <select name="status" class="form-select form-select-xs"
                             style="height: 34px; border-radius: 8px;">
-                            <option value="<?= Constants::STATUS_ALL ?>" <?= (old('status', $filters['status'] ?? null) == Constants::STATUS_ALL || empty($filters['status']) || $filters['status'] == 145) ? 'selected' : '' ?>>All Statuses</option>
                             <?php foreach (Constants::STATUS as $value => $label): ?>
-                                <option value="<?= esc($value) ?>" <?= (old('status', $filters['status'] ?? null) == $value && $filters['status'] != 145) ? 'selected' : '' ?>>
+                                <option value="<?= esc($value) ?>" <?= (old('status', $filters['status'] ?? null) == $value) ? 'selected' : '' ?>>
                                     <?= esc($label) ?>
                                 </option>
                             <?php endforeach; ?>

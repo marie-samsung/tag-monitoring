@@ -62,6 +62,7 @@ class Constants
     public const STATUS_DEFAULT = 145;
     public const STATUS_ALL = 999;
     public const STATUS = [
+        self::STATUS_ALL => 'All Statuses',
         self::STATUS_DEFAULT => 'Default',
         self::STATUS_ENABLED => 'Enabled',
         self::STATUS_DISABLED => 'Disabled',

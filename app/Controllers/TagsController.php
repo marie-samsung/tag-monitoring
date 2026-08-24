@@ -50,7 +50,7 @@ class TagsController extends BaseController
         $data['pager'] = $tagModel->pager;
 
         if (is_array($status)) {
-            $filters['status'] = 145;
+            $filters['status'] = Constants::STATUS_DEFAULT;
         }
         $data['filters'] = $filters;
 
