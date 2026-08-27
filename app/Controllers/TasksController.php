@@ -2427,6 +2427,14 @@ class TasksController extends BaseController
         
         $dbMessages[] = ['role' => 'user', 'content' => $message];
 
+        // Get Current Logged-in User Context
+        $currentUserId = (int)(session()->get('user_id') ?? 0);
+        $currentUserName = session()->get('user_name') ?? session()->get('name') ?? session()->get('username') ?? 'User';
+        $currentUsername = session()->get('username') ?? '';
+        $currentDate = date('Y-m-d');
+        $currentDateTime = date('Y-m-d H:i:s');
+        $currentDayName = date('l');
+
         // 1. Get Schema Context
         $db = \Config\Database::connect();
         $schemaContext = "Database schema for Task tables:\n\n";
@@ -2451,12 +2459,27 @@ class TasksController extends BaseController
             $schemaContext .= "ACTIVITY_TYPES: (activity_logs.type)" . json_encode(\App\Models\Constants::ACTIVITY_TYPES) . "\n";
             $schemaContext .= "ACTIVITY_SIZES: (activity_logs.size)" . json_encode(\App\Models\Constants::ACTIVITY_SIZES) . "\n";
             $schemaContext .= "ACTIVITY_LOGS_STATUS: (activity_logs.status)" . json_encode(\App\Models\Constants::ACTIVITY_LOGS_STATUS) . "\n";
+            $schemaContext .= "USERS (users.id / activity_logs.assignee / activity_logs.created_by): " . json_encode(\App\Models\Constants::USERS) . "\n";
         }
-        $schemaContext .= "For project, property, tag, or vendor names (and info like about/reason), join with the activity_logs.project, properties, tags, or vendors tables instead of guessing IDs.\n";
+        $schemaContext .= "For project, property, tag, or vendor names (and info like about/reason), join with the activity_logs.project, properties, tags, or vendors tables instead of guessing IDs.\n\n";
+
+        $userContext = "CURRENT AUTHENTICATED USER CONTEXT:\n";
+        $userContext .= "- Current User ID: {$currentUserId}\n";
+        $userContext .= "- Current User Name: {$currentUserName}\n";
+        $userContext .= "- Current User Username: {$currentUsername}\n";
+        $userContext .= "- Today's Date (YYYY-MM-DD): {$currentDate} ({$currentDayName})\n";
+        $userContext .= "- Current Timestamp: {$currentDateTime}\n\n";
+        $userContext .= "CRITICAL TASK ASSIGNMENT & USER RULES:\n";
+        $userContext .= "- In `activity_logs`, the `assignee` column is the integer ID of the assigned user, which maps to `users.id`.\n";
+        $userContext .= "- In `activity_logs`, the `created_by` column is the integer ID of the creator user, which maps to `users.id`.\n";
+        $userContext .= "- When the user asks about their own tasks (using first-person words such as 'I', 'me', 'my tasks', 'assigned to me', 'tasks I completed', 'my pending tasks', 'what do I have to do'), you MUST filter by `activity_logs.assignee = {$currentUserId}`.\n";
+        $userContext .= "- For completed tasks, `activity_logs.status = " . (\App\Models\Constants::ACTIVITY_LOGS_STATUS_COMPLETED ?? 6) . "` (Constants::ACTIVITY_LOGS_STATUS_COMPLETED).\n";
+        $userContext .= "- When filtering tasks completed 'today', check `(DATE(activity_logs.finished_date) = '{$currentDate}' OR (activity_logs.status = " . (\App\Models\Constants::ACTIVITY_LOGS_STATUS_COMPLETED ?? 6) . " AND DATE(activity_logs.updated_at) = '{$currentDate}'))`.\n";
+        $userContext .= "- Exclude soft-deleted tasks by adding `activity_logs.deleted_at IS NULL` unless explicitly requested.\n\n";
 
         // Step 1: SQL Generation Call
         $sqlPrompt = [
-            ['role' => 'system', 'content' => "You are an AI assistant that converts natural language requests into SQL queries. You will be provided with the database schema. Generate ONLY the raw SQL SELECT query required to fetch the data to answer the user's question. Do not add markdown formatting, do not add explanation, just the SQL query starting with SELECT. The query must be read-only (SELECT only). Limit results to a reasonable amount if necessary (e.g., LIMIT 50). \n\n" . $schemaContext],
+            ['role' => 'system', 'content' => "You are an AI assistant that converts natural language requests into SQL queries. You will be provided with the database schema and current user context. Generate ONLY the raw SQL SELECT query required to fetch the data to answer the user's question. Do not add markdown formatting, do not add explanation, just the SQL query starting with SELECT. The query must be read-only (SELECT only). Limit results to a reasonable amount if necessary (e.g., LIMIT 50). \n\n" . $userContext . $schemaContext],
             ['role' => 'user', 'content' => $message]
         ];
 
@@ -2514,8 +2537,13 @@ class TasksController extends BaseController
                 $dataContext .= "Query Result (JSON): \n" . json_encode($dataResult);
             }
 
+            $finalSystemPrompt = "You are a helpful project management AI assistant. You answer questions about tasks.\n";
+            $finalSystemPrompt .= "You are currently assisting {$currentUserName} (User ID: {$currentUserId}, Username: {$currentUsername}). Today is {$currentDayName}, {$currentDate}.\n";
+            $finalSystemPrompt .= "In `activity_logs`, the `assignee` column represents the assigned user's ID (mapping to `users.id`).\n";
+            $finalSystemPrompt .= "You have executed a database query to find the answer. The query and the result data are provided below. Analyze the data and answer the user's question clearly and concisely based on their assigned tasks and the retrieved data.\n\n" . $dataContext;
+
             $finalMessages = [
-                ['role' => 'system', 'content' => "You are a helpful project management AI assistant. You answer questions about tasks. You have executed a database query to find the answer. The query and the result data are provided below. Analyze the data and answer the user's question clearly and concisely. \n\n" . $dataContext]
+                ['role' => 'system', 'content' => $finalSystemPrompt]
             ];
             
             foreach ($dbMessages as $msg) {
@@ -2674,13 +2702,27 @@ class TasksController extends BaseController
             ->where('deleted_at', null)
             ->countAllResults();
 
+        $currentTime = date('g:i A');
+        $currentDay = date('l');
+        $currentDate = date('F jS');
+        $currentHour = (int)date('G');
+        
+        $greeting = 'Good morning';
+        if ($currentHour >= 12 && $currentHour < 17) {
+            $greeting = 'Good afternoon';
+        } elseif ($currentHour >= 17) {
+            $greeting = 'Good evening';
+        }
+
         $promptParts = [
             "Generate a highly inspirational, welcoming, and encouraging welcome message for a tasks dashboard.",
             "The user's name is {$userName}.",
-            "Today is " . date('l') . ", " . date('F jS') . ".",
-            "They currently have {$inProgressTasks} task(s) in progress, {$forReviewTasks} task(s) for review, {$blockedTasks} task(s) blocked, and {$todoTasks} task(s) in their to-do list.",
+            "Today is {$currentDay}, {$currentDate}.",
+            "Context for your internal awareness only (DO NOT mention or print exact times, shift hours, or numbers like '8am', '6pm', or clock times in your response): Current time is {$currentTime}, and the workday shift is 8:00 AM - 6:00 PM.",
+            "Use this time context ONLY to choose the right greeting (e.g. 'Good morning', 'Good afternoon', or 'Good evening') and appropriate tone/motivation (e.g. fresh energetic start, midday momentum, or end-of-day encouragement like 'it\'s almost the end of the day' / 'finish strong').",
+            "They currently have {$inProgressTasks} task(s) in progress, {$forReviewTasks} task(s) waiting for review from POC, {$blockedTasks} task(s) blocked, and {$todoTasks} task(s) in their to-do list.",
             "Generate any surprising random fun fact and a motivational quote.",
-            "Keep it concise, natural, and very friendly. Do not include any placeholder text or markdown like **. Do not mention expiring tags."
+            "Keep it concise, natural, and very friendly. Do not include any placeholder text, markdown like **, or exact times/shift hours. Do not mention expiring tags."
         ];
 
         $prompt = implode(" ", $promptParts);
@@ -2692,7 +2734,7 @@ class TasksController extends BaseController
         
         $client = \Config\Services::curlrequest();
         
-        $fallbackMessage = "Hello {$userName}! Happy " . date('l') . "! You've got {$inProgressTasks} task(s) in progress, {$forReviewTasks} for review, {$blockedTasks} blocked, and {$todoTasks} to do. \"Believe you can and you're halfway there.\" - Theodore Roosevelt 🌟 Let's tackle today's goals with energy!";
+        $fallbackMessage = "{$greeting}, {$userName}! Happy " . date('l') . "! You've got {$inProgressTasks} task(s) in progress, {$forReviewTasks} for review, {$blockedTasks} blocked, and {$todoTasks} to do. \"Believe you can and you're halfway there.\" - Theodore Roosevelt 🌟 Let's tackle today's goals with energy!";
 
         try {
             $response = $client->request('POST', $apiUrl, [

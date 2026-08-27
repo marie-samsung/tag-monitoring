@@ -413,5 +413,17 @@ document.getElementById('downloadExcelBtn').addEventListener('click', function()
     form.submit();
     document.body.removeChild(form);
 });
+
+// Warn user before leaving if capture is in progress or results are captured
+window.addEventListener('beforeunload', function(e) {
+    const isCapturing = document.getElementById('captureBtn')?.disabled;
+    const hasResults = !!window._capturedExcelData;
+
+    if (isCapturing || hasResults) {
+        e.preventDefault();
+        e.returnValue = '';
+        return '';
+    }
+});
 </script>
 <?= $this->endSection() ?>

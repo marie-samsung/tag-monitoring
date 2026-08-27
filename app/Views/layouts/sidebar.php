@@ -385,8 +385,8 @@ foreach ($overflowItems as $item) {
                         style="font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px; border-bottom: 1px solid rgba(0,0,0,0.05); background: var(--color-secondary-bg); border-top-left-radius: 12px; border-top-right-radius: 12px;">
                         <span>Notifications</span>
                         <div>
-                            <button class="btn btn-sm btn-link p-0 text-muted" id="markAllReadBtn" title="Mark all as read" style="font-size: 0.85rem;"><i class="bi bi-envelope-open-fill"></i></button>
-                            <button class="btn btn-sm btn-link p-0 text-muted ms-2" id="markAllUnreadBtn" title="Mark all as unread" style="font-size: 0.85rem;"><i class="bi bi-envelope-fill"></i></button>
+                            <button class="btn btn-sm btn-link p-0 text-muted" id="markAllReadBtn" title="Mark all as read" style="font-size: 0.85rem; display: none;"><i class="bi bi-envelope-open-fill"></i></button>
+                            <button class="btn btn-sm btn-link p-0 text-muted" id="markAllUnreadBtn" title="Mark all as unread" style="font-size: 0.85rem; display: none;"><i class="bi bi-envelope-fill"></i></button>
                         </div>
                     </li>
                     <div id="notificationsList">
@@ -515,10 +515,24 @@ foreach ($overflowItems as $item) {
                 dataType: 'json',
                 success: function (res) {
                     if (res.success) {
+                        const hasUnread = (res.count > 0) || (res.notifications && res.notifications.some(n => n.is_read == 0));
+                        const totalNotifications = res.notifications ? res.notifications.length : 0;
+
                         if (res.count > 0) {
                             $('#notificationBadge').show();
                         } else {
                             $('#notificationBadge').hide();
+                        }
+
+                        if (totalNotifications === 0) {
+                            $('#markAllReadBtn').hide();
+                            $('#markAllUnreadBtn').hide();
+                        } else if (hasUnread) {
+                            $('#markAllReadBtn').show();
+                            $('#markAllUnreadBtn').hide();
+                        } else {
+                            $('#markAllReadBtn').hide();
+                            $('#markAllUnreadBtn').show();
                         }
 
                         let html = '';

@@ -922,10 +922,24 @@ class DashboardController extends BaseController
             ->where('deleted_at', null)
             ->countAllResults();
 
+        $currentTime = date('g:i A');
+        $currentDay = date('l');
+        $currentDate = date('F jS');
+        $currentHour = (int)date('G');
+        
+        $greeting = 'Good morning';
+        if ($currentHour >= 12 && $currentHour < 17) {
+            $greeting = 'Good afternoon';
+        } elseif ($currentHour >= 17) {
+            $greeting = 'Good evening';
+        }
+
         $promptParts = [
             "Generate a highly inspirational, welcoming, and encouraging welcome message for a dashboard.",
             "The user's name is {$userName} and they belong to the {$teamName} team.",
-            "Today is " . date('l') . ", " . date('F jS') . ".",
+            "Today is {$currentDay}, {$currentDate}.",
+            "Context for your internal awareness only (DO NOT mention or print exact times, shift hours, or numbers like '8am', '6pm', or clock times in your response): Current time is {$currentTime}, and the workday shift is 8:00 AM - 6:00 PM.",
+            "Use this time context ONLY to choose the right greeting (e.g. 'Good morning', 'Good afternoon', or 'Good evening') and appropriate tone/motivation (e.g. fresh energetic start, midday momentum, or end-of-day encouragement like 'it\'s almost the end of the day' / 'finish strong').",
             "They currently have {$inProgressTasks} task(s) in progress, {$blockedTasks} task(s) blocked/on-hold, and {$todoTasks} task(s) in their to-do list."
         ];
 
@@ -948,7 +962,7 @@ class DashboardController extends BaseController
             }
         }
         
-        $promptParts[] = "Keep it concise (2-3 sentences), natural, and very friendly. Do not include any placeholder text or markdown like **.";
+        $promptParts[] = "Keep it concise (2-3 sentences), natural, and very friendly. Do not include any placeholder text, markdown like **, or exact times/shift hours.";
 
         $prompt = implode(" ", $promptParts);
 
@@ -959,7 +973,7 @@ class DashboardController extends BaseController
         
         $client = \Config\Services::curlrequest();
         
-        $fallbackMessage = "Hello {$userName}! Happy " . date('l') . "! You have {$inProgressTasks} task(s) in progress, {$blockedTasks} blocked, and {$todoTasks} to do. \"Believe you can and you're halfway there.\" - Theodore Roosevelt 🌟 Let's tackle today's goals with energy!";
+        $fallbackMessage = "{$greeting}, {$userName}! Happy " . date('l') . "! You have {$inProgressTasks} task(s) in progress, {$blockedTasks} blocked, and {$todoTasks} to do. \"Believe you can and you're halfway there.\" - Theodore Roosevelt 🌟 Let's tackle today's goals with energy!";
         if (isset($expiringTags) && $expiringTags > 0) {
             $fallbackMessage .= " Please be reminded that there are {$expiringTags} tags expiring in the next 15 days.";
         }

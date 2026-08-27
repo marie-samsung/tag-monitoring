@@ -79,3 +79,28 @@ Shop Manual Rule Input
 </div>
 
 <?= $this->endSection() ?>
+
+<?= $this->section('scripts') ?>
+<script>
+let isSubmitting = false;
+
+document.getElementById('shopManualForm')?.addEventListener('submit', function() {
+    isSubmitting = true;
+});
+
+window.addEventListener('beforeunload', function(e) {
+    if (isSubmitting) return;
+
+    const cartLogs = document.querySelector('textarea[name="cart_logs"]')?.value.trim();
+    const checkoutLogs = document.querySelector('textarea[name="checkout_logs"]')?.value.trim();
+    const orderLogs = document.querySelector('textarea[name="order_logs"]')?.value.trim();
+
+    if (cartLogs || checkoutLogs || orderLogs) {
+        e.preventDefault();
+        e.returnValue = '';
+        return '';
+    }
+});
+</script>
+<?= $this->endSection() ?>
+
