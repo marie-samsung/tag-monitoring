@@ -202,15 +202,13 @@ class JiraController extends BaseController
         $propertiesModel = new PropertiesModel();
         $subsidiaryModel = new SubsidiariesModel();
 
-        // Find the subsidiary info
+        // Find the subsidiary info and all subsidiaries options
         $subsidiary = $subsidiaryModel->find($ticket['subsidiary_id']);
+        $subsidiaries = $subsidiaryModel->Options() ?: Constants::SUBSIDIARIES;
 
-        // Load all tags belonging to the same subsidiary (grouped by property)
-        $tagsQuery = $tagModel->select('tags.*, properties.name as property_name')
-            ->join('properties', 'properties.id = tags.property_id');
-        if ($ticket['subsidiary_id']) {
-            $tagsQuery->where('properties.subsidiary_id', $ticket['subsidiary_id']);
-        }
+        // Load all tags with property name and subsidiary_id (grouped by property)
+        $tagsQuery = $tagModel->select('tags.*, properties.name as property_name, properties.subsidiary_id')
+            ->join('properties', 'properties.id = tags.property_id', 'left');
         $availableTags = $tagsQuery->orderBy('properties.name', 'ASC')
             ->orderBy('tags.name', 'ASC')
             ->findAll();
@@ -239,12 +237,13 @@ class JiraController extends BaseController
         // Group available tags by property name for grouping in the select dropdown
         $groupedTags = [];
         foreach ($availableTags as $t) {
-            $groupedTags[$t['property_name']][] = $t;
+            $groupedTags[$t['property_name'] ?? 'Other'][] = $t;
         }
 
         return view('jira/update_tags', [
             'ticket' => $ticket,
             'subsidiary' => $subsidiary,
+            'subsidiaries' => $subsidiaries,
             'groupedTags' => $groupedTags,
             'currentTagIds' => $currentTagIds,
         ]);
@@ -271,31 +270,30 @@ class JiraController extends BaseController
         // First tag ID or null if none
         $tagId = !empty($tagIds) ? $tagIds[0] : null;
 
+        $ticketId = trim($this->request->getPost('ticket_id') ?? $ticket['ticket_id']);
+        $subsidiaryId = $this->request->getPost('subsidiary_id');
+        $type = $this->request->getPost('type');
+
         $updateData = [
             'comments' => $comments,
             'tag_id' => $tagId,
             'updated_by' => session()->get('user_id') ?? 0,
         ];
 
-        // Also, if the ticket type is not one of the tag-related types (e.g. date extension, new tag, rule request, update request),
-        // we might want to check if the ticket type should be updated/converted to an update request (Constants::JIRA_TYPE_UPDATE_RULE).
-        // Let's keep the type unchanged unless it is Master Approval/Other and now gets related tags.
-        // But keeping it unchanged is safer unless user expects it to change.
-        if (empty($ticket['type']) || !in_array($ticket['type'], [
-            Constants::JIRA_TYPE_DATE_EXTENSION_RULE,
-            Constants::JIRA_TYPE_NEW_TAG,
-            Constants::JIRA_TYPE_NEW_RULE,
-            Constants::JIRA_TYPE_UPDATE_RULE
-        ])) {
-            // If it was another type, change its type to Update Rule to render properly on lists
-            if (!empty($tagIds)) {
-                $updateData['type'] = Constants::JIRA_TYPE_UPDATE_RULE;
-            }
+        if (!empty($ticketId)) {
+            $updateData['ticket_id'] = $ticketId;
+        }
+        if (!empty($subsidiaryId)) {
+            $updateData['subsidiary_id'] = (int)$subsidiaryId;
+        }
+        if (!empty($type)) {
+            $updateData['type'] = (int)$type;
         }
 
+        $oldTicketId = $ticket['ticket_id'];
         $success = false;
-        if (!empty($ticket['ticket_id'])) {
-            $success = $jiraModel->where('ticket_id', $ticket['ticket_id'])->set($updateData)->update();
+        if (!empty($oldTicketId)) {
+            $success = $jiraModel->where('ticket_id', $oldTicketId)->set($updateData)->update();
         } else {
             $success = $jiraModel->update($id, $updateData);
         }
@@ -303,11 +301,11 @@ class JiraController extends BaseController
         if ($success) {
             return redirect()
                 ->to('/jira')
-                ->with('success', 'Related tags updated successfully for ticket ' . esc($ticket['ticket_id']) . '.');
+                ->with('success', 'Ticket information and related tags updated successfully for ' . esc($ticketId ?: $oldTicketId) . '.');
         } else {
             return redirect()
                 ->back()
-                ->with('error', 'Failed to update related tags.');
+                ->with('error', 'Failed to update ticket information.');
         }
     }
 }

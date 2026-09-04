@@ -26,7 +26,7 @@ class TagsController extends BaseController
         if ($status === 'all') {
             $status = null; // null triggers filterTags to ignore status and fetch everything
         } elseif ($status == Constants::STATUS_DEFAULT || empty($status)) {
-            $status = [1, 4, 5, 9]; // Default to show Enabled, Pending Verification, and Updated in AL
+            $status = Constants::STATUS_DEFAULT_VALUE; // Default to show Enabled, Pending Verification, and Updated in AL
         }
 
         if ($status == Constants::STATUS_ALL) {
@@ -750,7 +750,7 @@ class TagsController extends BaseController
         if ($status === 'all') {
             $status = null; // null triggers filterTags to ignore status and fetch everything
         } elseif ($status == Constants::STATUS_DEFAULT || empty($status)) {
-            $status = [1, 4, 5]; // Default to show Enabled, Pending Verification, and Updated in AL
+            $status = Constants::STATUS_DEFAULT_VALUE; // Default to show Enabled, Pending Verification, and Updated in AL
         }
 
         if ($status == Constants::STATUS_ALL) {

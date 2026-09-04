@@ -101,13 +101,22 @@ class TagRequestsModel extends Model
     public function getTags($id): array
     {
         $request = $this->find($id);
-        $tagsModel = new TagsModel();
+        if (!$request || empty($request['tags'])) {
+            return [];
+        }
 
+        $tagsModel = new TagsModel();
         $tagsList = explode(',', $request['tags']);
         $tags = [];
 
         foreach ($tagsList as $tag) {
-            $tags[$tag] = $tagsModel->find($tag);
+            $tag = trim($tag);
+            if (!empty($tag)) {
+                $tagData = $tagsModel->find($tag);
+                if ($tagData) {
+                    $tags[$tag] = $tagData;
+                }
+            }
         }
 
         return $tags;

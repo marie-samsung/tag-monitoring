@@ -75,6 +75,8 @@ class Constants
         self::STATUS_ON_HOLD => 'On-Hold / Blocked',
     ];
 
+    public const STATUS_DEFAULT_VALUE = [1, 4, 5, 6, 7, 9];
+
     public const STATUS_REQUEST_HQ_REVIEW = 1;
     public const STATUS_REQUEST_PENDING_ITEMS = 2;
     public const STATUS_REQUEST_NEW_RULE_REQUEST_SUBMITTED = 3;
@@ -354,6 +356,7 @@ class Constants
     public const ACTIVITY_TYPE_MEETING = 5;
     public const ACTIVITY_TYPE_RENEWAL = 6;
     public const ACTIVITY_TYPE_OTHER = 7;
+    public const ACTIVITY_TYPE_DEVELOPMENT = 8;
     public const ACTIVITY_TYPES = [
         self::ACTIVITY_TYPE_TASK => 'Task',
         self::ACTIVITY_TYPE_SUPPORT => 'Support',
@@ -361,6 +364,7 @@ class Constants
         self::ACTIVITY_TYPE_REQUEST => 'Request',
         self::ACTIVITY_TYPE_MEETING => 'Meeting',
         self::ACTIVITY_TYPE_RENEWAL => 'Renewal',
+        self::ACTIVITY_TYPE_DEVELOPMENT => 'Development',
         self::ACTIVITY_TYPE_OTHER => 'Other',
     ];
 

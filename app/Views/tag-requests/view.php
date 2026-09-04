@@ -313,31 +313,99 @@ $hasNewRule = !empty($request['new_rule_ticket']);
         <div class="col-lg-8">
             <!-- Tags Section -->
             <div class="mb-4">
-                <h5 class="mb-3 text-primary d-flex align-items-center gap-2 fw-bold">
-                    <i class="bi bi-tags-fill"></i>
-                    <span>Tags Associated</span>
-                </h5>
-                <div class="apple-table-container">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0 apple-table">
-                            <thead>
-                                <tr>
-                                    <th class="form-label-sm fw-semibold">Tag Name</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($tags as $tag) : ?>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0 text-primary d-flex align-items-center gap-2 fw-bold">
+                        <i class="bi bi-tags-fill"></i>
+                        <span>Tags Associated</span>
+                        <span class="badge bg-secondary rounded-pill" style="font-size: 0.75rem;"><?= count($tags) ?></span>
+                    </h5>
+                    <button type="button" class="apple-btn-secondary btn-sm d-flex align-items-center gap-1 py-1 px-3" data-bs-toggle="modal" data-bs-target="#createTagModal" style="border-radius: 8px; font-size: 0.8rem;">
+                        <i class="bi bi-plus-circle"></i> Create New Tag
+                    </button>
+                </div>
+
+                <?php if (!empty($tags)) : ?>
+                    <div class="apple-table-container mb-3">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0 apple-table">
+                                <thead>
                                     <tr>
-                                        <td>
-                                            <a href="<?= site_url('tags/view/' . $tag['id']) ?>" target="_blank" class="apple-link-dark text-decoration-none fw-semibold">
-                                                <?= esc($tag['name']) ?>
-                                            </a>
-                                        </td>
+                                        <th class="form-label-sm fw-semibold">Tag Name</th>
+                                        <th class="form-label-sm fw-semibold" style="width: 170px;">Status</th>
+                                        <th class="form-label-sm fw-semibold text-end" style="width: 70px;">Action</th>
                                     </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($tags as $tag) : ?>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <a href="<?= site_url('tags/view/' . $tag['id']) ?>" target="_blank" class="apple-link-dark text-decoration-none fw-semibold">
+                                                        <?= esc($tag['name']) ?>
+                                                    </a>
+                                                    <span class="badge bg-secondary text-secondary" style="font-size: 0.7rem; border-radius: 4px; padding: 2px 6px;">#<?= esc($tag['id']) ?></span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge <?= status_class((int)$tag['status']) ?> text-nowrap" style="font-size: 0.72rem; font-weight: 500;">
+                                                    <?= esc(status_label((int)$tag['status'])) ?>
+                                                </span>
+                                            </td>
+                                            <td class="text-end">
+                                                <form action="<?= site_url('tag-requests/remove-tag/' . $request['id'] . '/' . $tag['id']) ?>" method="post" class="d-inline">
+                                                    <?= csrf_field() ?>
+                                                    <button type="submit" class="btn btn-link text-danger p-0 border-0" title="Remove tag from request"
+                                                            data-confirm="Are you sure you want to remove tag '<?= esc(addslashes($tag['name'])) ?>' from this request?"
+                                                            data-confirm-title="Remove Tag Association"
+                                                            data-confirm-type="danger"
+                                                            data-confirm-text="Remove">
+                                                        <i class="bi bi-trash fs-6"></i>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
+                <?php else : ?>
+                    <div class="alert alert-info py-2 px-3 mb-3" style="font-size: 0.85rem; border-radius: 8px;">
+                        <i class="bi bi-info-circle me-1"></i> No tags are currently associated with this request.
+                    </div>
+                <?php endif; ?>
+
+                <!-- Add Existing Tag Card -->
+                <div class="apple-card mb-4" style="border: 1px dashed var(--color-border-input); background: transparent; box-shadow: none; padding: 16px 20px;">
+                    <form action="<?= site_url('tag-requests/add-tag/' . $request['id']) ?>" method="post">
+                        <?= csrf_field() ?>
+                        <div class="row align-items-end g-2">
+                            <div class="col-md-9">
+                                <label for="select-add-tag" class="form-label-xs text-secondary fw-semibold mb-1 d-flex align-items-center gap-1">
+                                    <i class="bi bi-search"></i> Add Existing Tag
+                                </label>
+                                <select name="tag_id" id="select-add-tag" class="form-select form-select-xs searchable-select-tag" required>
+                                    <option value="">Search and select tag to associate...</option>
+                                    <?php if (!empty($groupedTags)): ?>
+                                        <?php foreach ($groupedTags as $propName => $propTags): ?>
+                                            <optgroup label="<?= esc($propName) ?>">
+                                                <?php foreach ($propTags as $pTag): ?>
+                                                    <option value="<?= esc($pTag['id']) ?>" <?= isset($tags[$pTag['id']]) ? 'disabled' : '' ?>>
+                                                        #<?= esc($pTag['id']) ?> - <?= esc($pTag['name']) ?> <?= isset($tags[$pTag['id']]) ? '(Already Added)' : '' ?>
+                                                    </option>
+                                                <?php endforeach; ?>
+                                            </optgroup>
+                                        <?php endforeach; ?>
+                                    <?php endif; ?>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <button type="submit" class="apple-btn-secondary btn-sm w-100 py-1 d-flex align-items-center justify-content-center gap-1" style="height: 38px;">
+                                    <i class="bi bi-plus-lg"></i> Add Tag
+                                </button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </div>
 
@@ -429,10 +497,85 @@ $hasNewRule = !empty($request['new_rule_ticket']);
         </div>
     </div>
 </div>
+
+<!-- Modal: Create & Associate New Tag -->
+<div class="modal fade" id="createTagModal" tabindex="-1" aria-labelledby="createTagModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 16px; border: 1px solid var(--color-border-subtle); overflow: hidden;">
+            <div class="modal-header px-4 pt-4 pb-3 border-bottom">
+                <h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2" id="createTagModalLabel">
+                    <i class="bi bi-plus-circle-fill text-primary"></i> Create &amp; Associate New Tag
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="<?= site_url('tag-requests/create-tag/' . $request['id']) ?>" method="post">
+                <?= csrf_field() ?>
+                <div class="modal-body px-4 py-3">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label-xs fw-semibold text-secondary mb-1">Tag Name <span class="text-danger">*</span></label>
+                            <input type="text" name="name" class="form-control form-control-xs" placeholder="e.g. LC-AEM-AD(Vendor)-CM-ALL-WL-SDSME_..." required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label-xs fw-semibold text-secondary mb-1">Property</label>
+                            <select name="property_id" class="form-select form-select-xs" required>
+                                <?php if (!empty($allProperties)): ?>
+                                    <?php foreach ($allProperties as $prop): ?>
+                                        <option value="<?= esc($prop['id']) ?>" <?= $prop['id'] == $request['property_id'] ? 'selected' : '' ?>>
+                                            <?= esc($prop['name']) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label-xs fw-semibold text-secondary mb-1">Vendor</label>
+                            <select name="vendor_id" class="form-select form-select-xs" required>
+                                <?php if (!empty($allVendors)): ?>
+                                    <?php foreach ($allVendors as $vId => $vName): ?>
+                                        <option value="<?= esc($vId) ?>" <?= $vId == $request['vendor_id'] ? 'selected' : '' ?>>
+                                            <?= esc($vName) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label-xs fw-semibold text-secondary mb-1">AL End Date</label>
+                            <input type="date" name="al_end_date" class="form-control form-control-xs" value="<?= esc(date('Y-m-d', strtotime('+61 days'))) ?>">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label-xs fw-semibold text-secondary mb-1">Conditions / Trigger</label>
+                            <input type="text" name="conditions" class="form-control form-control-xs" placeholder="e.g. All Pages, Order Confirmation">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label-xs fw-semibold text-secondary mb-1">JS Code / Tag Script (Optional)</label>
+                            <textarea name="js_code" class="form-control form-control-xs font-monospace" rows="4" placeholder="Paste custom JS or tag snippet here..."></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer px-4 py-3 border-top bg-light">
+                    <button type="button" class="apple-btn-secondary btn-sm px-3" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="apple-btn-primary btn-sm px-4">Create &amp; Link Tag</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
 <script>
+$(document).ready(function() {
+    if ($.fn.select2) {
+        $('.searchable-select-tag').select2({
+            width: '100%',
+            placeholder: "Search and select tag to associate...",
+            allowClear: true
+        });
+    }
+});
+
 function updateTagRequestField(id, field, value) {
     let url = '';
     if (field === 'property_id') url = '<?= site_url('tag-requests/update-property/') ?>' + id;

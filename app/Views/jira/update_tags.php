@@ -1,7 +1,7 @@
 <?= $this->extend('layouts/default') ?>
 
 <?= $this->section('title') ?>
-Update Related Tags : <?= esc($ticket['ticket_id']) ?>
+Update Ticket Information & Tags : <?= esc($ticket['ticket_id']) ?>
 <?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
@@ -41,8 +41,8 @@ if (!empty($originalComment)) {
             <i class="bi bi-arrow-left fs-5"></i>
         </a>
         <div>
-            <h2 class="mb-0 fw-bold">Update Related Tags</h2>
-            <p class="text-secondary small mb-0">Manage associated tags for JIRA Ticket: <strong><?= esc($ticket['ticket_id']) ?></strong></p>
+            <h2 class="mb-0 fw-bold">Update JIRA Ticket & Related Tags</h2>
+            <p class="text-secondary small mb-0">Edit ticket details and manage associated tags for JIRA Ticket: <strong><?= esc($ticket['ticket_id']) ?></strong></p>
         </div>
     </div>
 
@@ -60,48 +60,92 @@ if (!empty($originalComment)) {
         </div>
     <?php endif; ?>
 
-    <div class="row">
-        <!-- Ticket Information Card -->
-        <div class="col-lg-4 mb-4">
-            <div class="apple-card h-100" style="background-color: var(--color-bg-base); border: 1px solid rgba(0, 0, 0, 0.05); box-shadow: none;">
-                <h5 class="mb-4 text-primary d-flex align-items-center gap-2 fw-bold">
-                    <i class="bi bi-info-circle-fill"></i>
-                    <span>Ticket Information</span>
-                </h5>
-                <div class="d-flex flex-column gap-3">
-                    <div>
-                        <span class="text-secondary small d-block">Ticket ID</span>
-                        <a href="<?= Constants::JIRA_LINK . esc($ticket['ticket_id']) ?>" target="_blank" rel="noopener" class="apple-link fw-semibold">
-                            <?= esc($ticket['ticket_id']) ?> <i class="bi bi-box-arrow-up-right small"></i>
-                        </a>
-                    </div>
-                    <div>
-                        <span class="text-secondary small d-block">Subsidiary</span>
-                        <span class="badge mt-1" style="<?= random_bg_style($subsidiary['name'] ?? '') ?>">
-                            <?= esc($subsidiary['name'] ?? 'None') ?>
-                        </span>
-                    </div>
-                    <div>
-                        <span class="text-secondary small d-block">Ticket Type</span>
-                        <span class="fw-semibold text-dark">
-                            <?= esc(Constants::JIRA_TICKET_TYPES[$ticket['type']] ?? 'Unknown') ?>
-                        </span>
-                    </div>
-                    <div>
-                        <span class="text-secondary small d-block">Created At</span>
-                        <span class="text-dark">
-                            <?= esc(date('d-m-Y H:i:s', strtotime($ticket['created_at']))) ?>
-                        </span>
+    <form action="<?= site_url("jira/update-tags/{$ticket['id']}") ?>" method="post" id="update-jira-form">
+        <?= csrf_field() ?>
+
+        <div class="row">
+            <!-- Ticket Information Card (Editable) -->
+            <div class="col-lg-4 mb-4">
+                <div class="apple-card h-100" style="background-color: var(--color-bg-base); border: 1px solid rgba(0, 0, 0, 0.05); box-shadow: none;">
+                    <h5 class="mb-4 text-primary d-flex align-items-center gap-2 fw-bold">
+                        <i class="bi bi-info-circle-fill"></i>
+                        <span>Ticket Information</span>
+                    </h5>
+                    
+                    <div class="d-flex flex-column gap-3">
+                        <!-- Ticket ID -->
+                        <div>
+                            <label for="ticket_id" class="form-label-sm fw-semibold text-secondary mb-1">
+                                Ticket ID <span class="text-danger">*</span>
+                            </label>
+                            <input 
+                                type="text" 
+                                name="ticket_id" 
+                                id="ticket_id" 
+                                class="form-control form-control-xs" 
+                                value="<?= esc(old('ticket_id', $ticket['ticket_id'] ?? '')) ?>" 
+                                placeholder="GTA-XXXXX" 
+                                required
+                            >
+                            <div class="d-flex align-items-center justify-content-between mt-1">
+                                <small class="text-muted" style="font-size: 0.75rem;">Should start with <strong>GTA-</strong></small>
+                                <a 
+                                    id="ticket-link-preview" 
+                                    href="<?= Constants::JIRA_LINK . esc($ticket['ticket_id']) ?>" 
+                                    target="_blank" 
+                                    rel="noopener" 
+                                    class="apple-link small d-inline-flex align-items-center gap-1"
+                                    style="font-size: 0.75rem;"
+                                >
+                                    <span>Open in JIRA</span>
+                                    <i class="bi bi-box-arrow-up-right"></i>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Subsidiary -->
+                        <div>
+                            <label for="subsidiary_id" class="form-label-sm fw-semibold text-secondary mb-1">
+                                Subsidiary <span class="text-danger">*</span>
+                            </label>
+                            <select name="subsidiary_id" id="subsidiary_id" class="form-select form-select-xs" required>
+                                <?php foreach ($subsidiaries as $value => $label): ?>
+                                    <option value="<?= esc($value) ?>" <?= (old('subsidiary_id', $ticket['subsidiary_id'] ?? '') == $value) ? 'selected' : '' ?>>
+                                        <?= esc($label) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                            <small class="text-muted d-block mt-1" style="font-size: 0.75rem;">Filters available tags for quick association</small>
+                        </div>
+
+                        <!-- Ticket Type -->
+                        <div>
+                            <label for="type" class="form-label-sm fw-semibold text-secondary mb-1">
+                                Ticket Type <span class="text-danger">*</span>
+                            </label>
+                            <select name="type" id="type" class="form-select form-select-xs" required>
+                                <?php foreach (Constants::JIRA_TICKET_TYPES as $value => $label): ?>
+                                    <option value="<?= esc($value) ?>" <?= (old('type', $ticket['type'] ?? '') == $value) ? 'selected' : '' ?>>
+                                        <?= esc($label) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+
+                        <!-- Created At Timestamp -->
+                        <div class="pt-3 border-top">
+                            <span class="text-secondary small d-block mb-1">Created At</span>
+                            <span class="text-dark small d-flex align-items-center gap-1">
+                                <i class="bi bi-clock-history text-muted"></i>
+                                <?= esc(!empty($ticket['created_at']) ? date('d-m-Y H:i:s', strtotime($ticket['created_at'])) : 'N/A') ?>
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Tags Selection Card -->
-        <div class="col-lg-8 mb-4">
-            <form action="<?= site_url("jira/update-tags/{$ticket['id']}") ?>" method="post">
-                <?= csrf_field() ?>
-                
+            <!-- Tags Selection Card -->
+            <div class="col-lg-8 mb-4">
                 <div class="apple-card" style="background-color: var(--color-bg-base); border: 1px solid rgba(0, 0, 0, 0.05); box-shadow: none;">
                     <h5 class="mb-4 text-primary d-flex align-items-center gap-2 fw-bold">
                         <i class="bi bi-tags-fill"></i>
@@ -165,9 +209,10 @@ if (!empty($originalComment)) {
                                 <select id="add-tag-select" class="form-select searchable-select-single">
                                     <option value="">Search and select tag to add...</option>
                                     <?php foreach ($groupedTags as $propertyName => $tags): ?>
-                                        <optgroup label="<?= esc($propertyName) ?>">
+                                        <?php $groupSubId = $tags[0]['subsidiary_id'] ?? ''; ?>
+                                        <optgroup label="<?= esc($propertyName) ?>" data-subsidiary="<?= esc($groupSubId) ?>">
                                             <?php foreach ($tags as $tag): ?>
-                                                <option value="<?= $tag['id'] ?>" data-name="<?= esc($tag['name']) ?>" data-property="<?= esc($tag['property_name'] ?? $propertyName) ?>">
+                                                <option value="<?= $tag['id'] ?>" data-name="<?= esc($tag['name']) ?>" data-property="<?= esc($tag['property_name'] ?? $propertyName) ?>" data-subsidiary="<?= esc($tag['subsidiary_id'] ?? '') ?>">
                                                     #<?= $tag['id'] ?> - <?= esc($tag['name']) ?> (<?= esc($tag['property_name'] ?? $propertyName) ?>)
                                                 </option>
                                             <?php endforeach; ?>
@@ -182,12 +227,12 @@ if (!empty($originalComment)) {
                     <!-- Form Actions -->
                     <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
                         <a href="<?= site_url('jira') ?>" class="apple-btn-secondary px-4 text-decoration-none d-inline-flex align-items-center justify-content-center" style="height: 38px;">Cancel</a>
-                        <button type="submit" class="apple-btn-primary px-4 d-inline-flex align-items-center justify-content-center" style="height: 38px;">Update Tags</button>
+                        <button type="submit" class="apple-btn-primary px-4 d-inline-flex align-items-center justify-content-center" style="height: 38px;">Save Changes</button>
                     </div>
                 </div>
-            </form>
+            </div>
         </div>
-    </div>
+    </form>
 </div>
 
 <?= $this->endSection() ?>
@@ -196,11 +241,96 @@ if (!empty($originalComment)) {
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const tagsViewUrl = '<?= site_url('tags/view') ?>/';
+    const jiraBaseUrl = '<?= Constants::JIRA_LINK ?>';
 
-    $('.searchable-select-single').select2({
-        width: '100%',
-        placeholder: "Search and select tag to add...",
-        allowClear: true
+    // Parse and store all available tag options grouped by property for subsidiary filtering
+    const allTagGroups = [];
+    $('#add-tag-select optgroup').each(function() {
+        const $group = $(this);
+        const groupLabel = $group.attr('label');
+        const groupSubsidiary = $group.data('subsidiary');
+        const tags = [];
+
+        $group.find('option').each(function() {
+            tags.push({
+                id: $(this).val(),
+                name: $(this).data('name'),
+                property: $(this).data('property'),
+                subsidiary: $(this).data('subsidiary'),
+                text: $(this).text()
+            });
+        });
+
+        allTagGroups.push({
+            label: groupLabel,
+            subsidiary: groupSubsidiary,
+            tags: tags
+        });
+    });
+
+    // Initialize Select2 on the Add Tag dropdown
+    function initSelect2() {
+        $('#add-tag-select').select2({
+            width: '100%',
+            placeholder: "Search and select tag to add...",
+            allowClear: true
+        });
+    }
+    initSelect2();
+
+    // Dynamically filter Add Tag options based on selected Subsidiary
+    function filterTagsBySubsidiary(subsidiaryId) {
+        const select = $('#add-tag-select');
+        select.select2('destroy');
+        select.empty();
+        select.append('<option value="">Search and select tag to add...</option>');
+
+        allTagGroups.forEach(group => {
+            const hasMatch = !subsidiaryId || String(group.subsidiary) === String(subsidiaryId) || group.tags.some(t => String(t.subsidiary) === String(subsidiaryId));
+            if (hasMatch) {
+                const $optgroup = $('<optgroup>').attr('label', group.label).attr('data-subsidiary', group.subsidiary);
+                let addedAny = false;
+                group.tags.forEach(t => {
+                    if (!subsidiaryId || String(t.subsidiary) === String(subsidiaryId)) {
+                        $('<option>')
+                            .val(t.id)
+                            .attr('data-name', t.name)
+                            .attr('data-property', t.property)
+                            .attr('data-subsidiary', t.subsidiary)
+                            .text(t.text)
+                            .appendTo($optgroup);
+                        addedAny = true;
+                    }
+                });
+                if (addedAny) {
+                    select.append($optgroup);
+                }
+            }
+        });
+
+        initSelect2();
+        select.val('').trigger('change');
+    }
+
+    // React to subsidiary change
+    $('#subsidiary_id').on('change', function() {
+        filterTagsBySubsidiary($(this).val());
+    });
+
+    // Initial filter run based on initial subsidiary selection
+    if ($('#subsidiary_id').val()) {
+        filterTagsBySubsidiary($('#subsidiary_id').val());
+    }
+
+    // Live update JIRA link preview on ticket ID input
+    $('#ticket_id').on('input', function() {
+        const val = $(this).val().trim();
+        const $link = $('#ticket-link-preview');
+        if (val) {
+            $link.attr('href', jiraBaseUrl + encodeURIComponent(val)).show();
+        } else {
+            $link.hide();
+        }
     });
 
     function addSelectedTag() {

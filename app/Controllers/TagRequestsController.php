@@ -44,16 +44,33 @@ class TagRequestsController extends BaseController
         $model = new TagRequestsModel();
         $tagsModel = new TagsModel();
         $filesModel = new TagRequestFilesModel();
+        $propertiesModel = new PropertiesModel();
+        $vendorsModel = new VendorsModel();
         $request = $model->find($id);
 
         if (!$request) {
             throw new \CodeIgniter\Exceptions\PageNotFoundException("Tag request with ID $id not found.");
         }
 
+        // Available tags to add (load all tags with property name, sorted nicely)
+        $availableTags = $tagsModel->select('tags.*, properties.name as property_name')
+            ->join('properties', 'properties.id = tags.property_id', 'left')
+            ->orderBy('properties.name', 'ASC')
+            ->orderBy('tags.name', 'ASC')
+            ->findAll();
+
+        $groupedTags = [];
+        foreach ($availableTags as $t) {
+            $groupedTags[$t['property_name'] ?? 'Other'][] = $t;
+        }
+
         return view('tag-requests/view', [
             'request' => $request,
             'tags' => $model->getTags($id),
             'files' => $filesModel->getRelatedFiles($id),
+            'groupedTags' => $groupedTags,
+            'allProperties' => $propertiesModel->select('id, name, subsidiary_id')->orderBy('name', 'ASC')->findAll(),
+            'allVendors' => $vendorsModel->Options(),
         ]);
     }
 
@@ -1249,5 +1266,167 @@ class TagRequestsController extends BaseController
         
         $writer->save('php://output');
         exit;
+    }
+
+    public function addTag($id)
+    {
+        $model = new TagRequestsModel();
+        $tagsModel = new TagsModel();
+        $request = $model->find($id);
+
+        if (!$request) {
+            return redirect()->to('/tag-requests')->with('error', 'Tag request not found.');
+        }
+
+        $tagId = $this->request->getPost('tag_id');
+        if (empty($tagId) || !is_numeric($tagId)) {
+            return redirect()->to('/tag-requests/view/' . $id)->with('error', 'Please select a valid tag to associate.');
+        }
+
+        $tag = $tagsModel->find($tagId);
+        if (!$tag) {
+            return redirect()->to('/tag-requests/view/' . $id)->with('error', 'Selected tag was not found.');
+        }
+
+        $currentTags = !empty($request['tags']) ? explode(',', $request['tags']) : [];
+        $currentTags = array_values(array_filter(array_map('trim', $currentTags)));
+
+        if (in_array((string)$tagId, $currentTags)) {
+            return redirect()->to('/tag-requests/view/' . $id)->with('error', 'This tag is already associated with this request.');
+        }
+
+        $currentTags[] = (string)$tagId;
+        $newTagsStr = implode(',', $currentTags);
+
+        $model->update($id, ['tags' => $newTagsStr]);
+
+        // Sync Jira history if ticket ID is present
+        $ticketId = !empty($request['new_tag_ticket']) ? $request['new_tag_ticket'] : (!empty($request['new_rule_ticket']) ? $request['new_rule_ticket'] : null);
+        if (!empty($ticketId)) {
+            $propId = $tag['property_id'] ?? $request['property_id'];
+            $propertiesModel = new PropertiesModel();
+            $property = $propertiesModel->find($propId);
+            $subsidiaryId = !empty($property['subsidiary_id']) ? $property['subsidiary_id'] : 0;
+
+            $jiraHistoryModel = new JiraHistoryModel();
+            $jiraHistoryModel->insert([
+                'ticket_id' => $ticketId,
+                'type' => $request['type'],
+                'comments' => $newTagsStr,
+                'tag_id' => $tagId,
+                'property_id' => $propId,
+                'subsidiary_id' => $subsidiaryId,
+                'created_by' => session()->get('user_id') ?? 0,
+            ]);
+        }
+
+        return redirect()->to('/tag-requests/view/' . $id)->with('success', "Tag [{$tag['name']}] was successfully associated with this request.");
+    }
+
+    public function removeTag($id, $tagId)
+    {
+        $model = new TagRequestsModel();
+        $tagsModel = new TagsModel();
+        $request = $model->find($id);
+
+        if (!$request) {
+            return redirect()->to('/tag-requests')->with('error', 'Tag request not found.');
+        }
+
+        $currentTags = !empty($request['tags']) ? explode(',', $request['tags']) : [];
+        $currentTags = array_values(array_filter(array_map('trim', $currentTags)));
+
+        $tag = $tagsModel->find($tagId);
+        $tagName = $tag ? $tag['name'] : "#$tagId";
+
+        $currentTags = array_values(array_diff($currentTags, [(string)$tagId, (int)$tagId]));
+        $newTagsStr = implode(',', $currentTags);
+
+        $model->update($id, ['tags' => $newTagsStr]);
+
+        return redirect()->to('/tag-requests/view/' . $id)->with('success', "Tag [{$tagName}] was removed from this request.");
+    }
+
+    public function createTag($id)
+    {
+        $model = new TagRequestsModel();
+        $tagsModel = new TagsModel();
+        $propertiesModel = new PropertiesModel();
+        $request = $model->find($id);
+
+        if (!$request) {
+            return redirect()->to('/tag-requests')->with('error', 'Tag request not found.');
+        }
+
+        $tagName = trim($this->request->getPost('name') ?? '');
+        $propertyId = $this->request->getPost('property_id') ?: $request['property_id'];
+        $vendorId = $this->request->getPost('vendor_id') ?: $request['vendor_id'];
+        $jsCode = $this->request->getPost('js_code') ?? null;
+        $conditions = $this->request->getPost('conditions') ?? null;
+        $alEndDate = $this->request->getPost('al_end_date') ?: date('Y-m-d', strtotime('+61 days'));
+
+        if (empty($tagName)) {
+            return redirect()->to('/tag-requests/view/' . $id)->with('error', 'Tag name is required.');
+        }
+
+        $property = $propertiesModel->find($propertyId);
+        if (!$property) {
+            return redirect()->to('/tag-requests/view/' . $id)->with('error', 'Selected property not found.');
+        }
+
+        // Check if tag already exists on property
+        $existing = $tagsModel->where('property_id', $propertyId)->where('name', $tagName)->first();
+        if ($existing) {
+            return redirect()->to('/tag-requests/view/' . $id)->with('error', "A tag with name [{$tagName}] already exists on {$property['name']}. You can add it using the 'Add Existing Tag' form.");
+        }
+
+        $status = ($request['type'] == Constants::JIRA_TYPE_NEW_TAG) 
+            ? Constants::STATUS_NEW_TAG_SUBMITTED 
+            : Constants::STATUS_NEW_RULE_SUBMITTED;
+
+        $refLink = ($property['ref_link'] ?? '') . Constants::AL_RULES_SEARCH_PARAMETER . $tagName;
+
+        $newTagId = $tagsModel->insert([
+            'property_id' => $propertyId,
+            'vendor_id' => $vendorId,
+            'name' => $tagName,
+            'status' => $status,
+            'al_end_date' => $alEndDate,
+            'ref_link' => $refLink,
+            'requester_name' => $request['requester_name'] ?? null,
+            'requester_email' => $request['requester_email'] ?? null,
+            'requester_organization' => $request['requester_organization'] ?? null,
+            'js_code' => $jsCode,
+            'conditions' => $conditions,
+            'created_by' => session()->get('user_id') ?? 0,
+        ]);
+
+        if ($newTagId) {
+            $currentTags = !empty($request['tags']) ? explode(',', $request['tags']) : [];
+            $currentTags = array_values(array_filter(array_map('trim', $currentTags)));
+            $currentTags[] = (string)$newTagId;
+            $newTagsStr = implode(',', $currentTags);
+
+            $model->update($id, ['tags' => $newTagsStr]);
+
+            // Sync with Jira history if tickets exist
+            $ticketId = !empty($request['new_tag_ticket']) ? $request['new_tag_ticket'] : (!empty($request['new_rule_ticket']) ? $request['new_rule_ticket'] : null);
+            if (!empty($ticketId)) {
+                $jiraHistoryModel = new JiraHistoryModel();
+                $jiraHistoryModel->insert([
+                    'ticket_id' => $ticketId,
+                    'type' => $request['type'],
+                    'comments' => $newTagsStr,
+                    'tag_id' => $newTagId,
+                    'property_id' => $propertyId,
+                    'subsidiary_id' => !empty($property['subsidiary_id']) ? $property['subsidiary_id'] : 0,
+                    'created_by' => session()->get('user_id') ?? 0,
+                ]);
+            }
+
+            return redirect()->to('/tag-requests/view/' . $id)->with('success', "Tag [{$tagName}] was successfully created and associated with this request.");
+        }
+
+        return redirect()->to('/tag-requests/view/' . $id)->with('error', 'Failed to create tag.');
     }
 }
