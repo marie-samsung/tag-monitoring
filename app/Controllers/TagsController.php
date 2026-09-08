@@ -362,6 +362,14 @@ class TagsController extends BaseController
                 ->with('error', 'No tags data received for renewal.');
         }
 
+        $ticketId = trim($info['ticket_id'] ?? $post['ticket_id'] ?? '');
+        if (empty($ticketId)) {
+            return redirect()
+                ->back()
+                ->with('error', 'JIRA Ticket ID is required before submitting tag renewal.')
+                ->withInput();
+        }
+
         $propertyIds = array_unique(array_column($tags, 'property_id'));
         $tagIds = array_unique(array_column($tags, 'id'));
 

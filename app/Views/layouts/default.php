@@ -153,6 +153,8 @@
                     iconClass = 'bi-exclamation-octagon-fill text-danger';
                 } else if (type === 'success') {
                     iconClass = 'bi-check-circle-fill text-success';
+                } else if (type === 'warning') {
+                    iconClass = 'bi-exclamation-triangle-fill text-warning';
                 }
 
                 overlay.innerHTML = `
@@ -190,6 +192,12 @@
         document.addEventListener('click', function (e) {
             const confirmEl = e.target.closest('[data-confirm]');
             if (!confirmEl) return;
+
+            const form = confirmEl.closest('form');
+            if (form && confirmEl.type === 'submit' && !form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
 
             e.preventDefault();
             e.stopImmediatePropagation();

@@ -621,6 +621,18 @@ Tags Renewal: <?= $siteCode ?? null ?>
         const status = document.getElementById('copyDetailsStatus');
         status.style.opacity = 1;
         setTimeout(() => status.style.opacity = 0, 1000);
+
+        const ticketId = $('#ticket_id').val() ? $('#ticket_id').val().trim() : '';
+        if (!ticketId) {
+            window.themeAlert({
+                title: 'JIRA Ticket ID Missing',
+                message: 'Description has been copied. However, the JIRA ticket ID is still not added. Please make sure to create the JIRA ticket and input the Ticket ID before submitting the renewal.',
+                type: 'warning',
+                buttonText: 'Got it'
+            }).then(() => {
+                $('#ticket_id').focus();
+            });
+        }
     }
 
     function copyTagName(text, element) {
