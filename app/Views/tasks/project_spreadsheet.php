@@ -13,6 +13,20 @@ $sysSettings = \App\Controllers\SettingsController::getSystemSettings();
 $hideAssigneeSystemWide = $sysSettings['hide_assignee_system_wide'] ?? false;
 $forceMeMode = $sysSettings['force_me_mode_system_wide'] ?? false;
 $isAdmin = (int)session()->get('user_role') === Constants::USER_ROLE_ADMIN || (int)session()->get('account_type') === 1;
+
+$buildProjectUrl = function ($targetProjectName, $params = []) {
+    $currentParams = $_GET;
+    unset($currentParams['page']);
+    foreach ($params as $k => $v) {
+        if ($v === null || $v === '' || ($k === 'show_completed' && $v === '0')) {
+            unset($currentParams[$k]);
+        } else {
+            $currentParams[$k] = $v;
+        }
+    }
+    $query = !empty($currentParams) ? '?' . http_build_query($currentParams) : '';
+    return site_url('tasks/project/' . rawurlencode($targetProjectName)) . $query;
+};
 ?>
 
 <?= csrf_field() ?>
@@ -329,9 +343,19 @@ $isAdmin = (int)session()->get('user_role') === Constants::USER_ROLE_ADMIN || (i
                 </div>
             </div>
         </div>
-        <div class="d-flex align-items-center gap-2">
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <!-- Show Completed Toggle Switch -->
+            <div class="form-check form-switch d-flex align-items-center gap-2 mb-0 px-2 py-1" style="height: 38px;">
+                <input class="form-check-input" type="checkbox" name="show_completed" value="1"
+                    id="showCompletedSwitch" <?= !empty($show_completed) ? 'checked' : '' ?>
+                    onchange="window.location.href = this.checked ? '<?= $buildProjectUrl($project_name, ['show_completed' => '1']) ?>' : '<?= $buildProjectUrl($project_name, ['show_completed' => '0']) ?>';"
+                    style="cursor: pointer; width: 2.4em; height: 1.2em; margin-top: 0;">
+                <label class="form-check-label small fw-medium text-secondary mb-0"
+                    for="showCompletedSwitch" style="cursor: pointer; user-select: none;">Show Completed</label>
+            </div>
+
             <?php if (!($forceMeMode && !$isAdmin)): ?>
-            <a href="<?= site_url('tasks/project/' . rawurlencode($project_name)) . (isset($me_mode) && $me_mode ? '?me_mode=0' : '?me_mode=1') ?>"
+            <a href="<?= $buildProjectUrl($project_name, ['me_mode' => (isset($me_mode) && $me_mode) ? '0' : '1']) ?>"
                 class="<?= isset($me_mode) && $me_mode ? 'apple-btn-primary' : 'apple-btn-secondary' ?> btn-sm px-3 text-decoration-none d-inline-flex align-items-center gap-1.5 py-2"
                 style="border-radius: 8px;">
                 <i class="bi <?= isset($me_mode) && $me_mode ? 'bi-person-fill' : 'bi-person' ?> me-1"></i> Assigned To Me
@@ -367,7 +391,7 @@ $isAdmin = (int)session()->get('user_role') === Constants::USER_ROLE_ADMIN || (i
             $isActive = ($pName === $project_name);
             $count = $project_comment_counts[$pName] ?? 0;
             ?>
-            <a href="<?= site_url('tasks/project/' . rawurlencode($pName)) ?>"
+            <a href="<?= $buildProjectUrl($pName) ?>"
                 class="sheet-tab <?= $isActive ? 'active' : '' ?>">
                 <i class="bi bi-file-earmark-spreadsheet-fill <?= $isActive ? 'text-success' : 'text-secondary' ?>"></i>
                 <span><?= esc($pName) ?></span>
@@ -389,14 +413,14 @@ $isAdmin = (int)session()->get('user_role') === Constants::USER_ROLE_ADMIN || (i
                     <i class="bi bi-grid-3x3-gap-fill me-1"></i>
                     <?= isset($pager) ? $pager->getTotal() : count($tasks) ?> Rows
                 </span>
-                <a href="<?= site_url('tasks/project-export/excel/' . rawurlencode($project_name)) ?>"
+                <a href="<?= site_url('tasks/project-export/excel/' . rawurlencode($project_name)) . (!empty($_GET) ? '?' . http_build_query($_GET) : '') ?>"
                     class="apple-btn-secondary btn-sm d-inline-flex align-items-center gap-1.5 py-1 px-2.5"
                     style="font-size: 0.8rem; border-radius: 6px; height: 28px; text-decoration: none;"
                     title="Export Excel">
                     <i class="bi bi-file-earmark-excel-fill text-success"></i>
                     <span>Export Excel</span>
                 </a>
-                <a href="<?= site_url('tasks/project-export/pdf/' . rawurlencode($project_name)) ?>" target="_blank"
+                <a href="<?= site_url('tasks/project-export/pdf/' . rawurlencode($project_name)) . (!empty($_GET) ? '?' . http_build_query($_GET) : '') ?>" target="_blank"
                     class="apple-btn-secondary btn-sm d-inline-flex align-items-center gap-1.5 py-1 px-2.5"
                     style="font-size: 0.8rem; border-radius: 6px; height: 28px; text-decoration: none;"
                     title="Export PDF">

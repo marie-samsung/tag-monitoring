@@ -1469,20 +1469,28 @@ class TasksController extends BaseController
             $meMode = (session()->get('al_me_mode') == 1);
         }
 
-        $tasks = $model->getProjectLogs($projectName, 25, $meMode);
+        $showCompleted = ($this->request->getGet('show_completed') == '1');
+
+        $tasks = $model->getProjectLogs($projectName, 25, $meMode, $showCompleted);
 
         if ($meMode) {
             $userId = session()->get('user_id');
-            $distinctProjects = $model->getDistinctProjects($userId);
+            $distinctProjects = $model->getDistinctProjects($userId, $showCompleted);
         } else {
-            $distinctProjects = $model->getDistinctProjects();
+            $distinctProjects = $model->getDistinctProjects(null, $showCompleted);
         }
         $projectNames = array_column($distinctProjects, 'project_name');
         // Ensure no empty values, and if so default to Generic
         $projectNames = array_map(function ($p) {
             return !empty($p) ? $p : 'Generic';
         }, $projectNames);
-        $projectNames = array_unique($projectNames);
+        $projectNames = array_values(array_unique($projectNames));
+
+        // If the current project has only completed tasks, keep it in the tabs while viewing it
+        if (!empty($projectName) && !in_array($projectName, $projectNames)) {
+            $projectNames[] = $projectName;
+            sort($projectNames);
+        }
 
         $progressPercentage = $model->getProjectProgress($projectName, $meMode);
 
@@ -1502,6 +1510,7 @@ class TasksController extends BaseController
             'pager' => $model->pager,
             'project_names' => $projectNames,
             'me_mode' => $meMode,
+            'show_completed' => $showCompleted,
             'progress_percentage' => $progressPercentage,
             'project_comment_counts' => $projectCommentCounts,
         ]);
@@ -1696,8 +1705,9 @@ class TasksController extends BaseController
         $forceMeMode = $sysSettings['force_me_mode_system_wide'] ?? false;
         $isAdmin = (int) session()->get('user_role') === Constants::USER_ROLE_ADMIN || (int) session()->get('account_type') === 1;
         $meMode = ($forceMeMode && !$isAdmin) ? true : (session()->get('al_me_mode') == 1);
+        $showCompleted = ($this->request->getGet('show_completed') == '1');
 
-        $tasks = $model->getProjectLogs($projectName, null, $meMode);
+        $tasks = $model->getProjectLogs($projectName, null, $meMode, $showCompleted);
 
         $filename = str_replace(' ', '_', $projectName) . '_Tasks_Export_' . date('Y-m-d') . '.xls';
 
@@ -1747,8 +1757,9 @@ class TasksController extends BaseController
         $forceMeMode = $sysSettings['force_me_mode_system_wide'] ?? false;
         $isAdmin = (int) session()->get('user_role') === Constants::USER_ROLE_ADMIN || (int) session()->get('account_type') === 1;
         $meMode = ($forceMeMode && !$isAdmin) ? true : (session()->get('al_me_mode') == 1);
+        $showCompleted = ($this->request->getGet('show_completed') == '1');
 
-        $tasks = $model->getProjectLogs($projectName, null, $meMode);
+        $tasks = $model->getProjectLogs($projectName, null, $meMode, $showCompleted);
 
         return view('tasks/project_pdf', [
             'project_name' => $projectName,

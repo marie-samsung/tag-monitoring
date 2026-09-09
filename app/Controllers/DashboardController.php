@@ -958,7 +958,10 @@ class DashboardController extends BaseController
                 ->countAllResults();
                 
             if ($expiringTags > 0) {
-                $promptParts[] = "IMPORTANT: As they are in the Media Tagging team, please include a gentle reminder that they have {$expiringTags} tags expiring in the next 15 days, and add a quick motivational phrase related to keeping tags up-to-date.";
+                $promptParts[] = "IMPORTANT: As they are in the Media Tagging team, they have {$expiringTags} tags expiring in the next 15 days.";
+                $promptParts[] = "Please analyze the severity of these expiring tags based on the count and include a tailored, creative motivational phrase about it.";
+                $promptParts[] = "For example: if it's a small number (e.g., under 10), playfully mention they can handle it in a flash. If it's a large number (e.g., over 30), acknowledge the high volume but express strong confidence in their ability to conquer it.";
+                $promptParts[] = "Vary your messages and be creative—do not use these exact examples every time, but match the energy to the severity of the workload.";
             }
         }
         

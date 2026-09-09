@@ -342,7 +342,7 @@ class TasksModel extends Model
         return $this->countAllResults();
     }
 
-    public function getProjectLogs($projectName, $limit = null, $meMode = false)
+    public function getProjectLogs($projectName, $limit = null, $meMode = false, $showCompleted = false)
     {
         $this->applyRoleFilters();
         
@@ -354,6 +354,10 @@ class TasksModel extends Model
             if ($userId !== null) {
                 $query->where('assignee', $userId);
             }
+        }
+
+        if (!$showCompleted) {
+            $query->where('status !=', Constants::ACTIVITY_LOGS_STATUS_COMPLETED);
         }
 
         $query->orderBy('created_at', 'DESC');
@@ -387,7 +391,7 @@ class TasksModel extends Model
         return 0;
     }
 
-    public function getDistinctProjects($userId = null)
+    public function getDistinctProjects($userId = null, $showCompleted = true)
     {
         $this->select('DISTINCT(project) as project_name')->orderBy('project', 'ASC');
         
@@ -395,6 +399,10 @@ class TasksModel extends Model
 
         if ($userId !== null) {
             $this->where('assignee', $userId);
+        }
+
+        if (!$showCompleted) {
+            $this->where('status !=', Constants::ACTIVITY_LOGS_STATUS_COMPLETED);
         }
 
         return $this->findAll();
