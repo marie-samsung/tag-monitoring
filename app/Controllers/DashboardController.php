@@ -406,6 +406,7 @@ class DashboardController extends BaseController
             ->select('tags.vendor_id, vendors.name as vendor_name, COUNT(tags.id) as count')
             ->join('vendors', 'vendors.id = tags.vendor_id', 'left')
             ->where('tags.deleted_at', null)
+            ->whereNotIn('tags.status', [Constants::STATUS_DISABLED, Constants::STATUS_ENDED, Constants::STATUS_EXPIRED])
             ->groupBy('tags.vendor_id')
             ->orderBy('count', 'DESC')
             ->limit(10)
