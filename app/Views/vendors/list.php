@@ -130,7 +130,7 @@ Vendors List
 
 <div class="container-fluid">
     <!-- Page Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom flex-wrap gap-3">
         <div>
             <?php $totalVendors = count($vendors); ?>
             <h2 class="mb-0 fw-bold d-flex align-items-center gap-2">
@@ -140,6 +140,23 @@ Vendors List
                 </span>
             </h2>
             <p class="text-secondary small mb-0">Overview of vendors and their tag count across different subsidiaries.</p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <div class="dropdown">
+                <button class="apple-btn-secondary btn-sm dropdown-toggle px-3 d-flex align-items-center gap-1"
+                    type="button" id="headerActionsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-three-dots-vertical"></i> Actions
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="headerActionsDropdown"
+                    style="border-radius: 10px; border: 1px solid var(--color-border-input);">
+                    <li>
+                        <a class="dropdown-item py-2" href="<?= site_url('vendors/export?' . http_build_query($_GET)) ?>"
+                            style="font-size: 0.9rem;">
+                            <i class="bi bi-file-earmark-arrow-down-fill text-secondary me-2"></i>Export as Excel
+                        </a>
+                    </li>
+                </ul>
+            </div>
         </div>
     </div>
 
@@ -312,7 +329,14 @@ Vendors List
 
                                 <?php foreach (Constants::SUBSIDIARIES as $id => $sub): ?>
                                     <?php 
-                                        $vendorTags = ($tagsByVendorAndSub ?? [])[$vendor['id']][$id] ?? [];
+                                        $rawVendorTags = ($tagsByVendorAndSub ?? [])[$vendor['id']][$id] ?? [];
+                                        $vendorTags = array_values(array_filter($rawVendorTags, function($tag) {
+                                            return !in_array((int)$tag['status'], [
+                                                Constants::STATUS_DISABLED,
+                                                Constants::STATUS_ENDED,
+                                                Constants::STATUS_EXPIRED
+                                            ]);
+                                        }));
                                         $count = count($vendorTags);
                                         
                                         $hasExpiring = false;

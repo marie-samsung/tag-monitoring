@@ -86,6 +86,7 @@ $routes->group('properties', function ($routes) {
 
 $routes->group('vendors', function ($routes) {
     $routes->get('/', 'VendorsController::index');
+    $routes->get('export', 'VendorsController::exportAsExcel');
     $routes->get('view/(:num)', 'VendorsController::view/$1');
     $routes->get('export/(:num)', 'VendorsController::exportAsExcel/$1');
     $routes->match(['get', 'post'], 'create', 'VendorsController::create');

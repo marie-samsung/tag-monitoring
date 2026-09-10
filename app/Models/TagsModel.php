@@ -169,6 +169,11 @@ class TagsModel extends Model
             ->join('properties', 'properties.id = tags.property_id', 'left')
             ->where('vendor_id', $vendorId)
             ->where('properties.subsidiary_id', $subsidiaryId)
+            ->whereNotIn('tags.status', [
+                Constants::STATUS_DISABLED,
+                Constants::STATUS_ENDED,
+                Constants::STATUS_EXPIRED
+            ])
             ->orderBy('created_at', 'DESC')
             ->findAll();
     }

@@ -34,7 +34,8 @@ class VendorsModel extends Model
     public function getTagsCount($vendorId)
     {
         $builder = $this->db->table('tags');
-        $builder->where('vendor_id', $vendorId);
+        $builder->where('vendor_id', $vendorId)
+            ->whereNotIn('status', [Constants::STATUS_DISABLED, Constants::STATUS_ENDED, Constants::STATUS_EXPIRED]);
         return $builder->countAllResults();
     }
 
@@ -45,7 +46,8 @@ class VendorsModel extends Model
             ->select('tags.*')
             ->join('properties', 'properties.id = tags.property_id', 'left')
             ->where('tags.vendor_id', $vendorId)
-            ->where('properties.subsidiary_id', $subsidiaryId);
+            ->where('properties.subsidiary_id', $subsidiaryId)
+            ->whereNotIn('tags.status', [Constants::STATUS_DISABLED, Constants::STATUS_ENDED, Constants::STATUS_EXPIRED]);
 
         return $isCount ? $builder->countAllResults() : $builder->get()->getResultArray();
     }
