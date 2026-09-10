@@ -59,6 +59,7 @@ class Constants
     public const STATUS_NEW_RULE_SUBMITTED = 7;
     public const STATUS_ENDED = 8;
     public const STATUS_ON_HOLD = 9;
+    public const STATUS_INVALID = 10;
     public const STATUS_DEFAULT = 145;
     public const STATUS_ALL = 999;
     public const STATUS = [
@@ -72,6 +73,20 @@ class Constants
         self::STATUS_NEW_TAG_SUBMITTED => 'New Tag Request Submitted',
         self::STATUS_NEW_RULE_SUBMITTED => 'New Rule Request Submitted',
         self::STATUS_ENDED => 'Ended',
+        self::STATUS_INVALID => 'Invalid / Deleted',
+        self::STATUS_ON_HOLD => 'On-Hold / Blocked',
+    ];
+
+    public const TAG_STATUS = [
+        self::STATUS_ENABLED => 'Enabled',
+        self::STATUS_DISABLED => 'Disabled',
+        self::STATUS_EXPIRED => 'Expired',
+        self::STATUS_PENDING_VERIFICATION => 'Pending Verification',
+        self::STATUS_UPDATED_IN_AL => 'Updated in AL',
+        self::STATUS_NEW_TAG_SUBMITTED => 'New Tag Request Submitted',
+        self::STATUS_NEW_RULE_SUBMITTED => 'New Rule Request Submitted',
+        self::STATUS_ENDED => 'Ended',
+        self::STATUS_INVALID => 'Invalid / Deleted',
         self::STATUS_ON_HOLD => 'On-Hold / Blocked',
     ];
 

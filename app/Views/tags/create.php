@@ -123,7 +123,7 @@ Tag: Create
                 <div class="col-md-6">
                     <label class="form-label-sm fw-semibold text-secondary mb-1">Status</label>
                     <select name="status" class="form-select form-select-xs" required>
-                        <?php foreach (Constants::STATUS as $value => $label): ?>
+                        <?php foreach (Constants::TAG_STATUS as $value => $label): ?>
                             <option value="<?= esc($value) ?>"
                                 <?= old('status', $tag['status'] ?? 1) == $value ? 'selected' : '' ?>>
                                 <?= esc($label) ?>
