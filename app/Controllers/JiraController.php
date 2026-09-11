@@ -28,6 +28,7 @@ class JiraController extends BaseController
         $data['jiraTickets'] = $jiraHistoryModel->filterJiraTickets($filters, 25);
         $data['pager'] = $jiraHistoryModel->pager;
         $data['filters'] = $filters;
+        $data['totalUniqueTags'] = $jiraHistoryModel->countUniqueTags($filters);
 
         return view('jira/list', $data);
     }

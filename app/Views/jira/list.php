@@ -60,11 +60,32 @@ $hasActiveFilters = ($activeFiltersCount > 0);
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom flex-wrap gap-3">
         <div>
-            <?php $totalTickets = isset($pager) ? $pager->getTotal() : count($jiraTickets); ?>
-            <h2 class="mb-0 fw-bold d-flex align-items-center gap-2">
+            <?php 
+                $totalTickets = isset($pager) ? $pager->getTotal() : count($jiraTickets); 
+                if (!isset($totalUniqueTags)) {
+                    $uniqueTagIdsFallback = [];
+                    foreach ($jiraTickets as $t) {
+                        if (!empty($t['comments'])) {
+                            $rawTags = explode(',', $t['comments']);
+                            foreach ($rawTags as $rTag) {
+                                $rTag = trim($rTag);
+                                if ($rTag !== '' && is_numeric($rTag) && (int)$rTag > 0) {
+                                    $uniqueTagIdsFallback[(int)$rTag] = true;
+                                }
+                            }
+                        }
+                    }
+                    $totalUniqueTags = count($uniqueTagIdsFallback);
+                }
+                $uniqueTagsCount = $totalUniqueTags;
+            ?>
+            <h2 class="mb-0 fw-bold d-flex align-items-center gap-2 flex-wrap">
                 <span>JIRA Tickets</span>
-                <span class="badge bg-secondary text-secondary" style="font-size: 0.85rem; font-weight: 600; padding: 0.35em 0.7em; border-radius: 20px;">
-                    <?= $totalTickets ?>
+                <span class="badge bg-secondary text-secondary" style="font-size: 0.85rem; font-weight: 600; padding: 0.35em 0.7em; border-radius: 20px;" title="Total Tickets">
+                    <?= number_format($totalTickets) ?> <?= $totalTickets === 1 ? 'ticket' : 'tickets' ?>
+                </span>
+                <span class="badge" style="background-color: var(--color-badge-primary-bg); color: var(--color-badge-primary-text); border: 1px solid var(--color-badge-primary-border); font-size: 0.85rem; font-weight: 600; padding: 0.35em 0.75em; border-radius: 20px;" title="Total Unique Tags">
+                    <i class="bi bi-tags-fill me-1"></i><?= number_format($uniqueTagsCount) ?> Tag<?= $uniqueTagsCount === 1 ? '' : 's' ?>
                 </span>
             </h2>
             <p class="text-secondary small mb-0">Overview of GTA JIRA tickets created for approvals, new tags, date extensions, and updates.</p>
@@ -245,9 +266,15 @@ $hasActiveFilters = ($activeFiltersCount > 0);
 
     <!-- #region | JIRA HISTORY TABLE -->
     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-        <span class="text-secondary small fw-medium">
-            Showing <?= count($jiraTickets) ?> of <?= $totalTickets ?> results
-        </span>
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <span class="text-secondary small fw-medium">
+                Showing <?= count($jiraTickets) ?> of <?= number_format($totalTickets) ?> results
+            </span>
+            <span class="text-muted small">•</span>
+            <span class="text-secondary small fw-medium">
+                <strong class="text-dark"><?= number_format($uniqueTagsCount) ?></strong> tag<?= $uniqueTagsCount === 1 ? '' : 's' ?>
+            </span>
+        </div>
         
         <!-- Action Style Switcher -->
         <div class="d-flex align-items-center gap-2">

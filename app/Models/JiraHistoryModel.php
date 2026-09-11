@@ -169,6 +169,56 @@ class JiraHistoryModel extends Model
         return $this->findAll();
     }
 
+    public function countUniqueTags(array $filters = []): int
+    {
+        $builder = $this->builder();
+        $builder->select('comments');
+
+        if (!empty($filters['keyword'])) {
+            $builder->like('ticket_id', $filters['keyword']);
+        }
+
+        if (!empty($filters['ticket_type'])) {
+            $builder->where('type', $filters['ticket_type']);
+        }
+
+        if (!empty($filters['property_id'])) {
+            $builder->where('property_id', $filters['property_id']);
+        }
+
+        if (!empty($filters['subsidiary_id'])) {
+            $builder->where('subsidiary_id', $filters['subsidiary_id']);
+        }
+
+        if (!empty($filters['created_at_from'])) {
+            $builder->where('created_at >=', $filters['created_at_from'] . ' 00:00:00');
+        }
+
+        if (!empty($filters['created_at_to'])) {
+            $builder->where('created_at <=', $filters['created_at_to'] . ' 23:59:59');
+        }
+
+        // Use a subquery to fetch the latest entry per ticket_id without triggering ONLY_FULL_GROUP_BY
+        $builder->where('id IN (SELECT MAX(id) FROM jira_history GROUP BY ticket_id, property_id)', null, false);
+
+        $results = $builder->get()->getResultArray();
+
+        $uniqueTags = [];
+        foreach ($results as $row) {
+            if (!empty($row['comments'])) {
+                $tags = explode(',', $row['comments']);
+                foreach ($tags as $tag) {
+                    $tag = trim($tag);
+                    if ($tag !== '' && is_numeric($tag) && (int)$tag > 0) {
+                        $uniqueTags[(int)$tag] = true;
+                    }
+                }
+            }
+        }
+
+        return count($uniqueTags);
+    }
+
     protected $beforeInsert = ['setCreatedBy'];
     protected $beforeUpdate = ['setUpdatedBy'];
 
