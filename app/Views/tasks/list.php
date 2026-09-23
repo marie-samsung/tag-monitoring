@@ -970,7 +970,9 @@ if ($isAllTeamsSelected) {
                                         <?= esc($log['mt_jira_ticket']) ?>
                                     </a>
                                 <?php else: ?>
-                                    <span class="text-secondary small">-</span>
+                                    <button type="button" class="btn btn-sm btn-outline-primary py-0.5 px-2 d-inline-flex align-items-center gap-1 btn-create-mt-jira" id="btn-create-mt-jira-<?= $log['id'] ?>" data-log-id="<?= $log['id'] ?>" style="font-size: 0.72rem; border-radius: 6px; font-weight: 500; min-height: 24px; box-shadow: none; white-space: nowrap;">
+                                        <i class="bi bi-plus-circle"></i> Create MT JIRA Ticket
+                                    </button>
                                 <?php endif; ?>
                             </td>
                             <?php if (!$hideAssigneeSystemWide): ?>
@@ -2250,6 +2252,58 @@ if ($isAllTeamsSelected) {
                         dropdown.css('opacity', '1');
                         dropdown.val(previousValue);
                         showToast('error', 'An error occurred while updating.');
+                    }
+                });
+            });
+
+            // Click handler for creating MT JIRA ticket
+            $(document).on('click', '.btn-create-mt-jira', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const btn = $(this);
+                const logId = btn.data('log-id');
+                const csrfToken = $('input[name="csrf_test_name"]').val();
+
+                // Disable button and show loading state
+                btn.prop('disabled', true);
+                btn.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="width: 0.75rem; height: 0.75rem; border-width: 0.12em;"></span> Creating...');
+
+                $.ajax({
+                    url: '<?= site_url("tasks/create-jira") ?>/' + logId,
+                    type: 'POST',
+                    data: {
+                        csrf_test_name: csrfToken
+                    },
+                    dataType: 'json',
+                    success: function (response) {
+                        if (response.success) {
+                            showToast('success', response.message);
+
+                            // Replace the button with the link
+                            const parentTd = btn.closest('td');
+                            const linkUrl = '<?= Constants::MT_JIRA_LINK ?>' + encodeURIComponent(response.ticket_id);
+
+                            parentTd.html(`
+                                <a href="${linkUrl}" target="_blank" class="apple-link fw-bold text-success">
+                                    ${$('<div>').text(response.ticket_id).html()}
+                                </a>
+                            `);
+                        } else {
+                            btn.prop('disabled', false);
+                            btn.html('<i class="bi bi-plus-circle"></i> Create MT JIRA Ticket');
+                            showToast('error', response.message || 'Failed to create MT JIRA Ticket.');
+                        }
+
+                        // Always update CSRF token
+                        if (response.csrf_hash) {
+                            $('input[name="csrf_test_name"]').val(response.csrf_hash);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        btn.prop('disabled', false);
+                        btn.html('<i class="bi bi-plus-circle"></i> Create MT JIRA Ticket');
+                        showToast('error', 'An error occurred while creating the MT JIRA ticket.');
                     }
                 });
             });
