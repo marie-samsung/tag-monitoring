@@ -27,6 +27,25 @@ $buildProjectUrl = function ($targetProjectName, $params = []) {
     $query = !empty($currentParams) ? '?' . http_build_query($currentParams) : '';
     return site_url('tasks/project/' . rawurlencode($targetProjectName)) . $query;
 };
+
+$allTeamIds = array_keys($all_teams ?? Constants::TEAMS);
+$isAllTeamsSelected = empty($selected_teams) || (count($selected_teams) === count($allTeamIds));
+
+if ($isAllTeamsSelected) {
+    $teamButtonLabel = 'All';
+    $teamBadgeCount = 'All';
+} elseif (count($selected_teams) === 1) {
+    $singleTeamId = reset($selected_teams);
+    $teamButtonLabel = ($all_teams ?? Constants::TEAMS)[$singleTeamId] ?? 'Team';
+    $teamBadgeCount = 1;
+} elseif (count($selected_teams) === 2) {
+    $names = array_map(fn($tid) => ($all_teams ?? Constants::TEAMS)[$tid] ?? $tid, $selected_teams);
+    $teamButtonLabel = implode(', ', $names);
+    $teamBadgeCount = 2;
+} else {
+    $teamButtonLabel = count($selected_teams) . ' Teams';
+    $teamBadgeCount = count($selected_teams);
+}
 ?>
 
 <?= csrf_field() ?>
@@ -40,6 +59,10 @@ $buildProjectUrl = function ($targetProjectName, $params = []) {
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
         overflow: hidden;
         margin-bottom: 2rem;
+    }
+
+    .team-check-row:hover {
+        background-color: #f5f5f7;
     }
 
     .spreadsheet-header-bar {
@@ -345,13 +368,67 @@ $buildProjectUrl = function ($targetProjectName, $params = []) {
         </div>
         <div class="d-flex align-items-center gap-2 flex-wrap">
             <!-- Show Completed Toggle Switch -->
-            <div class="form-check form-switch d-flex align-items-center gap-2 mb-0 px-2 py-1" style="height: 38px;">
-                <input class="form-check-input" type="checkbox" name="show_completed" value="1"
-                    id="showCompletedSwitch" <?= !empty($show_completed) ? 'checked' : '' ?>
-                    onchange="window.location.href = this.checked ? '<?= $buildProjectUrl($project_name, ['show_completed' => '1']) ?>' : '<?= $buildProjectUrl($project_name, ['show_completed' => '0']) ?>';"
-                    style="cursor: pointer; width: 2.4em; height: 1.2em; margin-top: 0;">
-                <label class="form-check-label small fw-medium text-secondary mb-0"
-                    for="showCompletedSwitch" style="cursor: pointer; user-select: none;">Show Completed</label>
+            <div class="d-flex align-items-center gap-2 mb-0 px-3 py-1 bg-white ms-1" style="height: 36px; border-color: #d1d1d6 !important;">
+                <div class="form-check form-switch mb-0 d-flex align-items-center p-0 m-0">
+                    <input class="form-check-input m-0 me-2" type="checkbox" name="show_completed" value="1"
+                        id="showCompletedSwitch" <?= !empty($show_completed) ? 'checked' : '' ?>
+                        onchange="window.location.href = this.checked ? '<?= $buildProjectUrl($project_name, ['show_completed' => '1']) ?>' : '<?= $buildProjectUrl($project_name, ['show_completed' => '0']) ?>';"
+                        style="cursor: pointer; width: 2.2em; height: 1.2em; float: none; margin-left: 0 !important;">
+                    <label class="form-check-label small fw-medium text-secondary mb-0"
+                        for="showCompletedSwitch" style="cursor: pointer; user-select: none; white-space: nowrap;">Show Completed</label>
+                </div>
+            </div>
+            
+            <!-- Team / Role Multi-Select Filter Dropdown -->
+            <div class="dropdown" id="teamFilterDropdown">
+                <button class="apple-btn-secondary btn-sm px-3 py-2 d-inline-flex align-items-center gap-1.5 dropdown-toggle"
+                    type="button" id="teamDropdownBtn" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false"
+                    style="border-radius: 8px; height: 36px;" title="Filter by Team/Role">
+                    <i class="bi bi-people-fill text-primary"></i>
+                    <span>Team: <strong class="fw-semibold text-dark" id="teamBtnLabelText"><?= esc($teamButtonLabel) ?></strong></span>
+                    <span class="badge <?= $isAllTeamsSelected ? 'bg-secondary' : 'bg-primary' ?> rounded-pill text-white ms-1" style="font-size: 0.7rem; padding: 0.25em 0.55em;" id="teamBadgeCountSpan"><?= esc($teamBadgeCount) ?></span>
+                </button>
+                <div class="dropdown-menu dropdown-menu-end shadow p-3" aria-labelledby="teamDropdownBtn"
+                    style="min-width: 270px; border-radius: 12px; border: 1px solid var(--color-border-input); font-size: 0.85rem; z-index: 1060;">
+                    <div class="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom">
+                        <span class="fw-bold text-dark d-flex align-items-center gap-1.5" style="font-size: 0.85rem;">
+                            <i class="bi bi-funnel-fill text-primary"></i> Team / Role
+                        </span>
+                        <button type="button" class="btn btn-link p-0 text-decoration-none small text-primary fw-semibold" id="toggleAllTeamsBtn" style="font-size: 0.75rem;">
+                            <?= $isAllTeamsSelected ? 'Clear All' : 'Select All' ?>
+                        </button>
+                    </div>
+
+                    <div class="team-checkbox-list py-1 mb-2">
+                        <?php foreach (($all_teams ?? Constants::TEAMS) as $tId => $tName): ?>
+                            <?php 
+                                $isChecked = $isAllTeamsSelected || in_array($tId, $selected_teams ?? []);
+                                $isHomeTeam = ($tId == ($default_user_team ?? 1));
+                            ?>
+                            <div class="form-check d-flex align-items-center justify-content-between py-1.5 px-2 rounded team-check-row" style="cursor: pointer; margin-bottom: 2px;">
+                                <div class="d-flex align-items-center gap-2">
+                                    <input class="form-check-input team-filter-cb mt-0" type="checkbox" value="<?= $tId ?>"
+                                        id="team_cb_<?= $tId ?>" <?= $isChecked ? 'checked' : '' ?> style="cursor: pointer; width: 1.15em; height: 1.15em;">
+                                    <label class="form-check-label fw-medium text-dark mb-0" for="team_cb_<?= $tId ?>" style="cursor: pointer; user-select: none;">
+                                        <?= esc($tName) ?>
+                                    </label>
+                                </div>
+                                <?php if ($isHomeTeam): ?>
+                                    <span class="badge bg-light text-primary border rounded-pill px-2 py-0.5" style="font-size: 0.65rem; font-weight: 600;">My Team</span>
+                                <?php endif; ?>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+
+                    <div class="pt-2 border-top">
+                        <button type="button" class="apple-btn-primary btn-sm w-100 py-1.5 d-flex align-items-center justify-content-center gap-1.5" id="applyTeamFilterBtn" style="border-radius: 8px; font-weight: 500;">
+                            <i class="bi bi-check2"></i> Apply Filter
+                        </button>
+                        <button type="button" class="btn btn-link btn-xs text-muted w-100 text-center text-decoration-none mt-1 py-1" id="resetToMyTeamBtn" style="font-size: 0.75rem;">
+                            <i class="bi bi-arrow-counterclockwise me-1"></i>Reset to My Team
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <?php if (!($forceMeMode && !$isAdmin)): ?>
@@ -1474,6 +1551,46 @@ $buildProjectUrl = function ($targetProjectName, $params = []) {
 
         // Load project comments automatically on page load
         loadProjectComments();
+
+        // Multi-Select Team Filter Handling
+        $('#applyTeamFilterBtn').on('click', function () {
+            const checked = $('.team-filter-cb:checked').map(function () {
+                return $(this).val();
+            }).get();
+
+            const totalCount = $('.team-filter-cb').length;
+            const currentUrl = new URL(window.location.href);
+
+            if (checked.length === 0 || checked.length === totalCount) {
+                currentUrl.searchParams.set('team_id', 'all');
+            } else {
+                currentUrl.searchParams.set('team_id', checked.join(','));
+            }
+            currentUrl.searchParams.delete('page');
+            window.location.href = currentUrl.toString();
+        });
+
+        $('#resetToMyTeamBtn').on('click', function () {
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.delete('team_id');
+            currentUrl.searchParams.delete('page');
+            window.location.href = currentUrl.toString();
+        });
+
+        $('#toggleAllTeamsBtn').on('click', function () {
+            const checkboxes = $('.team-filter-cb');
+            const checkedCount = $('.team-filter-cb:checked').length;
+            const shouldCheck = (checkedCount < checkboxes.length);
+
+            checkboxes.prop('checked', shouldCheck);
+            $(this).text(shouldCheck ? 'Clear All' : 'Select All');
+        });
+
+        $('.team-filter-cb').on('change', function () {
+            const total = $('.team-filter-cb').length;
+            const checked = $('.team-filter-cb:checked').length;
+            $('#toggleAllTeamsBtn').text(checked === total ? 'Clear All' : 'Select All');
+        });
     });
 </script>
 

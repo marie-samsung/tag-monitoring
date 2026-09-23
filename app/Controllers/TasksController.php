@@ -16,6 +16,51 @@ use CodeIgniter\Files\Exceptions\FileException;
 
 class TasksController extends BaseController
 {
+    public static function getUserDefaultTeamId(): int
+    {
+        $currentUserId = session()->get('user_id');
+        if ($currentUserId && isset(Constants::USER_TEAMS[$currentUserId])) {
+            return Constants::USER_TEAMS[$currentUserId];
+        }
+        $userRole = session()->get('user_role');
+        return match ((int)$userRole) {
+            Constants::USER_ROLE_MEDIA_TAGGING => Constants::TEAM_MEDIA_TAGGING,
+            4 => Constants::TEAM_DWF,
+            2 => Constants::TEAM_CRM,
+            default => Constants::TEAM_MEDIA_TAGGING,
+        };
+    }
+
+    private function resolveSelectedTeams(): array
+    {
+        $rawTeamId = $this->request->getGet('team_id');
+        $defaultTeam = self::getUserDefaultTeamId();
+
+        if ($rawTeamId === null) {
+            // Default to user's team/role!
+            return [$defaultTeam];
+        }
+
+        if ($rawTeamId === 'all' || $rawTeamId === '0') {
+            return []; // All teams
+        }
+
+        if (is_array($rawTeamId)) {
+            if (in_array('all', $rawTeamId, true)) {
+                return [];
+            }
+            $teams = array_map('intval', array_filter($rawTeamId, fn($v) => is_numeric($v) && (int)$v > 0));
+            return array_values(array_unique($teams));
+        }
+
+        $parts = explode(',', (string)$rawTeamId);
+        if (in_array('all', $parts, true)) {
+            return [];
+        }
+        $teams = array_map('intval', array_filter($parts, fn($v) => is_numeric($v) && (int)$v > 0));
+        return array_values(array_unique($teams));
+    }
+
     public function index()
     {
         $model = new TasksModel();
@@ -39,10 +84,12 @@ class TasksController extends BaseController
             $meMode = (session()->get('al_me_mode') == 1);
         }
 
+        $selectedTeams = $this->resolveSelectedTeams();
+
         $filters = [
             'keyword' => $this->request->getGet('keyword'),
             'subsidiary_id' => $this->request->getGet('subsidiary_id'),
-            'team_id' => $this->request->getGet('team_id'),
+            'team_id' => !empty($selectedTeams) ? $selectedTeams : null,
             'project' => $this->request->getGet('project'),
             'type' => $this->request->getGet('type'),
             'status' => $this->request->getGet('status'),
@@ -68,10 +115,14 @@ class TasksController extends BaseController
         $data['pager'] = $model->pager;
         $data['filters'] = $filters;
 
-        $distinctProjects = $model->getDistinctProjects();
+        $teamFilterForProjects = !empty($selectedTeams) ? $selectedTeams : null;
+        $distinctProjects = $model->getDistinctProjects(null, true, $teamFilterForProjects);
         $data['project_names'] = array_column($distinctProjects, 'project_name');
         $data['all_labels'] = $model->getAllLabels();
         $data['aiModels'] = $this->fetchAiModels();
+        $data['selected_teams'] = $selectedTeams;
+        $data['default_user_team'] = self::getUserDefaultTeamId();
+        $data['all_teams'] = Constants::TEAMS;
         $user = session()->get('user_name');
         
         $userId = session()->get('user_id');
@@ -175,6 +226,10 @@ class TasksController extends BaseController
             'labels' => $labels,
         ];
 
+        if ($insertData['status'] == Constants::ACTIVITY_LOGS_STATUS_COMPLETED && empty($insertData['finished_date'])) {
+            $insertData['finished_date'] = date_ymd();
+        }
+
         $model->insert($insertData);
         $insertId = $model->getInsertID();
 
@@ -266,7 +321,9 @@ class TasksController extends BaseController
             ]);
 
             if ($post['status'] == Constants::ACTIVITY_LOGS_STATUS_COMPLETED) {
-                $post['finished_date'] = date_ymd();
+                if (empty($post['finished_date'])) {
+                    $post['finished_date'] = date_ymd();
+                }
             }
         }
 
@@ -747,10 +804,12 @@ class TasksController extends BaseController
             $meMode = (session()->get('al_me_mode') == 1);
         }
 
+        $selectedTeams = $this->resolveSelectedTeams();
+
         $filters = [
             'keyword' => $this->request->getGet('keyword'),
             'subsidiary_id' => $this->request->getGet('subsidiary_id'),
-            'team_id' => $this->request->getGet('team_id'),
+            'team_id' => !empty($selectedTeams) ? $selectedTeams : null,
             'project' => $this->request->getGet('project'),
             'type' => $this->request->getGet('type'),
             'status' => $this->request->getGet('status'),
@@ -1469,15 +1528,17 @@ class TasksController extends BaseController
             $meMode = (session()->get('al_me_mode') == 1);
         }
 
+        $selectedTeams = $this->resolveSelectedTeams();
+
         $showCompleted = ($this->request->getGet('show_completed') == '1');
 
-        $tasks = $model->getProjectLogs($projectName, 25, $meMode, $showCompleted);
+        $teamFilterForProjects = !empty($selectedTeams) ? $selectedTeams : null;
 
         if ($meMode) {
             $userId = session()->get('user_id');
-            $distinctProjects = $model->getDistinctProjects($userId, $showCompleted);
+            $distinctProjects = $model->getDistinctProjects($userId, $showCompleted, $teamFilterForProjects);
         } else {
-            $distinctProjects = $model->getDistinctProjects(null, $showCompleted);
+            $distinctProjects = $model->getDistinctProjects(null, $showCompleted, $teamFilterForProjects);
         }
         $projectNames = array_column($distinctProjects, 'project_name');
         // Ensure no empty values, and if so default to Generic
@@ -1486,13 +1547,17 @@ class TasksController extends BaseController
         }, $projectNames);
         $projectNames = array_values(array_unique($projectNames));
 
-        // If the current project has only completed tasks, keep it in the tabs while viewing it
-        if (!empty($projectName) && !in_array($projectName, $projectNames)) {
-            $projectNames[] = $projectName;
-            sort($projectNames);
+        // If the current project has no tasks for the selected team, redirect to the first project that has tasks
+        if (!empty($projectNames) && !in_array($projectName, $projectNames)) {
+            $targetProject = $projectNames[0];
+            $queryParams = $this->request->getGet();
+            $queryStr = !empty($queryParams) ? '?' . http_build_query($queryParams) : '';
+            return redirect()->to(site_url('tasks/project/' . rawurlencode($targetProject)) . $queryStr);
         }
 
-        $progressPercentage = $model->getProjectProgress($projectName, $meMode);
+        $tasks = $model->getProjectLogs($projectName, 25, $meMode, $showCompleted, $selectedTeams);
+
+        $progressPercentage = $model->getProjectProgress($projectName, $meMode, $selectedTeams);
 
         $projectCommentsModel = new ProjectCommentsModel();
         $counts = $projectCommentsModel->select('project_name, COUNT(*) as count')
@@ -1513,6 +1578,9 @@ class TasksController extends BaseController
             'show_completed' => $showCompleted,
             'progress_percentage' => $progressPercentage,
             'project_comment_counts' => $projectCommentCounts,
+            'selected_teams' => $selectedTeams,
+            'default_user_team' => self::getUserDefaultTeamId(),
+            'all_teams' => Constants::TEAMS,
         ]);
     }
 
@@ -1707,7 +1775,8 @@ class TasksController extends BaseController
         $meMode = ($forceMeMode && !$isAdmin) ? true : (session()->get('al_me_mode') == 1);
         $showCompleted = ($this->request->getGet('show_completed') == '1');
 
-        $tasks = $model->getProjectLogs($projectName, null, $meMode, $showCompleted);
+        $selectedTeams = $this->resolveSelectedTeams();
+        $tasks = $model->getProjectLogs($projectName, null, $meMode, $showCompleted, $selectedTeams);
 
         $filename = str_replace(' ', '_', $projectName) . '_Tasks_Export_' . date('Y-m-d') . '.xls';
 
@@ -1759,7 +1828,8 @@ class TasksController extends BaseController
         $meMode = ($forceMeMode && !$isAdmin) ? true : (session()->get('al_me_mode') == 1);
         $showCompleted = ($this->request->getGet('show_completed') == '1');
 
-        $tasks = $model->getProjectLogs($projectName, null, $meMode, $showCompleted);
+        $selectedTeams = $this->resolveSelectedTeams();
+        $tasks = $model->getProjectLogs($projectName, null, $meMode, $showCompleted, $selectedTeams);
 
         return view('tasks/project_pdf', [
             'project_name' => $projectName,

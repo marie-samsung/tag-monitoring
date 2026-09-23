@@ -110,7 +110,7 @@
                     
                     <div class="row g-3">
                         <!-- Requested By -->
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <label for="requested_by" class="form-label-sm fw-semibold text-secondary mb-1">Requested By</label>
                             <input type="text" name="requested_by" id="requested_by"
                                 class="form-control form-control-xs"
@@ -123,30 +123,8 @@
                             </datalist>
                         </div>
 
-                        <!-- Requested Date -->
-                        <div class="col-md-4">
-                            <label for="requested_date" class="form-label-sm fw-semibold text-secondary mb-1">Requested Date</label>
-                            <div class="position-relative">
-                                <input type="text" name="requested_date" id="requested_date"
-                                    class="form-control form-control-xs pe-5"
-                                    value="<?= !empty($log['requested_date']) ? date('Y-m-d', strtotime($log['requested_date'])) : '' ?>">
-                                <i class="bi bi-calendar-event text-muted position-absolute" style="right: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; font-size: 0.875rem;"></i>
-                            </div>
-                        </div>
-
-                        <!-- Start Date -->
-                        <div class="col-md-4">
-                            <label for="start_date" class="form-label-sm fw-semibold text-secondary mb-1">Start Date</label>
-                            <div class="position-relative">
-                                <input type="text" name="start_date" id="start_date"
-                                       class="form-control form-control-xs pe-5"
-                                       value="<?= !empty($log['start_date']) ? date('Y-m-d', strtotime($log['start_date'])) : '' ?>">
-                                <i class="bi bi-calendar-event text-muted position-absolute" style="right: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; font-size: 0.875rem;"></i>
-                            </div>
-                        </div>
-
                         <!-- Department -->
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <label class="form-label-sm fw-semibold text-secondary mb-1">Department</label>
                             <select name="department_id" id="department-select" class="form-select form-select-xs">
                                 <option value="">-Select-</option>
@@ -165,7 +143,7 @@
                         </div>
 
                         <!-- Campaign Status -->
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <label class="form-label-sm fw-semibold text-secondary mb-1">Campaign Status</label>
                             <select name="campaign_status" class="form-select form-select-xs">
                                 <option value="">-Select-</option>
@@ -179,7 +157,7 @@
                         </div>
 
                         <!-- Campaign ID -->
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <label for="campaign_id" class="form-label-sm fw-semibold text-secondary mb-1">Campaign ID</label>
                             <input type="text" name="campaign_id" id="campaign_id"
                                 class="form-control form-control-xs"
@@ -269,6 +247,40 @@
                             <input type="hidden" name="assignee" value="<?= old('assignee', $log['assignee'] ?? Constants::USER_SYSTEM) ?>">
                         <?php endif; ?>
 
+                        <!-- Requested Date -->
+                        <div class="col-12">
+                            <label for="requested_date" class="form-label-sm fw-semibold text-secondary mb-1">Requested Date</label>
+                            <div class="position-relative">
+                                <input type="text" name="requested_date" id="requested_date"
+                                    class="form-control form-control-xs pe-5"
+                                    value="<?= old('requested_date', !empty($log['requested_date']) ? date('Y-m-d', strtotime($log['requested_date'])) : '') ?>">
+                                <i class="bi bi-calendar-event text-muted position-absolute" style="right: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; font-size: 0.875rem;"></i>
+                            </div>
+                        </div>
+
+                        <!-- Start Date -->
+                        <div class="col-12">
+                            <label for="start_date" class="form-label-sm fw-semibold text-secondary mb-1">Start Date</label>
+                            <div class="position-relative">
+                                <input type="text" name="start_date" id="start_date"
+                                       class="form-control form-control-xs pe-5"
+                                       value="<?= old('start_date', !empty($log['start_date']) ? date('Y-m-d', strtotime($log['start_date'])) : '') ?>">
+                                <i class="bi bi-calendar-event text-muted position-absolute" style="right: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; font-size: 0.875rem;"></i>
+                            </div>
+                        </div>
+
+                        <!-- Finished Date -->
+                        <div class="col-12">
+                            <label for="finished_date" class="form-label-sm fw-semibold text-secondary mb-1">Finished Date</label>
+                            <div class="position-relative">
+                                <input type="text" name="finished_date" id="finished_date"
+                                       class="form-control form-control-xs pe-5"
+                                       placeholder="YYYY-MM-DD"
+                                       value="<?= old('finished_date', !empty($log['finished_date']) ? date('Y-m-d', strtotime($log['finished_date'])) : '') ?>">
+                                <i class="bi bi-calendar-event text-muted position-absolute" style="right: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; font-size: 0.875rem;"></i>
+                            </div>
+                        </div>
+
                         <!-- Subsidiary -->
                         <div class="col-12">
                             <label class="form-label-sm fw-semibold text-secondary mb-1">Subsidiary</label>
@@ -353,14 +365,44 @@
         flatpickr("#requested_date", {
             dateFormat: "Y-m-d",
             disableMobile: "true",
+            allowInput: true,
             defaultDate: "<?= !empty($log['requested_date']) ? date('Y-m-d', strtotime($log['requested_date'])) : '' ?>"
         });
 
         flatpickr("#start_date", {
             dateFormat: "Y-m-d",
             disableMobile: "true",
+            allowInput: true,
             defaultDate: "<?= !empty($log['start_date']) ? date('Y-m-d', strtotime($log['start_date'])) : '' ?>"
         });
+
+        flatpickr("#finished_date", {
+            dateFormat: "Y-m-d",
+            disableMobile: "true",
+            allowInput: true,
+            defaultDate: "<?= !empty($log['finished_date']) ? date('Y-m-d', strtotime($log['finished_date'])) : '' ?>"
+        });
+
+        document.getElementById('finished_date')?.addEventListener('input', function() {
+            if (!this.value.trim() && this._flatpickr) {
+                this._flatpickr.clear();
+            }
+        });
+
+        const statusSelect = document.querySelector('select[name="status"]');
+        const finishedDateInput = document.getElementById('finished_date');
+        if (statusSelect && finishedDateInput) {
+            statusSelect.addEventListener('change', function () {
+                if (this.value == '<?= Constants::ACTIVITY_LOGS_STATUS_COMPLETED ?>' && !finishedDateInput.value) {
+                    const today = new Date().toISOString().split('T')[0];
+                    if (finishedDateInput._flatpickr) {
+                        finishedDateInput._flatpickr.setDate(today, true);
+                    } else {
+                        finishedDateInput.value = today;
+                    }
+                }
+            });
+        }
 
         $('.searchable-select').select2({
             width: '100%',

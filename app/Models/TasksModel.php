@@ -46,7 +46,8 @@ class TasksModel extends Model
 
     public function filterLogs($filters = [], $paginate = 0)
     {
-        $this->applyRoleFilters();
+        $hasTeamFilter = array_key_exists('team_id', $filters);
+        $this->applyRoleFilters($hasTeamFilter);
         if (!empty($filters['keyword'])) {
             $this->groupStart()
                  ->like('title', $filters['keyword'])
@@ -61,7 +62,11 @@ class TasksModel extends Model
         }
 
         if (!empty($filters['team_id'])) {
-            $this->where('team_id', $filters['team_id']);
+            if (is_array($filters['team_id'])) {
+                $this->whereIn('team_id', $filters['team_id']);
+            } else {
+                $this->where('team_id', $filters['team_id']);
+            }
         }
 
         if (!empty($filters['project'])) {
@@ -194,7 +199,8 @@ class TasksModel extends Model
 
     public function getStatusCounts($filters = [])
     {
-        $this->applyRoleFilters();
+        $hasTeamFilter = array_key_exists('team_id', $filters);
+        $this->applyRoleFilters($hasTeamFilter);
         // Remove status and status_group filters to count across all statuses
         unset($filters['status']);
         unset($filters['status_group']);
@@ -212,7 +218,11 @@ class TasksModel extends Model
         }
 
         if (!empty($filters['team_id'])) {
-            $this->where('team_id', $filters['team_id']);
+            if (is_array($filters['team_id'])) {
+                $this->whereIn('team_id', $filters['team_id']);
+            } else {
+                $this->where('team_id', $filters['team_id']);
+            }
         }
 
         if (!empty($filters['project'])) {
@@ -287,7 +297,8 @@ class TasksModel extends Model
 
     public function getNeedsAttentionCount($filters = [])
     {
-        $this->applyRoleFilters();
+        $hasTeamFilter = array_key_exists('team_id', $filters);
+        $this->applyRoleFilters($hasTeamFilter);
         
         unset($filters['status']);
         unset($filters['status_group']);
@@ -305,7 +316,11 @@ class TasksModel extends Model
         }
 
         if (!empty($filters['team_id'])) {
-            $this->where('team_id', $filters['team_id']);
+            if (is_array($filters['team_id'])) {
+                $this->whereIn('team_id', $filters['team_id']);
+            } else {
+                $this->where('team_id', $filters['team_id']);
+            }
         }
 
         if (!empty($filters['project'])) {
@@ -342,12 +357,21 @@ class TasksModel extends Model
         return $this->countAllResults();
     }
 
-    public function getProjectLogs($projectName, $limit = null, $meMode = false, $showCompleted = false)
+    public function getProjectLogs($projectName, $limit = null, $meMode = false, $showCompleted = false, $teamIds = null)
     {
-        $this->applyRoleFilters();
+        $hasTeamFilter = ($teamIds !== null);
+        $this->applyRoleFilters($hasTeamFilter);
         
         $query = $this->select('activity_logs.*, (SELECT comment FROM activity_log_comments WHERE activity_log_comments.log_id = activity_logs.id ORDER BY activity_log_comments.created_at DESC, activity_log_comments.id DESC LIMIT 1) as last_comment')
             ->where('project', $projectName);
+
+        if (!empty($teamIds)) {
+            if (is_array($teamIds)) {
+                $query->whereIn('team_id', $teamIds);
+            } else {
+                $query->where('team_id', $teamIds);
+            }
+        }
 
         if ($meMode) {
             $userId = session()->get('user_id');
@@ -368,10 +392,19 @@ class TasksModel extends Model
         return $query->findAll();
     }
 
-    public function getProjectProgress($projectName, $meMode = false)
+    public function getProjectProgress($projectName, $meMode = false, $teamIds = null)
     {
-        $this->applyRoleFilters();
+        $hasTeamFilter = ($teamIds !== null);
+        $this->applyRoleFilters($hasTeamFilter);
         $this->where('project', $projectName);
+
+        if (!empty($teamIds)) {
+            if (is_array($teamIds)) {
+                $this->whereIn('team_id', $teamIds);
+            } else {
+                $this->where('team_id', $teamIds);
+            }
+        }
 
         if ($meMode) {
             $userId = session()->get('user_id');
@@ -391,11 +424,22 @@ class TasksModel extends Model
         return 0;
     }
 
-    public function getDistinctProjects($userId = null, $showCompleted = true)
+    public function getDistinctProjects($userId = null, $showCompleted = true, $teamIds = null)
     {
-        $this->select('DISTINCT(project) as project_name')->orderBy('project', 'ASC');
+        $this->select('DISTINCT(project) as project_name')
+             ->where("project IS NOT NULL AND project != ''")
+             ->orderBy('project', 'ASC');
         
-        $this->applyRoleFilters();
+        $hasTeamFilter = ($teamIds !== null);
+        $this->applyRoleFilters($hasTeamFilter);
+
+        if (!empty($teamIds)) {
+            if (is_array($teamIds)) {
+                $this->whereIn('team_id', $teamIds);
+            } else {
+                $this->where('team_id', $teamIds);
+            }
+        }
 
         if ($userId !== null) {
             $this->where('assignee', $userId);
@@ -431,8 +475,11 @@ class TasksModel extends Model
     }
 
 
-    protected function applyRoleFilters()
+    protected function applyRoleFilters($hasExplicitTeamFilter = false)
     {
+        if ($hasExplicitTeamFilter) {
+            return $this;
+        }
         $userId = session()->get('user_id');
         if ($userId !== null) {
             $userRole = Constants::USER_ACCESS_LEVELS[$userId] ?? null;
