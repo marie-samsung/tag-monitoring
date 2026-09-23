@@ -12,6 +12,7 @@ use App\Models\SubsidiariesModel;
 use App\Models\TagsModel;
 use App\Models\VendorsModel;
 use App\Models\OrganizationsModel;
+use App\Models\UsersModel;
 use App\Models\AiConversationsModel;
 use ReflectionException;
 
@@ -751,9 +752,9 @@ class TagsController extends BaseController
     public function exportAsExcel()
     {
         helper('custom_functions');
-        $filters = $this->request->getGet();
+        $filters = !empty($this->request->getPost()) ? array_merge($this->request->getGet(), $this->request->getPost()) : $this->request->getGet();
 
-        $status = $this->request->getGet('status');
+        $status = $filters['status'] ?? null;
 
         if ($status === 'all') {
             $status = null; // null triggers filterTags to ignore status and fetch everything
@@ -770,6 +771,196 @@ class TagsController extends BaseController
         $tagsModel = new TagsModel();
         $tags = $tagsModel->filterTags($filters);
 
+        // Pre-fetch related datasets for optimal performance
+        $propertiesModel = new PropertiesModel();
+        $propertiesAll = $propertiesModel->findAll();
+        $propertiesMap = array_column($propertiesAll, null, 'id');
+
+        $subsidiariesModel = new SubsidiariesModel();
+        $subsidiariesMap = $subsidiariesModel->Options();
+
+        $vendorsModel = new VendorsModel();
+        $vendorsMap = $vendorsModel->Options();
+
+        $organizationsModel = new OrganizationsModel();
+        $organizationsMap = $organizationsModel->Options();
+
+        $usersModel = new UsersModel();
+        $usersAll = $usersModel->findAll();
+        $usersMap = [];
+        foreach ($usersAll as $u) {
+            $fullName = trim(($u['first_name'] ?? '') . ' ' . ($u['last_name'] ?? ''));
+            $usersMap[$u['id']] = $fullName ?: ($u['username'] ?? 'User #' . $u['id']);
+        }
+
+        $allFieldDefs = [
+            'subsidiary' => [
+                'label' => 'Subsidiary',
+                'is_default' => true,
+                'getter' => function ($tag) use ($propertiesMap, $subsidiariesMap) {
+                    $prop = $propertiesMap[$tag['property_id']] ?? null;
+                    return $subsidiariesMap[$prop['subsidiary_id'] ?? 0] ?? 'N/A';
+                }
+            ],
+            'property_name' => [
+                'label' => 'Property Name',
+                'is_default' => true,
+                'getter' => function ($tag) use ($propertiesMap) {
+                    return $propertiesMap[$tag['property_id']]['name'] ?? 'N/A';
+                }
+            ],
+            'name' => [
+                'label' => 'Tag Name',
+                'is_default' => true,
+                'getter' => function ($tag) {
+                    return $tag['name'] ?? '';
+                }
+            ],
+            'days' => [
+                'label' => 'Days',
+                'is_default' => true,
+                'getter' => function ($tag) {
+                    return isset($tag['al_end_date']) ? ceil((strtotime($tag['al_end_date']) - time()) / 86400) : 'N/A';
+                }
+            ],
+            'al_end_date' => [
+                'label' => 'AL End Date',
+                'is_default' => true,
+                'getter' => function ($tag) {
+                    return date_ymd($tag['al_end_date']);
+                }
+            ],
+            'requested_date' => [
+                'label' => 'Requested Date',
+                'is_default' => true,
+                'getter' => function ($tag) {
+                    return $tag['requested_date'] ? date_ymd($tag['requested_date']) : (date_ymd($tag['al_end_date']) ?? '-');
+                }
+            ],
+            'updated_at' => [
+                'label' => 'Updated',
+                'is_default' => true,
+                'getter' => function ($tag) {
+                    return $tag['updated_at'] ? date_ymd($tag['updated_at']) : '-';
+                }
+            ],
+            'status' => [
+                'label' => 'Status',
+                'is_default' => true,
+                'getter' => function ($tag) {
+                    return status_label($tag['status']) ?? 'Unknown';
+                }
+            ],
+            'id' => [
+                'label' => 'Tag ID',
+                'is_default' => false,
+                'getter' => function ($tag) {
+                    return $tag['id'];
+                }
+            ],
+            'vendor' => [
+                'label' => 'Vendor',
+                'is_default' => false,
+                'getter' => function ($tag) use ($vendorsMap) {
+                    return $vendorsMap[$tag['vendor_id']] ?? 'N/A';
+                }
+            ],
+            'conditions' => [
+                'label' => 'Firing Conditions',
+                'is_default' => false,
+                'getter' => function ($tag) {
+                    return $tag['conditions'] ?? '-';
+                }
+            ],
+            'ref_link' => [
+                'label' => 'AL Ref Link',
+                'is_default' => false,
+                'getter' => function ($tag) {
+                    return $tag['ref_link'] ?? '-';
+                }
+            ],
+            'requester_name' => [
+                'label' => 'Requester Name',
+                'is_default' => false,
+                'getter' => function ($tag) {
+                    return $tag['requester_name'] ?? '-';
+                }
+            ],
+            'requester_email' => [
+                'label' => 'Requester Email',
+                'is_default' => false,
+                'getter' => function ($tag) {
+                    return $tag['requester_email'] ?? '-';
+                }
+            ],
+            'requester_organization' => [
+                'label' => 'Requester Organization',
+                'is_default' => false,
+                'getter' => function ($tag) use ($organizationsMap) {
+                    return $organizationsMap[$tag['requester_organization']] ?? ($tag['requester_organization'] ?: '-');
+                }
+            ],
+            'js_code' => [
+                'label' => 'JavaScript Code',
+                'is_default' => false,
+                'getter' => function ($tag) {
+                    return $tag['js_code'] ?? '';
+                }
+            ],
+            'property_url' => [
+                'label' => 'Property Website URL',
+                'is_default' => false,
+                'getter' => function ($tag) use ($propertiesMap) {
+                    return $propertiesMap[$tag['property_id']]['website'] ?? '-';
+                }
+            ],
+            'created_at' => [
+                'label' => 'Created Date',
+                'is_default' => false,
+                'getter' => function ($tag) {
+                    return $tag['created_at'] ? date_ymd($tag['created_at']) : '-';
+                }
+            ],
+            'created_by' => [
+                'label' => 'Created By',
+                'is_default' => false,
+                'getter' => function ($tag) use ($usersMap) {
+                    return $usersMap[$tag['created_by']] ?? Constants::USERS[$tag['created_by']] ?? ($tag['created_by'] ?: '-');
+                }
+            ],
+            'updated_by' => [
+                'label' => 'Updated By',
+                'is_default' => false,
+                'getter' => function ($tag) use ($usersMap) {
+                    return $usersMap[$tag['updated_by']] ?? Constants::USERS[$tag['updated_by']] ?? ($tag['updated_by'] ?: '-');
+                }
+            ],
+        ];
+
+        // Determine which fields to export
+        $selectedParam = $this->request->getVar('fields');
+        if (is_string($selectedParam)) {
+            $selectedParam = array_filter(array_map('trim', explode(',', $selectedParam)));
+        }
+
+        $activeFields = [];
+        if (!empty($selectedParam) && is_array($selectedParam)) {
+            foreach ($selectedParam as $key) {
+                if (isset($allFieldDefs[$key])) {
+                    $activeFields[$key] = $allFieldDefs[$key];
+                }
+            }
+        }
+
+        // Fallback to default fields if none selected or invalid
+        if (empty($activeFields)) {
+            foreach ($allFieldDefs as $key => $def) {
+                if ($def['is_default']) {
+                    $activeFields[$key] = $def;
+                }
+            }
+        }
+
         $filename = 'TagsExport_' . date('Ymd') . '.xls';
 
         header('Content-Type: application/vnd.ms-excel; charset=utf-8');
@@ -780,40 +971,19 @@ class TagsController extends BaseController
         echo '<body><table border="1">';
 
         // Headers
-        $headers = [
-            'Subsidiary',
-            'Property Name',
-            'Tag Name',
-            'Days',
-            'AL End Date',
-            'Requested Date',
-            'Updated',
-            'Status'
-        ];
-
         echo '<tr>';
-        foreach ($headers as $header) {
-            echo '<th style="background-color:#f2f2f2;">' . esc($header) . '</th>';
+        foreach ($activeFields as $field) {
+            echo '<th style="background-color:#f2f2f2;">' . esc($field['label']) . '</th>';
         }
         echo '</tr>';
 
         // Rows
         foreach ($tags as $tag) {
-            $propertyId = $tag['property_id'];
-            $propertiesModel = new PropertiesModel();
-            $subsidiariesModel = new SubsidiariesModel();
-            $property = $propertiesModel->find($propertyId);
-            $subsidiary = $subsidiariesModel->find($property['subsidiary_id'] ?? 0);
-
             echo '<tr>';
-            echo '<td>' . esc($subsidiary['name'] ?? 'N/A') . '</td>';
-            echo '<td>' . esc($property['name'] ?? 'N/A') . '</td>';
-            echo '<td>' . esc($tag['name']) . '</td>';
-            echo '<td>' . esc(isset($tag['al_end_date']) ? ceil((strtotime($tag['al_end_date']) - time()) / 86400) : 'N/A') . '</td>';
-            echo '<td>' . esc(date_ymd($tag['al_end_date'])) . '</td>';
-            echo '<td>' . esc($tag['requested_date'] ? date_ymd($tag['requested_date']) : (date_ymd($tag['al_end_date']) ?? '-')) . '</td>';
-            echo '<td>' . esc($tag['updated_at'] ? date_ymd($tag['updated_at']) : '-') . '</td>';
-            echo '<td>' . esc(status_label($tag['status']) ?? 'Unknown') . '</td>';
+            foreach ($activeFields as $field) {
+                $val = ($field['getter'])($tag);
+                echo '<td>' . esc($val) . '</td>';
+            }
             echo '</tr>';
         }
 

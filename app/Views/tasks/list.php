@@ -247,9 +247,9 @@ if ($isAllTeamsSelected) {
                         </a>
                     </li>
                     <li>
-                        <a class="dropdown-item py-2" href="<?= site_url('tasks/export?' . http_build_query($_GET)) ?>"
+                        <a class="dropdown-item py-2" href="#" data-bs-toggle="modal" data-bs-target="#exportTasksExcelModal"
                             style="font-size: 0.9rem;">
-                            <i class="bi bi-file-earmark-arrow-down-fill text-secondary me-2"></i>Export as Excel
+                            <i class="bi bi-file-earmark-arrow-down-fill text-success me-2"></i>Export as Excel
                         </a>
                     </li>
                 </ul>
@@ -2457,6 +2457,45 @@ if ($isAllTeamsSelected) {
     'chatEndpoint' => site_url('tasks/ai-chat'),
     'historyEndpoint' => site_url('tasks/ai-history/'),
     'conversationEndpoint' => site_url('tasks/ai-conversation/')
+]) ?>
+
+<?= view('components/export_excel_modal', [
+    'modalId' => 'exportTasksExcelModal',
+    'formAction' => site_url('tasks/export'),
+    'title' => 'Export Tasks to Excel',
+    'description' => 'Select default or additional fields to include in your Excel export.',
+    'entityName' => 'tasks',
+    'totalCount' => $totalLogs,
+    'defaultFields' => [
+        'subsidiary' => 'Subsidiary',
+        'team' => 'Team',
+        'project' => 'Project Name',
+        'type' => 'Activity Log Type',
+        'assignee' => 'Assigned To',
+        'title' => 'Title',
+        'description' => 'Description',
+        'status' => 'Status',
+        'priority' => 'Priority',
+        'size' => 'Size',
+        'ticket_id' => 'Ticket ID',
+        'department_id' => '(Campaign) Department',
+        'campaign_status' => '(Campaign) Status',
+        'campaign_id' => '(Campaign) ID',
+        'requested_by' => 'Requested By',
+        'requested_date' => 'Requested Date',
+        'finished_date' => 'Finished Date',
+        'created_at' => 'Created Date',
+    ],
+    'additionalFields' => [
+        'id' => 'Task ID',
+        'mt_jira_ticket' => 'Jira Ticket (MEACRMMT)',
+        'start_date' => 'Start Date',
+        'updated_at' => 'Updated Date',
+        'created_by' => 'Created By',
+        'updated_by' => 'Updated By',
+        'labels' => 'Labels',
+    ],
+    'storageKey' => 'tag_monitoring_export_tasks_fields',
 ]) ?>
 
 <?= $this->endSection() ?>

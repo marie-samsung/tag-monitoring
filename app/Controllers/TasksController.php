@@ -797,7 +797,7 @@ class TasksController extends BaseController
         helper('custom_functions');
         $logsModel = new TasksModel();
 
-        $meModeGet = $this->request->getGet('me_mode');
+        $meModeGet = $this->request->getVar('me_mode');
         if ($meModeGet !== null) {
             $meMode = ($meModeGet == '1');
         } else {
@@ -807,37 +807,248 @@ class TasksController extends BaseController
         $selectedTeams = $this->resolveSelectedTeams();
 
         $filters = [
-            'keyword' => $this->request->getGet('keyword'),
-            'subsidiary_id' => $this->request->getGet('subsidiary_id'),
+            'keyword' => $this->request->getVar('keyword'),
+            'subsidiary_id' => $this->request->getVar('subsidiary_id'),
             'team_id' => !empty($selectedTeams) ? $selectedTeams : null,
-            'project' => $this->request->getGet('project'),
-            'type' => $this->request->getGet('type'),
-            'status' => $this->request->getGet('status'),
-            'status_group' => $this->request->getGet('status_group'),
-            'priority' => $this->request->getGet('priority'),
-            'assignee' => $this->request->getGet('assignee'),
+            'project' => $this->request->getVar('project'),
+            'type' => $this->request->getVar('type'),
+            'status' => $this->request->getVar('status'),
+            'status_group' => $this->request->getVar('status_group'),
+            'priority' => $this->request->getVar('priority'),
+            'assignee' => $this->request->getVar('assignee'),
             'me_mode' => $meMode ? 1 : 0,
-            'sort_by' => $this->request->getGet('sort_by') ?? 'created_at',
-            'sort_dir' => $this->request->getGet('sort_dir') ?? 'desc',
-            'show_completed' => $this->request->getGet('show_completed'),
-            'created_from' => $this->request->getGet('created_from'),
-            'created_to' => $this->request->getGet('created_to'),
-            'started_from' => $this->request->getGet('started_from'),
-            'started_to' => $this->request->getGet('started_to'),
-            'finished_from' => $this->request->getGet('finished_from'),
-            'finished_to' => $this->request->getGet('finished_to'),
-            'labels' => $this->request->getGet('labels'),
+            'sort_by' => $this->request->getVar('sort_by') ?? 'created_at',
+            'sort_dir' => $this->request->getVar('sort_dir') ?? 'desc',
+            'show_completed' => $this->request->getVar('show_completed'),
+            'created_from' => $this->request->getVar('created_from'),
+            'created_to' => $this->request->getVar('created_to'),
+            'started_from' => $this->request->getVar('started_from'),
+            'started_to' => $this->request->getVar('started_to'),
+            'finished_from' => $this->request->getVar('finished_from'),
+            'finished_to' => $this->request->getVar('finished_to'),
+            'labels' => $this->request->getVar('labels'),
+            'campaign_status' => $this->request->getVar('campaign_status'),
         ];
 
         $logs = $logsModel->filterLogs($filters);
 
+        // Pre-fetch users for name lookups
+        $usersModel = new UsersModel();
+        $usersAll = $usersModel->findAll();
+        $usersMap = [];
+        foreach ($usersAll as $u) {
+            $fullName = trim(($u['first_name'] ?? '') . ' ' . ($u['last_name'] ?? ''));
+            $usersMap[$u['id']] = $fullName ?: ($u['username'] ?? 'User #' . $u['id']);
+        }
+
+        $allFieldDefs = [
+            'subsidiary' => [
+                'label' => 'Subsidiary',
+                'is_default' => true,
+                'getter' => function ($log) {
+                    return Constants::ACTIVITY_LOG_SUBSIDIARIES[$log['subsidiary_id']] ?? 'N/A';
+                }
+            ],
+            'team' => [
+                'label' => 'Team',
+                'is_default' => true,
+                'getter' => function ($log) {
+                    return Constants::TEAMS[$log['team_id']] ?? 'N/A';
+                }
+            ],
+            'project' => [
+                'label' => 'Project Name',
+                'is_default' => true,
+                'getter' => function ($log) {
+                    return $log['project'] ?: 'Generic';
+                }
+            ],
+            'type' => [
+                'label' => 'Activity Log Type',
+                'is_default' => true,
+                'getter' => function ($log) {
+                    return Constants::ACTIVITY_TYPES[$log['type']] ?? 'N/A';
+                }
+            ],
+            'assignee' => [
+                'label' => 'Assigned To',
+                'is_default' => true,
+                'getter' => function ($log) use ($usersMap) {
+                    return Constants::USERS[$log['assignee']] ?? $usersMap[$log['assignee']] ?? Constants::USER_SYSTEM_LABEL;
+                }
+            ],
+            'title' => [
+                'label' => 'Title',
+                'is_default' => true,
+                'getter' => function ($log) {
+                    return $log['title'] ?? '';
+                }
+            ],
+            'description' => [
+                'label' => 'Description',
+                'is_default' => true,
+                'getter' => function ($log) {
+                    return strip_tags($log['description'] ?? '');
+                }
+            ],
+            'status' => [
+                'label' => 'Status',
+                'is_default' => true,
+                'getter' => function ($log) {
+                    return Constants::ACTIVITY_LOGS_STATUS[$log['status']] ?? 'Unknown';
+                }
+            ],
+            'priority' => [
+                'label' => 'Priority',
+                'is_default' => true,
+                'getter' => function ($log) {
+                    return Constants::PRIORITIES[$log['priority']] ?? 'Unknown';
+                }
+            ],
+            'size' => [
+                'label' => 'Size',
+                'is_default' => true,
+                'getter' => function ($log) {
+                    return Constants::ACTIVITY_SIZES[$log['size']] ?? 'Unknown';
+                }
+            ],
+            'ticket_id' => [
+                'label' => 'Ticket ID',
+                'is_default' => true,
+                'getter' => function ($log) {
+                    return $log['ticket_id'] ?? '-';
+                }
+            ],
+            'department_id' => [
+                'label' => '(Campaign) Department',
+                'is_default' => true,
+                'getter' => function ($log) {
+                    return $log['department_id'] ?? '-';
+                }
+            ],
+            'campaign_status' => [
+                'label' => '(Campaign) Status',
+                'is_default' => true,
+                'getter' => function ($log) {
+                    return Constants::CAMPAIGN_STATUS[$log['campaign_status']] ?? '-';
+                }
+            ],
+            'campaign_id' => [
+                'label' => '(Campaign) ID',
+                'is_default' => true,
+                'getter' => function ($log) {
+                    return $log['campaign_id'] ?? '-';
+                }
+            ],
+            'requested_by' => [
+                'label' => 'Requested By',
+                'is_default' => true,
+                'getter' => function ($log) {
+                    return $log['requested_by'] ?? '-';
+                }
+            ],
+            'requested_date' => [
+                'label' => 'Requested Date',
+                'is_default' => true,
+                'getter' => function ($log) {
+                    return $log['requested_date'] ?? '-';
+                }
+            ],
+            'finished_date' => [
+                'label' => 'Finished Date',
+                'is_default' => true,
+                'getter' => function ($log) {
+                    return $log['finished_date'] ?? '-';
+                }
+            ],
+            'created_at' => [
+                'label' => 'Created Date',
+                'is_default' => true,
+                'getter' => function ($log) {
+                    return $log['created_at'] ?? '-';
+                }
+            ],
+            'id' => [
+                'label' => 'Task ID',
+                'is_default' => false,
+                'getter' => function ($log) {
+                    return $log['id'];
+                }
+            ],
+            'mt_jira_ticket' => [
+                'label' => 'Jira Ticket (MEACRMMT)',
+                'is_default' => false,
+                'getter' => function ($log) {
+                    return $log['mt_jira_ticket'] ?? '-';
+                }
+            ],
+            'start_date' => [
+                'label' => 'Start Date',
+                'is_default' => false,
+                'getter' => function ($log) {
+                    return $log['start_date'] ?? '-';
+                }
+            ],
+            'updated_at' => [
+                'label' => 'Updated Date',
+                'is_default' => false,
+                'getter' => function ($log) {
+                    return $log['updated_at'] ?? '-';
+                }
+            ],
+            'created_by' => [
+                'label' => 'Created By',
+                'is_default' => false,
+                'getter' => function ($log) use ($usersMap) {
+                    return $usersMap[$log['created_by']] ?? Constants::USERS[$log['created_by']] ?? ($log['created_by'] ?: '-');
+                }
+            ],
+            'updated_by' => [
+                'label' => 'Updated By',
+                'is_default' => false,
+                'getter' => function ($log) use ($usersMap) {
+                    return $usersMap[$log['updated_by']] ?? Constants::USERS[$log['updated_by']] ?? ($log['updated_by'] ?: '-');
+                }
+            ],
+            'labels' => [
+                'label' => 'Labels',
+                'is_default' => false,
+                'getter' => function ($log) {
+                    return $log['labels'] ?? '-';
+                }
+            ],
+        ];
+
+        // Determine which fields to export
+        $selectedParam = $this->request->getVar('fields');
+        if (is_string($selectedParam)) {
+            $selectedParam = array_filter(array_map('trim', explode(',', $selectedParam)));
+        }
+
+        $activeFields = [];
+        if (!empty($selectedParam) && is_array($selectedParam)) {
+            foreach ($selectedParam as $key) {
+                if (isset($allFieldDefs[$key])) {
+                    $activeFields[$key] = $allFieldDefs[$key];
+                }
+            }
+        }
+
+        // Fallback to default fields if none selected or invalid
+        if (empty($activeFields)) {
+            foreach ($allFieldDefs as $key => $def) {
+                if ($def['is_default']) {
+                    $activeFields[$key] = $def;
+                }
+            }
+        }
 
         $subsidiary = (!empty($filters['subsidiary_id']))
             ? '(' . Constants::ACTIVITY_LOG_SUBSIDIARIES[$filters['subsidiary_id']] . ')'
             : null;
 
         $team = (!empty($filters['team_id']))
-            ? '(' . Constants::TEAMS[$filters['team_id']] . ')'
+            ? '(' . (is_array($filters['team_id']) ? implode('_', $filters['team_id']) : (Constants::TEAMS[$filters['team_id']] ?? $filters['team_id'])) . ')'
             : null;
 
         $project = (!empty($filters['project']))
@@ -845,7 +1056,7 @@ class TasksController extends BaseController
             : null;
 
         $assignee = (!empty($filters['assignee']))
-            ? '(' . Constants::USERS[$filters['assignee']] . ')'
+            ? '(' . (Constants::USERS[$filters['assignee']] ?? $usersMap[$filters['assignee']] ?? $filters['assignee']) . ')'
             : null;
 
         $filename = 'ActivityLogs' . $subsidiary . $team . $project . $assignee . '_' . date('Y-m-d') . '.xls';
@@ -858,54 +1069,19 @@ class TasksController extends BaseController
         echo '<body><table border="1">';
 
         // Headers
-        $headers = [
-            'Subsidiary',
-            'Team',
-            'Project Name',
-            'Activity Log Type',
-            'Assigned To',
-            'Title',
-            'Description',
-            'Status',
-            'Priority',
-            'Size',
-            'Ticket ID',
-            '(Campaign) Department',
-            '(Campaign) Status',
-            '(Campaign) ID',
-            'Requested By',
-            'Requested Date',
-            'Finished Date',
-            'Created Date'
-        ];
-
         echo '<tr>';
-        foreach ($headers as $header) {
-            echo '<th style="background-color:#f2f2f2;">' . esc($header) . '</th>';
+        foreach ($activeFields as $field) {
+            echo '<th style="background-color:#f2f2f2;">' . esc($field['label']) . '</th>';
         }
         echo '</tr>';
 
         // Rows
         foreach ($logs as $log) {
             echo '<tr>';
-            echo '<td>' . esc(Constants::ACTIVITY_LOG_SUBSIDIARIES[$log['subsidiary_id']] ?? 'N/A') . '</td>';
-            echo '<td>' . esc(Constants::TEAMS[$log['team_id']] ?? 'N/A') . '</td>';
-            echo '<td>' . esc($log['project'] ?: 'Generic') . '</td>';
-            echo '<td>' . esc(Constants::ACTIVITY_TYPES[$log['type']] ?? 'N/A') . '</td>';
-            echo '<td>' . esc(Constants::USERS[$log['assignee']] ?? Constants::USER_SYSTEM_LABEL) . '</td>';
-            echo '<td>' . esc($log['title']) . '</td>';
-            echo '<td>' . strip_tags($log['description'] ?? '') . '</td>';
-            echo '<td>' . esc(Constants::ACTIVITY_LOGS_STATUS[$log['status']] ?? 'Unknown') . '</td>';
-            echo '<td>' . esc(Constants::PRIORITIES[$log['priority']] ?? 'Unknown') . '</td>';
-            echo '<td>' . esc(Constants::ACTIVITY_SIZES[$log['size']] ?? 'Unknown') . '</td>';
-            echo '<td>' . esc($log['ticket_id'] ?? '-') . '</td>';
-            echo '<td>' . esc($log['department_id'] ?? '-') . '</td>';
-            echo '<td>' . esc(Constants::CAMPAIGN_STATUS[$log['campaign_status']] ?? '-') . '</td>';
-            echo '<td>' . esc($log['campaign_id'] ?? '-') . '</td>';
-            echo '<td>' . esc($log['requested_by'] ?? '-') . '</td>';
-            echo '<td>' . esc($log['requested_date'] ?? '-') . '</td>';
-            echo '<td>' . esc($log['finished_date'] ?? '-') . '</td>';
-            echo '<td>' . esc($log['created_at'] ?? '-') . '</td>';
+            foreach ($activeFields as $field) {
+                $val = ($field['getter'])($log);
+                echo '<td>' . esc($val) . '</td>';
+            }
             echo '</tr>';
         }
 

@@ -466,9 +466,9 @@ $hasActiveFilters = ($activeFiltersCount > 0) || !empty($_GET['keyword']);
                         </a>
                     </li>
                     <li>
-                        <a class="dropdown-item py-2" href="<?= site_url('tags/export?' . http_build_query($_GET)) ?>"
+                        <a class="dropdown-item py-2" href="#" data-bs-toggle="modal" data-bs-target="#exportTagsExcelModal"
                             style="font-size: 0.9rem;">
-                            <i class="bi bi-file-earmark-arrow-down-fill text-secondary me-2"></i>Export as Excel
+                            <i class="bi bi-file-earmark-arrow-down-fill text-success me-2"></i>Export as Excel
                         </a>
                     </li>
                 </ul>
@@ -1566,4 +1566,39 @@ $hasActiveFilters = ($activeFiltersCount > 0) || !empty($_GET['keyword']);
         }
     });
 </script>
+
+<?= view('components/export_excel_modal', [
+    'modalId' => 'exportTagsExcelModal',
+    'formAction' => site_url('tags/export'),
+    'title' => 'Export Tags to Excel',
+    'description' => 'Select default or additional fields to include in your Excel export.',
+    'entityName' => 'tags',
+    'totalCount' => $totalTags,
+    'defaultFields' => [
+        'subsidiary' => 'Subsidiary',
+        'property_name' => 'Property Name',
+        'name' => 'Tag Name',
+        'days' => 'Days',
+        'al_end_date' => 'AL End Date',
+        'requested_date' => 'Requested Date',
+        'updated_at' => 'Updated',
+        'status' => 'Status',
+    ],
+    'additionalFields' => [
+        'id' => 'Tag ID',
+        'vendor' => 'Vendor',
+        'conditions' => 'Firing Conditions',
+        'ref_link' => 'AL Ref Link',
+        'requester_name' => 'Requester Name',
+        'requester_email' => 'Requester Email',
+        'requester_organization' => 'Requester Organization',
+        'js_code' => 'JavaScript Code',
+        'property_url' => 'Property Website URL',
+        'created_at' => 'Created Date',
+        'created_by' => 'Created By',
+        'updated_by' => 'Updated By',
+    ],
+    'storageKey' => 'tag_monitoring_export_tags_fields',
+]) ?>
+
 <?= $this->endSection() ?>
