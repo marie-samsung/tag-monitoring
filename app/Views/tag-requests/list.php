@@ -605,14 +605,30 @@ Tag: Requests (New Rule, New Tag)
                                 $newTagRequestsCount++;
                             }
 
-                            // Look up the related task via ticket_id
+                            // Look up the related task via ticket_id (prioritize matching subsidiary for this property)
                             $mainTicket = $request[$ticketColumn] ?? null;
-                            $relatedTask = $mainTicket ? $tasksModel->where('ticket_id', $mainTicket)->first() : null;
+                            $relatedTask = null;
+                            if ($mainTicket) {
+                                if (!empty($property['subsidiary_id'])) {
+                                    $relatedTask = (clone $tasksModel)->where('ticket_id', $mainTicket)->where('subsidiary_id', $property['subsidiary_id'])->first();
+                                }
+                                if (!$relatedTask) {
+                                    $relatedTask = (clone $tasksModel)->where('ticket_id', $mainTicket)->first();
+                                }
+                            }
 
                             $ruleTicket = ($type == Constants::JIRA_TYPE_NEW_TAG && !empty($request['new_rule_ticket']))
                                 ? $request['new_rule_ticket']
                                 : null;
-                            $relatedRuleTask = $ruleTicket ? $tasksModel->where('ticket_id', $ruleTicket)->first() : null;
+                            $relatedRuleTask = null;
+                            if ($ruleTicket) {
+                                if (!empty($property['subsidiary_id'])) {
+                                    $relatedRuleTask = (clone $tasksModel)->where('ticket_id', $ruleTicket)->where('subsidiary_id', $property['subsidiary_id'])->first();
+                                }
+                                if (!$relatedRuleTask) {
+                                    $relatedRuleTask = (clone $tasksModel)->where('ticket_id', $ruleTicket)->first();
+                                }
+                            }
                     ?>
                         <tr>
                             <!-- ID -->

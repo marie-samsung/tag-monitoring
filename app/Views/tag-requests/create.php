@@ -26,8 +26,9 @@ Tag Request: Create
     $tasksModel = new TasksModel();
 
     $tagsModel = new \App\Models\TagsModel();
-    $allTags = $tagsModel->select('tags.name as tag_name, properties.name as property_name, properties.subsidiary_id')
+    $allTags = $tagsModel->select('tags.name as tag_name, properties.name as property_name, properties.subsidiary_id, subsidiaries.name as subsidiary_name')
                          ->join('properties', 'properties.id = tags.property_id', 'left')
+                         ->join('subsidiaries', 'subsidiaries.id = properties.subsidiary_id', 'left')
                          ->findAll();
 
     $tagsModelInst = new \App\Models\TagsModel();
@@ -112,22 +113,7 @@ Tag Request: Create
                     <span>Request Details</span>
                 </h5>
                 
-                <div class="row g-3">
-                    <!-- Property -->
-                    <div class="col-md-6">
-                        <label class="form-label-sm fw-semibold text-secondary mb-1">Property</label>
-                        <select name="property_id" class="form-select searchable-select" required>
-                            <?php foreach ($propertiesList as $prop): ?>
-                                <option value="<?= esc($prop['id']) ?>"
-                                    data-is-shop="<?= $prop['is_shop'] == Constants::YES ? 'Shop' : 'AEM' ?>"
-                                    data-subsidiary-id="<?= esc($prop['subsidiary_id'] ?? '') ?>"
-                                    <?= old('property_id', $requests['property_id'] ?? ($extracted_data['property_id'] ?? '')) == $prop['id'] ? 'selected' : '' ?>>
-                                    <?= esc($prop['name']) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-
+                <div class="row g-3 mb-4">
                     <!-- Request Type -->
                     <div class="col-md-6">
                         <label class="form-label-sm fw-semibold text-secondary mb-1">Request Type</label>
@@ -140,17 +126,105 @@ Tag Request: Create
                             <?php endforeach; ?>
                         </select>
                     </div>
+                </div>
 
-                    <!-- Tag(s) -->
-                    <div class="col-md-12">
-                        <label class="form-label-sm fw-semibold text-secondary mb-1">Tag(s)</label>
-                        <select name="tags[]" class="form-select advanced-select" multiple required>
-                        </select>
-                        <small class="form-text text-muted" style="font-size: 0.75rem;">
-                            Tag names should start with <strong>LC-</strong>
-                        </small>
+                <!-- Multiple Properties Container -->
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <label class="form-label-sm fw-bold text-dark mb-0">Target Properties &amp; Tags</label>
+                        <span id="property_count_badge" class="badge bg-secondary-subtle text-secondary" style="font-size: 0.75rem;">1 Property Added</span>
+                    </div>
+
+                    <div id="properties_container" class="d-flex flex-column gap-3">
+                        <!-- Property Block 0 -->
+                        <div class="property-block p-3 rounded-3" style="background: rgba(0, 0, 0, 0.02); border: 1px solid rgba(0, 0, 0, 0.08);">
+                            <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                                <span class="fw-bold small text-secondary d-flex align-items-center gap-1.5 property-block-title">
+                                    <i class="bi bi-building"></i>
+                                    <span>Property #1</span>
+                                </span>
+                                <button type="button" class="btn btn-outline-danger btn-sm py-0 px-2 remove-property-btn d-none" style="font-size: 0.75rem; border-radius: 6px;">
+                                    <i class="bi bi-trash me-1"></i> Remove
+                                </button>
+                            </div>
+
+                            <div class="row g-3">
+                                <!-- Property -->
+                                <div class="col-md-12">
+                                    <label class="form-label-sm fw-semibold text-secondary mb-1">Property</label>
+                                    <select name="properties[0][property_id]" class="form-select searchable-select property-select" required>
+                                        <?php foreach ($propertiesList as $prop): ?>
+                                            <option value="<?= esc($prop['id']) ?>"
+                                                data-is-shop="<?= $prop['is_shop'] == Constants::YES ? 'Shop' : 'AEM' ?>"
+                                                data-subsidiary-id="<?= esc($prop['subsidiary_id'] ?? '') ?>"
+                                                data-subsidiary-name="<?= esc(Constants::SUBSIDIARIES[$prop['subsidiary_id']] ?? '') ?>"
+                                                <?= old('property_id', $requests['property_id'] ?? ($extracted_data['property_id'] ?? '')) == $prop['id'] ? 'selected' : '' ?>>
+                                                <?= esc($prop['name']) ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+
+                                <!-- Tag(s) -->
+                                <div class="col-md-12">
+                                    <label class="form-label-sm fw-semibold text-secondary mb-1">Tag(s)</label>
+                                    <select name="properties[0][tags][]" class="form-select advanced-select tags-select" multiple required>
+                                    </select>
+                                    <small class="form-text text-muted" style="font-size: 0.75rem;">
+                                        Tag names should start with <strong>LC-</strong>
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <button type="button" id="add_property_btn" class="apple-btn-secondary btn-sm d-inline-flex align-items-center gap-2">
+                            <i class="bi bi-plus-circle"></i>
+                            <span>Add Another Property</span>
+                        </button>
                     </div>
                 </div>
+
+                <!-- Template for dynamic property blocks -->
+                <template id="property_block_template">
+                    <div class="property-block p-3 rounded-3" style="background: rgba(0, 0, 0, 0.02); border: 1px solid rgba(0, 0, 0, 0.08);">
+                        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                            <span class="fw-bold small text-secondary d-flex align-items-center gap-1.5 property-block-title">
+                                <i class="bi bi-building"></i>
+                                <span>Property #{INDEX}</span>
+                            </span>
+                            <button type="button" class="btn btn-outline-danger btn-sm py-0 px-2 remove-property-btn" style="font-size: 0.75rem; border-radius: 6px;">
+                                <i class="bi bi-trash me-1"></i> Remove
+                            </button>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-12">
+                                <label class="form-label-sm fw-semibold text-secondary mb-1">Property</label>
+                                <select name="properties[{INDEX_KEY}][property_id]" class="form-select searchable-select property-select" required>
+                                    <?php foreach ($propertiesList as $prop): ?>
+                                        <option value="<?= esc($prop['id']) ?>"
+                                            data-is-shop="<?= $prop['is_shop'] == Constants::YES ? 'Shop' : 'AEM' ?>"
+                                            data-subsidiary-id="<?= esc($prop['subsidiary_id'] ?? '') ?>"
+                                            data-subsidiary-name="<?= esc(Constants::SUBSIDIARIES[$prop['subsidiary_id']] ?? '') ?>">
+                                            <?= esc($prop['name']) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+
+                            <div class="col-md-12">
+                                <label class="form-label-sm fw-semibold text-secondary mb-1">Tag(s)</label>
+                                <select name="properties[{INDEX_KEY}][tags][]" class="form-select advanced-select tags-select" multiple required>
+                                </select>
+                                <small class="form-text text-muted" style="font-size: 0.75rem;">
+                                    Tag names should start with <strong>LC-</strong>
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </template>
             </div>
 
             <!-- Requester Details Section -->
@@ -251,30 +325,89 @@ Tag Request: Create
 <?php 
     elseif ($request_type == Constants::JIRA_TYPE_NEW_TAG):
         $requestTags = !empty($tag_ids) ? $tagsModelInst->whereIn('id', (array)$tag_ids)->findAll() : [];
-        $property = $propertiesModel->find($property_id);
+        if (empty($properties_data) && !empty($property_id)) {
+            $prop = $propertiesModel->find($property_id);
+            $properties_data = [
+                [
+                    'id' => $property_id,
+                    'name' => $prop['name'] ?? '',
+                    'website' => $prop['website'] ?? '',
+                    'ref_link' => $prop['ref_link'] ?? '',
+                    'is_shop' => $propertiesModel->isShop($property_id),
+                    'site_code' => $propertiesModel->getSiteCode($property_id),
+                    'tag_ids' => (array)$tag_ids,
+                ]
+            ];
+        }
+        $properties_data = $properties_data ?? [];
+        $property = !empty($properties_data[0]) ? $properties_data[0] : ($propertiesModel->find($property_id) ?? []);
         $vendor = $vendorsModel->find($vendor_id);
-        $siteCode = $propertiesModel->getSiteCode($property_id);
-        $isShop = $propertiesModel->isShop($property_id);
+
+        $siteCodes = !empty($properties_data) ? array_unique(array_filter(array_column($properties_data, 'site_code'))) : [];
+        $siteCode = !empty($siteCodes) ? implode(', ', $siteCodes) : $propertiesModel->getSiteCode($property_id);
+
         $reason = !empty($background) ? $background : ($vendor['reason'] ?? '-');
         $ssGTM = Constants::JIRA_SSGTM_TICKET;
         $jiraTitle = sprintf(
             '[LC Request] [%s] - [%s] - [New Tag]',
             $siteCode,
-            $vendor['name']
+            $vendor['name'] ?? 'Vendor'
         );
 
         $actionLink = empty($ticket_id) ? site_url('tag-requests/create/confirm')
             : site_url('tag-requests/view/' . $request_id);
 
+        $targetPropertyHtml = '';
+        $targetPageHtml = '';
+        $groupedProperties = [];
+        foreach ($properties_data as $p) {
+            $type = !empty($p['is_shop']) ? $p['is_shop'] : 'AEM';
+            $groupedProperties[$type][] = $p;
+        }
+
+        foreach ($groupedProperties as $type => $props) {
+            if (count($props) > 1) {
+                $targetPropertyHtml .= "<li>" . $type . " : <ul style='font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:14px; color:#1D1D1F; margin-top:4px;'>";
+                foreach ($props as $p) {
+                    $targetPropertyHtml .= "<li>" . esc($p['name'] ?? '') . "</li>";
+                }
+                $targetPropertyHtml .= "</ul></li>";
+            } else {
+                $targetPropertyHtml .= "<li>" . $type . " : " . esc($props[0]['name'] ?? '') . "</li>";
+            }
+        }
+
+        foreach ($groupedProperties as $type => $props) {
+            if (count($props) > 1) {
+                $targetPageHtml .= "<li>" . $type . " : <ul style='font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:14px; color:#1D1D1F; margin-top:4px;'>";
+                foreach ($props as $p) {
+                    $pWebsite = $p['website'] ?? '';
+                    if (!empty($pWebsite)) {
+                        $targetPageHtml .= "<li><a href='" . esc($pWebsite) . "' target='_blank' style='color:#0071E3; text-decoration:none;'>" . esc($pWebsite) . "</a></li>";
+                    } else {
+                        $targetPageHtml .= "<li>-</li>";
+                    }
+                }
+                $targetPageHtml .= "</ul></li>";
+            } else {
+                $pWebsite = $props[0]['website'] ?? '';
+                if (!empty($pWebsite)) {
+                    $targetPageHtml .= "<li>" . $type . " : <a href='" . esc($pWebsite) . "' target='_blank' style='color:#0071E3; text-decoration:none;'>" . esc($pWebsite) . "</a></li>";
+                } else {
+                    $targetPageHtml .= "<li>" . $type . " : -</li>";
+                }
+            }
+        }
+
         $detailsHtml = "
             <b style='color:#0071E3; font-size:15px; font-family:-apple-system,BlinkMacSystemFont,sans-serif;'>1) Target Property :</b>
             <ul style='font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:14px; color:#1D1D1F;'>
-                <li>". $isShop ." : ". $property['name'] ."</li>
+                " . $targetPropertyHtml . "
             </ul>
 
             <b style='color:#0071E3; font-size:15px; font-family:-apple-system,BlinkMacSystemFont,sans-serif;'>2) Target Page(s) :</b>
             <ul style='font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:14px; color:#1D1D1F;'>
-                <li>". $isShop ." : <a href='". $property['website'] ."' target='_blank' style='color:#0071E3; text-decoration:none;'>". $property['website'] ."</a></li>
+                " . $targetPageHtml . "
             </ul>
 
             <b style='color:#0071E3; font-size:15px; font-family:-apple-system,BlinkMacSystemFont,sans-serif;'>2.2) Reason when the Target Page is for all :</b>
@@ -370,6 +503,11 @@ Tag Request: Create
                         <label class="form-label-sm fw-semibold text-secondary mb-1">JIRA Ticket ID</label>
                         <?php if ($ticket_id == null) : ?>
                             <div class="d-flex gap-2">
+                                <?php if (!empty($request_ids)): ?>
+                                    <?php foreach ($request_ids as $rId): ?>
+                                        <input type="hidden" name="request_ids[]" value="<?= esc($rId) ?>">
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
                                 <input type="hidden" name="request_id" value="<?= esc($request_id) ?>">
                                 <input type="text" name="ticket_id" id="ticket_id"
                                     class="form-control form-control-xs"
@@ -411,17 +549,26 @@ Tag Request: Create
                         <span>Request Details</span>
                     </h5>
                     <div class="mb-3">
-                        <label class="form-label-xs fw-semibold text-secondary mb-1 d-block">Property</label>
-                        <span class="fw-semibold text-dark ms-1 group-hover-container align-items-center" style="font-size: 0.9rem;">
-                            <a href="<?= esc((isset($property['ref_link']) ? $property['ref_link'] . Constants::AL_LIBRARY_CREATE : '#')) ?>" target="_blank" class="apple-link-dark text-decoration-none">
-                                <?= esc($property['name'] ?? '—') ?>
-                            </a>
-                            <a href="javascript:void(0)" onclick="copyName('<?= esc($property['name'] ?? '—') ?>', this)" title="Copy property name" class="text-muted ms-2" style="transition: color 0.2s; text-decoration: none; line-height: 1;">
-                                <i class="bi bi-copy" style="font-size: 0.85rem;"></i>
-                            </a>
-                        </span>
+                        <label class="form-label-xs fw-semibold text-secondary mb-1 d-block">
+                            <?= count($properties_data) > 1 ? 'Properties (' . count($properties_data) . ')' : 'Property' ?>
+                        </label>
+                        <div class="d-flex flex-column gap-2 ms-1">
+                            <?php foreach ($properties_data as $propItem): ?>
+                                <div class="d-flex justify-content-between align-items-center py-1 border-bottom border-light">
+                                    <span class="fw-semibold text-dark" style="font-size: 0.88rem;">
+                                        <span class="badge bg-secondary-subtle text-secondary me-1" style="font-size: 0.72rem;"><?= esc($propItem['is_shop']) ?></span>
+                                        <a href="<?= esc(!empty($propItem['ref_link']) ? $propItem['ref_link'] . Constants::AL_LIBRARY_CREATE : '#') ?>" target="_blank" class="apple-link-dark text-decoration-none">
+                                            <?= esc($propItem['name']) ?>
+                                        </a>
+                                    </span>
+                                    <a href="javascript:void(0)" onclick="copyName('<?= esc($propItem['name']) ?>', this)" title="Copy property name" class="text-muted ms-2" style="transition: color 0.2s; text-decoration: none; line-height: 1;">
+                                        <i class="bi bi-copy" style="font-size: 0.85rem;"></i>
+                                    </a>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
                     </div>
-                    <div class="mb-3">
+                    <div class="mb-2">
                         <label class="form-label-xs fw-semibold text-secondary mb-1 d-block">Vendor</label>
                         <span class="fw-semibold text-dark ms-1" style="font-size: 0.9rem;">
                             <?= esc($vendor['name'] ?? '—') ?>
@@ -437,17 +584,45 @@ Tag Request: Create
                     </h5>
                     <div class="d-flex flex-column gap-2">
                         <?php if (!empty($requestTags)): ?>
-                            <?php foreach ($requestTags as $rtag): ?>
-                                <div class="d-flex justify-content-between align-items-center p-2 rounded" style="background-color: var(--color-bg-base); border: 1px solid rgba(0, 0, 0, 0.05);">
-                                    <a href="<?= site_url('tags/view/' . $rtag['id']) ?>" class="apple-link-dark text-decoration-none fw-semibold" style="font-size: 0.9rem;">
-                                        <?= esc($rtag['name']) ?>
-                                    </a>
-                                    <?php if (!empty($rtag['ref_link'])): ?>
-                                        <a href="<?= esc($rtag['ref_link']) ?>" target="_blank" class="text-muted" title="Open ref_link" style="text-decoration: none;">
-                                            <i class="bi bi-box-arrow-up-right"></i>
-                                        </a>
+                            <?php 
+                                $groupedReqTags = [];
+                                foreach ($requestTags as $rtag) {
+                                    $pName = 'Property';
+                                    $subName = 'Other';
+                                    if (!empty($rtag['property_id'])) {
+                                        $pInfo = $propertiesModel->find($rtag['property_id']);
+                                        $pName = $pInfo['name'] ?? 'Property';
+                                        if (!empty($pInfo['subsidiary_id'])) {
+                                            $subName = Constants::SUBSIDIARIES[$pInfo['subsidiary_id']] ?? 'Subsidiary';
+                                        }
+                                    }
+                                    $groupedReqTags[$subName][$pName][] = $rtag;
+                                }
+                            ?>
+                            <?php foreach ($groupedReqTags as $subGroupName => $propsInSub): ?>
+                                <?php if (count($groupedReqTags) > 1): ?>
+                                    <div class="d-flex align-items-center gap-1 fw-bold text-primary small text-uppercase mt-2 mb-1 pb-1 border-bottom">
+                                        <i class="bi bi-geo-alt-fill"></i>
+                                        <span><?= esc($subGroupName) ?></span>
+                                    </div>
+                                <?php endif; ?>
+                                <?php foreach ($propsInSub as $propGroupName => $tagsInProp): ?>
+                                    <?php if (count($propsInSub) > 1 || count($groupedReqTags) > 1): ?>
+                                        <div class="fw-bold small text-secondary mt-1 mb-0"><i class="bi bi-building me-1"></i><?= esc($propGroupName) ?></div>
                                     <?php endif; ?>
-                                </div>
+                                    <?php foreach ($tagsInProp as $rtag): ?>
+                                        <div class="d-flex justify-content-between align-items-center p-2 rounded" style="background-color: var(--color-bg-base); border: 1px solid rgba(0, 0, 0, 0.05);">
+                                            <a href="<?= site_url('tags/view/' . $rtag['id']) ?>" class="apple-link-dark text-decoration-none fw-semibold" style="font-size: 0.9rem;">
+                                                <?= esc($rtag['name']) ?>
+                                            </a>
+                                            <?php if (!empty($rtag['ref_link'])): ?>
+                                                <a href="<?= esc($rtag['ref_link']) ?>" target="_blank" class="text-muted" title="Open ref_link" style="text-decoration: none;">
+                                                    <i class="bi bi-box-arrow-up-right"></i>
+                                                </a>
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php endforeach; ?>
+                                <?php endforeach; ?>
                             <?php endforeach; ?>
                         <?php else: ?>
                             <p class="text-muted small mb-0">No related tags found.</p>
@@ -495,10 +670,27 @@ Tag Request: Create
 
 <?php elseif ($request_type == Constants::JIRA_TYPE_NEW_RULE) :
     $requestTags = !empty($tag_ids) ? $tagsModelInst->whereIn('id', (array)$tag_ids)->findAll() : [];
-    $property = $propertiesModel->find($property_id);
+    if (empty($properties_data) && !empty($property_id)) {
+        $prop = $propertiesModel->find($property_id);
+        $properties_data = [
+            [
+                'id' => $property_id,
+                'name' => $prop['name'] ?? '',
+                'website' => $prop['website'] ?? '',
+                'ref_link' => $prop['ref_link'] ?? '',
+                'is_shop' => $propertiesModel->isShop($property_id),
+                'site_code' => $propertiesModel->getSiteCode($property_id),
+                'tag_ids' => (array)$tag_ids,
+            ]
+        ];
+    }
+    $properties_data = $properties_data ?? [];
+    $property = !empty($properties_data[0]) ? $properties_data[0] : ($propertiesModel->find($property_id) ?? []);
     $vendor = $vendorsModel->find($vendor_id);
-    $siteCode = $propertiesModel->getSiteCode($property_id);
-    $isShop = $propertiesModel->isShop($property_id);
+
+    $siteCodes = !empty($properties_data) ? array_unique(array_filter(array_column($properties_data, 'site_code'))) : [];
+    $siteCode = !empty($siteCodes) ? implode(', ', $siteCodes) : $propertiesModel->getSiteCode($property_id);
+
     $reason = !empty($background) ? $background : ($vendor['reason'] ?? '-');
     $purpose = $vendor['tag_purpose'] ?? '-';
     $today = date('dmY');
@@ -507,22 +699,64 @@ Tag Request: Create
     $jiraTitle = sprintf(
             '[LC Request] [%s] - [%s] - [New Rule]',
             $siteCode,
-            $vendor['name']
+            $vendor['name'] ?? 'Vendor'
     );
 
     $actionLink = empty($ticket_id) ? site_url('tag-requests/create/confirm')
             : site_url('tag-requests/view/' . $request_id);
 
+    $targetPropertyHtml = '';
+    $targetPageHtml = '';
+    $groupedProperties = [];
+    foreach ($properties_data as $p) {
+        $type = !empty($p['is_shop']) ? $p['is_shop'] : 'AEM';
+        $groupedProperties[$type][] = $p;
+    }
+
+    foreach ($groupedProperties as $type => $props) {
+        if (count($props) > 1) {
+            $targetPropertyHtml .= "<li>" . $type . " : <ul style='font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:14px; color:#1D1D1F; margin-top:4px;'>";
+            foreach ($props as $p) {
+                $targetPropertyHtml .= "<li>" . esc($p['name'] ?? '') . "</li>";
+            }
+            $targetPropertyHtml .= "</ul></li>";
+        } else {
+            $targetPropertyHtml .= "<li>" . $type . " : " . esc($props[0]['name'] ?? '') . "</li>";
+        }
+    }
+
+    foreach ($groupedProperties as $type => $props) {
+        if (count($props) > 1) {
+            $targetPageHtml .= "<li>" . $type . " : <ul style='font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:14px; color:#1D1D1F; margin-top:4px;'>";
+            foreach ($props as $p) {
+                $pWebsite = $p['website'] ?? '';
+                if (!empty($pWebsite)) {
+                    $targetPageHtml .= "<li><a href='" . esc($pWebsite) . "' target='_blank' style='color:#0071E3; text-decoration:none;'>" . esc($pWebsite) . "</a></li>";
+                } else {
+                    $targetPageHtml .= "<li>-</li>";
+                }
+            }
+            $targetPageHtml .= "</ul></li>";
+        } else {
+            $pWebsite = $props[0]['website'] ?? '';
+            if (!empty($pWebsite)) {
+                $targetPageHtml .= "<li>" . $type . " : <a href='" . esc($pWebsite) . "' target='_blank' style='color:#0071E3; text-decoration:none;'>" . esc($pWebsite) . "</a></li>";
+            } else {
+                $targetPageHtml .= "<li>" . $type . " : -</li>";
+            }
+        }
+    }
+
     $detailsHtml = "
             <b style='color:#0071E3; font-size:15px; font-family:-apple-system,BlinkMacSystemFont,sans-serif;'>1) Target Property :</b>
             <ul style='font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:14px; color:#1D1D1F;'>
-                <li>". $isShop ." : ". $property['name'] ."</li>
+                " . $targetPropertyHtml . "
                 <li>Library Name : ". $libraryName ."</li>
             </ul>
     
             <b style='color:#0071E3; font-size:15px; font-family:-apple-system,BlinkMacSystemFont,sans-serif;'>2) Target Page(s) :</b>
             <ul style='font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:14px; color:#1D1D1F;'>
-                <li>". $isShop ." : <a href='". $property['website'] ."' target='_blank' style='color:#0071E3; text-decoration:none;'>". $property['website'] ."</a></li>
+                " . $targetPageHtml . "
             </ul>
     
             <b style='color:#0071E3; font-size:15px; font-family:-apple-system,BlinkMacSystemFont,sans-serif;'>2.2) Reason when the Target Page is for all :</b>
@@ -608,7 +842,7 @@ Tag Request: Create
         </div>
     </div>
 
-    <form action="<?= $actionLink ?>" method="get">
+    <form action="<?= $actionLink ?>" method="post">
         <div class="row g-4 mt-1">
             <!-- Left Column: JIRA Info & Details -->
             <div class="col-lg-5 d-flex flex-column">
@@ -636,6 +870,11 @@ Tag Request: Create
                         <label class="form-label-sm fw-semibold text-secondary mb-1">JIRA Ticket ID</label>
                         <?php if ($ticket_id == null) : ?>
                             <div class="d-flex gap-2">
+                                <?php if (!empty($request_ids)): ?>
+                                    <?php foreach ($request_ids as $rId): ?>
+                                        <input type="hidden" name="request_ids[]" value="<?= esc($rId) ?>">
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
                                 <input type="hidden" name="request_id" value="<?= esc($request_id) ?>">
                                 <input type="text" name="ticket_id" id="ticket_id"
                                     class="form-control form-control-xs"
@@ -677,15 +916,24 @@ Tag Request: Create
                         <span>Request Details</span>
                     </h5>
                     <div class="mb-3">
-                        <label class="form-label-xs fw-semibold text-secondary mb-1 d-block">Property</label>
-                        <span class="fw-semibold text-dark ms-1 group-hover-container align-items-center" style="font-size: 0.9rem;">
-                            <a href="<?= esc($property['ref_link'] ?? '#') ?>" target="_blank" class="apple-link-dark text-decoration-none">
-                                <?= esc($property['name'] ?? '—') ?>
-                            </a>
-                            <a href="javascript:void(0)" onclick="copyName('<?= esc($property['name'] ?? '—') ?>', this)" title="Copy property name" class="text-muted ms-2" style="transition: color 0.2s; text-decoration: none; line-height: 1;">
-                                <i class="bi bi-copy" style="font-size: 0.85rem;"></i>
-                            </a>
-                        </span>
+                        <label class="form-label-xs fw-semibold text-secondary mb-1 d-block">
+                            <?= count($properties_data) > 1 ? 'Properties (' . count($properties_data) . ')' : 'Property' ?>
+                        </label>
+                        <div class="d-flex flex-column gap-2 ms-1">
+                            <?php foreach ($properties_data as $propItem): ?>
+                                <div class="d-flex justify-content-between align-items-center py-1 border-bottom border-light">
+                                    <span class="fw-semibold text-dark" style="font-size: 0.88rem;">
+                                        <span class="badge bg-secondary-subtle text-secondary me-1" style="font-size: 0.72rem;"><?= esc($propItem['is_shop']) ?></span>
+                                        <a href="<?= esc(!empty($propItem['ref_link']) ? $propItem['ref_link'] : '#') ?>" target="_blank" class="apple-link-dark text-decoration-none">
+                                            <?= esc($propItem['name']) ?>
+                                        </a>
+                                    </span>
+                                    <a href="javascript:void(0)" onclick="copyName('<?= esc($propItem['name']) ?>', this)" title="Copy property name" class="text-muted ms-2" style="transition: color 0.2s; text-decoration: none; line-height: 1;">
+                                        <i class="bi bi-copy" style="font-size: 0.85rem;"></i>
+                                    </a>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label-xs fw-semibold text-secondary mb-1 d-block">Vendor</label>
@@ -717,17 +965,45 @@ Tag Request: Create
                     </h5>
                     <div class="d-flex flex-column gap-2">
                         <?php if (!empty($requestTags)): ?>
-                            <?php foreach ($requestTags as $rtag): ?>
-                                <div class="d-flex justify-content-between align-items-center p-2 rounded" style="background-color: var(--color-bg-base); border: 1px solid rgba(0, 0, 0, 0.05);">
-                                    <a href="<?= site_url('tags/view/' . $rtag['id']) ?>" class="apple-link-dark text-decoration-none fw-semibold" style="font-size: 0.9rem;">
-                                        <?= esc($rtag['name']) ?>
-                                    </a>
-                                    <?php if (!empty($rtag['ref_link'])): ?>
-                                        <a href="<?= esc($rtag['ref_link']) ?>" target="_blank" class="text-muted" title="Open ref_link" style="text-decoration: none;">
-                                            <i class="bi bi-box-arrow-up-right"></i>
-                                        </a>
+                            <?php 
+                                $groupedReqTags = [];
+                                foreach ($requestTags as $rtag) {
+                                    $pName = 'Property';
+                                    $subName = 'Other';
+                                    if (!empty($rtag['property_id'])) {
+                                        $pInfo = $propertiesModel->find($rtag['property_id']);
+                                        $pName = $pInfo['name'] ?? 'Property';
+                                        if (!empty($pInfo['subsidiary_id'])) {
+                                            $subName = Constants::SUBSIDIARIES[$pInfo['subsidiary_id']] ?? 'Subsidiary';
+                                        }
+                                    }
+                                    $groupedReqTags[$subName][$pName][] = $rtag;
+                                }
+                            ?>
+                            <?php foreach ($groupedReqTags as $subGroupName => $propsInSub): ?>
+                                <?php if (count($groupedReqTags) > 1): ?>
+                                    <div class="d-flex align-items-center gap-1 fw-bold text-primary small text-uppercase mt-2 mb-1 pb-1 border-bottom">
+                                        <i class="bi bi-geo-alt-fill"></i>
+                                        <span><?= esc($subGroupName) ?></span>
+                                    </div>
+                                <?php endif; ?>
+                                <?php foreach ($propsInSub as $propGroupName => $tagsInProp): ?>
+                                    <?php if (count($propsInSub) > 1 || count($groupedReqTags) > 1): ?>
+                                        <div class="fw-bold small text-secondary mt-1 mb-0"><i class="bi bi-building me-1"></i><?= esc($propGroupName) ?></div>
                                     <?php endif; ?>
-                                </div>
+                                    <?php foreach ($tagsInProp as $rtag): ?>
+                                        <div class="d-flex justify-content-between align-items-center p-2 rounded" style="background-color: var(--color-bg-base); border: 1px solid rgba(0, 0, 0, 0.05);">
+                                            <a href="<?= site_url('tags/view/' . $rtag['id']) ?>" class="apple-link-dark text-decoration-none fw-semibold" style="font-size: 0.9rem;">
+                                                <?= esc($rtag['name']) ?>
+                                            </a>
+                                            <?php if (!empty($rtag['ref_link'])): ?>
+                                                <a href="<?= esc($rtag['ref_link']) ?>" target="_blank" class="text-muted" title="Open ref_link" style="text-decoration: none;">
+                                                    <i class="bi bi-box-arrow-up-right"></i>
+                                                </a>
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php endforeach; ?>
+                                <?php endforeach; ?>
                             <?php endforeach; ?>
                         <?php else: ?>
                             <p class="text-muted small mb-0">No related tags found.</p>
@@ -777,40 +1053,94 @@ Tag Request: Create
 <?= $this->section('scripts') ?>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        $('.searchable-select').select2({
-            width: '100%',
+        function initSelects($container) {
+            $container.find('.searchable-select').select2({
+                width: '100%',
+            });
+
+            $container.find('.advanced-select').select2({
+                tags: true,
+                width: '100%',
+                allowClear: true,
+                createTag: function (params) {
+                    let term = $.trim(params.term);
+                    if (term === '') {
+                        return null;
+                    }
+                    return {
+                        id: term,
+                        text: term,
+                        newOption: true
+                    };
+                },
+                templateResult: function (data) {
+                    if (data.newOption) {
+                        return $('<span>Add: <strong>' + data.text + '</strong></span>');
+                    }
+                    return data.text;
+                }
+            });
+        }
+
+        // Initialize initial elements
+        initSelects($(document));
+
+        function updatePropertyBlocksUI() {
+            var $blocks = $('.property-block');
+            var total = $blocks.length;
+
+            $blocks.each(function(index) {
+                $(this).find('.property-block-title span').text('Property #' + (index + 1));
+                var $removeBtn = $(this).find('.remove-property-btn');
+                if (total > 1) {
+                    $removeBtn.removeClass('d-none');
+                } else {
+                    $removeBtn.addClass('d-none');
+                }
+            });
+
+            $('#property_count_badge').text(total + (total === 1 ? ' Property Added' : ' Properties Added'));
+        }
+
+        var propertyBlockCounter = 1;
+        $('#add_property_btn').on('click', function() {
+            var template = document.getElementById('property_block_template');
+            if (!template) return;
+
+            propertyBlockCounter++;
+            var currentCount = $('.property-block').length + 1;
+            var html = template.innerHTML
+                .replace(/{INDEX}/g, currentCount)
+                .replace(/{INDEX_KEY}/g, propertyBlockCounter);
+
+            var $newBlock = $(html);
+            $('#properties_container').append($newBlock);
+
+            initSelects($newBlock);
+            updatePropertyBlocksUI();
+            updateRelatedTags();
         });
 
-        $('.advanced-select').select2({
-            tags: true,
-            width: '100%',
-            allowClear: true,
-            createTag: function (params) {
-                let term = $.trim(params.term);
-
-                if (term === '') {
-                    return null;
-                }
-
-                return {
-                    id: term,   // this will be sent to backend
-                    text: term,
-                    newOption: true
-                };
-            },
-            templateResult: function (data) {
-                if (data.newOption) {
-                    return $('<span>Add: <strong>' + data.text + '</strong></span>');
-                }
-                return data.text;
+        $(document).on('click', '.remove-property-btn', function() {
+            var $block = $(this).closest('.property-block');
+            if ($('.property-block').length > 1) {
+                $block.find('.searchable-select, .advanced-select').each(function() {
+                    if ($(this).data('select2')) {
+                        $(this).select2('destroy');
+                    }
+                });
+                $block.remove();
+                updatePropertyBlocksUI();
+                updateRelatedTags();
             }
         });
 
-        $('select[name="property_id"]').on('change', function() {
+        $(document).on('change', '.property-select', function() {
             var selectedOption = $(this).find('option:selected');
             var isShop = selectedOption.data('is-shop') || 'AEM';
             
-            var $searchField = $('.select2-search__field');
+            var $block = $(this).closest('.property-block');
+            var $searchField = $block.find('.select2-search__field');
             var val = $searchField.val() || '';
             
             if (val.startsWith('LC-')) {
@@ -824,11 +1154,11 @@ Tag Request: Create
         });
 
         var tempSearchValue = '';
-        $('select[name="tags[]"]').on('select2:closing', function (e) {
+        $(document).on('select2:closing', '.tags-select', function (e) {
             tempSearchValue = $('.select2-search__field').val();
         });
 
-        $('select[name="tags[]"]').on('select2:close', function (e) {
+        $(document).on('select2:close', '.tags-select', function (e) {
             if (tempSearchValue) {
                 setTimeout(function() {
                     $('.select2-search__field').val(tempSearchValue);
@@ -838,6 +1168,7 @@ Tag Request: Create
         });
 
         var allExistingTags = <?= json_encode($allTags) ?>;
+        var subsidiariesMap = <?= json_encode(Constants::SUBSIDIARIES) ?>;
 
         window.copyTagText = function(text, el) {
             const temp = document.createElement('textarea');
@@ -858,9 +1189,15 @@ Tag Request: Create
         };
 
         function updateRelatedTags() {
-            var selectedTags = $('select[name="tags[]"]').val() || [];
+            var selectedTags = [];
+            $('.tags-select').each(function() {
+                var vals = $(this).val();
+                if (vals && Array.isArray(vals)) {
+                    selectedTags = selectedTags.concat(vals);
+                }
+            });
+
             var vendors = new Set();
-            
             selectedTags.forEach(function(tag) {
                 var matches = tag.match(/\(([^)]+)\)/g);
                 if (matches) {
@@ -873,19 +1210,27 @@ Tag Request: Create
                 }
             });
 
-            var currentInput = $('.select2-search__field').val() || '';
-            var partialMatch = currentInput.match(/\(([^)]*)/g);
-            if (partialMatch) {
-                partialMatch.forEach(function(match) {
-                    var vendorName = match.replace('(', '').replace(')', '').trim();
-                    if (vendorName) {
-                        vendors.add(vendorName);
-                    }
-                });
-            }
+            $('.select2-search__field').each(function() {
+                var currentInput = $(this).val() || '';
+                var partialMatch = currentInput.match(/\(([^)]*)/g);
+                if (partialMatch) {
+                    partialMatch.forEach(function(match) {
+                        var vendorName = match.replace('(', '').replace(')', '').trim();
+                        if (vendorName) {
+                            vendors.add(vendorName);
+                        }
+                    });
+                }
+            });
             
-            var selectedPropertyOption = $('select[name="property_id"] option:selected');
-            var selectedSubsidiaryId = selectedPropertyOption.data('subsidiary-id') || '';
+            var selectedSubsidiaryIds = new Set();
+            $('.property-select').each(function() {
+                var opt = $(this).find('option:selected');
+                var subId = opt.data('subsidiary-id');
+                if (subId) {
+                    selectedSubsidiaryIds.add(String(subId));
+                }
+            });
             
             var relatedTags = [];
             vendors.forEach(function(vendor) {
@@ -898,9 +1243,9 @@ Tag Request: Create
                     }
                 });
 
-                if (selectedSubsidiaryId) {
+                if (selectedSubsidiaryIds.size > 0) {
                     var filtered = tempRelated.filter(function(tag) {
-                        return tag.subsidiary_id == selectedSubsidiaryId;
+                        return selectedSubsidiaryIds.has(String(tag.subsidiary_id));
                     });
                     if (filtered.length > 0) {
                         relatedTags = relatedTags.concat(filtered);
@@ -912,48 +1257,75 @@ Tag Request: Create
                 }
             });
             
-            var groupedTags = {};
+            var groupedBySubsidiary = {};
             relatedTags.forEach(function(tagObj) {
+                var subName = tagObj.subsidiary_name;
+                if (!subName && tagObj.subsidiary_id && subsidiariesMap[tagObj.subsidiary_id]) {
+                    subName = subsidiariesMap[tagObj.subsidiary_id];
+                }
+                if (!subName) {
+                    subName = 'Other';
+                }
+
                 var propName = tagObj.property_name || 'Unknown Property';
                 var tagName = tagObj.tag_name;
-                if (!groupedTags[propName]) {
-                    groupedTags[propName] = new Set();
+
+                if (!groupedBySubsidiary[subName]) {
+                    groupedBySubsidiary[subName] = {};
                 }
-                groupedTags[propName].add(tagName);
+                if (!groupedBySubsidiary[subName][propName]) {
+                    groupedBySubsidiary[subName][propName] = new Set();
+                }
+                groupedBySubsidiary[subName][propName].add(tagName);
             });
             
             var $container = $('#related_tags_container');
-            if (Object.keys(groupedTags).length > 0) {
+            if ($container.length && Object.keys(groupedBySubsidiary).length > 0) {
                 var html = '';
-                Object.keys(groupedTags).sort().forEach(function(prop) {
-                    html += '<div class="mb-2">';
-                    html += '<div class="fw-bold text-dark small mb-1"><i class="bi bi-building me-1 text-muted"></i>' + prop + '</div>';
-                    html += '<div class="ms-2">';
-                    Array.from(groupedTags[prop]).forEach(function(t) {
-                        html += '<div class="badge bg-secondary me-1 mb-1 d-inline-flex align-items-center gap-1" style="font-weight: 500; font-size: 0.8rem; user-select: text; max-width: 100%;">';
-                        html += '<i class="bi bi-copy text-light-50 cursor-pointer flex-shrink-0" style="cursor: pointer; font-size: 0.75rem;" onclick="copyTagText(\'' + t.replace(/'/g, "\\'") + '\', this)" title="Copy Tag"></i>';
-                        html += '<span class="text-truncate" style="min-width: 0;" title="' + t.replace(/"/g, '&quot;') + '">' + t + '</span>';
-                        html += '</div>';
+                var sortedSubs = Object.keys(groupedBySubsidiary).sort();
+                sortedSubs.forEach(function(subName, subIdx) {
+                    var isLastSub = (subIdx === sortedSubs.length - 1);
+                    html += '<div class="subsidiary-group mb-3' + (isLastSub ? '' : ' pb-2 border-bottom') + '">';
+                    html += '<div class="d-flex align-items-center gap-2 mb-2 pb-1">';
+                    html += '<span class="badge bg-primary text-white px-2 py-1 fw-bold" style="font-size: 0.78rem; letter-spacing: 0.5px; border-radius: 6px;">';
+                    html += '<i class="bi bi-geo-alt-fill me-1"></i>' + subName;
+                    html += '</span>';
+                    html += '</div>';
+                    html += '<div class="ps-1">';
+
+                    var sortedProps = Object.keys(groupedBySubsidiary[subName]).sort();
+                    sortedProps.forEach(function(prop) {
+                        html += '<div class="mb-3">';
+                        html += '<div class="fw-bold text-dark small mb-1 d-flex align-items-center gap-1"><i class="bi bi-building me-1 text-muted"></i>' + prop + '</div>';
+                        html += '<div class="ms-2">';
+                        Array.from(groupedBySubsidiary[subName][prop]).forEach(function(t) {
+                            html += '<div class="badge bg-secondary me-1 mb-1 d-inline-flex align-items-center gap-1" style="font-weight: 500; font-size: 0.8rem; user-select: text; max-width: 100%;">';
+                            html += '<i class="bi bi-copy text-light-50 cursor-pointer flex-shrink-0" style="cursor: pointer; font-size: 0.75rem;" onclick="copyTagText(\'' + t.replace(/'/g, "\\'") + '\', this)" title="Copy Tag"></i>';
+                            html += '<span class="text-truncate" style="min-width: 0;" title="' + t.replace(/"/g, '&quot;') + '">' + t + '</span>';
+                            html += '</div>';
+                        });
+                        html += '</div></div>';
                     });
+
                     html += '</div></div>';
                 });
                 $container.html(html);
-            } else {
+            } else if ($container.length) {
                 $container.html('<p class="text-muted small mb-0">No related tags found.</p>');
             }
         }
 
-        $('select[name="tags[]"]').on('change', updateRelatedTags);
+        $(document).on('change', '.tags-select', updateRelatedTags);
         $(document).on('input', '.select2-search__field', updateRelatedTags);
 
         var defaultTag = `<?= $extracted_data['default_tag'] ?? '' ?>`;
         if (defaultTag) {
             $('.select2-search__field').val(defaultTag).css('width', '100%');
             
-            $('.advanced-select').on('select2:open', function() {
+            $(document).on('select2:open', '.tags-select', function() {
                 var $searchField = $('.select2-search__field');
                 if (!$searchField.val()) {
-                    var selectedOption = $('select[name="property_id"] option:selected');
+                    var selectedOption = $(this).closest('.property-block').find('.property-select option:selected');
                     var isShop = selectedOption.data('is-shop') || 'AEM';
                     var originalTag = defaultTag;
                     var parts = originalTag.split('-');
@@ -967,22 +1339,20 @@ Tag Request: Create
         }
 
         $(document).ready(function() {
-            $('#details').summernote({
-                height: 500,
-                toolbar: [
-                    ['style', ['bold', 'italic', 'underline', 'clear']],
-                    // ['font', ['strikethrough', 'superscript', 'subscript']],
-                    // ['fontsize', ['fontsize']],
-                    // ['color', ['color']],
-                    ['para', ['ul', 'ol', 'paragraph']],
-                    ['table', ['table']],
-                    // ['insert', ['link', 'picture', 'video']],
-                    ['view', ['fullscreen', 'codeview', 'help']]
-                ]
-            });
+            if ($('#details').length) {
+                $('#details').summernote({
+                    height: 500,
+                    toolbar: [
+                        ['style', ['bold', 'italic', 'underline', 'clear']],
+                        ['para', ['ul', 'ol', 'paragraph']],
+                        ['table', ['table']],
+                        ['view', ['fullscreen', 'codeview', 'help']]
+                    ]
+                });
 
-            var detailsHtml = `<?= $detailsHtml ?? null ?>`;
-            $('#details').summernote('code', detailsHtml);
+                var detailsHtml = <?= json_encode($detailsHtml ?? '') ?>;
+                $('#details').summernote('code', detailsHtml);
+            }
         });
     });
 

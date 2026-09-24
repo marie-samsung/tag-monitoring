@@ -89,8 +89,36 @@ class TagRequestsController extends BaseController
 
         $post = $this->request->getPost();
 
-        $propertyId = $post['property_id'];
-        $property = $propertiesModel->find($propertyId);
+        // Support both multiple properties structure properties[i][property_id] and legacy property_id / tags
+        $rawProperties = $post['properties'] ?? [];
+        if (empty($rawProperties) && !empty($post['property_id']) && !empty($post['tags'])) {
+            $rawProperties = [
+                [
+                    'property_id' => $post['property_id'],
+                    'tags' => (array)$post['tags']
+                ]
+            ];
+        }
+
+        // Clean and filter valid property entries
+        $propertiesInput = [];
+        foreach ($rawProperties as $item) {
+            $pId = !empty($item['property_id']) ? (int)$item['property_id'] : null;
+            $pTags = !empty($item['tags']) ? array_filter(array_map('trim', (array)$item['tags'])) : [];
+            if ($pId && !empty($pTags)) {
+                $propertiesInput[] = [
+                    'property_id' => $pId,
+                    'tags' => array_values(array_unique($pTags))
+                ];
+            }
+        }
+
+        if (empty($propertiesInput)) {
+            return redirect()
+                ->to('/tag-requests/create')
+                ->with('error', "Please select at least one property and provide tag(s).");
+        }
+
         $reqName = $post['requester_name'] ?? null;
         $reqEmail = $post['requester_email'] ?? null;
         $reqOrg = $post['requester_organization'] ?? null;
@@ -108,122 +136,169 @@ class TagRequestsController extends BaseController
         $q4 = $post['q4'] ?? null;
         $q5 = $post['q5'] ?? null;
 
-        $tagIds = [];
-        $vendorId = null;
-        $organizationId = null;
+        // Check for duplicate tags across each property in DB
+        foreach ($propertiesInput as $item) {
+            $pId = $item['property_id'];
+            $propObj = $propertiesModel->find($pId);
+            $propName = $propObj['name'] ?? "Property #{$pId}";
 
-        if (count($post['tags']) > 0) {
-            $name = trim($post['tags'][0]);
-            preg_match('/\((.*?)\)/', $name, $matches);
-            $vendorName = !empty($matches[1]) ? trim($matches[1]) : 'Unknown';
-
-            $vendor = $vendorsModel->where('name', $vendorName)->first();
-            $vendorDataToUpdate = [];
-            if ($background) {
-                $vendorDataToUpdate['about'] = $background;
-                $vendorDataToUpdate['reason'] = $background;
-            }
-            if ($objective) {
-                $vendorDataToUpdate['tag_purpose'] = $objective;
-            }
-
-            if (!$vendor) {
-                $vendorInsertData = array_merge([
-                    'name' => $vendorName,
-                ], $vendorDataToUpdate);
-                $vendorId = $vendorsModel->insert($vendorInsertData);
-            } else {
-                $vendorId = $vendor['id'];
-                if (!empty($vendorDataToUpdate)) {
-                    $vendorsModel->update($vendorId, $vendorDataToUpdate);
-                }
-            }
-
-            if ($reqOrg) {
-                $organizationInput = trim($reqOrg);
-                $organization = $organizationsModel->where('name', $organizationInput)->first();
-                if (!$organization) {
-                    $organizationById = is_numeric($organizationInput) ? $organizationsModel->where('id', $organizationInput)->first() : null;
-                    if ($organizationById) {
-                        $organizationId = $organizationById['id'];
-                    } else {
-                        $organizationId = $organizationsModel->insert([
-                            'name' => $organizationInput,
-                        ]);
-                    }
-                } else {
-                    $organizationId = $organization['id'];
-                }
-            }
-
-            foreach ($post['tags'] as $tag) {
-                $match = $tagsModel->where('property_id', $propertyId)
-                    ->where('name', $tag)
+            foreach ($item['tags'] as $tagName) {
+                $match = $tagsModel->where('property_id', $pId)
+                    ->where('name', $tagName)
                     ->first();
 
                 if ($match) {
                     return redirect()
                         ->to('/tag-requests/create')
-                        ->with('error', "An existing tag with the name [{$name}] on the selected property [{$property['name']}] was found.");
+                        ->with('error', "An existing tag with the name [{$tagName}] on the selected property [{$propName}] was found.");
                 }
             }
+        }
 
-            foreach ($post['tags'] as $tag) {
-                $tagIds[] = $tagsModel->insert([
-                    'property_id' => $propertyId,
+        // Determine vendor from tag names across all properties
+        $vendorName = 'Unknown';
+        foreach ($propertiesInput as $item) {
+            foreach ($item['tags'] as $tag) {
+                preg_match('/\((.*?)\)/', $tag, $matches);
+                if (!empty($matches[1])) {
+                    $vendorName = trim($matches[1]);
+                    break 2;
+                }
+            }
+        }
+
+        $vendor = $vendorsModel->where('name', $vendorName)->first();
+        $vendorDataToUpdate = [];
+        if ($background) {
+            $vendorDataToUpdate['about'] = $background;
+            $vendorDataToUpdate['reason'] = $background;
+        }
+        if ($objective) {
+            $vendorDataToUpdate['tag_purpose'] = $objective;
+        }
+
+        if (!$vendor) {
+            $vendorInsertData = array_merge([
+                'name' => $vendorName,
+            ], $vendorDataToUpdate);
+            $vendorId = $vendorsModel->insert($vendorInsertData);
+        } else {
+            $vendorId = $vendor['id'];
+            if (!empty($vendorDataToUpdate)) {
+                $vendorsModel->update($vendorId, $vendorDataToUpdate);
+            }
+        }
+
+        // Determine organization
+        $organizationId = null;
+        if ($reqOrg) {
+            $organizationInput = trim($reqOrg);
+            $organization = $organizationsModel->where('name', $organizationInput)->first();
+            if (!$organization) {
+                $organizationById = is_numeric($organizationInput) ? $organizationsModel->where('id', $organizationInput)->first() : null;
+                if ($organizationById) {
+                    $organizationId = $organizationById['id'];
+                } else {
+                    $organizationId = $organizationsModel->insert([
+                        'name' => $organizationInput,
+                    ]);
+                }
+            } else {
+                $organizationId = $organization['id'];
+            }
+        }
+
+        // Insert tags and create separate tag requests per property
+        $createdRequestIds = [];
+        $allTagIds = [];
+        $propertiesData = [];
+
+        foreach ($propertiesInput as $item) {
+            $pId = $item['property_id'];
+            $propObj = $propertiesModel->find($pId);
+            $propTagIds = [];
+
+            foreach ($item['tags'] as $tag) {
+                $newTagId = $tagsModel->insert([
+                    'property_id' => $pId,
                     'vendor_id' => $vendorId,
                     'name' => $tag,
                     'status' => $jiraType == Constants::JIRA_TYPE_NEW_TAG ? Constants::STATUS_NEW_TAG_SUBMITTED : Constants::STATUS_NEW_RULE_SUBMITTED,
                     'al_end_date' => $endDate,
-                    'ref_link' => $property['ref_link'] . Constants::AL_RULES_SEARCH_PARAMETER . $tag,
+                    'ref_link' => ($propObj['ref_link'] ?? '') . Constants::AL_RULES_SEARCH_PARAMETER . $tag,
                     'requester_name' => $reqName,
                     'requester_email' => $reqEmail,
                     'requester_organization' => $organizationId,
                     'js_code' => $tagScript,
                     'created_by' => session()->get('user_id') ?? 0,
                 ]);
+
+                if ($newTagId) {
+                    $propTagIds[] = $newTagId;
+                }
+            }
+
+            if (count($propTagIds) > 0) {
+                $data = [
+                    'tags' => implode(',', $propTagIds),
+                    'property_id' => $pId,
+                    'vendor_id' => $vendorId,
+                    'status' => Constants::STATUS_REQUEST_HQ_REVIEW,
+                    'type' => $jiraType,
+                    'requester_name' => $reqName,
+                    'requester_email' => $reqEmail,
+                    'requester_organization' => $organizationId,
+                    'created_by' => session()->get('user_id') ?? 0,
+                ];
+
+                $reqId = $model->insert($data);
+                if ($reqId) {
+                    $createdRequestIds[] = $reqId;
+                    $allTagIds = array_merge($allTagIds, $propTagIds);
+                    $propertiesData[] = [
+                        'id' => $pId,
+                        'name' => $propObj['name'] ?? "Property #{$pId}",
+                        'website' => $propObj['website'] ?? '',
+                        'ref_link' => $propObj['ref_link'] ?? '',
+                        'is_shop' => $propertiesModel->isShop($pId),
+                        'site_code' => $propertiesModel->getSiteCode($pId),
+                        'request_id' => $reqId,
+                        'tag_ids' => $propTagIds,
+                    ];
+                }
             }
         }
 
-        if (count($tagIds) > 0) {
-            $data = [
-                'tags' => implode(',', $tagIds),
-                'property_id' => $propertyId,
-                'vendor_id' => $vendorId,
-                'status' => Constants::STATUS_REQUEST_HQ_REVIEW,
-                'type' => $jiraType,
-                'requester_name' => $reqName,
-                'requester_email' => $reqEmail,
-                'requester_organization' => $organizationId,
-                'created_by' => session()->get('user_id') ?? 0,
-            ];
-
-            $requestId = $model->insert($data);
-
+        if (!empty($createdRequestIds)) {
             if ($excelFilePath && file_exists($excelFilePath)) {
+                $firstPropertyId = $propertiesData[0]['id'];
                 $finalVendorName = $vendorName ?? 'Unknown';
-                $uploadPath = Constants::NEW_TAG_FILE_WRITE_PATH . $model->fileUploadPath($propertyId, $finalVendorName);
+                $uploadPath = Constants::NEW_TAG_FILE_WRITE_PATH . $model->fileUploadPath($firstPropertyId, $finalVendorName);
                 if (!is_dir($uploadPath)) {
                     mkdir($uploadPath, 0777, true);
                 }
                 $finalFilePath = $uploadPath . '/' . $excelFileName;
                 if (rename($excelFilePath, $finalFilePath)) {
                     $filesModel = new TagRequestFilesModel();
-                    $filesModel->insert([
-                        'file_name' => $excelFileName,
-                        'file_path' => $finalFilePath,
-                        'type' => Constants::ATTACHMENT_REQUEST_FORM,
-                        'request_id' => $requestId,
-                        'created_by' => session()->get('user_id') ?? 0,
-                    ]);
+                    foreach ($createdRequestIds as $rId) {
+                        $filesModel->insert([
+                            'file_name' => $excelFileName,
+                            'file_path' => $finalFilePath,
+                            'type' => Constants::ATTACHMENT_REQUEST_FORM,
+                            'request_id' => $rId,
+                            'created_by' => session()->get('user_id') ?? 0,
+                        ]);
+                    }
                 }
             }
 
             return view('tag-requests/create', [
-                'tag_ids' => $tagIds,
-                'request_id' => $requestId,
+                'tag_ids' => $allTagIds,
+                'request_id' => $createdRequestIds[0],
+                'request_ids' => $createdRequestIds,
+                'properties_data' => $propertiesData,
                 'vendor_name' => $vendorName,
-                'property_id' => $propertyId,
+                'property_id' => $propertiesData[0]['id'],
                 'vendor_id' => $vendorId,
                 'request_type' => $jiraType,
                 'ticket_id' => null,
@@ -248,15 +323,35 @@ class TagRequestsController extends BaseController
         $jiraHistoryModel = new JiraHistoryModel();
         $post = $this->request->getPost();
 
-        $ticketId = $post['ticket_id'];
-        $id = $post['request_id'];
+        $ticketId = $post['ticket_id'] ?? null;
+        $rawIds = $post['request_ids'] ?? [];
+        if (!is_array($rawIds)) {
+            $rawIds = explode(',', (string)$rawIds);
+        }
+        if (!empty($post['request_id'])) {
+            $rawIds[] = $post['request_id'];
+        }
+        $requestIds = array_filter(array_unique(array_map('intval', $rawIds)));
 
         if (empty($ticketId)) {
             return redirect()
                 ->to('/tag-requests')
                 ->with('error', "Ticket was not successfully created.");
-        } else {
+        }
+
+        if (empty($requestIds)) {
+            return redirect()
+                ->to('/tag-requests')
+                ->with('error', "No tag requests were specified.");
+        }
+
+        $processedCount = 0;
+        foreach ($requestIds as $id) {
             $tagRequest = $model->find($id);
+            if (!$tagRequest) {
+                continue;
+            }
+
             $ticketColumn = 'new_tag_ticket';
             $title = "New Tag Request ";
             if ($tagRequest['type'] == Constants::JIRA_TYPE_NEW_RULE) {
@@ -266,22 +361,27 @@ class TagRequestsController extends BaseController
 
             $this->addTask($tagRequest, $title, $ticketId);
 
-            if (!$tagRequest) {
-                return redirect()
-                    ->to('/tag-requests')
-                    ->with('error', "Tag request was not found.");
-            } else {
-                $model->update($id, [
-                    $ticketColumn => $ticketId,
-                ]);
+            $model->update($id, [
+                $ticketColumn => $ticketId,
+            ]);
 
-                $this->saveJiraHistory($tagRequest['tags'], $tagRequest['property_id'], $ticketId, $tagRequest['type']);
-
-                return redirect()
-                    ->to('/tag-requests')
-                    ->with('success', "[{$ticketId}] Tag Request successfully created.");
-            }
+            $this->saveJiraHistory($tagRequest['tags'], $tagRequest['property_id'], $ticketId, $tagRequest['type']);
+            $processedCount++;
         }
+
+        if ($processedCount === 0) {
+            return redirect()
+                ->to('/tag-requests')
+                ->with('error', "Tag request(s) not found.");
+        }
+
+        $msg = $processedCount > 1 
+            ? "[{$ticketId}] {$processedCount} Tag Requests successfully created."
+            : "[{$ticketId}] Tag Request successfully created.";
+
+        return redirect()
+            ->to('/tag-requests')
+            ->with('success', $msg);
     }
 
     public function addNewTag()
