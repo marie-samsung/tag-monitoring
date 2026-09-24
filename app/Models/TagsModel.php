@@ -74,7 +74,14 @@ class TagsModel extends Model
         }
 
         if (!empty($filters['subsidiary_id'])) {
-            $this->where('properties.subsidiary_id', $filters['subsidiary_id']);
+            if (is_array($filters['subsidiary_id'])) {
+                $subIds = array_values(array_filter($filters['subsidiary_id']));
+                if (!empty($subIds)) {
+                    $this->whereIn('properties.subsidiary_id', $subIds);
+                }
+            } else {
+                $this->where('properties.subsidiary_id', $filters['subsidiary_id']);
+            }
         }
 
         if (!empty($filters['vendor_id'])) {
@@ -95,8 +102,17 @@ class TagsModel extends Model
             $sortDir = 'desc';
         }
 
+        $hasSubsidiaryFilter = false;
+        if (!empty($filters['subsidiary_id'])) {
+            if (is_array($filters['subsidiary_id'])) {
+                $hasSubsidiaryFilter = !empty(array_filter($filters['subsidiary_id']));
+            } else {
+                $hasSubsidiaryFilter = true;
+            }
+        }
+
         $hasActiveFilters = false;
-        if (!empty($filters['keyword']) || !empty($filters['js_code']) || !empty($filters['conditions']) || !empty($filters['property_id']) || !empty($filters['subsidiary_id']) || !empty($filters['vendor_id']) || !empty($filters['al_end_date_from']) || !empty($filters['al_end_date_to'])) {
+        if (!empty($filters['keyword']) || !empty($filters['js_code']) || !empty($filters['conditions']) || !empty($filters['property_id']) || $hasSubsidiaryFilter || !empty($filters['vendor_id']) || !empty($filters['al_end_date_from']) || !empty($filters['al_end_date_to'])) {
             $hasActiveFilters = true;
         }
         if (!empty($filters['status']) && !is_array($filters['status']) && $filters['status'] !== 'all' && $filters['status'] != 145) {

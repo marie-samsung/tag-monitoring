@@ -396,6 +396,14 @@ foreach ($advancedFilterKeys as $key) {
         if (!empty($statusVal) && $statusVal !== 'all' && $statusVal !== '145') {
             $activeFiltersCount++;
         }
+    } elseif ($key === 'subsidiary_id') {
+        $subVal = $_GET['subsidiary_id'] ?? null;
+        if (!empty($subVal)) {
+            $subFiltered = is_array($subVal) ? array_filter($subVal) : [$subVal];
+            if (!empty($subFiltered)) {
+                $activeFiltersCount++;
+            }
+        }
     } else {
         if (!empty($_GET[$key]) || (isset($_GET[$key]) && $_GET[$key] !== '')) {
             $activeFiltersCount++;
@@ -582,11 +590,16 @@ $hasActiveFilters = ($activeFiltersCount > 0) || !empty($_GET['keyword']);
                     <!-- Subsidiary -->
                     <div class="col-md-4 col-lg-3">
                         <label class="form-label-xs fw-semibold text-secondary mb-1">Subsidiary</label>
-                        <select name="subsidiary_id" class="form-select form-select-xs"
-                            style="height: 34px; border-radius: 8px;">
-                            <option value="">All Subsidiaries</option>
+                        <select name="subsidiary_id[]" class="form-select form-select-xs searchable-select-subsidiary" multiple="multiple"
+                            style="width: 100%; border-radius: 8px;">
+                            <?php 
+                            $selectedSubsidiaries = isset($filters['subsidiary_id']) 
+                                ? (is_array($filters['subsidiary_id']) ? $filters['subsidiary_id'] : [$filters['subsidiary_id']]) 
+                                : [];
+                            $selectedSubsidiaries = array_map('strval', array_filter($selectedSubsidiaries));
+                            ?>
                             <?php foreach ($subsidiaries as $value => $label): ?>
-                                <option value="<?= esc($value) ?>" <?= old('subsidiary_id', $filters['subsidiary_id'] ?? '') == $value ? 'selected' : '' ?>>
+                                <option value="<?= esc($value) ?>" <?= in_array((string)$value, $selectedSubsidiaries, true) ? 'selected' : '' ?>>
                                     <?= esc($label) ?>
                                 </option>
                             <?php endforeach; ?>
@@ -701,31 +714,56 @@ $hasActiveFilters = ($activeFiltersCount > 0) || !empty($_GET['keyword']);
                     if (empty($val))
                         continue;
                     $label = 'Sort by Property: Enabled';
+                } elseif ($key === 'subsidiary_id') {
+                    $val = $_GET['subsidiary_id'] ?? null;
+                    if (empty($val)) continue;
+                    $subIds = is_array($val) ? array_values(array_filter($val)) : [$val];
+                    if (empty($subIds)) continue;
+
+                    foreach ($subIds as $sId) {
+                        $label = 'Subsidiary: ' . ($subsidiaries[$sId] ?? $sId);
+                        $tempParams = $_GET;
+                        if (isset($tempParams['subsidiary_id']) && is_array($tempParams['subsidiary_id'])) {
+                            $tempParams['subsidiary_id'] = array_values(array_diff($tempParams['subsidiary_id'], [$sId]));
+                            if (empty($tempParams['subsidiary_id'])) {
+                                unset($tempParams['subsidiary_id']);
+                            }
+                        } else {
+                            unset($tempParams['subsidiary_id']);
+                        }
+                        $clearUrl = site_url('tags') . '?' . http_build_query($tempParams);
+                        ?>
+                        <a href="<?= $clearUrl ?>"
+                            class="badge bg-secondary text-decoration-none d-inline-flex align-items-center gap-1.5 py-1.5 px-2.5 rounded-pill border border-secondary"
+                            style="font-size: 0.8rem; font-weight: 500;">
+                            <span><?= esc($label) ?></span>
+                            <i class="bi bi-x-circle-fill text-muted" style="font-size: 0.75rem;"></i>
+                        </a>
+                        <?php
+                    }
                 } else {
                     if (empty($_GET[$key]) && (!isset($_GET[$key]) || $_GET[$key] === '')) {
                         continue;
                     }
                     $val = $_GET[$key];
-                    if ($key === 'subsidiary_id') {
-                        $label = 'Subsidiary: ' . ($subsidiaries[$val] ?? $val);
-                    } elseif ($key === 'property_id') {
+                    if ($key === 'property_id') {
                         $label = 'Property: ' . ($propertyOptions[$val] ?? $val);
                     } elseif ($key === 'vendor_id') {
                         $label = 'Vendor: ' . ($vendors[$val] ?? $val);
                     }
-                }
 
-                $tempParams = $_GET;
-                unset($tempParams[$key]);
-                $clearUrl = site_url('tags') . '?' . http_build_query($tempParams);
-                ?>
-                <a href="<?= $clearUrl ?>"
-                    class="badge bg-secondary text-decoration-none d-inline-flex align-items-center gap-1.5 py-1.5 px-2.5 rounded-pill border border-secondary"
-                    style="font-size: 0.8rem; font-weight: 500;">
-                    <span><?= esc($label) ?></span>
-                    <i class="bi bi-x-circle-fill text-muted" style="font-size: 0.75rem;"></i>
-                </a>
-                <?php
+                    $tempParams = $_GET;
+                    unset($tempParams[$key]);
+                    $clearUrl = site_url('tags') . '?' . http_build_query($tempParams);
+                    ?>
+                    <a href="<?= $clearUrl ?>"
+                        class="badge bg-secondary text-decoration-none d-inline-flex align-items-center gap-1.5 py-1.5 px-2.5 rounded-pill border border-secondary"
+                        style="font-size: 0.8rem; font-weight: 500;">
+                        <span><?= esc($label) ?></span>
+                        <i class="bi bi-x-circle-fill text-muted" style="font-size: 0.75rem;"></i>
+                    </a>
+                    <?php
+                }
             }
             ?>
         </div>
@@ -1154,6 +1192,12 @@ $hasActiveFilters = ($activeFiltersCount > 0) || !empty($_GET['keyword']);
         flatpickr("#al_end_date_from, #al_end_date_to", {
             dateFormat: "Y-m-d",
             disableMobile: "true"
+        });
+
+        $('.searchable-select-subsidiary').select2({
+            width: '100%',
+            placeholder: "All Subsidiaries",
+            allowClear: true
         });
 
         $('.searchable-select').select2({

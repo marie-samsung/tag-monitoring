@@ -439,6 +439,75 @@ h1, h2, h3, h4, h5, h6 {
     outline: none;
 }
 
+.select2-container--default .select2-selection--multiple {
+    min-height: 34px;
+    border-radius: 8px;
+    border: 1px solid var(--color-border-input);
+    font-size: 0.875rem;
+    background-color: var(--color-card-bg);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    padding: 3px 6px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+}
+
+.select2-container--default.select2-container--focus .select2-selection--multiple,
+.select2-container--default.select2-container--open .select2-selection--multiple {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 0.25rem var(--color-primary-focus-shadow);
+    outline: none;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__rendered {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice {
+    background-color: var(--color-secondary-bg);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--color-text-base);
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+    color: var(--color-text-muted);
+    margin-right: 5px;
+    font-size: 0.85rem;
+    border: none;
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+    color: var(--color-text-base);
+}
+
+.select2-container--default .select2-selection--multiple .select2-search--inline {
+    margin: 0;
+}
+
+.select2-container--default .select2-selection--multiple .select2-search--inline .select2-search__field {
+    margin: 0;
+    height: 26px;
+    font-size: 0.85rem;
+    line-height: 26px;
+}
+
 .select2-dropdown {
     border: 1px solid var(--color-border-input);
     border-radius: 8px;

@@ -34,12 +34,20 @@ class TagsController extends BaseController
             $status = null;
         }
 
+        $subsidiaryId = $this->request->getGet('subsidiary_id');
+        if (is_array($subsidiaryId)) {
+            $subsidiaryId = array_values(array_filter($subsidiaryId));
+            if (empty($subsidiaryId)) {
+                $subsidiaryId = null;
+            }
+        }
+
         $filters = [
             'keyword' => $this->request->getGet('keyword'),
             'conditions' => $this->request->getGet('conditions'),
             'status' => $status,
             'property_id' => $this->request->getGet('property_id'),
-            'subsidiary_id' => $this->request->getGet('subsidiary_id'),
+            'subsidiary_id' => $subsidiaryId,
             'vendor_id' => $this->request->getGet('vendor_id'),
             'al_end_date_from' => $this->request->getGet('al_end_date_from'),
             'al_end_date_to' => $this->request->getGet('al_end_date_to'),
