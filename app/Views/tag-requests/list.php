@@ -358,7 +358,7 @@ Tag: Requests (New Rule, New Tag)
                         name="keyword" 
                         class="form-control form-control-xs" 
                         style="height: 36px; padding-left: 36px !important; border-radius: 20px;"
-                        placeholder="Search by Ticket ID or keyword..."
+                        placeholder="Search by Ticket ID, Vendor, or keyword..."
                         value="<?= esc($_GET['keyword'] ?? '') ?>"
                     >
                 </div>

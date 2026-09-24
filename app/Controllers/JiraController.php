@@ -19,6 +19,7 @@ class JiraController extends BaseController
             'ticket_type' => $this->request->getGet('ticket_type'),
             'property_id' => $this->request->getGet('property_id'),
             'subsidiary_id' => $this->request->getGet('subsidiary_id'),
+            'vendor_id' => $this->request->getGet('vendor_id'),
             'created_at_from' => $this->request->getGet('created_at_from'),
             'created_at_to' => $this->request->getGet('created_at_to'),
             'sort_by' => $this->request->getGet('sort_by'),

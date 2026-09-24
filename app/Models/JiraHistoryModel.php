@@ -118,9 +118,7 @@ class JiraHistoryModel extends Model
     {
         $this->select();
 
-        if (!empty($filters['keyword'])) {
-            $this->like('ticket_id', $filters['keyword']);
-        }
+        $this->applyVendorAndKeywordFilter($this, $filters);
 
         if (!empty($filters['ticket_type'])) {
             $this->where('type', $filters['ticket_type']);
@@ -174,9 +172,7 @@ class JiraHistoryModel extends Model
         $builder = $this->builder();
         $builder->select('comments');
 
-        if (!empty($filters['keyword'])) {
-            $builder->like('ticket_id', $filters['keyword']);
-        }
+        $this->applyVendorAndKeywordFilter($builder, $filters);
 
         if (!empty($filters['ticket_type'])) {
             $builder->where('type', $filters['ticket_type']);
@@ -217,6 +213,138 @@ class JiraHistoryModel extends Model
         }
 
         return count($uniqueTags);
+    }
+
+    /**
+     * Retrieves ticket IDs associated with given vendor IDs through tag requests and related tags.
+     */
+    protected function getTicketIdsForVendors(array $vendorIds): array
+    {
+        if (empty($vendorIds)) {
+            return [];
+        }
+
+        $db = $this->db;
+        $matched = [];
+
+        // 1. From tag_requests table
+        $trTickets = $db->table('tag_requests')
+            ->select('new_tag_ticket, new_rule_ticket')
+            ->whereIn('vendor_id', $vendorIds)
+            ->get()
+            ->getResultArray();
+
+        foreach ($trTickets as $tr) {
+            if (!empty($tr['new_tag_ticket'])) {
+                $matched[] = $tr['new_tag_ticket'];
+            }
+            if (!empty($tr['new_rule_ticket'])) {
+                $matched[] = $tr['new_rule_ticket'];
+            }
+        }
+
+        // 2. From tags table belonging to these vendors
+        $tagRows = $db->table('tags')
+            ->select('id')
+            ->whereIn('vendor_id', $vendorIds)
+            ->get()
+            ->getResultArray();
+
+        if (!empty($tagRows)) {
+            $tagIds = array_column($tagRows, 'id');
+
+            // Tickets directly referencing these tags via tag_id in any jira_history record
+            $jhTags = $db->table('jira_history')
+                ->select('ticket_id')
+                ->whereIn('tag_id', $tagIds)
+                ->distinct()
+                ->get()
+                ->getResultArray();
+
+            foreach ($jhTags as $jt) {
+                if (!empty($jt['ticket_id'])) {
+                    $matched[] = $jt['ticket_id'];
+                }
+            }
+
+            // Tickets with comments containing any of these tag IDs
+            foreach (array_chunk($tagIds, 50) as $chunk) {
+                $regexPattern = '(^|,)(' . implode('|', $chunk) . ')(,|$)';
+                $jhComments = $db->table('jira_history')
+                    ->select('ticket_id')
+                    ->where("comments REGEXP '{$regexPattern}'", null, false)
+                    ->distinct()
+                    ->get()
+                    ->getResultArray();
+
+                foreach ($jhComments as $jc) {
+                    if (!empty($jc['ticket_id'])) {
+                        $matched[] = $jc['ticket_id'];
+                    }
+                }
+            }
+        }
+
+        return array_values(array_unique($matched));
+    }
+
+    /**
+     * Applies vendor and keyword filtering to the query builder.
+     */
+    protected function applyVendorAndKeywordFilter($builder, array $filters)
+    {
+        $keyword = !empty($filters['keyword']) ? trim($filters['keyword']) : null;
+        $vendorId = !empty($filters['vendor_id']) ? (int)$filters['vendor_id'] : null;
+
+        if (empty($keyword) && empty($vendorId)) {
+            return;
+        }
+
+        $db = $this->db;
+        $vendorIds = [];
+
+        if (!empty($vendorId)) {
+            $vendorIds = [$vendorId];
+        } elseif (!empty($keyword)) {
+            $escapedKw = $db->escapeLikeString($keyword);
+            $vendorRows = $db->table('vendors')
+                ->select('id')
+                ->like('name', $escapedKw)
+                ->get()
+                ->getResultArray();
+
+            if (!empty($vendorRows)) {
+                $vendorIds = array_column($vendorRows, 'id');
+            }
+        }
+
+        // If a specific vendor_id was filtered:
+        if (!empty($vendorId)) {
+            $vendorTicketIds = $this->getTicketIdsForVendors($vendorIds);
+            if (!empty($vendorTicketIds)) {
+                $builder->whereIn('ticket_id', $vendorTicketIds);
+            } else {
+                $builder->where('1 = 0', null, false);
+            }
+
+            if (!empty($keyword)) {
+                $builder->like('ticket_id', $keyword);
+            }
+            return;
+        }
+
+        // When keyword is provided without a fixed vendor_id filter:
+        $vendorTicketIds = [];
+        if (!empty($vendorIds)) {
+            $vendorTicketIds = $this->getTicketIdsForVendors($vendorIds);
+        }
+
+        $builder->groupStart();
+        $builder->like('ticket_id', $keyword);
+        if (!empty($vendorTicketIds)) {
+            $builder->orWhereIn('ticket_id', $vendorTicketIds);
+        }
+        $builder->groupEnd();
     }
 
     protected $beforeInsert = ['setCreatedBy'];

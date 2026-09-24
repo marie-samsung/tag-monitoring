@@ -32,20 +32,23 @@ use App\Models\TagRequestsModel;
 use App\Models\TagsModel;
 use App\Models\PropertiesModel;
 use App\Models\SubsidiariesModel;
+use App\Models\VendorsModel;
 
 $tagModel = new TagsModel();
 $propertiesModel = new PropertiesModel();
 $subsidiaryModel = new SubsidiariesModel();
 $tasksModel = new TasksModel();
+$vendorsModel = new VendorsModel();
 
 $properties = $propertiesModel->WebsiteLinks();
 $propertyOptions = $propertiesModel->Options();
 $subsidiaries = $subsidiaryModel->Options();
+$vendors = $vendorsModel->Options();
 
 helper('custom_functions');
 
 $activeFiltersCount = 0;
-$advancedFilterKeys = ['subsidiary_id', 'property_id', 'ticket_type', 'created_at_from', 'created_at_to'];
+$advancedFilterKeys = ['subsidiary_id', 'property_id', 'vendor_id', 'ticket_type', 'created_at_from', 'created_at_to'];
 foreach ($advancedFilterKeys as $key) {
     if (!empty($_GET[$key]) || (isset($_GET[$key]) && $_GET[$key] !== '')) {
         $activeFiltersCount++;
@@ -109,7 +112,7 @@ $hasActiveFilters = ($activeFiltersCount > 0);
                         name="keyword" 
                         class="form-control form-control-xs" 
                         style="height: 36px; padding-left: 36px !important; border-radius: 20px;"
-                        placeholder="Search Ticket ID or keyword..."
+                        placeholder="Search Ticket ID, Vendor, or keyword..."
                         value="<?= esc($_GET['keyword'] ?? '') ?>"
                     >
                 </div>
@@ -167,6 +170,20 @@ $hasActiveFilters = ($activeFiltersCount > 0);
                             <?php foreach ($propertyOptions as $value => $label): ?>
                                 <option value="<?= esc($value) ?>"
                                     <?= old('property_id', $filters['property_id'] ?? '') == $value ? 'selected' : '' ?>>
+                                    <?= esc($label) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <!-- Vendor -->
+                    <div class="col-md-4 col-lg-3">
+                        <label class="form-label-xs fw-semibold text-secondary mb-1">Vendor</label>
+                        <select name="vendor_id" class="form-select form-select-xs" style="height: 34px; border-radius: 8px;">
+                            <option value="">All Vendors</option>
+                            <?php foreach ($vendors as $value => $label): ?>
+                                <option value="<?= esc($value) ?>"
+                                    <?= old('vendor_id', $filters['vendor_id'] ?? '') == $value ? 'selected' : '' ?>>
                                     <?= esc($label) ?>
                                 </option>
                             <?php endforeach; ?>
@@ -240,6 +257,8 @@ $hasActiveFilters = ($activeFiltersCount > 0);
                         $label = 'Subsidiary: ' . ($subsidiaries[$val] ?? $val);
                     } elseif ($key === 'property_id') {
                         $label = 'Property: ' . ($propertyOptions[$val] ?? $val);
+                    } elseif ($key === 'vendor_id') {
+                        $label = 'Vendor: ' . ($vendors[$val] ?? $val);
                     } elseif ($key === 'ticket_type') {
                         $label = 'Type: ' . (Constants::JIRA_TICKET_TYPES[$val] ?? $val);
                     } elseif ($key === 'created_at_from') {
@@ -471,8 +490,12 @@ $hasActiveFilters = ($activeFiltersCount > 0);
                                             <!-- Expanded Tag List -->
                                             <div class="collapse mt-2" id="<?= $collapseId ?>">
                                                 <div class="tag-list-expanded">
-                                                    <?php foreach ($ticketTagsList as $id => $tagObj): ?>
-                                                        <a href="<?= site_url('tags/view/' . $id) ?>" class="tag-pill-link" title="<?= esc($tagObj['name']) ?>">
+                                                    <?php foreach ($ticketTagsList as $id => $tagObj): 
+                                                        $tagVendorName = !empty($tagObj['vendor_id']) && isset($vendors[$tagObj['vendor_id']]) 
+                                                            ? ' • ' . $vendors[$tagObj['vendor_id']] 
+                                                            : '';
+                                                    ?>
+                                                        <a href="<?= site_url('tags/view/' . $id) ?>" class="tag-pill-link" title="<?= esc($tagObj['name'] . $tagVendorName) ?>">
                                                             <i class="bi bi-tag-fill me-1"></i><?= esc($tagObj['name']) ?>
                                                         </a>
                                                     <?php endforeach; ?>

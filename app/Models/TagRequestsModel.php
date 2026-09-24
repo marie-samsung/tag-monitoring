@@ -31,12 +31,14 @@ class TagRequestsModel extends Model
     public function filterRequests($filters = [], $paginate = 0)
     {
         $this->select('tag_requests.*')
-             ->join('properties', 'properties.id = tag_requests.property_id', 'left');
+             ->join('properties', 'properties.id = tag_requests.property_id', 'left')
+             ->join('vendors', 'vendors.id = tag_requests.vendor_id', 'left');
 
         if (!empty($filters['keyword'])) {
             $this->groupStart();
             $this->like('tag_requests.new_tag_ticket', $filters['keyword']);
             $this->orLike('tag_requests.new_rule_ticket', $filters['keyword']);
+            $this->orLike('vendors.name', $filters['keyword']);
             $this->groupEnd();
         }
 
