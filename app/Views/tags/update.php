@@ -98,6 +98,10 @@
                         <!-- Tag Name -->
                         <div class="col-md-6">
                             <label for="name" class="form-label-sm fw-semibold text-secondary mb-1">Tag Name</label>
+                            <a href="javascript:void(0)" onclick="copyTagName(this)" class="text-muted ms-1"
+                               style="font-size: 0.75rem; text-decoration: none; cursor: pointer;" title="Copy Tag Name">
+                                <i class="bi bi-copy"></i>
+                            </a>
                             <select name="name" id="name" class="form-select advanced-select" required>
                                 <option value="<?= esc($tag['name']) ?>" selected>
                                     <?= esc($tag['name']) ?>
@@ -463,6 +467,49 @@
                 }
             }, 50);
         });
+
+        window.copyTagName = function (textOrEl, optionalEl) {
+            let text = '';
+            let el = null;
+            if (optionalEl) {
+                text = textOrEl;
+                el = optionalEl;
+            } else if (typeof textOrEl === 'string') {
+                text = textOrEl;
+            } else {
+                el = textOrEl;
+            }
+
+            if (!text) {
+                const nameSelect = document.getElementById('name');
+                text = (nameSelect && nameSelect.value) ? nameSelect.value : '<?= esc($tag['name']) ?>';
+            }
+
+            const temp = document.createElement('textarea');
+            temp.value = text;
+            temp.style.position = 'fixed';
+            temp.style.left = '-9999px';
+            document.body.appendChild(temp);
+            temp.focus();
+            temp.select();
+            try {
+                if (navigator.clipboard && window.isSecureContext) {
+                    navigator.clipboard.writeText(text);
+                } else {
+                    document.execCommand('copy');
+                }
+            } catch (e) {
+                document.execCommand('copy');
+            }
+            document.body.removeChild(temp);
+
+            if (el) {
+                el.innerHTML = '<i class="bi bi-check-lg text-success"></i>';
+                setTimeout(() => {
+                    el.innerHTML = '<i class="bi bi-copy"></i>';
+                }, 1200);
+            }
+        };
     });
 </script>
 <?= $this->endSection() ?>

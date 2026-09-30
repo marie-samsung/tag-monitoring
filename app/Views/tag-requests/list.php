@@ -22,8 +22,18 @@ Tag: Requests (New Rule, New Tag)
     cursor: pointer;
 }
 
-#tblTags tbody td:not(.actions-cell):has(a:not([onclick]):not(.text-muted)):hover a:not([onclick]):not(.text-muted) {
+#tblTags tbody td:not(.actions-cell):has(a:not([onclick]):not(.text-muted)):hover a:not([onclick]):not(.text-muted):not(:has(.badge)) {
     color: var(--color-primary) !important;
+}
+
+#tblTags tbody td a:has(.badge) {
+    display: inline-block;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+#tblTags tbody td a:has(.badge):hover {
+    opacity: 0.85;
+    transform: translateY(-1px);
 }
 
 .action-style-original-wrapper,
@@ -683,9 +693,16 @@ Tag: Requests (New Rule, New Tag)
                             </td>
                             <!-- Vendor -->
                             <td>
-                                <a href="<?= site_url('tag-requests/view/' . $request['id']) ?>" class="apple-link-dark form-label-sm ms-1" title="View Details">
-                                    <?= $vendors[$request['vendor_id']] ?? '-' ?>
-                                </a>
+                                <?php $vendorName = $vendors[$request['vendor_id']] ?? null; ?>
+                                <?php if (!empty($vendorName)): ?>
+                                    <a href="<?= site_url('tag-requests/view/' . $request['id']) ?>" class="text-decoration-none" title="View Details">
+                                        <span class="badge" style="<?= random_bg_style($vendorName) ?>">
+                                            <?= esc($vendorName) ?>
+                                        </span>
+                                    </a>
+                                <?php else: ?>
+                                    <span class="text-muted">—</span>
+                                <?php endif; ?>
                             </td>
                             <td>
                                 <?php $field = request_type_field((int)$type, (int)$request['status']); ?>
