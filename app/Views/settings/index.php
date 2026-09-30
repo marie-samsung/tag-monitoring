@@ -1151,7 +1151,7 @@ foreach ($roles as $r) {
         // Show loading state
         const btn = window.event ? window.event.currentTarget : null;
         let originalHtml = '';
-        if (btn) {
+        if (btn) {0
             originalHtml = btn.innerHTML;
             btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
             btn.disabled = true;

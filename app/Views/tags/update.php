@@ -268,23 +268,30 @@
                         <div id="collapseJsCode" class="accordion-collapse collapse show"
                             aria-labelledby="headingJsCode" data-bs-parent="#jsCodeAccordion">
                             <div class="accordion-body p-0">
-                                <div id="jsEditor"
-                                            style="height: 500px; width: 100%; border-top: 1px solid rgba(0,0,0,0.05); border-bottom: 1px solid rgba(0,0,0,0.05);">
+                                <!-- Editor View -->
+                                <div id="jsEditorView">
+                                    <div id="jsEditor"
+                                        style="height: 500px; width: 100%; border-top: 1px solid rgba(0,0,0,0.05); border-bottom: 1px solid rgba(0,0,0,0.05);">
+                                    </div>
+                                    <div id="jsValidationPanel" class="p-2 border-bottom"
+                                        style="font-size: 0.85rem; max-height: 150px; overflow-y: auto; background-color: var(--color-bg-base);">
+                                        <div class="text-muted"><i class="bi bi-hourglass-split me-1"></i>
+                                            Validating...</div>
+                                    </div>
+                                    <div class="p-3 bg-light d-flex justify-content-between align-items-center">
+                                        <div class="form-check form-switch ms-2 mb-0">
+                                            <input class="form-check-input" type="checkbox" id="themeToggle"
+                                                style="cursor: pointer;">
+                                            <label class="form-check-label text-muted" for="themeToggle"
+                                                style="font-size: 0.9rem; cursor: pointer;">
+                                                <i class="bi bi-moon-stars me-1"></i> Dark Mode
+                                            </label>
                                         </div>
-                                        <div id="jsValidationPanel" class="p-2 border-bottom"
-                                            style="font-size: 0.85rem; max-height: 150px; overflow-y: auto; background-color: var(--color-bg-base);">
-                                            <div class="text-muted"><i class="bi bi-hourglass-split me-1"></i>
-                                                Validating...</div>
-                                        </div>
-                                        <div class="p-3 bg-light d-flex justify-content-between align-items-center">
-                                            <div class="form-check form-switch ms-2 mb-0">
-                                                <input class="form-check-input" type="checkbox" id="themeToggle"
-                                                    style="cursor: pointer;">
-                                                <label class="form-check-label text-muted" for="themeToggle"
-                                                    style="font-size: 0.9rem; cursor: pointer;">
-                                                    <i class="bi bi-moon-stars me-1"></i> Dark Mode
-                                                </label>
-                                            </div>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <button type="button" class="apple-btn-secondary btn-sm px-3"
+                                                id="reviewChangesBtn" style="border-radius: 20px;">
+                                                <i class="bi bi-file-diff me-1"></i> Review Changes
+                                            </button>
                                             <button type="button" class="apple-btn-primary btn-sm px-4"
                                                 id="saveJsCodeBtn" style="border-radius: 20px;">
                                                 <i class="bi bi-save me-1"></i> Save Script
@@ -292,8 +299,71 @@
                                         </div>
                                     </div>
                                 </div>
+
+                                <!-- Comparison Section (Review Changes Before Saving) -->
+                                <div id="jsComparisonView" style="display: none;">
+                                    <!-- Comparison Toolbar -->
+                                    <div class="p-2 px-3 bg-light border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle d-flex align-items-center gap-1">
+                                                <i class="bi bi-file-diff"></i>
+                                                <span>Review Changes</span>
+                                            </span>
+                                            <span class="text-secondary small fw-medium" id="diffSubtitle">
+                                                Original (left) vs Modified (right)
+                                            </span>
+                                        </div>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <!-- Layout Mode Toggle -->
+                                            <div class="btn-group btn-group-sm" role="group" aria-label="Diff view layout">
+                                                <button type="button" class="btn btn-outline-secondary btn-sm px-2 py-1" id="diffSideBySideBtn" title="Side by Side Split View">
+                                                    <i class="bi bi-columns me-1"></i>Split
+                                                </button>
+                                                <button type="button" class="btn btn-outline-secondary btn-sm px-2 py-1 active" id="diffInlineBtn" title="Unified Inline View">
+                                                    <i class="bi bi-view-stacked me-1"></i>Unified
+                                                </button>
+                                            </div>
+                                            <!-- Fullscreen Toggle -->
+                                            <button type="button" class="btn btn-outline-secondary btn-sm px-2 py-1" id="diffFullscreenBtn" title="Toggle Fullscreen">
+                                                <i class="bi bi-arrows-fullscreen"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Warning banner if errors present -->
+                                    <div id="diffErrorsBanner" class="p-2 px-3 border-bottom alert-warning text-warning-emphasis d-none" style="font-size: 0.82rem;">
+                                        <i class="bi bi-exclamation-triangle-fill text-warning me-1"></i>
+                                        <span id="diffErrorsCountText">JavaScript syntax errors detected in modified code.</span>
+                                    </div>
+
+                                    <!-- Monaco Diff Editor Container -->
+                                    <div id="jsDiffEditor" style="height: 500px; width: 100%; border-bottom: 1px solid rgba(0,0,0,0.05);"></div>
+
+                                    <!-- Comparison Footer Actions -->
+                                    <div class="p-3 bg-light d-flex justify-content-between align-items-center">
+                                        <div class="form-check form-switch ms-2 mb-0">
+                                            <input class="form-check-input" type="checkbox" id="themeToggleDiff"
+                                                style="cursor: pointer;">
+                                            <label class="form-check-label text-muted" for="themeToggleDiff"
+                                                style="font-size: 0.9rem; cursor: pointer;">
+                                                <i class="bi bi-moon-stars me-1"></i> Dark Mode
+                                            </label>
+                                        </div>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <button type="button" class="apple-btn-secondary btn-sm px-3"
+                                                id="backToEditorBtn" style="border-radius: 20px;">
+                                                <i class="bi bi-arrow-left me-1"></i> Back to Editor
+                                            </button>
+                                            <button type="button" class="apple-btn-primary btn-sm px-4"
+                                                id="confirmSaveJsCodeBtn" style="border-radius: 20px;">
+                                                <i class="bi bi-check-lg me-1"></i> Confirm &amp; Save
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+                    </div>
             </div> <!-- End Right Column -->
         </div> <!-- End Row -->
     </form>
@@ -398,6 +468,23 @@
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
+<style>
+    .diff-modal-fullscreen {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        z-index: 1055 !important;
+        background: var(--color-bg-base, #ffffff) !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    .diff-modal-fullscreen #jsDiffEditor {
+        flex: 1 1 auto !important;
+        height: calc(100vh - 130px) !important;
+    }
+</style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -506,12 +593,68 @@
             // Make editor globally accessible if needed for saving
             window.editorInstance = editor;
 
-            // Handle theme toggle changes
+            // Diff Editor state
+            var diffEditor = null;
+            var diffOriginalModel = null;
+            var diffModifiedModel = null;
+
+            function initDiffEditor() {
+                var diffContainer = document.getElementById('jsDiffEditor');
+                if (!diffContainer || diffEditor) return;
+
+                diffOriginalModel = monaco.editor.createModel(initialCode, 'javascript');
+                diffModifiedModel = monaco.editor.createModel(editor.getValue(), 'javascript');
+
+                diffEditor = monaco.editor.createDiffEditor(diffContainer, {
+                    theme: localStorage.getItem('monacoTheme') || 'vs',
+                    readOnly: true,
+                    automaticLayout: true,
+                    fontSize: 14,
+                    fontFamily: 'Fira Code, Menlo, Monaco, Consolas, monospace',
+                    lineHeight: 20,
+                    renderSideBySide: false, // Default to unified inline diff
+                    wordWrap: 'on',
+                    minimap: { enabled: false },
+                    scrollBeyondLastLine: false,
+                    originalEditable: false,
+                    padding: { top: 10, bottom: 10 }
+                });
+
+                diffEditor.setModel({
+                    original: diffOriginalModel,
+                    modified: diffModifiedModel
+                });
+
+                window.diffEditorInstance = diffEditor;
+            }
+
+            // Synchronize theme across both toggles and all Monaco editors
+            function applyTheme(newTheme) {
+                monaco.editor.setTheme(newTheme);
+                localStorage.setItem('monacoTheme', newTheme);
+                var isDark = (newTheme === 'vs-dark');
+                var t1 = document.getElementById('themeToggle');
+                var t2 = document.getElementById('themeToggleDiff');
+                if (t1) t1.checked = isDark;
+                if (t2) t2.checked = isDark;
+            }
+
+            var themeToggle = document.getElementById('themeToggle');
+            var themeToggleDiff = document.getElementById('themeToggleDiff');
+
+            if (localTheme === 'vs-dark') {
+                if (themeToggle) themeToggle.checked = true;
+                if (themeToggleDiff) themeToggleDiff.checked = true;
+            }
+
             if (themeToggle) {
                 themeToggle.addEventListener('change', function () {
-                    var newTheme = this.checked ? 'vs-dark' : 'vs';
-                    monaco.editor.setTheme(newTheme);
-                    localStorage.setItem('monacoTheme', newTheme);
+                    applyTheme(this.checked ? 'vs-dark' : 'vs');
+                });
+            }
+            if (themeToggleDiff) {
+                themeToggleDiff.addEventListener('change', function () {
+                    applyTheme(this.checked ? 'vs-dark' : 'vs');
                 });
             }
 
@@ -520,6 +663,7 @@
             if (collapseElement) {
                 collapseElement.addEventListener('shown.bs.collapse', function () {
                     editor.layout();
+                    if (diffEditor) diffEditor.layout();
                 });
             }
 
@@ -561,77 +705,275 @@
                         var isError = marker.severity === 8;
                         var icon = isError ? '<i class="bi bi-x-circle-fill text-danger me-1"></i>' : '<i class="bi bi-exclamation-triangle-fill text-warning me-1"></i>';
                         var colorClass = isError ? 'text-danger' : 'text-warning';
-                        html += `<div class="${colorClass} mb-1" style="font-family: monospace;">${icon} Line ${marker.startLineNumber}: ${marker.message}</div>`;
+                        var msg = window.escapeHtml ? window.escapeHtml(marker.message) : marker.message;
+                        html += `<div class="${colorClass} mb-1" style="font-family: monospace;">${icon} Line ${marker.startLineNumber}: ${msg}</div>`;
                     });
                     panel.innerHTML = html;
                 }
             });
 
-            // Handle Save action
+            // Format error list for custom themed popup dialog
+            var formatErrorList = function (list) {
+                var escapeFn = window.escapeHtml || function (t) { return t; };
+                var html = list.map(item => `Line ${item.startLineNumber}: ${escapeFn(item.message)}`).join('<br>');
+                return `<div style="max-height: 120px; overflow-y: auto; text-align: left; background: rgba(0,0,0,0.04); padding: 8px 12px; border-radius: 6px; font-family: monospace; font-size: 0.8rem; border: 1px solid rgba(0,0,0,0.08); margin: 10px 0; line-height: 1.4; word-break: break-word;">${html}</div>`;
+            };
+
+            // Switch to Comparison View to review changes before saving
+            function showComparisonView() {
+                var currentCode = editor.getValue();
+
+                // If code is unchanged, notify user
+                if (currentCode === initialCode) {
+                    window.themeAlert({
+                        title: 'No Changes',
+                        message: 'No changes detected. The script is identical to the saved version.',
+                        type: 'primary'
+                    });
+                    return;
+                }
+
+                if (!diffEditor) {
+                    initDiffEditor();
+                }
+
+                diffOriginalModel.setValue(initialCode);
+                diffModifiedModel.setValue(currentCode);
+
+                // Check errors for banner in comparison section
+                var model = editor.getModel();
+                var markers = model ? monaco.editor.getModelMarkers({ resource: model.uri }) : [];
+                var errors = markers.filter(function (m) { return m.severity === 8; });
+                var banner = document.getElementById('diffErrorsBanner');
+                var countText = document.getElementById('diffErrorsCountText');
+                if (errors.length > 0) {
+                    if (banner) banner.classList.remove('d-none');
+                    if (countText) countText.textContent = `${errors.length} JavaScript syntax error(s) detected in your modified code.`;
+                } else {
+                    if (banner) banner.classList.add('d-none');
+                }
+
+                // Switch visible view
+                document.getElementById('jsEditorView').style.display = 'none';
+                document.getElementById('jsComparisonView').style.display = 'block';
+
+                setTimeout(function () {
+                    if (diffEditor) {
+                        diffEditor.layout();
+                    }
+                }, 50);
+            }
+
+            // Return to Editor View
+            function hideComparisonView() {
+                var compView = document.getElementById('jsComparisonView');
+                if (compView && compView.classList.contains('diff-modal-fullscreen')) {
+                    toggleFullscreenDiff(false);
+                }
+                if (compView) compView.style.display = 'none';
+                var editView = document.getElementById('jsEditorView');
+                if (editView) editView.style.display = 'block';
+
+                setTimeout(function () {
+                    editor.layout();
+                    editor.focus();
+                }, 50);
+            }
+
+            // Confirm & Save action with themed JavaScript errors prompt
+            function handleConfirmSave() {
+                var model = editor.getModel();
+                var markers = model ? monaco.editor.getModelMarkers({ resource: model.uri }) : [];
+                var errors = markers.filter(function (m) { return m.severity === 8; });
+
+                if (errors.length > 0) {
+                    var messageHtml = `There are ${errors.length} JavaScript syntax error(s) detected in your code.<br>` +
+                        formatErrorList(errors) +
+                        `Are you sure you want to save anyway?`;
+
+                    // Themed confirmation popup styled identically to the save popup
+                    window.themeConfirm({
+                        title: 'JavaScript Errors Detected',
+                        message: messageHtml,
+                        confirmText: 'Save Anyway',
+                        cancelText: 'Cancel',
+                        type: 'warning'
+                    }).then(function (confirmed) {
+                        if (confirmed) {
+                            executeSave();
+                        }
+                    });
+                } else {
+                    executeSave();
+                }
+            }
+
+            // Execute the AJAX save request
+            function executeSave() {
+                var btn = document.getElementById('confirmSaveJsCodeBtn');
+                var originalText = btn ? btn.innerHTML : '<i class="bi bi-check-lg me-1"></i> Confirm &amp; Save';
+                if (btn) {
+                    btn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i> Saving...';
+                    btn.disabled = true;
+                }
+
+                var code = editor.getValue();
+                var formData = new FormData();
+                formData.append('js_code', code);
+
+                fetch('<?= site_url('tags/save-js-code/' . $tag['id']) ?>', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            isDirty = false;
+                            initialCode = code; // Update baseline
+                            if (diffOriginalModel) {
+                                diffOriginalModel.setValue(code);
+                            }
+
+                            hideComparisonView();
+
+                            window.themeAlert({
+                                title: 'Success',
+                                message: data.message,
+                                type: 'success'
+                            });
+                        } else {
+                            window.themeAlert({
+                                title: 'Error',
+                                message: data.message || 'Failed to save code.',
+                                type: 'danger'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        window.themeAlert({
+                            title: 'Error',
+                            message: 'An unexpected error occurred.',
+                            type: 'danger'
+                        });
+                    })
+                    .finally(() => {
+                        if (btn) {
+                            btn.innerHTML = originalText;
+                            btn.disabled = false;
+                        }
+                    });
+            }
+
+            // Event Listeners for Editor and Comparison Actions
             var saveBtn = document.getElementById('saveJsCodeBtn');
             if (saveBtn) {
                 saveBtn.addEventListener('click', function () {
-                    var model = editor.getModel();
-                    var markers = model ? monaco.editor.getModelMarkers({ resource: model.uri }) : [];
-                    var errors = markers.filter(function (m) { return m.severity === 8; });
+                    showComparisonView();
+                });
+            }
 
-                    var formatList = function (list) {
-                        var html = list.map(item => `Line ${item.startLineNumber}: ${item.message}`).join('<br>');
-                        return `<div style="max-height: 150px; overflow-y: auto; text-align: left; background: rgba(0,0,0,0.03); padding: 10px; border-radius: 4px; font-family: monospace; font-size: 0.85rem; border: 1px solid rgba(0,0,0,0.05); margin-top: 10px;">${html}</div>`;
-                    };
+            var reviewBtn = document.getElementById('reviewChangesBtn');
+            if (reviewBtn) {
+                reviewBtn.addEventListener('click', function () {
+                    showComparisonView();
+                });
+            }
 
-                    // Warn about compile/syntax errors but allow saving
-                    if (errors.length > 0) {
-                        if (!confirm('Syntax Errors Detected:\n\nThere are JavaScript errors in your code. Are you sure you want to save anyway?')) {
-                            return;
-                        }
+            var backBtn = document.getElementById('backToEditorBtn');
+            if (backBtn) {
+                backBtn.addEventListener('click', function () {
+                    hideComparisonView();
+                });
+            }
+
+            var confirmSaveBtn = document.getElementById('confirmSaveJsCodeBtn');
+            if (confirmSaveBtn) {
+                confirmSaveBtn.addEventListener('click', function () {
+                    handleConfirmSave();
+                });
+            }
+
+            // Diff View Mode Buttons: Split (Side by Side) vs Unified (Inline)
+            var diffSideBySideBtn = document.getElementById('diffSideBySideBtn');
+            var diffInlineBtn = document.getElementById('diffInlineBtn');
+
+            if (diffSideBySideBtn && diffInlineBtn) {
+                diffSideBySideBtn.addEventListener('click', function () {
+                    diffSideBySideBtn.classList.add('active');
+                    diffInlineBtn.classList.remove('active');
+                    if (diffEditor) {
+                        diffEditor.updateOptions({ renderSideBySide: true });
                     }
+                });
 
-                    var btn = this;
-                    var originalText = btn.innerHTML;
-                    btn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i> Saving...';
-                    btn.disabled = true;
+                diffInlineBtn.addEventListener('click', function () {
+                    diffInlineBtn.classList.add('active');
+                    diffSideBySideBtn.classList.remove('active');
+                    if (diffEditor) {
+                        diffEditor.updateOptions({ renderSideBySide: false });
+                    }
+                });
+            }
 
-                    var code = editor.getValue();
-                    var formData = new FormData();
-                    formData.append('js_code', code);
+            // Fullscreen Diff View Toggle
+            function toggleFullscreenDiff(forceState) {
+                var compView = document.getElementById('jsComparisonView');
+                var fsBtn = document.getElementById('diffFullscreenBtn');
+                if (!compView) return;
 
-                    fetch('<?= site_url('tags/save-js-code/' . $tag['id']) ?>', {
-                        method: 'POST',
-                        body: formData,
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest'
-                        }
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.status === 'success') {
-                                isDirty = false;
-                                window.themeAlert({
-                                    title: 'Success',
-                                    message: data.message,
-                                    type: 'success'
-                                });
-                            } else {
-                                window.themeAlert({
-                                    title: 'Error',
-                                    message: data.message || 'Failed to save code.',
-                                    type: 'danger'
-                                });
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            window.themeAlert({
-                                title: 'Error',
-                                message: 'An unexpected error occurred.',
-                                type: 'danger'
-                            });
-                        })
-                        .finally(() => {
-                            btn.innerHTML = originalText;
-                            btn.disabled = false;
-                        });
+                var isFs = typeof forceState === 'boolean' ? forceState : !compView.classList.contains('diff-modal-fullscreen');
+
+                if (isFs) {
+                    compView.classList.add('diff-modal-fullscreen');
+                    if (fsBtn) {
+                        fsBtn.innerHTML = '<i class="bi bi-fullscreen-exit"></i>';
+                        fsBtn.title = 'Exit Fullscreen';
+                    }
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    compView.classList.remove('diff-modal-fullscreen');
+                    if (fsBtn) {
+                        fsBtn.innerHTML = '<i class="bi bi-arrows-fullscreen"></i>';
+                        fsBtn.title = 'Toggle Fullscreen';
+                    }
+                    document.body.style.overflow = '';
+                }
+
+                setTimeout(function () {
+                    if (diffEditor) {
+                        diffEditor.layout();
+                    }
+                }, 60);
+            }
+
+            var fsBtn = document.getElementById('diffFullscreenBtn');
+            if (fsBtn) {
+                fsBtn.addEventListener('click', function () {
+                    toggleFullscreenDiff();
+                });
+            }
+
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    var compView = document.getElementById('jsComparisonView');
+                    if (compView && compView.classList.contains('diff-modal-fullscreen')) {
+                        toggleFullscreenDiff(false);
+                    }
+                }
+            });
+
+            // Keydown shortcut Ctrl+S inside comparison view
+            var compView = document.getElementById('jsComparisonView');
+            if (compView) {
+                compView.addEventListener('keydown', function (e) {
+                    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+                        e.preventDefault();
+                        handleConfirmSave();
+                    }
                 });
             }
         });
