@@ -1154,7 +1154,7 @@ class TagRequestsController extends BaseController
             $tagNames[] = 'Unknown Tag';
         }
         
-        $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load(WRITEPATH . 'uploads/AEM - Local Rule Monitoring Excel.xlsx');
+        $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load(WRITEPATH . 'uploads/AEM - Local Rule Monitoring File.xlsx');
         $sheet = $spreadsheet->getActiveSheet();
         
         // Headers
@@ -1296,7 +1296,7 @@ class TagRequestsController extends BaseController
             $tagNames[] = 'Unknown Tag';
         }
         
-        $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load(WRITEPATH . 'uploads/Shop - Local Rule Monitoring Excel.xlsx');
+        $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load(WRITEPATH . 'uploads/Shop - Local Rule Monitoring File.xlsx');
         $sheet = $spreadsheet->getActiveSheet();
         
         // Headers

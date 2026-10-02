@@ -783,16 +783,19 @@ Tag Request: Create
             <br/>
             
             <p style='font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:14px; color:#1D1D1F;'><b>② Integration Result: Fill in the checklist below to make sure the new tags aren't affecting your site's operation.</b></p>
-            <table cellpadding='8' cellspacing='0' style='border-collapse:collapse; width:100%; border:1px solid #e8e8ed; font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:14px; margin-bottom:16px;'>
+            <table id='table-page-load-rule' cellpadding='8' cellspacing='0' style='border-collapse:collapse; width:100%; border:1px solid #e8e8ed; font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:14px; margin-bottom:16px;'>
                 <tbody>";
 
+            $plIdx = 0;
             foreach (Constants::INTEGRATION_RESULT_PAGE_LOAD as $question => $value) {
+                $cellClass = ($plIdx > 0) ? " class='page-load-confirm-cell'" : "";
                 $detailsHtml .= "
                     <tr style='border-bottom:1px solid #e8e8ed;'>
                         <td style='width:50%; color:#49494D; font-weight:500; border-right:1px solid #e8e8ed; padding:8px 12px;'>". $question ."</td>
-                        <td style='color:#1D1D1F; padding:8px 12px;'>". $value ."</td>
+                        <td" . $cellClass . " style='color:#1D1D1F; padding:8px 12px;'>". $value ."</td>
                     </tr>
                 ";
+                $plIdx++;
             }
 
             $detailsHtml .= "
@@ -801,16 +804,19 @@ Tag Request: Create
             
             <br/>
             
-            <table cellpadding='8' cellspacing='0' style='border-collapse:collapse; width:100%; border:1px solid #e8e8ed; font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:14px; margin-bottom:16px;'>
+            <table id='table-event-click-rule' cellpadding='8' cellspacing='0' style='border-collapse:collapse; width:100%; border:1px solid #e8e8ed; font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:14px; margin-bottom:16px;'>
                 <tbody>";
 
+            $ecIdx = 0;
             foreach (Constants::INTEGRATION_RESULT_EVENT_CLICK as $question => $value) {
+                $cellClass = ($ecIdx > 0) ? " class='event-click-confirm-cell'" : "";
                 $detailsHtml .= "
                     <tr style='border-bottom:1px solid #e8e8ed;'>
                         <td style='width:50%; color:#49494D; font-weight:500; border-right:1px solid #e8e8ed; padding:8px 12px;'>". $question ."</td>
-                        <td style='color:#1D1D1F; padding:8px 12px;'>". $value ."</td>
+                        <td" . $cellClass . " style='color:#1D1D1F; padding:8px 12px;'>". $value ."</td>
                     </tr>
                 ";
+                $ecIdx++;
             }
 
             $detailsHtml .= "
@@ -906,6 +912,43 @@ Tag Request: Create
                             </div>
                             <input type="hidden" name="ticket_id" value="<?= esc($ticket_id) ?>">
                         <?php endif; ?>
+                    </div>
+
+                    <!-- Page Load Rule & Event Click Rule Confirmations -->
+                    <div class="mb-3 pt-3 border-top">
+                        <label class="form-label-sm fw-semibold text-secondary mb-1 d-block">1. Page Load Rule</label>
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="form-check form-check-inline mb-0">
+                                <input class="form-check-input page-load-rule-radio" type="radio" name="page_load_rule_confirm" id="nr_page_load_yes" value="Y">
+                                <label class="form-check-label form-label-sm" for="nr_page_load_yes">Yes</label>
+                            </div>
+                            <div class="form-check form-check-inline mb-0">
+                                <input class="form-check-input page-load-rule-radio" type="radio" name="page_load_rule_confirm" id="nr_page_load_no" value="N">
+                                <label class="form-check-label form-label-sm" for="nr_page_load_no">No</label>
+                            </div>
+                            <div class="form-check form-check-inline mb-0">
+                                <input class="form-check-input page-load-rule-radio" type="radio" name="page_load_rule_confirm" id="nr_page_load_na" value="N/A">
+                                <label class="form-check-label form-label-sm" for="nr_page_load_na">Not Applicable</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label-sm fw-semibold text-secondary mb-1 d-block">2. Event Click Rule</label>
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="form-check form-check-inline mb-0">
+                                <input class="form-check-input event-click-rule-radio" type="radio" name="event_click_rule_confirm" id="nr_event_click_yes" value="Y">
+                                <label class="form-check-label form-label-sm" for="nr_event_click_yes">Yes</label>
+                            </div>
+                            <div class="form-check form-check-inline mb-0">
+                                <input class="form-check-input event-click-rule-radio" type="radio" name="event_click_rule_confirm" id="nr_event_click_no" value="N">
+                                <label class="form-check-label form-label-sm" for="nr_event_click_no">No</label>
+                            </div>
+                            <div class="form-check form-check-inline mb-0">
+                                <input class="form-check-input event-click-rule-radio" type="radio" name="event_click_rule_confirm" id="nr_event_click_na" value="N/A">
+                                <label class="form-check-label form-label-sm" for="nr_event_click_na">Not Applicable</label>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -1352,6 +1395,48 @@ Tag Request: Create
 
                 var detailsHtml = <?= json_encode($detailsHtml ?? '') ?>;
                 $('#details').summernote('code', detailsHtml);
+
+                $(document).on('change', 'input[name="page_load_rule_confirm"]', function() {
+                    var val = $(this).val();
+                    var currentHtml = $('#details').summernote('code');
+                    var $temp = $('<div>').html(currentHtml);
+                    
+                    var $cells = $temp.find('.page-load-confirm-cell');
+                    if ($cells.length > 0) {
+                        $cells.text(val);
+                    } else {
+                        var $table = $temp.find('#table-page-load-rule');
+                        if ($table.length === 0) {
+                            $table = $temp.find('table').filter(function() {
+                                return $(this).text().indexOf('Page Load Rule') !== -1;
+                            });
+                        }
+                        $table.find('tr:gt(0) td:last-child').text(val);
+                    }
+                    
+                    $('#details').summernote('code', $temp.html());
+                });
+
+                $(document).on('change', 'input[name="event_click_rule_confirm"]', function() {
+                    var val = $(this).val();
+                    var currentHtml = $('#details').summernote('code');
+                    var $temp = $('<div>').html(currentHtml);
+                    
+                    var $cells = $temp.find('.event-click-confirm-cell');
+                    if ($cells.length > 0) {
+                        $cells.text(val);
+                    } else {
+                        var $table = $temp.find('#table-event-click-rule');
+                        if ($table.length === 0) {
+                            $table = $temp.find('table').filter(function() {
+                                return $(this).text().indexOf('Event Click Rule') !== -1;
+                            });
+                        }
+                        $table.find('tr:gt(0) td:last-child').text(val);
+                    }
+                    
+                    $('#details').summernote('code', $temp.html());
+                });
             }
         });
     });
@@ -1445,6 +1530,21 @@ Tag Request: Create
         const status = document.getElementById('copyDetailsStatus');
         status.style.opacity = 1;
         setTimeout(() => status.style.opacity = 0, 1000);
+
+        const ticketInput = $('#ticket_id');
+        const ticketId = ticketInput.length ? ticketInput.val().trim() : '';
+        if (!ticketId) {
+            window.themeAlert({
+                title: 'JIRA Ticket ID Missing',
+                message: 'Description has been copied. However, the JIRA ticket ID is still not added. Please make sure to create the JIRA ticket and input the Ticket ID before submitting the request.',
+                type: 'warning',
+                buttonText: 'Got it'
+            }).then(() => {
+                if (ticketInput.is(':visible')) {
+                    ticketInput.focus();
+                }
+            });
+        }
     }
 
     function generateUUID() {
@@ -1461,6 +1561,46 @@ Tag Request: Create
         copyText.setSelectionRange(0, 99999);
         document.execCommand("copy");
     }
+
+    $(document).on('click', 'button[type="submit"]', function(e) {
+        const ticketInput = $('#ticket_id');
+        if (ticketInput.length && ticketInput.is(':visible')) {
+            const ticketId = ticketInput.val().trim();
+            if (!ticketId) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                window.themeAlert({
+                    title: 'JIRA Ticket ID Missing',
+                    message: 'Please enter a JIRA Ticket ID before submitting the request.',
+                    type: 'warning',
+                    buttonText: 'Got it'
+                }).then(() => {
+                    ticketInput.focus();
+                });
+                return false;
+            }
+        }
+    });
+
+    $(document).on('submit', 'form', function(e) {
+        const ticketInput = $('#ticket_id');
+        if (ticketInput.length && ticketInput.is(':visible')) {
+            const ticketId = ticketInput.val().trim();
+            if (!ticketId) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                window.themeAlert({
+                    title: 'JIRA Ticket ID Missing',
+                    message: 'Please enter a JIRA Ticket ID before submitting the request.',
+                    type: 'warning',
+                    buttonText: 'Got it'
+                }).then(() => {
+                    ticketInput.focus();
+                });
+                return false;
+            }
+        }
+    });
 
     document.addEventListener('DOMContentLoaded', function() {
         if(document.getElementById('uuid_display')) {

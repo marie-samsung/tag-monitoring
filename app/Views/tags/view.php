@@ -78,6 +78,9 @@ $tagRequestsModel = new TagRequestsModel();
                             class="apple-link text-decoration-none fw-semibold">
                             <?= esc($tag['name']) ?>
                         </a>
+                        <?php if (!empty($tag['requested_name'])): ?>
+                            <small class="text-muted ms-1" title="Requested Name: <?= esc($tag['requested_name']) ?>">[<?= esc($tag['requested_name']) ?>]</small>
+                        <?php endif; ?>
                     </span>
                 </div>
 

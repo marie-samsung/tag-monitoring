@@ -319,6 +319,7 @@ class TagsController extends BaseController
             'requester_email' => $post['requester_email'],
             'requester_organization' => $organizationId,
             'requested_date' => !empty($post['requested_date']) ? $post['requested_date'] : null,
+            'requested_name' => !empty(trim($post['requested_name'] ?? '')) ? trim($post['requested_name']) : null,
         ];
 
         $model->update($id, $updateData);
@@ -452,11 +453,18 @@ class TagsController extends BaseController
             }
         }
 
-        $model->update($id, [
+        $updateTagData = [
             'status' => Constants::STATUS_ENABLED,
             'al_end_date' => $requestedDate,
             'requested_date' => null,
-        ]);
+        ];
+
+        if (!empty($tag['requested_name'])) {
+            $updateTagData['name'] = $tag['requested_name'];
+            $updateTagData['requested_name'] = null;
+        }
+
+        $model->update($id, $updateTagData);
 
         $returnUrl = $this->request->getGet('return_url');
         if ($returnUrl) {
@@ -548,11 +556,18 @@ class TagsController extends BaseController
                 }
             }
 
-            $model->update($id, [
+            $updateTagData = [
                 'status' => Constants::STATUS_ENABLED,
                 'al_end_date' => $requestedDate,
                 'requested_date' => null,
-            ]);
+            ];
+
+            if (!empty($tag['requested_name'])) {
+                $updateTagData['name'] = $tag['requested_name'];
+                $updateTagData['requested_name'] = null;
+            }
+
+            $model->update($id, $updateTagData);
 
             $verifiedCount++;
             $verifiedNames[] = "#{$tag['id']} {$tag['name']}";
@@ -654,6 +669,15 @@ class TagsController extends BaseController
 
             if ($nextEndDate !== $currentEndDate) {
                 $updateData['requested_date'] = $nextEndDate;
+            }
+
+            if (isset($tag['requested_name'])) {
+                $requestedName = trim($tag['requested_name']);
+                if ($requestedName !== '' && (!$currentTag || $requestedName !== $currentTag['name'])) {
+                    $updateData['requested_name'] = $requestedName;
+                } else {
+                    $updateData['requested_name'] = null;
+                }
             }
 
             $updated = $model->update($tag['id'], $updateData);

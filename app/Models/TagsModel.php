@@ -18,6 +18,7 @@ class TagsModel extends Model
         'is_active', // bool
         'al_end_date',
         'requested_date',
+        'requested_name',
         'ref_link', // Link to AL
         'requester_name',
         'requester_email',

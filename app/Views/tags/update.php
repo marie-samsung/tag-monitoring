@@ -166,6 +166,18 @@
                             </div>
                         </div>
 
+                        <!-- Requested Name -->
+                        <div class="col-md-6">
+                            <label class="form-label-sm fw-semibold text-secondary mb-1" for="requested_name">Requested Name</label>
+                            <input type="text" name="requested_name" id="requested_name"
+                                class="form-control form-control-xs"
+                                value="<?= esc($tag['requested_name'] ?? '') ?>"
+                                placeholder="Requested name will be the new name after tag update is verified">
+                            <small class="form-text text-muted" style="font-size: 0.75rem;">
+                                Requested name
+                            </small>
+                        </div>
+
                         <!-- Launch Link -->
                         <div class="col-md-12">
                             <label for="ref_link" class="form-label-sm fw-semibold text-secondary mb-1">Launch

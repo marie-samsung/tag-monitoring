@@ -922,6 +922,7 @@ $hasActiveFilters = ($activeFiltersCount > 0) || !empty($_GET['keyword']);
                                         data-status="<?= htmlspecialchars($tag['status']) ?>"
                                         data-ticket-id="<?= htmlspecialchars($ticketId ?? '') ?>"
                                         data-requested-date="<?= htmlspecialchars($tag['requested_date'] ?? '') ?>"
+                                        data-requested-name="<?= htmlspecialchars($tag['requested_name'] ?? '') ?>"
                                         data-ref-link="<?= htmlspecialchars($tag['ref_link'] ?? '') ?>"
                                         class="form-check-input">
                                 </td>
@@ -946,6 +947,9 @@ $hasActiveFilters = ($activeFiltersCount > 0) || !empty($_GET['keyword']);
                                             class="apple-link-dark form-label-sm ms-1">
                                             <?= esc($tag['name']) ?>
                                         </a>
+                                        <?php if (!empty($tag['requested_name'])): ?>
+                                            <br><small class="text-muted ms-1" title="Requested Name: <?= esc($tag['requested_name']) ?>">[<?= esc($tag['requested_name']) ?>]</small>
+                                        <?php endif; ?>
                                         <a href="<?= $tag['ref_link'] ?>" target="_blank" rel="noopener" class="text-muted ms-1"
                                             style="font-size: 0.75rem; text-decoration: none;" title="View in Adobe Launch">
                                             <i class="bi bi-box-arrow-up-right"></i>
@@ -1630,6 +1634,7 @@ $hasActiveFilters = ($activeFiltersCount > 0) || !empty($_GET['keyword']);
     ],
     'additionalFields' => [
         'id' => 'Tag ID',
+        'requested_name' => 'Requested Name',
         'vendor' => 'Vendor',
         'conditions' => 'Firing Conditions',
         'ref_link' => 'AL Ref Link',

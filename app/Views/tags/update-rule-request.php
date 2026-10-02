@@ -154,16 +154,19 @@
         <br/>
         
         <p style='font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:14px; color:#1D1D1F;'><b>② Integration Result: Fill in the checklist below to make sure the new tags aren't affecting your site's operation.</b></p>
-        <table cellpadding='8' cellspacing='0' style='border-collapse:collapse; width:100%; border:1px solid #e8e8ed; font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:14px; margin-bottom:16px;'>
+        <table id='table-page-load-rule' cellpadding='8' cellspacing='0' style='border-collapse:collapse; width:100%; border:1px solid #e8e8ed; font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:14px; margin-bottom:16px;'>
             <tbody>";
 
+    $plIdx = 0;
     foreach (Constants::INTEGRATION_RESULT_PAGE_LOAD as $question => $value) {
+        $cellClass = ($plIdx > 0) ? " class='page-load-confirm-cell'" : "";
         $detailsHtml .= "
                 <tr style='border-bottom:1px solid #e8e8ed;'>
                     <td style='width:50%; color:#49494D; font-weight:500; border-right:1px solid #e8e8ed; padding:8px 12px;'>". $question ."</td>
-                    <td style='color:#1D1D1F; padding:8px 12px;'>". $value ."</td>
+                    <td" . $cellClass . " style='color:#1D1D1F; padding:8px 12px;'>". $value ."</td>
                 </tr>
             ";
+        $plIdx++;
     }
 
     $detailsHtml .= "
@@ -172,16 +175,19 @@
         
         <br/>
         
-        <table cellpadding='8' cellspacing='0' style='border-collapse:collapse; width:100%; border:1px solid #e8e8ed; font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:14px; margin-bottom:16px;'>
+        <table id='table-event-click-rule' cellpadding='8' cellspacing='0' style='border-collapse:collapse; width:100%; border:1px solid #e8e8ed; font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:14px; margin-bottom:16px;'>
             <tbody>";
 
+    $ecIdx = 0;
     foreach (Constants::INTEGRATION_RESULT_EVENT_CLICK as $question => $value) {
+        $cellClass = ($ecIdx > 0) ? " class='event-click-confirm-cell'" : "";
         $detailsHtml .= "
                 <tr style='border-bottom:1px solid #e8e8ed;'>
                     <td style='width:50%; color:#49494D; font-weight:500; border-right:1px solid #e8e8ed; padding:8px 12px;'>". $question ."</td>
-                    <td style='color:#1D1D1F; padding:8px 12px;'>". $value ."</td>
+                    <td" . $cellClass . " style='color:#1D1D1F; padding:8px 12px;'>". $value ."</td>
                 </tr>
             ";
+        $ecIdx++;
     }
 
     $detailsHtml .= "
@@ -253,6 +259,43 @@
                         Format: GTA-XXXXX
                     </small>
                 </div>
+
+                <!-- Page Load Rule & Event Click Rule Confirmations -->
+                <div class="mb-3 pt-3 border-top">
+                    <label class="form-label-sm fw-semibold text-secondary mb-1 d-block">1. Page Load Rule</label>
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="form-check form-check-inline mb-0">
+                            <input class="form-check-input page-load-rule-radio" type="radio" name="page_load_rule_confirm" id="ur_page_load_yes" value="Y">
+                            <label class="form-check-label form-label-sm" for="ur_page_load_yes">Yes</label>
+                        </div>
+                        <div class="form-check form-check-inline mb-0">
+                            <input class="form-check-input page-load-rule-radio" type="radio" name="page_load_rule_confirm" id="ur_page_load_no" value="N">
+                            <label class="form-check-label form-label-sm" for="ur_page_load_no">No</label>
+                        </div>
+                        <div class="form-check form-check-inline mb-0">
+                            <input class="form-check-input page-load-rule-radio" type="radio" name="page_load_rule_confirm" id="ur_page_load_na" value="N/A">
+                            <label class="form-check-label form-label-sm" for="ur_page_load_na">Not Applicable</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-2">
+                    <label class="form-label-sm fw-semibold text-secondary mb-1 d-block">2. Event Click Rule</label>
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="form-check form-check-inline mb-0">
+                            <input class="form-check-input event-click-rule-radio" type="radio" name="event_click_rule_confirm" id="ur_event_click_yes" value="Y">
+                            <label class="form-check-label form-label-sm" for="ur_event_click_yes">Yes</label>
+                        </div>
+                        <div class="form-check form-check-inline mb-0">
+                            <input class="form-check-input event-click-rule-radio" type="radio" name="event_click_rule_confirm" id="ur_event_click_no" value="N">
+                            <label class="form-check-label form-label-sm" for="ur_event_click_no">No</label>
+                        </div>
+                        <div class="form-check form-check-inline mb-0">
+                            <input class="form-check-input event-click-rule-radio" type="radio" name="event_click_rule_confirm" id="ur_event_click_na" value="N/A">
+                            <label class="form-check-label form-label-sm" for="ur_event_click_na">Not Applicable</label>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Tags List Table -->
@@ -293,17 +336,51 @@
                                             </a>
                                         </td>
                                         <td class="form-label-sm">
-                                            <span class="d-flex group-hover-container align-items-center">
-                                                <a href="<?= esc($tag['ref_link'] ?? '#') ?>" target="_blank" class="apple-link-dark">
-                                                    <?= esc($tag['name']) ?>
-                                                </a>
-                                                <a href="<?= site_url('tags/update/' . $tag['id']) ?>" title="Update tag details" class="text-muted ms-2" style="transition: color 0.2s; text-decoration: none; line-height: 1;">
-                                                    <i class="bi bi-pencil" style="font-size: 0.85rem;"></i>
-                                                </a>
-                                                <a href="javascript:void(0)" onclick="copyTagName('<?= esc($tag['name']) ?>', this)" title="Copy tag name" class="text-muted ms-2" style="transition: color 0.2s; text-decoration: none; line-height: 1;">
-                                                    <i class="bi bi-copy" style="font-size: 0.85rem;"></i>
-                                                </a>
-                                            </span>
+                                            <div class="tag-name-cell">
+                                                <span class="d-flex group-hover-container align-items-center">
+                                                    <a href="<?= esc($tag['ref_link'] ?? '#') ?>" target="_blank" class="apple-link-dark fw-semibold current-tag-name">
+                                                        <?= esc($tag['name']) ?>
+                                                    </a>
+                                                    <button type="button" 
+                                                            class="btn btn-link text-muted p-0 ms-2 toggle-edit-name-btn" 
+                                                            title="Modify tag name (requested_name)" 
+                                                            onclick="toggleEditTagName(<?= $tag['id'] ?>)" 
+                                                            style="line-height: 1; text-decoration: none;">
+                                                        <i class="bi bi-pencil" style="font-size: 0.85rem;"></i>
+                                                    </button>
+                                                    <a href="<?= site_url('tags/view/' . $tag['id']) ?>" target="_blank" rel="noopener" title="View tag details" class="text-muted ms-2" style="transition: color 0.2s; text-decoration: none; line-height: 1;">
+                                                        <i class="bi bi-eye" style="font-size: 0.85rem;"></i>
+                                                    </a>
+                                                    <a href="javascript:void(0)" onclick="copyTagName('<?= esc($tag['name']) ?>', this)" title="Copy tag name" class="text-muted ms-2" style="transition: color 0.2s; text-decoration: none; line-height: 1;">
+                                                        <i class="bi bi-copy" style="font-size: 0.85rem;"></i>
+                                                    </a>
+                                                </span>
+
+                                                <?php $hasReqName = !empty($tag['requested_name']); ?>
+                                                <div id="requested-name-box-<?= $tag['id'] ?>" class="requested-name-box mt-1 <?= $hasReqName ? '' : 'd-none' ?>">
+                                                    <div class="d-flex align-items-center gap-1">
+                                                        <input type="text" 
+                                                               name="tags[<?= $tag['id'] ?>][requested_name]" 
+                                                               id="requested_name_<?= $tag['id'] ?>" 
+                                                               class="form-control form-control-sm requested-name-input" 
+                                                               placeholder="New tag name (placeholder)" 
+                                                               value="<?= esc($tag['requested_name'] ?? '') ?>" 
+                                                               data-original-name="<?= esc($tag['name']) ?>"
+                                                               style="min-width: 170px; font-size: 0.8rem;"
+                                                               title="Requested Name - placeholder until verified">
+                                                        <button type="button" class="btn btn-sm btn-outline-secondary border-0 p-1" onclick="copyRequestedName(<?= $tag['id'] ?>, this)" title="Copy requested name">
+                                                            <i class="bi bi-copy"></i>
+                                                        </button>
+                                                        <button type="button" class="btn btn-sm btn-outline-danger border-0 p-1" onclick="clearRequestedName(<?= $tag['id'] ?>)" title="Clear modification">
+                                                            <i class="bi bi-x-lg"></i>
+                                                        </button>
+                                                    </div>
+                                                    <small class="text-muted d-block" style="font-size: 0.68rem;">Requested name</small>
+                                                </div>
+                                                <small id="requested-name-preview-<?= $tag['id'] ?>" class="text-muted <?= $hasReqName ? '' : 'd-none' ?> d-block mt-1 font-monospace" style="font-size: 0.75rem;">
+                                                    [<?= esc($tag['requested_name'] ?? '') ?>]
+                                                </small>
+                                            </div>
                                         </td>
                                         <td class="text-center">
                                             <?php if ($tag['status'] != Constants::STATUS_UPDATED_IN_AL): ?>
@@ -532,6 +609,21 @@
         const status = document.getElementById('copyDetailsStatus');
         status.style.opacity = 1;
         setTimeout(() => status.style.opacity = 0, 1000);
+
+        const ticketInput = $('#ticket_id');
+        const ticketId = ticketInput.length ? ticketInput.val().trim() : '';
+        if (!ticketId) {
+            window.themeAlert({
+                title: 'JIRA Ticket ID Missing',
+                message: 'Description has been copied. However, the JIRA ticket ID is still not added. Please make sure to create the JIRA ticket and input the Ticket ID before submitting the request.',
+                type: 'warning',
+                buttonText: 'Got it'
+            }).then(() => {
+                if (ticketInput.is(':visible')) {
+                    ticketInput.focus();
+                }
+            });
+        }
     }
 
     function copyLibraryName() {
@@ -742,6 +834,182 @@
             }, 1200);
         }
     }
+
+    function toggleEditTagName(tagId) {
+        let box = $('#requested-name-box-' + tagId);
+        let input = $('#requested_name_' + tagId);
+        let preview = $('#requested-name-preview-' + tagId);
+        
+        if (box.hasClass('d-none')) {
+            box.removeClass('d-none');
+            if (!input.val()) {
+                input.val(input.data('original-name'));
+            }
+            input.focus().select();
+        } else {
+            if (!input.val() || input.val() === input.data('original-name')) {
+                input.val('');
+                box.addClass('d-none');
+                preview.addClass('d-none').text('');
+            } else {
+                input.focus();
+            }
+        }
+    }
+
+    function clearRequestedName(tagId) {
+        let box = $('#requested-name-box-' + tagId);
+        let input = $('#requested_name_' + tagId);
+        let preview = $('#requested-name-preview-' + tagId);
+        
+        input.val('');
+        box.addClass('d-none');
+        preview.addClass('d-none').text('');
+    }
+
+    function copyRequestedName(tagId, btn) {
+        let input = document.getElementById('requested_name_' + tagId);
+        let text = input ? input.value : '';
+        if (!text) return;
+
+        const temp = document.createElement('textarea');
+        temp.value = text;
+        temp.style.position = 'fixed';
+        temp.style.left = '-9999px';
+        document.body.appendChild(temp);
+        temp.focus();
+        temp.select();
+        document.execCommand('copy');
+        document.body.removeChild(temp);
+
+        const icon = btn.querySelector('i');
+        if (icon) {
+            icon.className = 'bi bi-check-lg text-success';
+            setTimeout(() => {
+                icon.className = 'bi bi-copy';
+            }, 1200);
+        }
+    }
+
+    $(document).on('input', '.requested-name-input', function() {
+        let input = $(this);
+        let val = input.val().trim();
+        let original = input.data('original-name');
+        let tagId = input.attr('id').replace('requested_name_', '');
+        let preview = $('#requested-name-preview-' + tagId);
+        
+        if (val && val !== original) {
+            preview.removeClass('d-none').text('[' + val + ']');
+        } else {
+            preview.addClass('d-none').text('');
+        }
+    });
+
+    $('input[name="page_load_rule_confirm"]').on('change', function() {
+        var val = $(this).val();
+        var currentHtml = $('#details').summernote('code');
+        var $temp = $('<div>').html(currentHtml);
+        
+        var $cells = $temp.find('.page-load-confirm-cell');
+        if ($cells.length > 0) {
+            $cells.text(val);
+        } else {
+            var $table = $temp.find('#table-page-load-rule');
+            if ($table.length === 0) {
+                $table = $temp.find('table').filter(function() {
+                    return $(this).text().indexOf('Page Load Rule') !== -1;
+                });
+            }
+            $table.find('tr:gt(0) td:last-child').text(val);
+        }
+        
+        $('#details').summernote('code', $temp.html());
+    });
+
+    $('input[name="event_click_rule_confirm"]').on('change', function() {
+        var val = $(this).val();
+        var currentHtml = $('#details').summernote('code');
+        var $temp = $('<div>').html(currentHtml);
+        
+        var $cells = $temp.find('.event-click-confirm-cell');
+        if ($cells.length > 0) {
+            $cells.text(val);
+        } else {
+            var $table = $temp.find('#table-event-click-rule');
+            if ($table.length === 0) {
+                $table = $temp.find('table').filter(function() {
+                    return $(this).text().indexOf('Event Click Rule') !== -1;
+                });
+            }
+            $table.find('tr:gt(0) td:last-child').text(val);
+        }
+        
+        $('#details').summernote('code', $temp.html());
+    });
+
+    $(document).on('click', 'button[type="submit"]', function(e) {
+        if ($('table tbody tr').length === 0) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            window.themeAlert({
+                title: 'Cannot Proceed',
+                message: 'No tags have been selected for update',
+                type: 'warning',
+                buttonText: 'Got it'
+            });
+            return false;
+        }
+
+        const ticketInput = $('#ticket_id');
+        if (ticketInput.length && ticketInput.is(':visible')) {
+            const ticketId = ticketInput.val().trim();
+            if (!ticketId) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                window.themeAlert({
+                    title: 'JIRA Ticket ID Missing',
+                    message: 'Please enter a JIRA Ticket ID before submitting the request.',
+                    type: 'warning',
+                    buttonText: 'Got it'
+                }).then(() => {
+                    ticketInput.focus();
+                });
+                return false;
+            }
+        }
+    });
+
+    $(document).on('submit', 'form[action*="tags/update-rule/confirm"]', function(e) {
+        if ($('table tbody tr').length === 0) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            window.themeAlert({
+                title: 'Cannot Proceed',
+                message: 'No tags have been selected for update',
+                type: 'warning',
+                buttonText: 'Got it'
+            });
+            return false;
+        }
+
+        const ticketInput = $('#ticket_id');
+        if (ticketInput.length && ticketInput.is(':visible')) {
+            const ticketId = ticketInput.val().trim();
+            if (!ticketId) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                window.themeAlert({
+                    title: 'JIRA Ticket ID Missing',
+                    message: 'Please enter a JIRA Ticket ID before submitting the request.',
+                    type: 'warning',
+                    buttonText: 'Got it'
+                }).then(() => {
+                    ticketInput.focus();
+                });
+                return false;
+            }
+        }
+    });
 
 </script>
 <?= $this->endSection() ?>

@@ -36,7 +36,7 @@ class AuthFilter implements FilterInterface
             $db = \Config\Database::connect();
 
             // Auto-heal database: run migration check
-            if (!$db->fieldExists('role_id', 'users') || !$db->fieldExists('profile_photo', 'users') || !$db->tableExists('role_permissions') || !$db->tableExists('roles') || !$db->fieldExists('js_code', 'tags') || !$db->tableExists('notifications') || !$db->fieldExists('mt_jira_ticket', 'activity_logs')) {
+            if (!$db->fieldExists('role_id', 'users') || !$db->fieldExists('profile_photo', 'users') || !$db->tableExists('role_permissions') || !$db->tableExists('roles') || !$db->fieldExists('js_code', 'tags') || !$db->fieldExists('requested_name', 'tags') || !$db->tableExists('notifications') || !$db->fieldExists('mt_jira_ticket', 'activity_logs')) {
                 self::autoMigrate($db);
             }
 
@@ -214,6 +214,11 @@ class AuthFilter implements FilterInterface
         // Add js_code column to tags
         if (!$db->fieldExists('js_code', 'tags')) {
             $db->query("ALTER TABLE `tags` ADD COLUMN `js_code` LONGTEXT NULL DEFAULT NULL");
+        }
+
+        // Add requested_name column to tags
+        if (!$db->fieldExists('requested_name', 'tags')) {
+            $db->query("ALTER TABLE `tags` ADD COLUMN `requested_name` VARCHAR(255) NULL DEFAULT NULL AFTER `requested_date`");
         }
 
         // Create notifications table
