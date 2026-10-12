@@ -82,6 +82,30 @@ Generate Rule Monitoring File
     color: #fff !important;
 }
 
+.clear-box-btn {
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border-input);
+    background-color: transparent;
+    transition: all 0.18s ease;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: 6px;
+    height: 26px;
+    padding: 0 8px;
+    cursor: pointer;
+}
+
+.clear-box-btn:hover {
+    color: #c62828 !important;
+    background-color: #ffebee !important;
+    border-color: #ffcdd2 !important;
+    transform: translateY(-1px);
+}
+
+.clear-box-btn:active {
+    transform: translateY(0);
+}
+
 @keyframes bounce {
     0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
     40% { transform: translateY(-8px); }
@@ -199,10 +223,15 @@ Generate Rule Monitoring File
                 <!-- Box 1 -->
                 <div class="col-lg-4">
                     <div class="apple-card h-100">
-                        <h5 class="mb-3 text-primary d-flex align-items-center gap-2 fw-bold" id="box1Header">
-                            <i class="bi bi-cart" id="box1Icon"></i>
-                            <span id="box1Title">Cart Logs</span>
-                        </h5>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0 text-primary d-flex align-items-center gap-2 fw-bold" id="box1Header">
+                                <i class="bi bi-cart" id="box1Icon"></i>
+                                <span id="box1Title">Cart Logs</span>
+                            </h5>
+                            <button type="button" class="clear-box-btn d-inline-flex align-items-center gap-1" data-target="shop_cart_logs" title="Clear logs in this box">
+                                <i class="bi bi-x-circle"></i> Clear
+                            </button>
+                        </div>
                         <p class="text-secondary small mb-3" id="box1Desc">Paste the console logs for the Cart page below. The system extracts rule names enclosed in quotes.</p>
                         <textarea class="form-control font-monospace" name="cart_logs" id="shop_cart_logs" rows="15" placeholder="watchConsoleLogs.8258a5d6.js:1 🚀 Rule &quot;HQ-GA-CM-gTag Load&quot; fired."></textarea>
                     </div>
@@ -211,10 +240,15 @@ Generate Rule Monitoring File
                 <!-- Box 2 -->
                 <div class="col-lg-4">
                     <div class="apple-card h-100">
-                        <h5 class="mb-3 text-primary d-flex align-items-center gap-2 fw-bold" id="box2Header">
-                            <i class="bi bi-credit-card" id="box2Icon"></i>
-                            <span id="box2Title">Checkout Logs</span>
-                        </h5>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0 text-primary d-flex align-items-center gap-2 fw-bold" id="box2Header">
+                                <i class="bi bi-credit-card" id="box2Icon"></i>
+                                <span id="box2Title">Checkout Logs</span>
+                            </h5>
+                            <button type="button" class="clear-box-btn d-inline-flex align-items-center gap-1" data-target="shop_checkout_logs" title="Clear logs in this box">
+                                <i class="bi bi-x-circle"></i> Clear
+                            </button>
+                        </div>
                         <p class="text-secondary small mb-3" id="box2Desc">Paste the console logs for the Checkout page below. The system extracts rule names enclosed in quotes.</p>
                         <textarea class="form-control font-monospace" name="checkout_logs" id="shop_checkout_logs" rows="15" placeholder="watchConsoleLogs.8258a5d6.js:1 🚀 Rule &quot;HQ-GA-CM-gTag Load&quot; fired."></textarea>
                     </div>
@@ -223,10 +257,15 @@ Generate Rule Monitoring File
                 <!-- Box 3 -->
                 <div class="col-lg-4">
                     <div class="apple-card h-100">
-                        <h5 class="mb-3 text-primary d-flex align-items-center gap-2 fw-bold" id="box3Header">
-                            <i class="bi bi-bag-check" id="box3Icon"></i>
-                            <span id="box3Title">Order Confirmation Logs</span>
-                        </h5>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0 text-primary d-flex align-items-center gap-2 fw-bold" id="box3Header">
+                                <i class="bi bi-bag-check" id="box3Icon"></i>
+                                <span id="box3Title">Order Confirmation Logs</span>
+                            </h5>
+                            <button type="button" class="clear-box-btn d-inline-flex align-items-center gap-1" data-target="shop_order_logs" title="Clear logs in this box">
+                                <i class="bi bi-x-circle"></i> Clear
+                            </button>
+                        </div>
                         <p class="text-secondary small mb-3" id="box3Desc">Paste the console logs for the Order Confirmation page below. The system extracts rule names enclosed in quotes.</p>
                         <textarea class="form-control font-monospace" name="order_logs" id="shop_order_logs" rows="15" placeholder="watchConsoleLogs.8258a5d6.js:1 🚀 Rule &quot;HQ-GA-CM-gTag Load&quot; fired."></textarea>
                     </div>
@@ -661,6 +700,18 @@ document.addEventListener('DOMContentLoaded', function() {
             calculateUrls(website);
         }
     }
+
+    // Handle Clear buttons on the three boxes
+    document.querySelectorAll('.clear-box-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-target');
+            const textarea = document.getElementById(targetId);
+            if (textarea) {
+                textarea.value = '';
+                textarea.focus();
+            }
+        });
+    });
 
     // Handle Shop/EPP form submission
     let isSubmittingShop = false;

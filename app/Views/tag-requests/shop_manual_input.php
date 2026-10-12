@@ -53,40 +53,79 @@ $box3Desc = $isEppAem ? 'Paste the console logs for the ' . $titleD3 . ' page be
         <?= csrf_field() ?>
         <input type="hidden" name="request_id" value="<?= esc($request['id']) ?>">
 
+        <style>
+        .clear-box-btn {
+            color: var(--color-text-muted);
+            border: 1px solid var(--color-border-input);
+            background-color: transparent;
+            transition: all 0.18s ease;
+            font-size: 0.75rem;
+            font-weight: 500;
+            border-radius: 6px;
+            height: 26px;
+            padding: 0 8px;
+            cursor: pointer;
+        }
+        .clear-box-btn:hover {
+            color: #c62828 !important;
+            background-color: #ffebee !important;
+            border-color: #ffcdd2 !important;
+            transform: translateY(-1px);
+        }
+        .clear-box-btn:active {
+            transform: translateY(0);
+        }
+        </style>
+
         <div class="row g-4 mb-4">
             <!-- Box 1 -->
             <div class="col-lg-4">
                 <div class="apple-card h-100">
-                    <h5 class="mb-3 text-primary d-flex align-items-center gap-2 fw-bold">
-                        <i class="bi <?= esc($box1Icon) ?>"></i>
-                        <span><?= esc($box1Title) ?></span>
-                    </h5>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0 text-primary d-flex align-items-center gap-2 fw-bold">
+                            <i class="bi <?= esc($box1Icon) ?>"></i>
+                            <span><?= esc($box1Title) ?></span>
+                        </h5>
+                        <button type="button" class="clear-box-btn d-inline-flex align-items-center gap-1" data-target="cart_logs" title="Clear logs in this box">
+                            <i class="bi bi-x-circle"></i> Clear
+                        </button>
+                    </div>
                     <p class="text-secondary small mb-3"><?= esc($box1Desc) ?></p>
-                    <textarea class="form-control font-monospace" name="cart_logs" rows="15" placeholder="watchConsoleLogs.8258a5d6.js:1 🚀 Rule &quot;HQ-GA-CM-gTag Load&quot; fired."></textarea>
+                    <textarea class="form-control font-monospace" name="cart_logs" id="cart_logs" rows="15" placeholder="watchConsoleLogs.8258a5d6.js:1 🚀 Rule &quot;HQ-GA-CM-gTag Load&quot; fired."></textarea>
                 </div>
             </div>
 
             <!-- Box 2 -->
             <div class="col-lg-4">
                 <div class="apple-card h-100">
-                    <h5 class="mb-3 text-primary d-flex align-items-center gap-2 fw-bold">
-                        <i class="bi <?= esc($box2Icon) ?>"></i>
-                        <span><?= esc($box2Title) ?></span>
-                    </h5>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0 text-primary d-flex align-items-center gap-2 fw-bold">
+                            <i class="bi <?= esc($box2Icon) ?>"></i>
+                            <span><?= esc($box2Title) ?></span>
+                        </h5>
+                        <button type="button" class="clear-box-btn d-inline-flex align-items-center gap-1" data-target="checkout_logs" title="Clear logs in this box">
+                            <i class="bi bi-x-circle"></i> Clear
+                        </button>
+                    </div>
                     <p class="text-secondary small mb-3"><?= esc($box2Desc) ?></p>
-                    <textarea class="form-control font-monospace" name="checkout_logs" rows="15" placeholder="watchConsoleLogs.8258a5d6.js:1 🚀 Rule &quot;HQ-GA-CM-gTag Load&quot; fired."></textarea>
+                    <textarea class="form-control font-monospace" name="checkout_logs" id="checkout_logs" rows="15" placeholder="watchConsoleLogs.8258a5d6.js:1 🚀 Rule &quot;HQ-GA-CM-gTag Load&quot; fired."></textarea>
                 </div>
             </div>
 
             <!-- Box 3 -->
             <div class="col-lg-4">
                 <div class="apple-card h-100">
-                    <h5 class="mb-3 text-primary d-flex align-items-center gap-2 fw-bold">
-                        <i class="bi <?= esc($box3Icon) ?>"></i>
-                        <span><?= esc($box3Title) ?></span>
-                    </h5>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0 text-primary d-flex align-items-center gap-2 fw-bold">
+                            <i class="bi <?= esc($box3Icon) ?>"></i>
+                            <span><?= esc($box3Title) ?></span>
+                        </h5>
+                        <button type="button" class="clear-box-btn d-inline-flex align-items-center gap-1" data-target="order_logs" title="Clear logs in this box">
+                            <i class="bi bi-x-circle"></i> Clear
+                        </button>
+                    </div>
                     <p class="text-secondary small mb-3"><?= esc($box3Desc) ?></p>
-                    <textarea class="form-control font-monospace" name="order_logs" rows="15" placeholder="watchConsoleLogs.8258a5d6.js:1 🚀 Rule &quot;HQ-GA-CM-gTag Load&quot; fired."></textarea>
+                    <textarea class="form-control font-monospace" name="order_logs" id="order_logs" rows="15" placeholder="watchConsoleLogs.8258a5d6.js:1 🚀 Rule &quot;HQ-GA-CM-gTag Load&quot; fired."></textarea>
                 </div>
             </div>
         </div>
@@ -107,6 +146,18 @@ let isSubmitting = false;
 
 document.getElementById('shopManualForm')?.addEventListener('submit', function() {
     isSubmitting = true;
+});
+
+// Handle Clear buttons
+document.querySelectorAll('.clear-box-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const targetId = this.getAttribute('data-target');
+        const textarea = document.getElementById(targetId);
+        if (textarea) {
+            textarea.value = '';
+            textarea.focus();
+        }
+    });
 });
 
 window.addEventListener('beforeunload', function(e) {
