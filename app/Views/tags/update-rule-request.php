@@ -131,7 +131,7 @@
         </ul>
 
         <b style='color:#0071E3; font-size:15px; font-family:-apple-system,BlinkMacSystemFont,sans-serif;'>2.2) Reason when the Target Page is for all :</b>
-        <p style='font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:14px; color:#1D1D1F; padding-left:12px;'>". $reason ."</p>
+        <p style='font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:14px; color:#1D1D1F; padding-left:12px;'>". trim($reason) ."</p>
 
         <b style='color:#0071E3; font-size:15px; font-family:-apple-system,BlinkMacSystemFont,sans-serif;'>3) Expiration Date (to-be) : </b><span id='to-be-date-display' style='font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:14px; color:#1D1D1F;'>". $expDateStr ."</span> <br/><br/>
 
@@ -139,7 +139,7 @@
         <p style='font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:14px; color:#86868B; font-style:italic; padding-left:12px;'>Insert Local Rule Monitoring File screenshots here...</p>
         
         <b style='color:#0071E3; font-size:15px; font-family:-apple-system,BlinkMacSystemFont,sans-serif;'>5) Purpose & Goal :</b>
-        <p style='font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:14px; color:#1D1D1F; padding-left:12px;'>". $purpose ."</p>
+        <p style='font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:14px; color:#1D1D1F; padding-left:12px;'>". trim($purpose) ."</p>
         
         <b style='color:#0071E3; font-size:15px; font-family:-apple-system,BlinkMacSystemFont,sans-serif;'>6) ssGTM</b>
         <p style='font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:14px; color:#1D1D1F; padding-left:12px;'>

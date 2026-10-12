@@ -627,20 +627,76 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    function clearAllFields() {
+        // 1. Clear Associated Tags
+        if (typeof $ !== 'undefined' && $.fn.select2) {
+            $('#tags_select').empty().val(null).trigger('change');
+        } else if (tagsSelect) {
+            tagsSelect.innerHTML = '';
+            tagsSelect.value = '';
+        }
+
+        // 2. Clear Three Log Textareas and hidden shop form fields
+        const cartLogs = document.getElementById('shop_cart_logs');
+        if (cartLogs) cartLogs.value = '';
+        const checkoutLogs = document.getElementById('shop_checkout_logs');
+        if (checkoutLogs) checkoutLogs.value = '';
+        const orderLogs = document.getElementById('shop_order_logs');
+        if (orderLogs) orderLogs.value = '';
+        if (shopPropertyId) shopPropertyId.value = '';
+        if (shopTagsContainer) shopTagsContainer.innerHTML = '';
+
+        // 3. Clear Automated Capture inputs
+        if (targetUrl1) targetUrl1.value = '';
+        if (targetUrl2) targetUrl2.value = '';
+        if (targetUrl3) targetUrl3.value = '';
+        const launchScript = document.getElementById('launch_script_url');
+        if (launchScript) launchScript.value = '';
+
+        // 4. Reset Simulation Results and Error state
+        const resultsSection = document.getElementById('resultsSection');
+        if (resultsSection) resultsSection.style.display = 'none';
+        const errorSection = document.getElementById('errorSection');
+        if (errorSection) errorSection.style.display = 'none';
+        const downloadExcelBtn = document.getElementById('downloadExcelBtn');
+        if (downloadExcelBtn) downloadExcelBtn.style.display = 'none';
+        window._capturedExcelData = null;
+
+        const rulesTableBody = document.getElementById('rulesTableBody');
+        if (rulesTableBody) rulesTableBody.innerHTML = '';
+        const conditionsTableBody = document.getElementById('conditionsTableBody');
+        if (conditionsTableBody) conditionsTableBody.innerHTML = '';
+        const failedTableBody = document.getElementById('failedTableBody');
+        if (failedTableBody) failedTableBody.innerHTML = '';
+        const networkTableBody = document.getElementById('networkTableBody');
+        if (networkTableBody) networkTableBody.innerHTML = '';
+        const debugTableBody = document.getElementById('debugTableBody');
+        if (debugTableBody) debugTableBody.innerHTML = '';
+
+        const rulesCountBadge = document.getElementById('rulesCountBadge');
+        if (rulesCountBadge) rulesCountBadge.textContent = '0';
+        const conditionsCountBadge = document.getElementById('conditionsCountBadge');
+        if (conditionsCountBadge) conditionsCountBadge.textContent = '0';
+        const failedCountBadge = document.getElementById('failedCountBadge');
+        if (failedCountBadge) failedCountBadge.textContent = '0';
+        const networkCountBadge = document.getElementById('networkCountBadge');
+        if (networkCountBadge) networkCountBadge.textContent = '0';
+        const debugCountBadge = document.getElementById('debugCountBadge');
+        if (debugCountBadge) debugCountBadge.textContent = '0';
+    }
+
     function onPropertyChange() {
         const selectedValue = propertySelect.value;
         const selectedOption = propertySelect.options[propertySelect.selectedIndex];
+
+        // Clear all values from other fields whenever target property changes
+        clearAllFields();
 
         if (!selectedValue) {
             propTypeBadge.style.display = 'none';
             placeholderSection.style.display = 'block';
             shopEppSection.style.display = 'none';
             aemCaptureSection.style.display = 'none';
-            if (typeof $ !== 'undefined' && $.fn.select2) {
-                $('#tags_select').empty().trigger('change');
-            } else {
-                tagsSelect.innerHTML = '';
-            }
             return;
         }
 
@@ -748,6 +804,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         isSubmittingShop = true;
+        setTimeout(function() {
+            isSubmittingShop = false;
+        }, 3000);
     });
 
     // Handle Capture Form Execution
@@ -947,21 +1006,13 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.removeChild(form);
     });
 
-    // Prevent accidental navigation
+    // Warn before leaving the page or closing the tab on this view
     window.addEventListener('beforeunload', function(e) {
         if (isSubmittingShop) return;
 
-        const cartLogs = document.getElementById('shop_cart_logs')?.value.trim();
-        const checkoutLogs = document.getElementById('shop_checkout_logs')?.value.trim();
-        const orderLogs = document.getElementById('shop_order_logs')?.value.trim();
-        const isCapturing = document.getElementById('captureBtn')?.disabled;
-        const hasResults = !!window._capturedExcelData;
-
-        if (cartLogs || checkoutLogs || orderLogs || isCapturing || hasResults) {
-            e.preventDefault();
-            e.returnValue = '';
-            return '';
-        }
+        e.preventDefault();
+        e.returnValue = '';
+        return '';
     });
 });
 </script>
