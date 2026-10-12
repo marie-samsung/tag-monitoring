@@ -123,7 +123,8 @@ $hasNewRule = !empty($request['new_rule_ticket']);
         </div>
         <div>
             <?php 
-                $isShop = $properties[$request['property_id']]['is_shop'] ?? false;
+                $prop = $properties[$request['property_id']] ?? [];
+                $isShop = !empty($prop['is_shop']) || !empty($prop['is_epp']);
                 if ($isShop): 
                     $shopInputUrl = site_url('tag-requests/shop-manual-input/' . $request['id']);
             ?>

@@ -319,7 +319,7 @@ class TagsController extends BaseController
             'requester_email' => $post['requester_email'],
             'requester_organization' => $organizationId,
             'requested_date' => !empty($post['requested_date']) ? $post['requested_date'] : null,
-            'requested_name' => !empty(trim($post['requested_name'] ?? '')) ? trim($post['requested_name']) : null,
+            // 'requested_name' => !empty(trim($post['requested_name'] ?? '')) ? trim($post['requested_name']) : null,
         ];
 
         $model->update($id, $updateData);
@@ -1201,7 +1201,7 @@ class TagsController extends BaseController
             unlink($tempFilePath);
         }
 
-        return redirect()->to('/tags')->with('success', "{$savedCount} renewal justifications have been successfully processed and saved.");
+        return redirect()->to('/tags/renewal-justifications')->with('success', "{$savedCount} renewal justifications have been successfully processed and saved.");
     }
 
     public function renewalJustifications()

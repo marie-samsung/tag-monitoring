@@ -71,6 +71,8 @@ $routes->group('tag-requests', function ($routes) {
     $routes->post('generate-excel', 'TagRequestsController::generateCaptureExcel');
     $routes->get('shop-manual-input/(:num)', 'TagRequestsController::shopManualInput/$1');
     $routes->post('generate-shop-excel', 'TagRequestsController::generateShopExcel');
+    $routes->get('generate-rule-monitoring', 'TagRequestsController::generateRuleMonitoring');
+    $routes->get('property-tags/(:num)', 'TagRequestsController::getPropertyTags/$1');
     $routes->post('add-tag/(:num)', 'TagRequestsController::addTag/$1');
     $routes->post('remove-tag/(:num)/(:num)', 'TagRequestsController::removeTag/$1/$2');
     $routes->post('create-tag/(:num)', 'TagRequestsController::createTag/$1');

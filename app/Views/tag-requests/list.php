@@ -334,6 +334,9 @@ Tag: Requests (New Rule, New Tag)
             <a href="<?= site_url('tag-requests/create') ?>" title="Create a new request" class="apple-btn-primary btn-sm px-3 text-decoration-none">
                 <i class="bi bi-plus-lg me-1"></i> Create New Request
             </a>
+            <a href="<?= site_url('tag-requests/generate-rule-monitoring') ?>" title="Generate Rule Monitoring File" class="apple-btn-secondary btn-sm px-3 text-decoration-none d-flex align-items-center gap-1">
+                <i class="bi bi-file-earmark-spreadsheet me-1 text-primary"></i> Generate Rule Monitoring File
+            </a>
             
             <div class="dropdown">
                 <button class="apple-btn-secondary btn-sm dropdown-toggle px-3 d-flex align-items-center gap-1" type="button" id="headerActionsDropdown" data-bs-toggle="dropdown" aria-expanded="false">

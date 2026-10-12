@@ -6,6 +6,27 @@ Shop Manual Rule Input
 
 <?= $this->section('content') ?>
 
+<?php
+$settingsFile = WRITEPATH . 'system_settings.json';
+$systemSettings = file_exists($settingsFile) ? json_decode(file_get_contents($settingsFile), true) : [];
+$titleC3 = !empty($systemSettings['excel_title_c3']) ? $systemSettings['excel_title_c3'] : 'URL 2';
+$titleD3 = !empty($systemSettings['excel_title_d3']) ? $systemSettings['excel_title_d3'] : 'URL 3';
+
+$isEppAem = !empty($property['is_epp']) && empty($property['is_shop']);
+$pageHeading = $isEppAem ? 'Manual Rule Input (EPP - AEM)' : 'Manual Rule Input (Shop)';
+$box1Title = $isEppAem ? 'Home Logs' : 'Cart Logs';
+$box1Icon = $isEppAem ? 'bi-house-door' : 'bi-cart';
+$box1Desc = $isEppAem ? 'Paste the console logs for the Home page below. The system will automatically extract the rule names enclosed in double quotes.' : 'Paste the console logs for the Cart page below. The system will automatically extract the rule names enclosed in double quotes.';
+
+$box2Title = $isEppAem ? $titleC3 . ' Logs' : 'Checkout Logs';
+$box2Icon = $isEppAem ? 'bi-file-earmark-code' : 'bi-credit-card';
+$box2Desc = $isEppAem ? 'Paste the console logs for the ' . $titleC3 . ' page below. The system will automatically extract the rule names enclosed in double quotes.' : 'Paste the console logs for the Checkout page below. The system will automatically extract the rule names enclosed in double quotes.';
+
+$box3Title = $isEppAem ? $titleD3 . ' Logs' : 'Order Confirmation Logs';
+$box3Icon = $isEppAem ? 'bi-file-earmark-code' : 'bi-bag-check';
+$box3Desc = $isEppAem ? 'Paste the console logs for the ' . $titleD3 . ' page below. The system will automatically extract the rule names enclosed in double quotes.' : 'Paste the console logs for the Order Confirmation page below. The system will automatically extract the rule names enclosed in double quotes.';
+?>
+
 <div class="container-fluid px-0">
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
@@ -14,7 +35,7 @@ Shop Manual Rule Input
                 <i class="bi bi-arrow-left fs-5"></i>
             </a>
             <div>
-                <h2 class="mb-0 fw-bold">Manual Rule Input (Shop)</h2>
+                <h2 class="mb-0 fw-bold"><?= esc($pageHeading) ?></h2>
                 <div class="text-secondary small mb-0 fw-semibold d-flex align-items-center gap-2">
                     <span class="badge bg-secondary"><?= esc($property['name'] ?? 'Unknown') ?></span>
                     <?php if (!empty($tagNames)): ?>
@@ -33,39 +54,39 @@ Shop Manual Rule Input
         <input type="hidden" name="request_id" value="<?= esc($request['id']) ?>">
 
         <div class="row g-4 mb-4">
-            <!-- Cart Rules -->
+            <!-- Box 1 -->
             <div class="col-lg-4">
                 <div class="apple-card h-100">
                     <h5 class="mb-3 text-primary d-flex align-items-center gap-2 fw-bold">
-                        <i class="bi bi-cart"></i>
-                        <span>Cart Logs</span>
+                        <i class="bi <?= esc($box1Icon) ?>"></i>
+                        <span><?= esc($box1Title) ?></span>
                     </h5>
-                    <p class="text-secondary small mb-3">Paste the console logs for the Cart page below. The system will automatically extract the rule names enclosed in double quotes.</p>
-                    <textarea class="form-control font-monospace" name="cart_logs" rows="15" placeholder="watchConsoleLogs.8258a5d6.js:1 🚀 Rule &quot;HQ-GA-CM-gTag Load&quot; fired." required></textarea>
+                    <p class="text-secondary small mb-3"><?= esc($box1Desc) ?></p>
+                    <textarea class="form-control font-monospace" name="cart_logs" rows="15" placeholder="watchConsoleLogs.8258a5d6.js:1 🚀 Rule &quot;HQ-GA-CM-gTag Load&quot; fired."></textarea>
                 </div>
             </div>
 
-            <!-- Checkout Rules -->
+            <!-- Box 2 -->
             <div class="col-lg-4">
                 <div class="apple-card h-100">
                     <h5 class="mb-3 text-primary d-flex align-items-center gap-2 fw-bold">
-                        <i class="bi bi-credit-card"></i>
-                        <span>Checkout Logs</span>
+                        <i class="bi <?= esc($box2Icon) ?>"></i>
+                        <span><?= esc($box2Title) ?></span>
                     </h5>
-                    <p class="text-secondary small mb-3">Paste the console logs for the Checkout page below. The system will automatically extract the rule names enclosed in double quotes.</p>
-                    <textarea class="form-control font-monospace" name="checkout_logs" rows="15" placeholder="watchConsoleLogs.8258a5d6.js:1 🚀 Rule &quot;HQ-GA-CM-gTag Load&quot; fired." required></textarea>
+                    <p class="text-secondary small mb-3"><?= esc($box2Desc) ?></p>
+                    <textarea class="form-control font-monospace" name="checkout_logs" rows="15" placeholder="watchConsoleLogs.8258a5d6.js:1 🚀 Rule &quot;HQ-GA-CM-gTag Load&quot; fired."></textarea>
                 </div>
             </div>
 
-            <!-- Order Confirmation Rules -->
+            <!-- Box 3 -->
             <div class="col-lg-4">
                 <div class="apple-card h-100">
                     <h5 class="mb-3 text-primary d-flex align-items-center gap-2 fw-bold">
-                        <i class="bi bi-bag-check"></i>
-                        <span>Order Confirmation Logs</span>
+                        <i class="bi <?= esc($box3Icon) ?>"></i>
+                        <span><?= esc($box3Title) ?></span>
                     </h5>
-                    <p class="text-secondary small mb-3">Paste the console logs for the Order Confirmation page below. The system will automatically extract the rule names enclosed in double quotes.</p>
-                    <textarea class="form-control font-monospace" name="order_logs" rows="15" placeholder="watchConsoleLogs.8258a5d6.js:1 🚀 Rule &quot;HQ-GA-CM-gTag Load&quot; fired." required></textarea>
+                    <p class="text-secondary small mb-3"><?= esc($box3Desc) ?></p>
+                    <textarea class="form-control font-monospace" name="order_logs" rows="15" placeholder="watchConsoleLogs.8258a5d6.js:1 🚀 Rule &quot;HQ-GA-CM-gTag Load&quot; fired."></textarea>
                 </div>
             </div>
         </div>

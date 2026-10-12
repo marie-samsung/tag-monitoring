@@ -1532,7 +1532,7 @@ Tag Request: Create
         setTimeout(() => status.style.opacity = 0, 1000);
 
         const ticketInput = $('#ticket_id');
-        const ticketId = ticketInput.length ? ticketInput.val().trim() : '';
+        const ticketId = ticketInput.length ? ticketInput.val().trim() : <?= $ticket_id ?>;
         if (!ticketId) {
             window.themeAlert({
                 title: 'JIRA Ticket ID Missing',

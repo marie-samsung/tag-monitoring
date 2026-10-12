@@ -1126,33 +1126,63 @@ class TagRequestsController extends BaseController
     public function generateCaptureExcel()
     {
         $requestId = $this->request->getPost('request_id');
+        $propertyId = $this->request->getPost('property_id');
         $rulesDataJson = $this->request->getPost('rules_data');
         $rulesData = json_decode($rulesDataJson, true) ?? [];
 
         $tagRequestsModel = new \App\Models\TagRequestsModel();
         $propertiesModel = new \App\Models\PropertiesModel();
-        $vendorsModel = new \App\Models\VendorsModel();
-        
-        $request = $tagRequestsModel->find($requestId);
-        if (!$request) {
-            return $this->response->setBody("Invalid request ID");
-        }
-        
-        $property = $propertiesModel->find($request['property_id']);
-        $propertyName = $property ? $property['name'] : 'Unknown Property';
-
         $tagsModel = new \App\Models\TagsModel();
-        $tagIds = explode(',', $request['tags']);
+        
+        $property = null;
         $tagNames = [];
-        foreach ($tagIds as $tagId) {
-            $tag = $tagsModel->find($tagId);
-            if ($tag) {
-                $tagNames[] = $tag['name'];
+
+        if (!empty($requestId)) {
+            $request = $tagRequestsModel->find($requestId);
+            if (!$request) {
+                return $this->response->setBody("Invalid request ID");
             }
+            $property = $propertiesModel->find($request['property_id']);
+            $tagIds = explode(',', $request['tags'] ?? '');
+            foreach ($tagIds as $tagId) {
+                $tagId = trim($tagId);
+                if (empty($tagId)) continue;
+                $tag = $tagsModel->find($tagId);
+                if ($tag) {
+                    $tagNames[] = $tag['name'];
+                }
+            }
+        } elseif (!empty($propertyId)) {
+            $property = $propertiesModel->find($propertyId);
+            if (!$property) {
+                return $this->response->setBody("Invalid property ID");
+            }
+            $tagIds = $this->request->getPost('tag_ids') ?? [];
+            if (!is_array($tagIds)) {
+                $tagIds = explode(',', (string)$tagIds);
+            }
+            foreach ($tagIds as $tagId) {
+                $tagId = trim($tagId);
+                if (empty($tagId)) continue;
+                $tag = $tagsModel->find($tagId);
+                if ($tag) {
+                    $tagNames[] = $tag['name'];
+                }
+            }
+            $customTags = $this->request->getPost('custom_tags') ?? [];
+            if (is_string($customTags) && trim($customTags) !== '') {
+                $customTags = array_map('trim', explode(',', $customTags));
+            }
+            if (is_array($customTags)) {
+                foreach ($customTags as $ct) {
+                    if (!empty($ct)) $tagNames[] = $ct;
+                }
+            }
+        } else {
+            return $this->response->setBody("Missing request ID or property ID");
         }
-        if (empty($tagNames)) {
-            $tagNames[] = 'Unknown Tag';
-        }
+
+        $propertyName = $property ? $property['name'] : 'Unknown Property';
         
         $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load(WRITEPATH . 'uploads/AEM - Local Rule Monitoring File.xlsx');
         $sheet = $spreadsheet->getActiveSheet();
@@ -1272,31 +1302,68 @@ class TagRequestsController extends BaseController
         $tagsModel = new \App\Models\TagsModel();
         
         $requestId = $this->request->getPost('request_id');
+        $propertyId = $this->request->getPost('property_id');
         $cartLogs = $this->request->getPost('cart_logs') ?? '';
         $checkoutLogs = $this->request->getPost('checkout_logs') ?? '';
         $orderLogs = $this->request->getPost('order_logs') ?? '';
 
-        $request = $tagRequestsModel->find($requestId);
-        if (!$request) {
-            return $this->response->setBody("Invalid request ID");
-        }
-        
-        $property = $propertiesModel->find($request['property_id']);
-        $propertyName = $property ? $property['name'] : 'Unknown Property';
-
-        $tagIds = explode(',', $request['tags']);
+        $property = null;
         $tagNames = [];
-        foreach ($tagIds as $tagId) {
-            $tag = $tagsModel->find($tagId);
-            if ($tag) {
-                $tagNames[] = $tag['name'];
+
+        if (!empty($requestId)) {
+            $request = $tagRequestsModel->find($requestId);
+            if (!$request) {
+                return $this->response->setBody("Invalid request ID");
             }
+            $property = $propertiesModel->find($request['property_id']);
+            $tagIds = explode(',', $request['tags'] ?? '');
+            foreach ($tagIds as $tagId) {
+                $tagId = trim($tagId);
+                if (empty($tagId)) continue;
+                $tag = $tagsModel->find($tagId);
+                if ($tag) {
+                    $tagNames[] = $tag['name'];
+                }
+            }
+        } elseif (!empty($propertyId)) {
+            $property = $propertiesModel->find($propertyId);
+            if (!$property) {
+                return $this->response->setBody("Invalid property ID");
+            }
+            $tagIds = $this->request->getPost('tag_ids') ?? [];
+            if (!is_array($tagIds)) {
+                $tagIds = explode(',', (string)$tagIds);
+            }
+            foreach ($tagIds as $tagId) {
+                $tagId = trim($tagId);
+                if (empty($tagId)) continue;
+                $tag = $tagsModel->find($tagId);
+                if ($tag) {
+                    $tagNames[] = $tag['name'];
+                }
+            }
+            $customTags = $this->request->getPost('custom_tags') ?? [];
+            if (is_string($customTags) && trim($customTags) !== '') {
+                $customTags = array_map('trim', explode(',', $customTags));
+            }
+            if (is_array($customTags)) {
+                foreach ($customTags as $ct) {
+                    if (!empty($ct)) $tagNames[] = $ct;
+                }
+            }
+        } else {
+            return $this->response->setBody("Missing request ID or property ID");
         }
-        if (empty($tagNames)) {
-            $tagNames[] = 'Unknown Tag';
-        }
+
+        $propertyName = $property ? $property['name'] : 'Unknown Property';
+        $isShopProperty = !empty($property['is_shop']);
         
-        $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load(WRITEPATH . 'uploads/Shop - Local Rule Monitoring File.xlsx');
+        if ($isShopProperty) {
+            $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load(WRITEPATH . 'uploads/Shop - Local Rule Monitoring File.xlsx');
+        } else {
+            // AEM property (e.g. EPP & AEM)
+            $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load(WRITEPATH . 'uploads/AEM - Local Rule Monitoring File.xlsx');
+        }
         $sheet = $spreadsheet->getActiveSheet();
         
         // Headers
@@ -1326,32 +1393,43 @@ class TagRequestsController extends BaseController
             return $extracted;
         };
         
-        $cartRules = $extractRule($cartLogs);
-        $checkoutRules = $extractRule($checkoutLogs);
-        $orderRules = $extractRule($orderLogs);
+        $box1Rules = $extractRule($cartLogs);
+        $box2Rules = $extractRule($checkoutLogs);
+        $box3Rules = $extractRule($orderLogs);
 
         $offset = count($tagNames) > 1 ? count($tagNames) - 1 : 0;
 
-        $sheet->setCellValue('B' . (4 + $offset), count($cartRules));
-        $sheet->setCellValue('C' . (4 + $offset), count($checkoutRules));
-        $sheet->setCellValue('D' . (4 + $offset), count($orderRules));
+        if (!$isShopProperty) {
+            // Set C3 and D3 titles from Settings configuration for AEM
+            $settingsFile = WRITEPATH . 'system_settings.json';
+            $systemSettings = file_exists($settingsFile) ? json_decode(file_get_contents($settingsFile), true) : [];
+            $titleC3 = $systemSettings['excel_title_c3'] ?? '';
+            $titleD3 = $systemSettings['excel_title_d3'] ?? '';
+            
+            if ($titleC3) $sheet->setCellValue('C' . (3 + $offset), $titleC3);
+            if ($titleD3) $sheet->setCellValue('D' . (3 + $offset), $titleD3);
+        }
+
+        $sheet->setCellValue('B' . (4 + $offset), count($box1Rules));
+        $sheet->setCellValue('C' . (4 + $offset), count($box2Rules));
+        $sheet->setCellValue('D' . (4 + $offset), count($box3Rules));
         
-        $sheet->setCellValue('B' . (6 + $offset), count($cartRules));
-        $sheet->setCellValue('C' . (6 + $offset), count($checkoutRules));
-        $sheet->setCellValue('D' . (6 + $offset), count($orderRules));
+        $sheet->setCellValue('B' . (6 + $offset), count($box1Rules));
+        $sheet->setCellValue('C' . (6 + $offset), count($box2Rules));
+        $sheet->setCellValue('D' . (6 + $offset), count($box3Rules));
 
         $rowB = 7 + $offset;
-        foreach ($cartRules as $rule) {
+        foreach ($box1Rules as $rule) {
             $sheet->setCellValue('B' . $rowB++, $rule);
         }
         
         $rowC = 7 + $offset;
-        foreach ($checkoutRules as $rule) {
+        foreach ($box2Rules as $rule) {
             $sheet->setCellValue('C' . $rowC++, $rule);
         }
         
         $rowD = 7 + $offset;
-        foreach ($orderRules as $rule) {
+        foreach ($box3Rules as $rule) {
             $sheet->setCellValue('D' . $rowD++, $rule);
         }
         
@@ -1528,5 +1606,36 @@ class TagRequestsController extends BaseController
         }
 
         return redirect()->to('/tag-requests/view/' . $id)->with('error', 'Failed to create tag.');
+    }
+
+    public function generateRuleMonitoring()
+    {
+        $propertiesModel = new PropertiesModel();
+        $properties = $propertiesModel->select('id, name, website, ref_link, is_shop, is_epp, subsidiary_id')
+            ->orderBy('name', 'ASC')
+            ->findAll();
+
+        $settingsFile = WRITEPATH . 'system_settings.json';
+        $systemSettings = file_exists($settingsFile) ? json_decode(file_get_contents($settingsFile), true) : [];
+
+        return view('tag-requests/generate_rule_monitoring', [
+            'properties' => $properties,
+            'systemSettings' => $systemSettings,
+        ]);
+    }
+
+    public function getPropertyTags($propertyId)
+    {
+        $tagsModel = new TagsModel();
+        $tags = $tagsModel->select('id, name')
+            ->where('property_id', $propertyId)
+            ->where('is_active', 1)
+            ->orderBy('name', 'ASC')
+            ->findAll();
+
+        return $this->response->setJSON([
+            'success' => true,
+            'tags' => $tags
+        ]);
     }
 }
