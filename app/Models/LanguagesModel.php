@@ -10,7 +10,6 @@ class LanguagesModel extends Model
     
     protected $allowedFields = [
         'name',
-        'code',
         'updated_by', // Refer to 'Users' table
         'created_by',
         'deleted_by',

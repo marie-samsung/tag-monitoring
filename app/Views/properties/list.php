@@ -27,9 +27,15 @@ Properties List
 
 <?php
     use App\Models\SubsidiariesModel;
+    use App\Models\LanguagesModel;
+    use App\Models\CountriesModel;
 
     $subsidiariesModel = new SubsidiariesModel();
     $subsidiaryOptions = $subsidiariesModel->Options();
+
+    $subsidiariesList = $subsidiariesList ?? $subsidiariesModel->orderBy('name', 'ASC')->findAll();
+    $languagesList = $languagesList ?? (new LanguagesModel())->orderBy('name', 'ASC')->findAll();
+    $countriesList = $countriesList ?? (new CountriesModel())->orderBy('name', 'ASC')->findAll();
 
     helper('custom_functions');
 
@@ -59,7 +65,37 @@ Properties List
             <p class="text-secondary small mb-0">Overview of property domains, platforms, AEM configuration refs, and shops.</p>
         </div>
         <div class="d-flex align-items-center gap-2">
-            <a href="<?= site_url('properties/create') ?>" title="Add a new property" class="apple-btn-primary btn-sm px-3">Create New</a>
+            <a href="<?= site_url('properties/create') ?>" title="Add a new property" class="apple-btn-primary btn-sm px-3">
+                <i class="bi bi-plus-lg me-1"></i> Create New
+            </a>
+
+            <!-- Feature to add values to subsidiaries, languages, and countries -->
+            <div class="btn-group">
+                <button type="button" class="apple-btn-secondary btn-sm px-3 d-inline-flex align-items-center gap-1.5" data-bs-toggle="modal" data-bs-target="#addAttributeModal" title="Add Subsidiary, Language, or Country">
+                    <i class="bi bi-plus-circle"></i> Add Attribute
+                </button>
+                <button type="button" class="apple-btn-secondary btn-sm dropdown-toggle dropdown-toggle-split px-2" data-bs-toggle="dropdown" aria-expanded="false" title="Quick select attribute">
+                    <span class="visually-hidden">Toggle Dropdown</span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm py-2" style="border-radius: 12px; font-size: 0.85rem; border: 1px solid var(--color-border-subtle); min-width: 180px;">
+                    <li><h6 class="dropdown-header text-uppercase text-muted" style="font-size: 0.68rem; font-weight: 700; letter-spacing: 0.5px;">Add Value To</h6></li>
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="javascript:void(0)" onclick="openAddAttributeModal('subsidiary')">
+                            <i class="bi bi-buildings text-primary"></i> Subsidiary
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="javascript:void(0)" onclick="openAddAttributeModal('language')">
+                            <i class="bi bi-translate text-success"></i> Language
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="javascript:void(0)" onclick="openAddAttributeModal('country')">
+                            <i class="bi bi-globe-americas text-info"></i> Country
+                        </a>
+                    </li>
+                </ul>
+            </div>
         </div>
     </div>
 
@@ -324,6 +360,256 @@ Properties List
     </div>
 </div>
 
+<!-- Add Attribute Modal (Subsidiaries, Languages, Countries) -->
+<div class="modal fade" id="addAttributeModal" tabindex="-1" aria-labelledby="addAttributeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+            <!-- Header -->
+            <div class="modal-header border-bottom pb-3 pt-3 px-4 bg-light bg-opacity-50">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="d-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-circle" style="width: 42px; height: 42px; flex-shrink: 0;">
+                        <i class="bi bi-plus-square-fill fs-5"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title fw-bold mb-0 text-dark" id="addAttributeModalLabel">Add Property Attribute</h5>
+                        <p class="text-secondary small mb-0">Add values to subsidiaries, languages, or countries database tables.</p>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <!-- Tab Pills Navigation -->
+            <div class="px-4 pt-3 pb-2 bg-light bg-opacity-25 border-bottom">
+                <ul class="nav nav-pills nav-fill gap-2" id="attributeTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active d-flex align-items-center justify-content-center gap-2 py-2 fw-semibold" id="tab-subsidiary-btn" data-bs-toggle="pill" data-bs-target="#tab-subsidiary" type="button" role="tab" aria-controls="tab-subsidiary" aria-selected="true" style="border-radius: 10px;">
+                            <i class="bi bi-buildings"></i>
+                            <span>Subsidiary</span>
+                            <span class="badge bg-secondary-subtle text-secondary rounded-pill ms-1" style="font-size: 0.72rem;"><?= count($subsidiariesList ?? []) ?></span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link d-flex align-items-center justify-content-center gap-2 py-2 fw-semibold" id="tab-language-btn" data-bs-toggle="pill" data-bs-target="#tab-language" type="button" role="tab" aria-controls="tab-language" aria-selected="false" style="border-radius: 10px;">
+                            <i class="bi bi-translate"></i>
+                            <span>Language</span>
+                            <span class="badge bg-secondary-subtle text-secondary rounded-pill ms-1" style="font-size: 0.72rem;"><?= count($languagesList ?? []) ?></span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link d-flex align-items-center justify-content-center gap-2 py-2 fw-semibold" id="tab-country-btn" data-bs-toggle="pill" data-bs-target="#tab-country" type="button" role="tab" aria-controls="tab-country" aria-selected="false" style="border-radius: 10px;">
+                            <i class="bi bi-globe-americas"></i>
+                            <span>Country</span>
+                            <span class="badge bg-secondary-subtle text-secondary rounded-pill ms-1" style="font-size: 0.72rem;"><?= count($countriesList ?? []) ?></span>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="modal-body p-4">
+                <div class="tab-content" id="attributeTabContent">
+                    
+                    <!-- TAB 1: SUBSIDIARY -->
+                    <div class="tab-pane fade show active" id="tab-subsidiary" role="tabpanel" aria-labelledby="tab-subsidiary-btn">
+                        <form action="<?= site_url('properties/add-attribute') ?>" method="post">
+                            <?= csrf_field() ?>
+                            <input type="hidden" name="type" value="subsidiary">
+
+                            <div class="mb-3">
+                                <label for="subsidiary_name_input" class="form-label fw-semibold text-secondary small mb-1">
+                                    Subsidiary Name / Code <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light text-muted" style="border-radius: 8px 0 0 8px;">
+                                        <i class="bi bi-buildings"></i>
+                                    </span>
+                                    <input 
+                                        type="text" 
+                                        class="form-control text-uppercase" 
+                                        id="subsidiary_name_input" 
+                                        name="name" 
+                                        placeholder="e.g. SEBNL or SGE" 
+                                        maxlength="10" 
+                                        required
+                                        style="border-radius: 0 8px 8px 0;"
+                                    >
+                                </div>
+                                <div class="form-text text-muted small mt-1">
+                                    Max 10 characters. Example: <code>SGE</code>, <code>SESAR</code>, <code>SETK</code>, <code>SEIL</code>.
+                                </div>
+                            </div>
+
+                            <!-- Existing values pill list -->
+                            <div class="p-3 bg-light rounded-3 mb-4" style="border: 1px solid var(--color-border-subtle);">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="fw-semibold text-secondary" style="font-size: 0.8rem;">Existing Subsidiaries:</span>
+                                    <span class="text-muted" style="font-size: 0.75rem;"><?= count($subsidiariesList ?? []) ?> total</span>
+                                </div>
+                                <div class="d-flex flex-wrap gap-1.5" style="max-height: 120px; overflow-y: auto;">
+                                    <?php if (!empty($subsidiariesList)): ?>
+                                        <?php foreach ($subsidiariesList as $sub): ?>
+                                            <span class="badge bg-white text-dark border px-2 py-1" style="font-size: 0.78rem; font-weight: 500; border-radius: 6px;">
+                                                <?= esc($sub['name']) ?>
+                                            </span>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <span class="text-muted small">No subsidiaries recorded yet.</span>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-end gap-2 pt-2 border-top">
+                                <button type="button" class="btn btn-light btn-sm px-3 fw-medium" data-bs-dismiss="modal" style="border-radius: 20px;">Cancel</button>
+                                <button type="submit" class="apple-btn-primary btn-sm px-4 fw-medium" style="border-radius: 20px;">
+                                    <i class="bi bi-plus-lg me-1"></i> Add Subsidiary
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- TAB 2: LANGUAGE -->
+                    <div class="tab-pane fade" id="tab-language" role="tabpanel" aria-labelledby="tab-language-btn">
+                        <form action="<?= site_url('properties/add-attribute') ?>" method="post">
+                            <?= csrf_field() ?>
+                            <input type="hidden" name="type" value="language">
+
+                            <div class="mb-3">
+                                <label for="language_name_input" class="form-label fw-semibold text-secondary small mb-1">
+                                    Language Name / Code <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light text-muted" style="border-radius: 8px 0 0 8px;">
+                                        <i class="bi bi-translate"></i>
+                                    </span>
+                                    <input 
+                                        type="text" 
+                                        class="form-control text-uppercase" 
+                                        id="language_name_input" 
+                                        name="name" 
+                                        placeholder="e.g. EN, AR, or DE" 
+                                        maxlength="10" 
+                                        required
+                                        style="border-radius: 0 8px 8px 0;"
+                                    >
+                                </div>
+                                <div class="form-text text-muted small mt-1">
+                                    Max 10 characters. Example: <code>EN</code>, <code>AR</code>, <code>TR</code>, <code>FR</code>, <code>DE</code>.
+                                </div>
+                            </div>
+
+                            <!-- Existing values pill list -->
+                            <div class="p-3 bg-light rounded-3 mb-4" style="border: 1px solid var(--color-border-subtle);">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="fw-semibold text-secondary" style="font-size: 0.8rem;">Existing Languages:</span>
+                                    <span class="text-muted" style="font-size: 0.75rem;"><?= count($languagesList ?? []) ?> total</span>
+                                </div>
+                                <div class="d-flex flex-wrap gap-1.5" style="max-height: 120px; overflow-y: auto;">
+                                    <?php if (!empty($languagesList)): ?>
+                                        <?php foreach ($languagesList as $lang): ?>
+                                            <span class="badge bg-white text-dark border px-2 py-1" style="font-size: 0.78rem; font-weight: 500; border-radius: 6px;">
+                                                <?= esc($lang['name']) ?>
+                                            </span>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <span class="text-muted small">No languages recorded yet.</span>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-end gap-2 pt-2 border-top">
+                                <button type="button" class="btn btn-light btn-sm px-3 fw-medium" data-bs-dismiss="modal" style="border-radius: 20px;">Cancel</button>
+                                <button type="submit" class="apple-btn-primary btn-sm px-4 fw-medium" style="border-radius: 20px;">
+                                    <i class="bi bi-plus-lg me-1"></i> Add Language
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- TAB 3: COUNTRY -->
+                    <div class="tab-pane fade" id="tab-country" role="tabpanel" aria-labelledby="tab-country-btn">
+                        <form action="<?= site_url('properties/add-attribute') ?>" method="post">
+                            <?= csrf_field() ?>
+                            <input type="hidden" name="type" value="country">
+
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-7">
+                                    <label for="country_name_input" class="form-label fw-semibold text-secondary small mb-1">
+                                        Country Name <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light text-muted" style="border-radius: 8px 0 0 8px;">
+                                            <i class="bi bi-globe-americas"></i>
+                                        </span>
+                                        <input 
+                                            type="text" 
+                                            class="form-control" 
+                                            id="country_name_input" 
+                                            name="name" 
+                                            placeholder="e.g. Germany or Spain" 
+                                            maxlength="50" 
+                                            required
+                                            style="border-radius: 0 8px 8px 0;"
+                                        >
+                                    </div>
+                                    <div class="form-text text-muted small mt-1">Full country name.</div>
+                                </div>
+                                <div class="col-md-5">
+                                    <label for="country_code_input" class="form-label fw-semibold text-secondary small mb-1">
+                                        Country Code <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light text-muted" style="border-radius: 8px 0 0 8px;">
+                                            <i class="bi bi-qr-code"></i>
+                                        </span>
+                                        <input 
+                                            type="text" 
+                                            class="form-control text-uppercase" 
+                                            id="country_code_input" 
+                                            name="code" 
+                                            placeholder="e.g. DE or ES" 
+                                            maxlength="10" 
+                                            required
+                                            style="border-radius: 0 8px 8px 0;"
+                                        >
+                                    </div>
+                                    <div class="form-text text-muted small mt-1">ISO / site code (e.g. AE, SA, DE).</div>
+                                </div>
+                            </div>
+
+                            <!-- Existing values pill list -->
+                            <div class="p-3 bg-light rounded-3 mb-4" style="border: 1px solid var(--color-border-subtle);">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="fw-semibold text-secondary" style="font-size: 0.8rem;">Existing Countries:</span>
+                                    <span class="text-muted" style="font-size: 0.75rem;"><?= count($countriesList ?? []) ?> total</span>
+                                </div>
+                                <div class="d-flex flex-wrap gap-1.5" style="max-height: 120px; overflow-y: auto;">
+                                    <?php if (!empty($countriesList)): ?>
+                                        <?php foreach ($countriesList as $cntry): ?>
+                                            <span class="badge bg-white text-dark border px-2 py-1 d-inline-flex align-items-center gap-1" style="font-size: 0.78rem; font-weight: 500; border-radius: 6px;">
+                                                <span><?= esc($cntry['name']) ?></span>
+                                                <code class="text-primary fw-bold" style="font-size: 0.72rem;"><?= esc($cntry['code']) ?></code>
+                                            </span>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <span class="text-muted small">No countries recorded yet.</span>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-end gap-2 pt-2 border-top">
+                                <button type="button" class="btn btn-light btn-sm px-3 fw-medium" data-bs-dismiss="modal" style="border-radius: 20px;">Cancel</button>
+                                <button type="submit" class="apple-btn-primary btn-sm px-4 fw-medium" style="border-radius: 20px;">
+                                    <i class="bi bi-plus-lg me-1"></i> Add Country
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         window.copyName = function(text, el) {
@@ -380,6 +666,43 @@ Properties List
             const modal = new bootstrap.Modal(document.getElementById('editUrlModal'));
             modal.show();
         };
+
+        window.openAddAttributeModal = function(tabName) {
+            const modalEl = document.getElementById('addAttributeModal');
+            if (!modalEl) return;
+            if (tabName) {
+                const tabTrigger = document.querySelector(`#attributeTab button[data-bs-target="#tab-${tabName}"]`);
+                if (tabTrigger) {
+                    const tab = bootstrap.Tab.getOrCreateInstance(tabTrigger);
+                    tab.show();
+                }
+            }
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.show();
+        };
+
+        const addAttrModal = document.getElementById('addAttributeModal');
+        if (addAttrModal) {
+            addAttrModal.addEventListener('shown.bs.modal', function () {
+                const activePane = addAttrModal.querySelector('.tab-pane.show.active');
+                if (activePane) {
+                    const firstInput = activePane.querySelector('input[type="text"]:not([type="hidden"])');
+                    if (firstInput) firstInput.focus();
+                }
+            });
+
+            const tabButtons = addAttrModal.querySelectorAll('#attributeTab button[data-bs-toggle="pill"]');
+            tabButtons.forEach(btn => {
+                btn.addEventListener('shown.bs.tab', function (e) {
+                    const targetPaneId = e.target.getAttribute('data-bs-target');
+                    const targetPane = document.querySelector(targetPaneId);
+                    if (targetPane) {
+                        const input = targetPane.querySelector('input[type="text"]:not([type="hidden"])');
+                        if (input) input.focus();
+                    }
+                });
+            });
+        }
     });
 </script>
 

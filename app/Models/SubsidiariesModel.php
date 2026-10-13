@@ -10,6 +10,7 @@ class SubsidiariesModel extends Model
     
     protected $allowedFields = [
         'name',
+        'is_active',
         'updated_by', // Refer to 'Users' table
         'created_by',
         'deleted_by',
