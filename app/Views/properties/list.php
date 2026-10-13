@@ -51,6 +51,62 @@ Properties List
 
 <?= csrf_field() ?>
 
+<style>
+    .apple-split-capsule {
+        display: inline-flex;
+        align-items: center;
+        background-color: var(--color-secondary-bg);
+        border-radius: 9999px;
+        transition: background-color var(--transition-fast);
+        vertical-align: middle;
+    }
+    .apple-split-capsule:hover {
+        background-color: var(--color-secondary-hover);
+    }
+    .apple-split-capsule .btn-main {
+        border: none;
+        background: transparent;
+        color: var(--color-text-base);
+        font-size: 0.875rem;
+        font-weight: 500;
+        padding: 0.35rem 0.85rem 0.35rem 1.1rem;
+        border-radius: 9999px 0 0 9999px;
+        display: inline-flex;
+        align-items: center;
+        line-height: 1.5;
+        transition: opacity 0.15s ease;
+        text-decoration: none;
+        cursor: pointer;
+    }
+    .apple-split-capsule .btn-divider {
+        width: 1px;
+        height: 16px;
+        background-color: rgba(0, 0, 0, 0.15);
+        flex-shrink: 0;
+    }
+    .apple-split-capsule .btn-arrow {
+        border: none;
+        background: transparent;
+        color: var(--color-text-base);
+        padding: 0.35rem 0.85rem 0.35rem 0.65rem;
+        border-radius: 0 9999px 9999px 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1.5;
+        transition: opacity 0.15s ease;
+        cursor: pointer;
+    }
+    .apple-split-capsule .btn-main:hover,
+    .apple-split-capsule .btn-arrow:hover {
+        opacity: 0.75;
+    }
+    .apple-split-capsule .btn-main:active,
+    .apple-split-capsule .btn-arrow:active {
+        transform: scale(0.98);
+    }
+</style>
+
 <div class="container-fluid">
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
@@ -70,11 +126,21 @@ Properties List
             </a>
 
             <!-- Feature to add values to subsidiaries, languages, and countries -->
-            <div class="btn-group">
-                <button type="button" class="apple-btn-secondary btn-sm px-3 d-inline-flex align-items-center gap-1.5" data-bs-toggle="modal" data-bs-target="#addAttributeModal" title="Add Subsidiary, Language, or Country">
-                    <i class="bi bi-plus-circle"></i> Add Attribute
+            <div class="apple-split-capsule">
+                <button type="button" 
+                        class="btn-main" 
+                        data-bs-toggle="modal" 
+                        data-bs-target="#addAttributeModal" 
+                        title="Add Subsidiary, Language, or Country">
+                    <i class="bi bi-plus-circle me-2 text-secondary"></i>
+                    <span>Add Attribute</span>
                 </button>
-                <button type="button" class="apple-btn-secondary btn-sm dropdown-toggle dropdown-toggle-split px-2" data-bs-toggle="dropdown" aria-expanded="false" title="Quick select attribute">
+                <span class="btn-divider"></span>
+                <button type="button" 
+                        class="btn-arrow dropdown-toggle dropdown-toggle-split" 
+                        data-bs-toggle="dropdown" 
+                        aria-expanded="false" 
+                        title="Quick select attribute">
                     <span class="visually-hidden">Toggle Dropdown</span>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end shadow-sm py-2" style="border-radius: 12px; font-size: 0.85rem; border: 1px solid var(--color-border-subtle); min-width: 180px;">
@@ -444,10 +510,10 @@ Properties List
                                     <span class="fw-semibold text-secondary" style="font-size: 0.8rem;">Existing Subsidiaries:</span>
                                     <span class="text-muted" style="font-size: 0.75rem;"><?= count($subsidiariesList ?? []) ?> total</span>
                                 </div>
-                                <div class="d-flex flex-wrap gap-1.5" style="max-height: 120px; overflow-y: auto;">
+                                <div class="d-flex flex-wrap p-1" style="gap: 8px 10px; max-height: 140px; overflow-y: auto;">
                                     <?php if (!empty($subsidiariesList)): ?>
                                         <?php foreach ($subsidiariesList as $sub): ?>
-                                            <span class="badge bg-white text-dark border px-2 py-1" style="font-size: 0.78rem; font-weight: 500; border-radius: 6px;">
+                                            <span class="badge bg-white text-dark border shadow-xs" style="padding: 6px 12px; font-size: 0.8rem; font-weight: 500; border-radius: 8px; border-color: rgba(0,0,0,0.1) !important;">
                                                 <?= esc($sub['name']) ?>
                                             </span>
                                         <?php endforeach; ?>
@@ -502,10 +568,10 @@ Properties List
                                     <span class="fw-semibold text-secondary" style="font-size: 0.8rem;">Existing Languages:</span>
                                     <span class="text-muted" style="font-size: 0.75rem;"><?= count($languagesList ?? []) ?> total</span>
                                 </div>
-                                <div class="d-flex flex-wrap gap-1.5" style="max-height: 120px; overflow-y: auto;">
+                                <div class="d-flex flex-wrap p-1" style="gap: 8px 10px; max-height: 140px; overflow-y: auto;">
                                     <?php if (!empty($languagesList)): ?>
                                         <?php foreach ($languagesList as $lang): ?>
-                                            <span class="badge bg-white text-dark border px-2 py-1" style="font-size: 0.78rem; font-weight: 500; border-radius: 6px;">
+                                            <span class="badge bg-white text-dark border shadow-xs" style="padding: 6px 12px; font-size: 0.8rem; font-weight: 500; border-radius: 8px; border-color: rgba(0,0,0,0.1) !important;">
                                                 <?= esc($lang['name']) ?>
                                             </span>
                                         <?php endforeach; ?>
@@ -581,12 +647,12 @@ Properties List
                                     <span class="fw-semibold text-secondary" style="font-size: 0.8rem;">Existing Countries:</span>
                                     <span class="text-muted" style="font-size: 0.75rem;"><?= count($countriesList ?? []) ?> total</span>
                                 </div>
-                                <div class="d-flex flex-wrap gap-1.5" style="max-height: 120px; overflow-y: auto;">
+                                <div class="d-flex flex-wrap p-1" style="gap: 8px 10px; max-height: 140px; overflow-y: auto;">
                                     <?php if (!empty($countriesList)): ?>
                                         <?php foreach ($countriesList as $cntry): ?>
-                                            <span class="badge bg-white text-dark border px-2 py-1 d-inline-flex align-items-center gap-1" style="font-size: 0.78rem; font-weight: 500; border-radius: 6px;">
+                                            <span class="badge bg-white text-dark border shadow-xs d-inline-flex align-items-center" style="padding: 6px 10px; font-size: 0.8rem; font-weight: 500; border-radius: 8px; gap: 8px; border-color: rgba(0,0,0,0.1) !important;">
                                                 <span><?= esc($cntry['name']) ?></span>
-                                                <code class="text-primary fw-bold" style="font-size: 0.72rem;"><?= esc($cntry['code']) ?></code>
+                                                <code class="text-primary fw-bold px-1.5 py-0.5 rounded" style="font-size: 0.72rem; background: rgba(0, 113, 227, 0.08);"><?= esc($cntry['code']) ?></code>
                                             </span>
                                         <?php endforeach; ?>
                                     <?php else: ?>
