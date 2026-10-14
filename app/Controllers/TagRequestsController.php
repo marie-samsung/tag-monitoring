@@ -84,7 +84,9 @@ class TagRequestsController extends BaseController
         $organizations = $organizationsModel->Options();
 
         if ($this->request->getMethod() === 'GET') {
-            return view('tag-requests/create', []);
+            return view('tag-requests/create', [
+                'ticket_id' => null,
+            ]);
         }
 
         $post = $this->request->getPost();
@@ -954,7 +956,10 @@ class TagRequestsController extends BaseController
     public function prefill()
     {
         $extractedData = $this->request->getPost();
-        return view('tag-requests/create', ['extracted_data' => $extractedData]);
+        return view('tag-requests/create', [
+            'extracted_data' => $extractedData,
+            'ticket_id' => null,
+        ]);
     }
 
     public function updateProperty($id)

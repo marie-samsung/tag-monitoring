@@ -1028,6 +1028,187 @@ class TagsController extends BaseController
         return view('tags/upload_renewal_justifications');
     }
 
+    /**
+     * Detect column indices in a row using case-insensitive LIKE matching.
+     * Looks for Property Name, Tag Name, Renew, Renewal Justification (with or without 'Required'), and Duration of Usage.
+     */
+    protected function getRenewalJustificationColumnMap(array $row): ?array
+    {
+        $columnMap = [
+            'property_name' => null,
+            'tag_name' => null,
+            'renew' => null,
+            'justification' => null,
+            'duration' => null,
+        ];
+
+        $assignedCols = [];
+
+        // Pass 1: Primary LIKE matching
+        foreach ($row as $colIndex => $cellVal) {
+            $cleanVal = trim(preg_replace('/\s+/', ' ', (string) $cellVal));
+            if ($cleanVal === '') {
+                continue;
+            }
+
+            // Renewal Justification (handles "Renewal Justification", "Renewal Justification Required", "Renewal Justification - Required", etc.)
+            if ($columnMap['justification'] === null && (stripos($cleanVal, 'Renewal Justification') !== false || stripos($cleanVal, 'Justification') !== false)) {
+                $columnMap['justification'] = $colIndex;
+                $assignedCols[$colIndex] = true;
+            }
+            // Property Name
+            elseif ($columnMap['property_name'] === null && stripos($cleanVal, 'Property Name') !== false) {
+                $columnMap['property_name'] = $colIndex;
+                $assignedCols[$colIndex] = true;
+            }
+            // Tag Name
+            elseif ($columnMap['tag_name'] === null && stripos($cleanVal, 'Tag Name') !== false) {
+                $columnMap['tag_name'] = $colIndex;
+                $assignedCols[$colIndex] = true;
+            }
+            // Duration of Usage
+            elseif ($columnMap['duration'] === null && (stripos($cleanVal, 'Duration of Usage') !== false || stripos($cleanVal, 'Duration') !== false)) {
+                $columnMap['duration'] = $colIndex;
+                $assignedCols[$colIndex] = true;
+            }
+            // Renew (must not contain justification to prevent collision with "Renewal Justification")
+            elseif ($columnMap['renew'] === null && stripos($cleanVal, 'Renew') !== false && stripos($cleanVal, 'Justification') === false) {
+                $columnMap['renew'] = $colIndex;
+                $assignedCols[$colIndex] = true;
+            }
+        }
+
+        // Pass 2: Fallback if Property or Tag were shorthand
+        if ($columnMap['property_name'] === null || $columnMap['tag_name'] === null) {
+            foreach ($row as $colIndex => $cellVal) {
+                if (isset($assignedCols[$colIndex])) {
+                    continue;
+                }
+                $cleanVal = trim(preg_replace('/\s+/', ' ', (string) $cellVal));
+                if ($cleanVal === '') {
+                    continue;
+                }
+
+                if ($columnMap['property_name'] === null && stripos($cleanVal, 'Property') !== false) {
+                    $columnMap['property_name'] = $colIndex;
+                    $assignedCols[$colIndex] = true;
+                } elseif ($columnMap['tag_name'] === null && stripos($cleanVal, 'Tag') !== false) {
+                    $columnMap['tag_name'] = $colIndex;
+                    $assignedCols[$colIndex] = true;
+                }
+            }
+        }
+
+        // Header row requires finding at least Property Name and Tag Name
+        if ($columnMap['property_name'] !== null && $columnMap['tag_name'] !== null) {
+            return $columnMap;
+        }
+
+        return null;
+    }
+
+    /**
+     * Parses an uploaded Excel file, locates the header row using LIKE column matching,
+     * and extracts row data according to the mapped columns.
+     */
+    protected function extractRenewalJustificationRows(string $filePath): array
+    {
+        require_once APPPATH . 'Libraries/SimpleXLSX.php';
+
+        $xlsx = \Shuchkin\SimpleXLSX::parse($filePath);
+        if (!$xlsx) {
+            return [
+                'error' => 'Failed to parse Excel file: ' . \Shuchkin\SimpleXLSX::parseError()
+            ];
+        }
+
+        $rows = $xlsx->rows();
+        if (empty($rows)) {
+            return [
+                'error' => 'The uploaded Excel file is empty.'
+            ];
+        }
+
+        $headerRowIndex = null;
+        $columnMap = null;
+
+        foreach ($rows as $rowIndex => $row) {
+            $map = $this->getRenewalJustificationColumnMap($row);
+            if ($map !== null) {
+                $headerRowIndex = $rowIndex;
+                $columnMap = $map;
+                break;
+            }
+        }
+
+        if ($headerRowIndex === null || $columnMap === null) {
+            return [
+                'error' => 'Could not find required header row. Expected columns: "Property Name", "Tag Name", "Renew", "Renewal Justification", "Duration of Usage".'
+            ];
+        }
+
+        // Verify all 5 expected columns are present
+        $missingColumns = [];
+        if ($columnMap['property_name'] === null) {
+            $missingColumns[] = '"Property Name"';
+        }
+        if ($columnMap['tag_name'] === null) {
+            $missingColumns[] = '"Tag Name"';
+        }
+        if ($columnMap['renew'] === null) {
+            $missingColumns[] = '"Renew"';
+        }
+        if ($columnMap['justification'] === null) {
+            $missingColumns[] = '"Renewal Justification"';
+        }
+        if ($columnMap['duration'] === null) {
+            $missingColumns[] = '"Duration of Usage"';
+        }
+
+        if (!empty($missingColumns)) {
+            return [
+                'error' => 'Missing required column(s) in Excel file: ' . implode(', ', $missingColumns) . '.'
+            ];
+        }
+
+        $dataRows = [];
+        $totalRows = count($rows);
+
+        for ($i = $headerRowIndex + 1; $i < $totalRows; $i++) {
+            $row = $rows[$i];
+
+            $propertyName = trim((string) ($row[$columnMap['property_name']] ?? ''));
+            $tagName = trim((string) ($row[$columnMap['tag_name']] ?? ''));
+            $renew = trim((string) ($row[$columnMap['renew']] ?? ''));
+            $justification = trim((string) ($row[$columnMap['justification']] ?? ''));
+            $duration = trim((string) ($row[$columnMap['duration']] ?? ''));
+
+            // Skip empty rows
+            if ($propertyName === '' && $tagName === '') {
+                continue;
+            }
+
+            $dataRows[] = [
+                'property_name' => $propertyName,
+                'tag_name' => $tagName,
+                'renew' => $renew,
+                'justification' => $justification,
+                'duration' => $duration,
+            ];
+        }
+
+        if (empty($dataRows)) {
+            return [
+                'error' => 'The uploaded Excel file does not contain any valid tag renewal rows.'
+            ];
+        }
+
+        return [
+            'data' => $dataRows,
+            'column_map' => $columnMap,
+        ];
+    }
+
     public function parseRenewalJustifications()
     {
         $file = $this->request->getFile('excel_file');
@@ -1049,77 +1230,47 @@ class TagsController extends BaseController
             return redirect()->back()->with('error', 'Failed to save uploaded file temporarily.');
         }
 
-        require_once APPPATH . 'Libraries/SimpleXLSX.php';
+        $extracted = $this->extractRenewalJustificationRows($tempFilePath);
 
-        $xlsx = \Shuchkin\SimpleXLSX::parse($tempFilePath);
-
-        if (!$xlsx) {
+        if (isset($extracted['error'])) {
             if (file_exists($tempFilePath)) {
                 unlink($tempFilePath);
             }
-            return redirect()->back()->with('error', 'Failed to parse Excel file.');
+            return redirect()->back()->with('error', $extracted['error']);
         }
-
-        $rows = $xlsx->rows();
 
         $tagsModel = new TagsModel();
         $propertiesModel = new PropertiesModel();
-
-        $isFirstRow = true;
         $extractedRows = [];
 
-        foreach ($rows as $row) {
-            if ($isFirstRow) {
-                // Check if it's the header row
-                $firstCol = trim($row[0] ?? '');
-                if (stripos($firstCol, 'Property Name') !== false) {
-                    $isFirstRow = false;
-                    continue;
+        foreach ($extracted['data'] as $item) {
+            $propertyName = $item['property_name'];
+            $tagName = $item['tag_name'];
+            $renew = $item['renew'];
+            $justification = $item['justification'];
+            $duration = $item['duration'];
+
+            $status = 'Valid';
+            $property = $propertiesModel->where('name', $propertyName)->first();
+            if (!$property) {
+                $status = 'Property Not Found';
+            } else {
+                $tag = $tagsModel->where('property_id', $property['id'])
+                    ->where('name', $tagName)
+                    ->first();
+                if (!$tag) {
+                    $status = 'Tag Not Found';
                 }
-                $isFirstRow = false;
             }
 
-            // Ensure we have at least 5 columns
-            if (count($row) >= 5) {
-                $propertyName = trim((string) ($row[0] ?? ''));
-                $tagName = trim((string) ($row[1] ?? ''));
-                $renew = trim((string) ($row[2] ?? ''));
-                $justification = trim((string) ($row[3] ?? ''));
-                $duration = trim((string) ($row[4] ?? ''));
-
-                if (empty($propertyName) && empty($tagName)) {
-                    continue;
-                }
-
-                $status = 'Valid';
-                $property = $propertiesModel->where('name', $propertyName)->first();
-                if (!$property) {
-                    $status = 'Property Not Found';
-                } else {
-                    $tag = $tagsModel->where('property_id', $property['id'])
-                        ->where('name', $tagName)
-                        ->first();
-                    if (!$tag) {
-                        $status = 'Tag Not Found';
-                    }
-                }
-
-                $extractedRows[] = [
-                    'property_name' => $propertyName,
-                    'tag_name' => $tagName,
-                    'renew' => $renew,
-                    'justification' => $justification,
-                    'duration' => $duration,
-                    'status' => $status
-                ];
-            }
-        }
-
-        if (empty($extractedRows)) {
-            if (file_exists($tempFilePath)) {
-                unlink($tempFilePath);
-            }
-            return redirect()->back()->with('error', 'The uploaded Excel file does not contain any valid tag renewal rows.');
+            $extractedRows[] = [
+                'property_name' => $propertyName,
+                'tag_name' => $tagName,
+                'renew' => $renew,
+                'justification' => $justification,
+                'duration' => $duration,
+                'status' => $status
+            ];
         }
 
         return view('tags/upload_renewal_justifications', [
@@ -1137,61 +1288,46 @@ class TagsController extends BaseController
             return redirect()->to('/tags/upload-renewal-justifications')->with('error', 'Temporary file not found. Please upload again.');
         }
 
-        require_once APPPATH . 'Libraries/SimpleXLSX.php';
+        $extracted = $this->extractRenewalJustificationRows($tempFilePath);
 
-        $xlsx = \Shuchkin\SimpleXLSX::parse($tempFilePath);
-        if (!$xlsx) {
+        if (isset($extracted['error'])) {
             if (file_exists($tempFilePath)) {
                 unlink($tempFilePath);
             }
-            return redirect()->to('/tags/upload-renewal-justifications')->with('error', 'Failed to parse temporary file. Please upload again.');
+            return redirect()->to('/tags/upload-renewal-justifications')->with('error', $extracted['error']);
         }
-
-        $rows = $xlsx->rows();
 
         $tagsModel = new TagsModel();
         $propertiesModel = new PropertiesModel();
         $renewalJustificationModel = new \App\Models\RenewalJustificationModel();
         $userId = session()->get('user_id') ?? 0;
 
-        $isFirstRow = true;
         $savedCount = 0;
 
-        foreach ($rows as $row) {
-            if ($isFirstRow) {
-                $firstCol = trim($row[0] ?? '');
-                if (stripos($firstCol, 'Property Name') !== false) {
-                    $isFirstRow = false;
-                    continue;
-                }
-                $isFirstRow = false;
-            }
+        foreach ($extracted['data'] as $item) {
+            $propertyName = $item['property_name'];
+            $tagName = $item['tag_name'];
+            $renew = $item['renew'];
+            $justification = $item['justification'];
+            $duration = $item['duration'];
 
-            if (count($row) >= 5) {
-                $propertyName = trim((string) ($row[0] ?? ''));
-                $tagName = trim((string) ($row[1] ?? ''));
-                $renew = trim((string) ($row[2] ?? ''));
-                $justification = trim((string) ($row[3] ?? ''));
-                $duration = trim((string) ($row[4] ?? ''));
+            if (!empty($propertyName) && !empty($tagName)) {
+                $property = $propertiesModel->where('name', $propertyName)->first();
+                if ($property) {
+                    $tag = $tagsModel->where('property_id', $property['id'])
+                        ->where('name', $tagName)
+                        ->first();
 
-                if (!empty($propertyName) && !empty($tagName)) {
-                    $property = $propertiesModel->where('name', $propertyName)->first();
-                    if ($property) {
-                        $tag = $tagsModel->where('property_id', $property['id'])
-                            ->where('name', $tagName)
-                            ->first();
-
-                        if ($tag) {
-                            $renewalJustificationModel->insert([
-                                'tag_id' => $tag['id'],
-                                'renew' => $renew,
-                                'justification' => $justification,
-                                'duration' => $duration,
-                                'created_by' => $userId,
-                                'updated_by' => $userId
-                            ]);
-                            $savedCount++;
-                        }
+                    if ($tag) {
+                        $renewalJustificationModel->insert([
+                            'tag_id' => $tag['id'],
+                            'renew' => $renew,
+                            'justification' => $justification,
+                            'duration' => $duration,
+                            'created_by' => $userId,
+                            'updated_by' => $userId
+                        ]);
+                        $savedCount++;
                     }
                 }
             }
@@ -1203,6 +1339,7 @@ class TagsController extends BaseController
 
         return redirect()->to('/tags/renewal-justifications')->with('success', "{$savedCount} renewal justifications have been successfully processed and saved.");
     }
+
 
     public function renewalJustifications()
     {

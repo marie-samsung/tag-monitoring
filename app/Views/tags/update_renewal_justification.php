@@ -50,7 +50,6 @@ Renewal Justification : Update
                         class="form-control form-control-xs"
                         value="<?= esc($justification['duration']) ?>"
                         placeholder="e.g. 1 Year"
-                        required
                         style="height: 38px; border-radius: 8px;">
                 </div>
 
@@ -61,7 +60,6 @@ Renewal Justification : Update
                         class="form-control form-control-xs"
                         rows="4"
                         placeholder="Enter the justification..."
-                        required
                         style="border-radius: 8px;"><?= esc($justification['justification']) ?></textarea>
                 </div>
             </div>

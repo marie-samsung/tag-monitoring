@@ -13,7 +13,7 @@ Upload Renewal Justifications
         </a>
         <div>
             <h2 class="mb-0 fw-bold">Upload Renewal Justifications</h2>
-            <p class="text-secondary small mb-0">Select or drop a completed "Renewal Justification" excel template to bulk update renewal justifications in the database.</p>
+            <p class="text-secondary small mb-0">Select or drop a completed "Renewal Justification" excel file to bulk update renewal justifications in the database. Columns can be in any arrangement.</p>
         </div>
     </div>
 
@@ -156,7 +156,7 @@ Upload Renewal Justifications
                     <button type="button" class="apple-btn-secondary btn-sm px-4" id="browseButton">
                         Choose File
                     </button>
-                    <div class="form-text mt-3 text-muted">Only Excel template files (.xlsx) are accepted.</div>
+                    <div class="form-text mt-3 text-muted">Only Excel files (.xlsx) are accepted. Expected columns: Property Name, Tag Name, Renew, Renewal Justification, Duration of Usage (in any order).</div>
                     
                     <!-- Selected File Display -->
                     <div class="mt-3 p-2 bg-light border rounded-3 d-inline-flex align-items-center gap-2 d-none" id="fileSelectedDisplay">

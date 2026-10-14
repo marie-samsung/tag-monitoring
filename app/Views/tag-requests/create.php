@@ -13,6 +13,12 @@ Tag Request: Create
     use App\Models\OrganizationsModel;
     use App\Models\TasksModel;
 
+    $ticket_id = $ticket_id ?? null;
+    $tag_ids = $tag_ids ?? [];
+    $request_type = $request_type ?? null;
+    $request_id = $request_id ?? null;
+    $extracted_data = $extracted_data ?? [];
+
     $propertiesModel = new PropertiesModel();
     $propertiesList = $propertiesModel->select('id, name, is_shop, subsidiary_id')->findAll();
     $property = isset($property_id) ? $propertiesModel->find($property_id) : null;
@@ -72,9 +78,9 @@ Tag Request: Create
             <i class="bi bi-info-circle-fill me-2"></i>
             Data has been extracted from the uploaded Excel file. Please review and complete the form before proceeding.
             <ul class="mb-0 mt-2">
-                <li><strong>Extracted Vendor:</strong> <?= esc($extracted_data['vendor_name']) ?></li>
-                <li><strong>Target Property/Sites:</strong> <?= esc($extracted_data['target_properties']) ?></li>
-                <li><strong>Extracted Tag Script:</strong> <?= esc($extracted_data['tag_script']) ?></li>
+                <li><strong>Extracted Vendor:</strong> <?= esc($extracted_data['vendor_name'] ?? '') ?></li>
+                <li><strong>Target Property/Sites:</strong> <?= esc($extracted_data['target_properties'] ?? '') ?></li>
+                <li><strong>Extracted Tag Script:</strong> <?= esc($extracted_data['tag_script'] ?? '') ?></li>
                 <li><strong>Background:</strong> <?= esc($extracted_data['background'] ?? '') ?></li>
                 <li><strong>Objective:</strong> <?= esc($extracted_data['objective'] ?? '') ?></li>
                 <li><strong>Requestor Name:</strong> <?= esc($extracted_data['requester_name'] ?? '') ?></li>
@@ -537,7 +543,7 @@ Tag Request: Create
                                     <i class="bi bi-box-arrow-up-right"></i>
                                 </a>
                             </div>
-                            <input type="hidden" name="ticket_id" value="<?= esc($ticket_id) ?>">
+                            <input type="hidden" name="ticket_id" id="ticket_id" value="<?= esc($ticket_id) ?>">
                         <?php endif; ?>
                     </div>
                 </div>
@@ -910,7 +916,7 @@ Tag Request: Create
                                     <i class="bi bi-box-arrow-up-right"></i>
                                 </a>
                             </div>
-                            <input type="hidden" name="ticket_id" value="<?= esc($ticket_id) ?>">
+                            <input type="hidden" name="ticket_id" id="ticket_id" value="<?= esc($ticket_id) ?>">
                         <?php endif; ?>
                     </div>
 
@@ -1532,7 +1538,7 @@ Tag Request: Create
         setTimeout(() => status.style.opacity = 0, 1000);
 
         const ticketInput = $('#ticket_id');
-        const ticketId = ticketInput.length ? ticketInput.val().trim() : <?= $ticket_id ?>;
+        const ticketId = (ticketInput.length ? ticketInput.val().trim() : '') || '<?= esc($ticket_id ?? '', 'js') ?>';
         if (!ticketId) {
             window.themeAlert({
                 title: 'JIRA Ticket ID Missing',
