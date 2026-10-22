@@ -984,6 +984,7 @@ class DashboardController extends BaseController
 
         try {
             $response = $client->request('POST', $apiUrl, [
+                'verify' => false,
                 'headers' => [
                     'Accept' => 'application/json',
                     'Content-Type' => 'application/json',
